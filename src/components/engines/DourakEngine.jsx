@@ -120,12 +120,12 @@ export function DourakEngine({ game, onFinish }) {
       </div>
 
       {/* Liste des joueurs pour désigner le Dourak d'un seul tap */}
-      <div className="school-card rounded-xl p-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-3">
+      <div className="school-card rounded-xl p-3 sm:p-4">
+        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
           Qui est le Dourak de cette manche ?
         </p>
 
-        <div className="space-y-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {game.players.map(p => {
             const isSelected = loserId === p.id
             const wasLastDourak = lastLoserId === p.id
@@ -136,21 +136,21 @@ export function DourakEngine({ game, onFinish }) {
                 key={p.id}
                 type="button"
                 onClick={() => handleSelectPlayer(p)}
-                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl border transition-all active:scale-[0.99] text-left ${
+                className={`flex items-center gap-2 p-2.5 rounded-xl border transition-all active:scale-[0.98] text-left ${
                   isSelected
-                    ? 'border-[#c83b3b] bg-[#c83b3b]/10 ring-1 ring-[#c83b3b]/30'
+                    ? 'border-[#c83b3b] bg-[#c83b3b]/10 ring-1 ring-[#c83b3b]/30 font-bold'
                     : 'school-subtle hover:border-[#c83b3b]/60'
                 }`}
               >
                 <Avatar player={p} size="xs" leader={isSelected} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm truncate">
+                  <div className="flex items-center gap-1">
+                    <span className="font-semibold text-xs truncate">
                       {p.name}
                     </span>
                     {wasLastDourak && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-stone-200 dark:bg-slate-700 text-stone-700 dark:text-slate-300">
-                        Dourak sortant
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-amber-500/20 text-amber-800 dark:text-amber-200 shrink-0">
+                        Sortant
                       </span>
                     )}
                   </div>
@@ -158,19 +158,19 @@ export function DourakEngine({ game, onFinish }) {
                     {mode === 'defeats' ? (
                       <SchoolTally count={playerScore} />
                     ) : (
-                      <span className="text-[11px] text-stone-500 dark:text-slate-400 tabular-nums">
-                        Cumul : {playerScore} carte{playerScore > 1 ? 's' : ''}
+                      <span className="text-[10px] text-stone-500 dark:text-slate-400 tabular-nums truncate block">
+                        {playerScore} carte{playerScore > 1 ? 's' : ''}
                       </span>
                     )}
                   </div>
                 </div>
 
                 {isSelected ? (
-                  <span className="px-2.5 py-1 rounded-lg bg-[#c83b3b] text-white text-xs font-bold">
-                    {mode === 'cards' ? `+${cardsLeft} c.` : '+1 Dourak'}
+                  <span className="px-2 py-0.5 rounded-lg bg-[#c83b3b] text-white text-[11px] font-bold shrink-0">
+                    {mode === 'cards' ? `+${cardsLeft} c.` : '+1'}
                   </span>
                 ) : (
-                  <span className="text-xs font-semibold text-stone-400 dark:text-slate-500">
+                  <span className="text-[10px] font-semibold text-stone-400 dark:text-slate-500 shrink-0">
                     Désigner
                   </span>
                 )}
