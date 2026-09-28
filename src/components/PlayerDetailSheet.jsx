@@ -14,10 +14,10 @@ export function PlayerDetailSheet({ player, open, onClose }) {
   const [selectedBadgeId, setSelectedBadgeId] = useState(null)
   if (!player) return null
 
-  const selectedBadge = player.badges?.find(b => b.id === selectedBadgeId) || null
+  const selectedBadge = player.badges?.find(b => b && b.id === selectedBadgeId) || null
 
   const gamesPlayedEntries = Object.entries(player.gameBreakdown || {}).filter(
-    ([, data]) => data.played > 0
+    ([, data]) => data && data.played > 0
   )
 
   return (
@@ -182,8 +182,11 @@ export function PlayerDetailSheet({ player, open, onClose }) {
           ) : (
             <div className="space-y-2">
               {gamesPlayedEntries.map(([type, data]) => {
+                if (!data) return null
                 const meta = GAME_META[type]
-                const rate = data.played > 0 ? Math.round((data.wins / data.played) * 100) : 0
+                const played = data.played || 0
+                const wins = data.wins || 0
+                const rate = played > 0 ? Math.round((wins / played) * 100) : 0
                 return (
                   <div
                     key={type}
@@ -209,11 +212,11 @@ export function PlayerDetailSheet({ player, open, onClose }) {
                     </div>
                     <div className="text-right flex-shrink-0">
                       <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                        {data.wins}V
+                        {wins}V
                       </span>
                       <span className="text-stone-400 dark:text-slate-500 mx-1">/</span>
                       <span className="text-stone-600 dark:text-slate-400">
-                        {data.played}P
+                        {played}P
                       </span>
                       <span className="text-[11px] text-stone-400 dark:text-slate-500 ml-1.5">
                         ({rate}%)
@@ -233,9 +236,9 @@ export function PlayerDetailSheet({ player, open, onClose }) {
           </h4>
           {player.recentHistory && player.recentHistory.length > 0 ? (
             <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-              {player.recentHistory.slice(0, 8).map((hist, idx) => (
+              {player.recentHistory.filter(Boolean).slice(0, 8).map((hist, idx) => (
                 <div
-                  key={`${hist.gameId}-${idx}`}
+                  key={`${hist.gameId || idx}-${idx}`}
                   className="flex items-center justify-between p-2 rounded-lg bg-stone-50 dark:bg-slate-900/40 text-xs"
                 >
                   <div className="flex items-center gap-2 truncate">
@@ -243,19 +246,19 @@ export function PlayerDetailSheet({ player, open, onClose }) {
                       className={`w-6 h-6 rounded-md flex items-center justify-center font-bold text-[11px] ${
                         hist.isWinner
                           ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
-                          : hist.rank <= 3
+                          : (hist.rank || 99) <= 3
                           ? 'bg-stone-200 dark:bg-slate-800 text-stone-700 dark:text-slate-300'
                           : 'bg-stone-100 dark:bg-slate-800/50 text-stone-500 dark:text-slate-400'
                       }`}
                     >
-                      {hist.rank === 1 ? '1er' : `${hist.rank}e`}
+                      {hist.rank === 1 ? '1er' : `${hist.rank || '-'}e`}
                     </span>
                     <span className="text-stone-700 dark:text-slate-300 truncate">
-                      {hist.gameName}
+                      {hist.gameName || 'Partie'}
                     </span>
                   </div>
                   <span className="text-[11px] text-stone-400 dark:text-slate-500 flex-shrink-0">
-                    {hist.isWinner ? 'Victoire' : `${hist.rank}/${hist.totalPlayers}`}
+                    {hist.isWinner ? 'Victoire' : `${hist.rank || '?'}/${hist.totalPlayers || '?'}`}
                   </span>
                 </div>
               ))}

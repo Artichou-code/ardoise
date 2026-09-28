@@ -11,9 +11,12 @@ import { GAME_META } from '../constants/games'
 const GameContext = createContext(null)
 
 const sortPlayersAlpha = (list) => {
-  return [...list].sort((a, b) =>
-    (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })
-  )
+  if (!Array.isArray(list)) return []
+  return list
+    .filter(p => p && typeof p === 'object' && p.name)
+    .sort((a, b) =>
+      (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })
+    )
 }
 
 export function GameProvider({ children }) {
@@ -21,10 +24,10 @@ export function GameProvider({ children }) {
   const [games, setGames] = useState(() => loadGames())
   const [customPresets, setCustomPresets] = useState(() => loadCustomPresets())
   const [activeGameId, setActiveGameId] = useState(() => loadActiveGameId())
-  const [screen, setScreen] = useState('home') // home | game | history | victory
+  const [screen, setScreen] = useState('home') // home | game | history | victory | stats | players
   const historyRef = useRef([]) // undo stack
 
-  const activeGame = games.find(g => g.id === activeGameId) || null
+  const activeGame = (Array.isArray(games) ? games : []).find(g => g && g.id === activeGameId) || null
 
   // Sync players to storage
   useEffect(() => { savePlayers(players) }, [players])
@@ -34,15 +37,17 @@ export function GameProvider({ children }) {
 
   // Save game helper
   const persistGame = useCallback((game) => {
+    if (!game || !game.id) return
     saveGame(game)
     setGames(prev => {
-      const idx = prev.findIndex(g => g.id === game.id)
+      const currentList = Array.isArray(prev) ? prev : []
+      const idx = currentList.findIndex(g => g && g.id === game.id)
       if (idx >= 0) {
-        const next = [...prev]
+        const next = [...currentList]
         next[idx] = game
         return next
       }
-      return [game, ...prev]
+      return [game, ...currentList]
     })
   }, [])
 

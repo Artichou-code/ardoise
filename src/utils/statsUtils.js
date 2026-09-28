@@ -31,12 +31,15 @@ export function getGameScoreDirection(game) {
  * @returns {Object} Statistiques agrégées
  */
 export function computeStats(games = [], selectedGameType = 'all', registeredPlayers = []) {
-  const allFilteredGames = selectedGameType === 'all'
-    ? games
-    : games.filter(g => g.type === selectedGameType)
+  const safeGames = Array.isArray(games) ? games.filter(g => g && typeof g === 'object') : []
+  const safeRegisteredPlayers = Array.isArray(registeredPlayers) ? registeredPlayers.filter(p => p && typeof p === 'object' && p.name) : []
 
-  const finishedGames = allFilteredGames.filter(g => g.status === 'finished')
-  const activeGames = allFilteredGames.filter(g => g.status !== 'finished')
+  const allFilteredGames = selectedGameType === 'all'
+    ? safeGames
+    : safeGames.filter(g => g && g.type === selectedGameType)
+
+  const finishedGames = allFilteredGames.filter(g => g && g.status === 'finished')
+  const activeGames = allFilteredGames.filter(g => g && g.status !== 'finished')
 
   // 1. Indicateurs Globaux (KPIs)
   const totalGamesCount = allFilteredGames.length
@@ -48,6 +51,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
   const gameTypeCounts = {}
 
   allFilteredGames.forEach(game => {
+    if (!game) return
     totalRounds += game.rounds?.length || 0
 
     const start = game.startedAt || 0
@@ -56,15 +60,16 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       totalPlayTimeMs += (end - start)
     }
 
-    if (!gameTypeCounts[game.type]) {
-      gameTypeCounts[game.type] = { count: 0, finished: 0, durationMs: 0 }
+    const gType = game.type || 'universel'
+    if (!gameTypeCounts[gType]) {
+      gameTypeCounts[gType] = { count: 0, finished: 0, durationMs: 0 }
     }
-    gameTypeCounts[game.type].count += 1
+    gameTypeCounts[gType].count += 1
     if (game.status === 'finished') {
-      gameTypeCounts[game.type].finished += 1
+      gameTypeCounts[gType].finished += 1
     }
     if (end > start) {
-      gameTypeCounts[game.type].durationMs += (end - start)
+      gameTypeCounts[gType].durationMs += (end - start)
     }
   })
 
@@ -103,7 +108,8 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
   const playerStatsMap = new Map()
 
   // Initialiser avec les joueurs enregistrés pour conserver leurs préférences d'avatar/couleur
-  registeredPlayers.forEach(p => {
+  safeRegisteredPlayers.forEach(p => {
+    if (!p) return
     const key = normalizePlayerName(p.name)
     if (!key) return
     playerStatsMap.set(key, {
@@ -126,10 +132,11 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
 
   // Traiter toutes les parties filtrées
   allFilteredGames.forEach(game => {
+    if (!game) return
     const isFinished = game.status === 'finished'
     const scoreDir = getGameScoreDirection(game)
-    const ranking = getRanking(game.scores || {}, scoreDir)
-    const gamePlayers = game.players || []
+    const ranking = getRanking(game.scores || {}, scoreDir) || []
+    const gamePlayers = Array.isArray(game.players) ? game.players.filter(Boolean) : []
 
     // Identifier le gagnant et le dernier
     let winnerId = game.winner || null
@@ -139,14 +146,16 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
     const lastRankEntry = ranking.length > 0 ? ranking[ranking.length - 1] : null
 
     gamePlayers.forEach(player => {
-      const key = normalizePlayerName(player.name)
+      if (!player) return
+      const pName = typeof player === 'string' ? player : player.name
+      const key = normalizePlayerName(pName)
       if (!key) return
 
       let stat = playerStatsMap.get(key)
       if (!stat) {
         stat = {
-          id: player.id,
-          name: player.name,
+          id: player.id || key,
+          name: pName,
           color: player.color,
           avatar: player.avatar,
           registered: false,
@@ -167,26 +176,27 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         if (!stat.color && player.color) stat.color = player.color
       }
 
+      const gType = game.type || 'universel'
       stat.totalGames += 1
 
-      if (!stat.gameBreakdown[game.type]) {
-        stat.gameBreakdown[game.type] = { played: 0, wins: 0 }
+      if (!stat.gameBreakdown[gType]) {
+        stat.gameBreakdown[gType] = { played: 0, wins: 0 }
       }
-      stat.gameBreakdown[game.type].played += 1
+      stat.gameBreakdown[gType].played += 1
 
       if (isFinished) {
         stat.finishedGames += 1
 
-        const rankEntry = ranking.find(r => r.id === player.id)
+        const rankEntry = ranking.find(r => r.id === (player.id || key) || r.id === pName)
         const rank = rankEntry ? rankEntry.rank : ranking.length
 
-        const isWinner = player.id === winnerId || rank === 1
+        const isWinner = player.id === winnerId || pName === winnerId || rank === 1
         const isPodium = rank <= 3 && ranking.length >= 2
-        const isDourakLoser = game.type === GAMES.DOURAK && rankEntry && rankEntry.id === lastRankEntry?.id
+        const isDourakLoser = gType === GAMES.DOURAK && rankEntry && rankEntry.id === lastRankEntry?.id
 
         if (isWinner) {
           stat.wins += 1
-          stat.gameBreakdown[game.type].wins += 1
+          stat.gameBreakdown[gType].wins += 1
         }
         if (isPodium) {
           stat.podiums += 1
@@ -197,10 +207,14 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
 
         // Adversaires rencontrés
         gamePlayers.forEach(opp => {
-          if (opp.id === player.id || normalizePlayerName(opp.name) === key) return
-          const oppKey = normalizePlayerName(opp.name)
+          if (!opp) return
+          const oppName = typeof opp === 'string' ? opp : opp.name
+          const oppId = typeof opp === 'object' ? opp.id : null
+          if ((oppId && oppId === player.id) || normalizePlayerName(oppName) === key) return
+          const oppKey = normalizePlayerName(oppName)
+          if (!oppKey) return
           if (!stat.opponents[oppKey]) {
-            stat.opponents[oppKey] = { name: opp.name, count: 0, winsAgainst: 0 }
+            stat.opponents[oppKey] = { name: oppName, count: 0, winsAgainst: 0 }
           }
           stat.opponents[oppKey].count += 1
           if (isWinner) {
@@ -211,8 +225,8 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         // Historique récent
         stat.recentHistory.push({
           gameId: game.id,
-          gameType: game.type,
-          gameName: GAME_META[game.type]?.name || game.type,
+          gameType: gType,
+          gameName: GAME_META[gType]?.name || gType,
           rank,
           totalPlayers: ranking.length,
           isWinner,

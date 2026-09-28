@@ -27,16 +27,28 @@ export class ErrorBoundary extends Component {
           <p className="text-xs text-stone-500 dark:text-slate-400 max-w-xs mb-5">
             L'ardoise a rencontré une anomalie d'affichage. Vos données enregistrées sont en sécurité.
           </p>
-          <button
-            type="button"
-            onClick={() => {
-              this.setState({ hasError: false })
-              window.location.reload()
-            }}
-            className="px-5 py-2.5 rounded-xl bg-[#c83b3b] text-white font-bold text-xs shadow-md hover:bg-[#b03030] transition-colors"
-          >
-            Recharger l'application
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                this.setState({ hasError: false })
+                window.location.reload()
+              }}
+              className="px-5 py-2.5 rounded-xl bg-[#c83b3b] text-white font-bold text-xs shadow-md hover:bg-[#b03030] transition-colors"
+            >
+              Recharger l'application
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                this.setState({ hasError: false })
+                window.location.href = '/'
+              }}
+              className="px-4 py-2.5 rounded-xl border border-stone-300 dark:border-slate-700 font-semibold text-xs text-stone-700 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              Retour à l'accueil
+            </button>
+          </div>
         </div>
       )
     }

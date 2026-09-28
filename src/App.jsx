@@ -13,12 +13,19 @@ export default function App() {
   return (
     <>
       <PullToRefreshIndicator />
-      {screen === 'home' && <HomeScreen />}
-      {screen === 'game' && <GameScreen />}
-      {screen === 'victory' && <VictoryScreen />}
-      {screen === 'history' && <HistoryScreen />}
-      {screen === 'stats' && <StatsScreen />}
-      {screen === 'players' && <PlayersScreen />}
+      {screen === 'game' ? (
+        <GameScreen />
+      ) : screen === 'victory' ? (
+        <VictoryScreen />
+      ) : screen === 'history' ? (
+        <HistoryScreen />
+      ) : screen === 'stats' ? (
+        <StatsScreen />
+      ) : screen === 'players' ? (
+        <PlayersScreen />
+      ) : (
+        <HomeScreen />
+      )}
     </>
   )
 }

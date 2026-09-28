@@ -14,14 +14,16 @@ export const savePlayers = (players) =>
 
 export const loadPlayers = () => {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.PLAYERS)) || []
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEYS.PLAYERS))
+    return Array.isArray(raw) ? raw.filter(p => p && typeof p === 'object' && p.name) : []
   } catch { return [] }
 }
 
 // --- Parties ---
 export const saveGame = (game) => {
+  if (!game || !game.id) return
   const games = loadGames()
-  const idx = games.findIndex(g => g.id === game.id)
+  const idx = games.findIndex(g => g && g.id === game.id)
   if (idx >= 0) games[idx] = game
   else games.unshift(game)
   localStorage.setItem(STORAGE_KEYS.GAMES, JSON.stringify(games))
@@ -29,12 +31,13 @@ export const saveGame = (game) => {
 
 export const loadGames = () => {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.GAMES)) || []
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEYS.GAMES))
+    return Array.isArray(raw) ? raw.filter(g => g && typeof g === 'object' && g.id) : []
   } catch { return [] }
 }
 
 export const deleteGame = (id) => {
-  const games = loadGames().filter(g => g.id !== id)
+  const games = loadGames().filter(g => g && g.id !== id)
   localStorage.setItem(STORAGE_KEYS.GAMES, JSON.stringify(games))
 }
 
@@ -44,7 +47,8 @@ export const saveCustomPresets = (presets) =>
 
 export const loadCustomPresets = () => {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_PRESETS)) || []
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_PRESETS))
+    return Array.isArray(raw) ? raw.filter(p => p && typeof p === 'object' && p.id) : []
   } catch { return [] }
 }
 
