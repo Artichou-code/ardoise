@@ -68,7 +68,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
       title={game.name}
       subtitle={subtitle}
     >
-      <div className="px-4 py-3 space-y-4 max-h-[75vh] overflow-y-auto scrollbar-hide">
+      <div className="px-3 sm:px-4 py-3 space-y-4 max-h-[75vh] overflow-y-auto scrollbar-hide">
         {/* Statut & Vainqueur */}
         <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/80">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -182,12 +182,12 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="sticky top-0 z-20 shadow-xs">
                   <tr className="bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700 text-[10px] font-bold text-stone-700 dark:text-slate-200">
-                    <th className="py-1.5 px-2 sticky left-0 top-0 z-30 bg-stone-100 dark:bg-slate-800 w-12 border-r border-stone-200/80 dark:border-slate-700">
-                      Manche
+                    <th className="py-1.5 px-1.5 sticky left-0 top-0 z-30 bg-stone-100 dark:bg-slate-800 w-9 text-center border-r border-stone-200/80 dark:border-slate-700">
+                      M.
                     </th>
                     {game.players.map(p => (
-                      <th key={p.id} className="py-1.5 px-2 text-center min-w-[72px] sticky top-0 bg-stone-100 dark:bg-slate-800 z-20">
-                        <span className="truncate max-w-[68px] font-bold block">{p.name}</span>
+                      <th key={p.id} className="py-1.5 px-0.5 text-center min-w-[50px] sm:min-w-[64px] sticky top-0 bg-stone-100 dark:bg-slate-800 z-20">
+                        <span className="truncate max-w-[48px] sm:max-w-[60px] font-bold block mx-auto text-[11px]">{p.name}</span>
                       </th>
                     ))}
                   </tr>
@@ -200,7 +200,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                         key={rIdx}
                         className="hover:bg-stone-50/80 dark:hover:bg-slate-800/40 transition-colors"
                       >
-                        <td className="py-1 px-2 font-bold text-stone-400 dark:text-slate-500 sticky left-0 bg-white dark:bg-slate-900 z-10 border-r border-stone-100 dark:border-slate-800/60 text-[11px]">
+                        <td className="py-1 px-1.5 font-bold text-stone-400 dark:text-slate-500 sticky left-0 bg-white dark:bg-slate-900 z-10 border-r border-stone-100 dark:border-slate-800/60 text-[10px] text-center">
                           M.{rIdx + 1}
                         </td>
                         {game.players.map(p => {
@@ -210,9 +210,9 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                           const isRoundLoser = round.loserId === p.id
 
                           return (
-                            <td key={p.id} className="py-1 px-1.5 text-center tabular-nums">
+                            <td key={p.id} className="py-1 px-0.5 text-center tabular-nums">
                               <div className="flex flex-col items-center justify-center leading-tight">
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-0.5">
                                   <span className={`font-bold text-xs ${
                                     isRoundLoser
                                       ? 'text-[#c83b3b]'
@@ -224,20 +224,20 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                                   </span>
 
                                   {cumul != null && (
-                                    <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
+                                    <span className="text-[9px] text-stone-400 dark:text-slate-500 font-medium">
                                       ({cumul})
                                     </span>
                                   )}
                                 </div>
 
                                 {isRoundLoser && (
-                                  <span className="text-[8px] font-bold text-[#c83b3b] bg-[#c83b3b]/10 px-1 py-0.2 rounded mt-0.5 uppercase tracking-wider">
+                                  <span className="text-[7.5px] font-bold text-[#c83b3b] bg-[#c83b3b]/10 px-1 py-0.2 rounded mt-0.5 uppercase tracking-tighter">
                                     Dourak
                                   </span>
                                 )}
                                 {rep && (
                                   <span
-                                    className="text-[8px] font-bold text-amber-700 bg-amber-500/15 dark:text-amber-300 px-1 py-0.2 rounded mt-0.5"
+                                    className="text-[7.5px] font-bold text-amber-700 bg-amber-500/15 dark:text-amber-300 px-1 py-0.2 rounded mt-0.5 tracking-tighter"
                                     title={`Sursis : ${rep.original} → ${rep.reduced}`}
                                   >
                                     sursis ({rep.reduced})
@@ -254,15 +254,15 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                 {/* Total final sticky en bas */}
                 <tfoot className="sticky bottom-0 z-20 shadow-xs">
                   <tr className="bg-stone-100 dark:bg-slate-800 border-t-2 border-stone-300 dark:border-slate-700 font-bold text-xs">
-                    <td className="py-1.5 px-2 font-black text-stone-900 dark:text-slate-100 sticky bottom-0 left-0 z-30 bg-stone-100 dark:bg-slate-800 border-r border-stone-200 dark:border-slate-700">
-                      Total
+                    <td className="py-1 px-1.5 font-black text-stone-900 dark:text-slate-100 sticky bottom-0 left-0 z-30 bg-stone-100 dark:bg-slate-800 border-r border-stone-200 dark:border-slate-700 text-[10px] text-center uppercase">
+                      Tot.
                     </td>
                     {game.players.map(p => {
                       const finalScore = game.scores[p.id] || 0
                       const isWin = p.id === winner?.id
                       return (
-                        <td key={p.id} className="py-1.5 px-1.5 text-center tabular-nums sticky bottom-0 bg-stone-100 dark:bg-slate-800 z-20">
-                          <div className="flex items-center justify-center gap-1 leading-tight">
+                        <td key={p.id} className="py-1 px-0.5 text-center tabular-nums sticky bottom-0 bg-stone-100 dark:bg-slate-800 z-20">
+                          <div className="flex items-center justify-center gap-0.5 leading-tight">
                             <span className={`text-xs font-black ${
                               isWin
                                 ? 'text-emerald-700 dark:text-emerald-400'
@@ -271,7 +271,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                               {finalScore}
                             </span>
                             {isWin && (
-                              <span className="text-[8px] font-bold uppercase text-emerald-600 dark:text-emerald-400 px-1 py-0.2 rounded bg-emerald-500/15">
+                              <span className="text-[7.5px] font-bold uppercase text-emerald-600 dark:text-emerald-400 px-0.5 py-0.2 rounded bg-emerald-500/15">
                                 Gagnant
                               </span>
                             )}
