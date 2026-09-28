@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { ArrowLeft, Trash2, Play, History } from 'lucide-react'
+import { ArrowLeft, Trash2, Play, History, FileText, ChevronRight } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { Avatar } from './ui/Avatar'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { ConfirmDialog } from './ui/Dialog'
+import { GameDetailSheet } from './GameDetailSheet'
 import { getRanking, formatDate, formatDuration } from '../utils/gameUtils'
 
 export function HistoryScreen() {
-  const { games, setScreen, removeGame, resumeGame } = useGame()
+  const { games, setScreen, removeGame, resumeGame, createGame } = useGame()
   const [confirmDelete, setConfirmDelete] = useState(null)
+  const [detailGame, setDetailGame] = useState(null)
 
   const sorted = [...games].sort((a, b) => (b.updatedAt || b.startedAt) - (a.updatedAt || a.startedAt))
 
@@ -56,27 +58,38 @@ export function HistoryScreen() {
               return (
                 <div
                   key={game.id}
-                  className="school-card rounded-xl overflow-hidden"
+                  onClick={() => setDetailGame(game)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && setDetailGame(game)}
+                  className="school-card rounded-xl overflow-hidden cursor-pointer hover:border-[#c83b3b]/60 transition-all active:scale-[0.99] shadow-2xs group"
                 >
                   {/* Header */}
                   <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-stone-100 dark:border-slate-800">
                     <div className="min-w-0">
-                      <p className="font-serif-title font-bold text-base">
-                        {game.name}
-                      </p>
-                      <p className="text-[11px] text-stone-500 dark:text-slate-400">
+                      <div className="flex items-center gap-2">
+                        <p className="font-serif-title font-bold text-base truncate">
+                          {game.name}
+                        </p>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          game.status === 'active'
+                            ? 'bg-[#c83b3b]/15 text-[#c83b3b]'
+                            : 'bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-400'
+                        }`}>
+                          {game.status === 'active' ? 'En cours' : 'Terminée'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5">
                         {formatDate(game.startedAt)}
                         {duration ? ` · ${duration}` : ''}
                         {` · ${game.rounds.length} manche${game.rounds.length > 1 ? 's' : ''}`}
                       </p>
                     </div>
-                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg ${
-                      game.status === 'active'
-                        ? 'bg-[#c83b3b]/15 text-[#c83b3b]'
-                        : 'bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-400'
-                    }`}>
-                      {game.status === 'active' ? 'En cours' : 'Terminée'}
-                    </span>
+
+                    <div className="flex items-center gap-1 text-xs font-semibold text-stone-400 group-hover:text-[#c83b3b] transition-colors shrink-0">
+                      <span>Détails</span>
+                      <ChevronRight size={14} />
+                    </div>
                   </div>
 
                   {/* Scores */}
@@ -110,15 +123,31 @@ export function HistoryScreen() {
                   <div className="flex border-t border-stone-100 dark:border-slate-800">
                     <button
                       type="button"
-                      onClick={() => setConfirmDelete(game.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setConfirmDelete(game.id)
+                      }}
                       className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold text-stone-500 dark:text-slate-400 hover:text-[#c83b3b] hover:bg-stone-50 dark:hover:bg-slate-800/50 transition-colors"
                     >
                       <Trash2 size={13} /> Supprimer
                     </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDetailGame(game)
+                      }}
+                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-bold border-l border-stone-100 dark:border-slate-800 text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] hover:bg-stone-50 dark:hover:bg-slate-800/50 transition-colors"
+                    >
+                      <FileText size={13} className="text-[#c83b3b]" /> Déroulement
+                    </button>
                     {game.status === 'active' && (
                       <button
                         type="button"
-                        onClick={() => resumeGame(game.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          resumeGame(game.id)
+                        }}
                         className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-bold border-l border-stone-100 dark:border-slate-800 text-[#c83b3b] hover:bg-[#c83b3b]/5 transition-colors"
                       >
                         <Play size={13} /> Reprendre
@@ -131,6 +160,21 @@ export function HistoryScreen() {
           </div>
         )}
       </div>
+
+      {/* Feuille de détails et déroulement complet */}
+      <GameDetailSheet
+        game={detailGame}
+        open={!!detailGame}
+        onClose={() => setDetailGame(null)}
+        onResume={(id) => {
+          setDetailGame(null)
+          resumeGame(id)
+        }}
+        onRematch={(g) => {
+          setDetailGame(null)
+          createGame(g.type, g.players, g.config)
+        }}
+      />
 
       <ConfirmDialog
         open={!!confirmDelete}

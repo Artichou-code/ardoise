@@ -1,0 +1,322 @@
+import { useMemo } from 'react'
+import { Play, RotateCcw, FileText } from 'lucide-react'
+import { BottomSheet } from './ui/BottomSheet'
+import { Avatar } from './ui/Avatar'
+import { GAME_META, GAMES } from '../constants/games'
+import { getRanking, formatDate, formatDuration } from '../utils/gameUtils'
+
+/**
+ * Feuille détaillée affichant le déroulement complet d'une partie :
+ * - Podium & classement final
+ * - Relevé de compteurs manche par manche style carnet de scores
+ * - Actions (Revanche ou Reprendre)
+ */
+export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
+  if (!game) return null
+
+  const meta = GAME_META[game.type]
+  const isDourak = game.type === GAMES.DOURAK
+  const isDourakCards = isDourak && game.config?.mode === 'cards'
+  const scoreUnit = isDourak ? (isDourakCards ? 'cartes' : 'déf.') : 'pts'
+
+  const scoreDir =
+    game.config?.scoreDir === 'low' ||
+    game.config?.scoreDir === 'low_limit' ||
+    meta?.scoreDir === 'low'
+      ? 'low'
+      : 'high'
+
+  const ranking = getRanking(game.scores || {}, scoreDir)
+  const winner =
+    game.players.find(p => p.id === game.winner) ||
+    game.players.find(p => p.id === ranking[0]?.id)
+
+  const grandDourakEntry = ranking[ranking.length - 1]
+  const grandDourak = isDourak
+    ? game.players.find(p => p.id === grandDourakEntry?.id)
+    : null
+
+  const duration = game.finishedAt
+    ? formatDuration(game.finishedAt - game.startedAt)
+    : null
+
+  // Calcul des scores cumulés manche par manche de manière sûre
+  const runningTotals = useMemo(() => {
+    if (!game?.rounds) return []
+    let cumulative = Object.fromEntries(game.players.map(p => [p.id, 0]))
+    return game.rounds.map((round) => {
+      if (round.scores) {
+        cumulative = { ...round.scores }
+      } else {
+        const next = { ...cumulative }
+        game.players.forEach(p => {
+          const d = round.delta?.[p.id] || 0
+          next[p.id] = (next[p.id] || 0) + d
+        })
+        cumulative = next
+      }
+      return { ...cumulative }
+    })
+  }, [game])
+
+  const subtitle = `${formatDate(game.startedAt)}${duration ? ` · ${duration}` : ''} · ${game.rounds.length} manche${game.rounds.length > 1 ? 's' : ''}`
+
+  return (
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      title={game.name}
+      subtitle={subtitle}
+    >
+      <div className="px-4 py-3 space-y-4 max-h-[75vh] overflow-y-auto scrollbar-hide">
+        {/* Statut & Vainqueur */}
+        <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/80">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {winner && <Avatar player={winner} size="sm" leader={game.status === 'finished'} />}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                  game.status === 'finished'
+                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30'
+                    : 'bg-[#c83b3b]/15 text-[#c83b3b] border border-[#c83b3b]/30'
+                }`}>
+                  {game.status === 'finished' ? 'Partie terminée' : 'En cours'}
+                </span>
+              </div>
+              <p className="font-serif-title font-bold text-sm truncate mt-1">
+                {game.status === 'finished' && winner ? (
+                  isDourak ? `${winner.name} invaincu` : `${winner.name} l'emporte`
+                ) : (
+                  `Leader actuel : ${winner?.name || '—'}`
+                )}
+              </p>
+            </div>
+          </div>
+          <div className="text-right shrink-0">
+            <span className="text-xs font-bold text-stone-500 dark:text-slate-400 block">
+              Score vainqueur
+            </span>
+            <span className="font-black text-base text-[#c83b3b] dark:text-red-400 tabular-nums">
+              {winner ? game.scores[winner.id] || 0 : 0} {scoreUnit}
+            </span>
+          </div>
+        </div>
+
+        {/* Classement des joueurs */}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+            Classement des joueurs
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {ranking.map(({ id, score, rank }) => {
+              const player = game.players.find(p => p.id === id)
+              if (!player) return null
+              const isFirst = rank === 1
+              const isLast = isDourak && rank === ranking.length
+              return (
+                <div
+                  key={id}
+                  className={`p-2.5 rounded-xl border flex flex-col items-center text-center transition-all ${
+                    isFirst
+                      ? 'bg-emerald-500/10 border-emerald-500/30 dark:bg-emerald-950/20'
+                      : isLast
+                      ? 'bg-[#c83b3b]/10 border-[#c83b3b]/30 dark:bg-rose-950/20'
+                      : 'school-card border-stone-200 dark:border-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full mb-1">
+                    <span className={`text-[10px] font-extrabold uppercase ${
+                      isFirst
+                        ? 'text-emerald-700 dark:text-emerald-400'
+                        : isLast
+                        ? 'text-[#c83b3b]'
+                        : 'text-stone-400 dark:text-slate-500'
+                    }`}>
+                      {rank === 1 ? '1er' : `${rank}e`}
+                    </span>
+                    {isLast && (
+                      <span className="text-[9px] font-bold text-[#c83b3b] uppercase">
+                        Dourak
+                      </span>
+                    )}
+                  </div>
+                  <Avatar player={player} size="xs" leader={isFirst} />
+                  <span className="text-xs font-semibold truncate w-full mt-1">
+                    {player.name}
+                  </span>
+                  <span className={`font-black text-sm tabular-nums mt-0.5 ${
+                    isFirst ? 'text-emerald-700 dark:text-emerald-400' : isLast ? 'text-[#c83b3b]' : ''
+                  }`}>
+                    {score} {scoreUnit}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Déroulement complet manche par manche */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 flex items-center gap-1.5">
+              <FileText size={13} className="text-[#c83b3b]" /> Déroulement des manches ({game.rounds.length})
+            </p>
+          </div>
+
+          {game.rounds.length === 0 ? (
+            <div className="p-4 rounded-xl text-center text-xs text-stone-400 dark:text-slate-500 border border-dashed border-stone-200 dark:border-slate-800">
+              Aucune manche enregistrée pour le moment.
+            </div>
+          ) : (
+            <div className="border border-stone-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-2xs">
+              <div className="overflow-x-auto scrollbar-hide">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-stone-100/80 dark:bg-slate-800/80 border-b border-stone-200 dark:border-slate-800 text-[11px] font-bold text-stone-600 dark:text-slate-300">
+                      <th className="py-2.5 px-3 sticky left-0 bg-stone-100 dark:bg-slate-800 z-10 w-16">
+                        Manche
+                      </th>
+                      {game.players.map(p => (
+                        <th key={p.id} className="py-2.5 px-3 text-center min-w-[90px]">
+                          <div className="flex flex-col items-center gap-0.5">
+                            <span className="truncate max-w-[80px]">{p.name}</span>
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 dark:divide-slate-800/60 font-sans">
+                    {game.rounds.map((round, rIdx) => {
+                      const cumuls = runningTotals[rIdx] || {}
+                      return (
+                        <tr
+                          key={rIdx}
+                          className="hover:bg-stone-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                        >
+                          <td className="py-2.5 px-3 font-bold text-stone-400 dark:text-slate-500 sticky left-0 bg-white dark:bg-slate-900 z-10 border-r border-stone-100 dark:border-slate-800/60">
+                            M.{rIdx + 1}
+                          </td>
+                          {game.players.map(p => {
+                            const delta = round.delta?.[p.id]
+                            const cumul = cumuls[p.id]
+                            const rep = round.reprieves?.find(r => r.playerId === p.id)
+                            const isRoundLoser = round.loserId === p.id
+
+                            return (
+                              <td key={p.id} className="py-2.5 px-3 text-center tabular-nums">
+                                <div className="flex flex-col items-center">
+                                  <span className={`font-bold text-xs ${
+                                    isRoundLoser
+                                      ? 'text-[#c83b3b]'
+                                      : delta != null && delta < 0
+                                      ? 'text-emerald-600 dark:text-emerald-400'
+                                      : 'text-stone-800 dark:text-slate-200'
+                                  }`}>
+                                    {delta != null ? (delta > 0 ? `+${delta}` : delta) : '—'}
+                                  </span>
+
+                                  {/* Score cumulé sous le delta */}
+                                  {cumul != null && (
+                                    <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
+                                      tot. {cumul}
+                                    </span>
+                                  )}
+
+                                  {/* Badges spécifiques de faits de jeu */}
+                                  {isRoundLoser && (
+                                    <span className="text-[9px] font-bold text-[#c83b3b] bg-[#c83b3b]/10 px-1 rounded mt-0.5">
+                                      Dourak
+                                    </span>
+                                  )}
+                                  {rep && (
+                                    <span
+                                      className="text-[9px] font-bold text-amber-700 bg-amber-500/15 dark:text-amber-300 px-1 rounded mt-0.5"
+                                      title={`Sursis : ${rep.original} → ${rep.reduced}`}
+                                    >
+                                      sursis ({rep.reduced})
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                            )
+                          })}
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                  {/* Total final */}
+                  <tfoot>
+                    <tr className="bg-stone-100/90 dark:bg-slate-800/90 border-t-2 border-stone-300 dark:border-slate-700 font-bold text-xs">
+                      <td className="py-3 px-3 font-black text-stone-900 dark:text-slate-100 sticky left-0 bg-stone-100 dark:bg-slate-800 z-10 border-r border-stone-200 dark:border-slate-700">
+                        Total
+                      </td>
+                      {game.players.map(p => {
+                        const finalScore = game.scores[p.id] || 0
+                        const isWin = p.id === winner?.id
+                        return (
+                          <td key={p.id} className="py-3 px-3 text-center tabular-nums">
+                            <div className="flex flex-col items-center">
+                              <span className={`text-sm font-black ${
+                                isWin
+                                  ? 'text-emerald-700 dark:text-emerald-400'
+                                  : 'text-stone-900 dark:text-slate-100'
+                              }`}>
+                                {finalScore}
+                              </span>
+                              {isWin && (
+                                <span className="text-[9px] font-bold uppercase text-emerald-600 dark:text-emerald-400">
+                                  Gagnant
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Actions en bas de fiche */}
+        <div className="flex gap-2.5 pt-2">
+          {game.status === 'active' && onResume && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose()
+                onResume(game.id)
+              }}
+              className="flex-1 py-3 px-4 rounded-xl font-bold text-xs btn-margin-red flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <Play size={14} fill="currentColor" /> Reprendre la partie
+            </button>
+          )}
+
+          {game.status === 'finished' && onRematch && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose()
+                onRematch(game)
+              }}
+              className="flex-1 py-3 px-4 rounded-xl font-bold text-xs btn-margin-red flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <RotateCcw size={14} /> Revanche avec ces joueurs
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 py-3 px-4 rounded-xl border border-stone-300 dark:border-slate-700 text-stone-700 dark:text-slate-300 font-bold text-xs hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            Fermer
+          </button>
+        </div>
+      </div>
+    </BottomSheet>
+  )
+}

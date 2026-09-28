@@ -6,14 +6,16 @@ import { ThemeToggle } from './ui/ThemeToggle'
 import { AppLogo } from './ui/AppLogo'
 import { GameSetupSheet } from './GameSetupSheet'
 import { RulesSheet } from './RulesSheet'
+import { GameDetailSheet } from './GameDetailSheet'
 import { formatDate, formatGameStart } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
 
 export function HomeScreen() {
-  const { games, setScreen, resumeGame, customPresets, deletePreset } = useGame()
+  const { games, setScreen, resumeGame, customPresets, deletePreset, createGame } = useGame()
   const [setupGame, setSetupGame] = useState(null)
   const [setupPreset, setSetupPreset] = useState(null)
   const [rulesGame, setRulesGame] = useState(null)
+  const [detailGame, setDetailGame] = useState(null)
 
   const activeGames = games.filter(g => g.status === 'active')
   const finishedGames = games.filter(g => g.status === 'finished').slice(0, 3)
@@ -311,19 +313,28 @@ export function HomeScreen() {
                 return (
                   <div
                     key={game.id}
-                    className="flex items-center gap-3 p-3 rounded-xl school-card"
+                    onClick={() => setDetailGame(game)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && setDetailGame(game)}
+                    className="flex items-center gap-3 p-3 rounded-xl school-card cursor-pointer hover:border-[#c83b3b]/60 transition-all active:scale-[0.99] group shadow-2xs"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-serif-title font-bold text-sm">
-                        {game.name}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-serif-title font-bold text-sm truncate">
+                          {game.name}
+                        </p>
+                        <span className="text-[10px] font-semibold text-stone-400 group-hover:text-[#c83b3b] transition-colors">
+                          · {game.rounds.length} m.
+                        </span>
+                      </div>
                       <p className="text-[11px] text-stone-500 dark:text-slate-400">
                         {formatDate(game.finishedAt || game.startedAt)}
                       </p>
                     </div>
                     {winner && (
                       <div className="flex items-center gap-2">
-                        <Avatar player={winner} size="xs" />
+                        <Avatar player={winner} size="xs" leader />
                         <span className="text-xs font-bold">
                           {winner.name}
                         </span>
@@ -336,6 +347,21 @@ export function HomeScreen() {
           </section>
         )}
       </div>
+
+      {/* Feuille de détails et déroulement complet */}
+      <GameDetailSheet
+        game={detailGame}
+        open={!!detailGame}
+        onClose={() => setDetailGame(null)}
+        onResume={(id) => {
+          setDetailGame(null)
+          resumeGame(id)
+        }}
+        onRematch={(g) => {
+          setDetailGame(null)
+          createGame(g.type, g.players, g.config)
+        }}
+      />
 
       {/* Modale de préparation de partie */}
       <GameSetupSheet
