@@ -76,13 +76,13 @@ export function BottomSheet({
       <div
         className="fixed inset-0 z-50 flex items-start justify-center p-3.5 bg-black/60 backdrop-blur-sm overflow-y-auto"
         style={{
-          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 2.75rem), 3.5rem)',
+          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 1.5rem), 2.5rem)',
         }}
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <div
           ref={sheetRef}
-          className={`relative w-full max-w-lg school-card rounded-2xl shadow-2xl border transition-all duration-150 max-h-[calc(100dvh-5rem)] flex flex-col mb-auto ${className}`}
+          className={`relative w-full max-w-lg school-card rounded-2xl shadow-2xl border transition-all duration-150 max-h-[calc(100dvh-4rem)] flex flex-col mb-auto ${className}`}
         >
           {title && (
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-100 dark:border-slate-800/80 flex-shrink-0">
