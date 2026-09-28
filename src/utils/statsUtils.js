@@ -289,12 +289,48 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
 
   // Leaders thématiques par jeu
   const gameWinners = {
-    [GAMES.PRESIDENT]: { player: null, wins: 0, title: 'Président éternel', desc: 'Expert du Trou du cul' },
-    [GAMES.CARACOLE]: { player: null, wins: 0, title: 'As du Sursis', desc: 'Maître de la Caracole' },
-    [GAMES.SKYJO]: { player: null, wins: 0, title: 'Zéro faute', desc: 'Score minimal au Skyjo' },
-    [GAMES.BELOTE]: { player: null, wins: 0, title: 'Grand Preneur', desc: 'Champion de Belote' },
-    [GAMES.TAROT]: { player: null, wins: 0, title: 'Maître du Bout', desc: 'As du Tarot' },
-    [GAMES.SIX_QUI_PREND]: { player: null, wins: 0, title: 'Dompteur de taureaux', desc: 'Évite les bœufs' },
+    [GAMES.PRESIDENT]: {
+      player: null,
+      wins: 0,
+      title: 'Président éternel',
+      desc: 'Expert du Trou du cul',
+      explanation: 'Attribué au joueur ayant terminé le plus souvent au rang suprême de Président au Trou du cul.',
+    },
+    [GAMES.CARACOLE]: {
+      player: null,
+      wins: 0,
+      title: 'As du Sursis',
+      desc: 'Maître de la Caracole',
+      explanation: 'Attribué au joueur qui cumule le plus de victoires avec le score le plus faible à la Caracole.',
+    },
+    [GAMES.SKYJO]: {
+      player: null,
+      wins: 0,
+      title: 'Zéro faute',
+      desc: 'Score minimal au Skyjo',
+      explanation: 'Attribué au joueur ayant dominé la grille de 12 cartes avec le plus de victoires au Skyjo.',
+    },
+    [GAMES.BELOTE]: {
+      player: null,
+      wins: 0,
+      title: 'Grand Preneur',
+      desc: 'Champion de Belote',
+      explanation: 'Attribué au joueur/équipe ayant mené son camp au plus grand nombre de victoires à la Belote / Coinche.',
+    },
+    [GAMES.TAROT]: {
+      player: null,
+      wins: 0,
+      title: 'Maître du Bout',
+      desc: 'As du Tarot',
+      explanation: 'Attribué au joueur ayant réussi le plus grand nombre de victoires en attaque au Tarot.',
+    },
+    [GAMES.SIX_QUI_PREND]: {
+      player: null,
+      wins: 0,
+      title: 'Dompteur de taureaux',
+      desc: 'Évite les bœufs',
+      explanation: 'Attribué au joueur ayant esquivé les pénalités et remporté le plus de victoires à 6 qui prend.',
+    },
   }
 
   playersStats.forEach(p => {
@@ -317,6 +353,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         id: 'invincible',
         title: 'Invincible',
         desc: `${p.finishedGames} victoires d'affilée`,
+        explanation: 'Attribué pour avoir réalisé un sans-faute absolu (100% de victoires sur au moins 3 parties terminées).',
         type: 'gold',
       })
     }
@@ -326,6 +363,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         id: 'strategist',
         title: 'Meilleur stratège',
         desc: `${p.winRate}% de victoires`,
+        explanation: 'Attribué au joueur possédant le plus haut pourcentage de victoires de la table (minimum 2 parties disputées).',
         type: 'gold',
       })
     }
@@ -335,6 +373,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         id: 'dourak',
         title: 'Grand Dourak',
         desc: `${p.dourakLosses} revers`,
+        explanation: "Attribué au joueur ayant terminé le plus souvent dans le rôle de l'idiot (le dernier joueur conservant des cartes en main).",
         type: 'red',
       })
     }
@@ -344,6 +383,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         id: 'active',
         title: 'Fidèle au poste',
         desc: `${p.totalGames} parties jouées`,
+        explanation: 'Attribué au joueur le plus assidu ayant disputé le plus grand nombre de parties sur l’ardoise.',
         type: 'blue',
       })
     }
@@ -353,6 +393,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         id: 'podium',
         title: 'Roi du podium',
         desc: `${p.podiums} podiums`,
+        explanation: 'Attribué au joueur ayant fini le plus de fois dans le Top 3.',
         type: 'emerald',
       })
     }
@@ -364,6 +405,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
           id: `master_${type}`,
           title: info.title,
           desc: `${info.wins} vict. ${GAME_META[type]?.name.split(' (')[0] || ''}`.trim(),
+          explanation: info.explanation,
           type: 'theme',
         })
       }
