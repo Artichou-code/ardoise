@@ -1,0 +1,19 @@
+{
+  "name": "Ardoise",
+  "short_name": "Ardoise",
+  "description": "Compteur de scores pour jeux de cartes et jeux de société",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#fcc817",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/ardoise-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "utilities"]
+}

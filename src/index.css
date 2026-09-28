@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent: #fcc817;
+  --color-accent-hover: #e5b310;
+  --color-accent-text: #18181b;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  body {
+    @apply bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overscroll-behavior: none;
+  }
+
+  * {
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .bg-accent {
+    background-color: #fcc817;
+  }
+  .bg-accent-hover:hover {
+    background-color: #e5b310;
+  }
+  .text-accent {
+    color: #fcc817;
+  }
+  .border-accent {
+    border-color: #fcc817;
+  }
+  .ring-accent {
+    --tw-ring-color: #fcc817;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
