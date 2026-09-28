@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock } from 'lucide-react'
+import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
@@ -333,9 +333,17 @@ export function HomeScreen() {
                       </p>
                     </div>
                     {winner && (
-                      <div className="flex items-center gap-2">
-                        <Avatar player={winner} size="xs" leader />
-                        <span className="text-xs font-bold">
+                      <div className="flex flex-col items-center gap-0.5 shrink-0 min-w-[54px]">
+                        <div className="relative">
+                          <Avatar player={winner} size="xs" leader />
+                          <span
+                            className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-2xs ring-1 ring-white dark:ring-slate-900"
+                            title="Vainqueur"
+                          >
+                            <Trophy size={8} strokeWidth={2.5} />
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate max-w-[64px] text-center leading-tight">
                           {winner.name}
                         </span>
                       </div>
