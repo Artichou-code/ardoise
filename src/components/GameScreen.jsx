@@ -4,7 +4,7 @@ import { useGame } from '../context/GameContext'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { Avatar } from './ui/Avatar'
 import { ConfirmDialog } from './ui/Dialog'
-import { getRanking, getLeader, getLowest } from '../utils/gameUtils'
+import { getRanking } from '../utils/gameUtils'
 import { GAME_META, GAMES } from '../constants/games'
 import { CaracoleEngine } from './engines/CaracoleEngine'
 import { SkyjoEngine } from './engines/SkyjoEngine'
@@ -25,9 +25,10 @@ const ENGINE_MAP = {
 }
 
 export function GameScreen() {
-  const { activeGame, exitGame, undoLastRound, canUndo, finishGame, setScreen } = useGame()
+  const { activeGame, exitGame, undoLastRound, canUndo, finishGame } = useGame()
   const [showHistory, setShowHistory] = useState(false)
   const [showExitConfirm, setShowExitConfirm] = useState(false)
+  const [showFinishConfirm, setShowFinishConfirm] = useState(false)
 
   if (!activeGame) {
     return null
@@ -47,6 +48,7 @@ export function GameScreen() {
         <button
           onClick={() => setShowExitConfirm(true)}
           className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          aria-label="Quitter la partie"
         >
           <ArrowLeft size={20} className="text-zinc-600 dark:text-zinc-400" />
         </button>
@@ -54,7 +56,7 @@ export function GameScreen() {
           <span className="text-xl">{meta?.emoji}</span>
           <span className="font-bold text-zinc-900 dark:text-zinc-100 truncate">{activeGame.name}</span>
           <span className="text-xs text-zinc-400 dark:text-zinc-500 ml-1">
-            Manche {activeGame.rounds.length + 1}
+            M.{activeGame.rounds.length + 1}
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -63,10 +65,19 @@ export function GameScreen() {
               onClick={undoLastRound}
               className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               title="Annuler la dernière manche"
+              aria-label="Annuler la dernière manche"
             >
               <RotateCcw size={18} className="text-zinc-500" />
             </button>
           )}
+          <button
+            onClick={() => setShowFinishConfirm(true)}
+            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            title="Terminer la partie"
+            aria-label="Terminer la partie"
+          >
+            <Trophy size={18} style={{ color: '#fcc817' }} />
+          </button>
           <ThemeToggle />
         </div>
       </header>
@@ -76,7 +87,6 @@ export function GameScreen() {
         <div className={`grid gap-2 ${
           activeGame.players.length <= 2 ? 'grid-cols-2' :
           activeGame.players.length <= 3 ? 'grid-cols-3' :
-          activeGame.players.length <= 4 ? 'grid-cols-4' :
           'grid-cols-4'
         }`}>
           {ranking.map(({ id, score, rank }) => {
@@ -88,8 +98,8 @@ export function GameScreen() {
                 key={id}
                 className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${
                   isLeader
-                    ? 'bg-[#fcc817]/10 dark:bg-[#fcc817]/10'
-                    : 'bg-zinc-50 dark:bg-zinc-900'
+                    ? 'bg-[#fcc817]/15 dark:bg-[#fcc817]/15 border border-[#fcc817]/40'
+                    : 'bg-zinc-50 dark:bg-zinc-900 border border-transparent'
                 }`}
               >
                 <Avatar player={player} size="sm" leader={isLeader} />
@@ -150,8 +160,18 @@ export function GameScreen() {
         onClose={() => setShowExitConfirm(false)}
         onConfirm={exitGame}
         title="Quitter la partie ?"
-        message="La partie en cours sera sauvegardée et tu pourras la reprendre depuis l'accueil."
+        message="La partie en cours est sauvegardée et pourra être reprise depuis l'accueil ou l'historique."
         confirmLabel="Quitter"
+      />
+
+      {/* Confirm finish */}
+      <ConfirmDialog
+        open={showFinishConfirm}
+        onClose={() => setShowFinishConfirm(false)}
+        onConfirm={() => finishGame(leaderId)}
+        title="Terminer la partie ?"
+        message="Clôturer cette partie et afficher le podium final avec le vainqueur ?"
+        confirmLabel="Voir le podium 🏆"
       />
     </div>
   )

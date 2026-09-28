@@ -22,11 +22,11 @@ export const GAME_META = {
   },
   [GAMES.PRESIDENT]: {
     id: GAMES.PRESIDENT,
-    name: 'Président',
-    emoji: '🏆',
+    name: 'Trou du cul (Président)',
+    emoji: '👑',
     description: 'Rangs et rôles par manche',
     minPlayers: 3,
-    maxPlayers: 6,
+    maxPlayers: 8,
     scoreDir: 'high',
   },
   [GAMES.SKYJO]: {
@@ -43,8 +43,8 @@ export const GAME_META = {
     id: GAMES.BELOTE,
     name: 'Belote / Coinche',
     emoji: '♠️',
-    description: '2 équipes, 162 points à répartir',
-    minPlayers: 4,
+    description: '2 équipes (Nous / Eux), 162 pts à répartir',
+    minPlayers: 2,
     maxPlayers: 4,
     scoreDir: 'high',
     teams: true,
@@ -70,9 +70,9 @@ export const GAME_META = {
   },
   [GAMES.UNIVERSEL]: {
     id: GAMES.UNIVERSEL,
-    name: 'Compteur libre',
+    name: 'Compteur Universel',
     emoji: '🎲',
-    description: 'Mode libre configurable',
+    description: 'Partie libre configurable',
     minPlayers: 2,
     maxPlayers: 12,
     scoreDir: 'configurable',
@@ -81,7 +81,7 @@ export const GAME_META = {
 
 export const PRESIDENT_ROLES = [
   { id: 'president', label: 'Président', points: 2, emoji: '👑' },
-  { id: 'vice_president', label: 'Vice-Président', points: 1, emoji: '🥈' },
+  { id: 'vice_president', label: 'Vice-P.', points: 1, emoji: '🥈' },
   { id: 'neutre', label: 'Neutre', points: 0, emoji: '😐' },
   { id: 'vice_trou', label: 'Vice-Trou', points: -1, emoji: '😕' },
   { id: 'trou', label: 'Trou du cul', points: -2, emoji: '💩' },
@@ -101,8 +101,8 @@ export const BELOTE_CONTRACTS = [
   { value: 100, label: '100' }, { value: 110, label: '110' },
   { value: 120, label: '120' }, { value: 130, label: '130' },
   { value: 140, label: '140' }, { value: 150, label: '150' },
-  { value: 160, label: '160' }, { value: 250, label: 'Capot' },
-  { value: 500, label: 'Générale' },
+  { value: 160, label: '160' }, { value: 252, label: 'Capot (252)' },
+  { value: 500, label: 'Générale (500)' },
 ]
 
 export const AVATAR_COLORS = [

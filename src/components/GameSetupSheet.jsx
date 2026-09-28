@@ -1,18 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, X, Check } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
 import { Avatar, AvatarColorPicker, AvatarEmojiPicker } from './ui/Avatar'
-import { Dialog } from './ui/Dialog'
 import { useGame } from '../context/GameContext'
 import { GAME_META, AVATAR_COLORS, AVATAR_EMOJIS } from '../constants/games'
 import { createPlayer } from '../utils/gameUtils'
-import { generateId } from '../store/storage'
 
-function PlayerCreatorSheet({ open, onClose, onAdd, existingNames = [] }) {
+function PlayerCreatorSheet({ open, onClose, onAdd }) {
   const [name, setName] = useState('')
   const [color, setColor] = useState(AVATAR_COLORS[0])
   const [emoji, setEmoji] = useState(AVATAR_EMOJIS[0])
-  const [tab, setTab] = useState('emoji') // emoji | color
+  const [tab, setTab] = useState('emoji')
 
   const handleAdd = () => {
     if (!name.trim()) return
@@ -26,7 +24,6 @@ function PlayerCreatorSheet({ open, onClose, onAdd, existingNames = [] }) {
   return (
     <BottomSheet open={open} onClose={onClose} title="Nouveau joueur">
       <div className="px-4 pb-4 space-y-4">
-        {/* Preview */}
         <div className="flex items-center gap-3">
           <Avatar player={{ name, color, emoji }} size="lg" />
           <input
@@ -40,7 +37,6 @@ function PlayerCreatorSheet({ open, onClose, onAdd, existingNames = [] }) {
             maxLength={20}
           />
         </div>
-        {/* Tabs */}
         <div className="flex gap-2">
           {[['emoji', 'Emoji'], ['color', 'Couleur']].map(([id, lbl]) => (
             <button
@@ -75,11 +71,22 @@ function PlayerCreatorSheet({ open, onClose, onAdd, existingNames = [] }) {
 export function GameSetupSheet({ gameType, onClose }) {
   const { players: savedPlayers, savePlayer, createGame } = useGame()
   const [selectedPlayers, setSelectedPlayers] = useState([])
-  const [config, setConfig] = useState({})
+  const [config, setConfig] = useState({ scoreDir: 'high', limit: 100 })
   const [showCreator, setShowCreator] = useState(false)
 
-  const meta = gameType ? GAME_META[gameType] : null
+  useEffect(() => {
+    if (gameType === 'belote') {
+      setConfig({ limit: 1000 })
+    } else if (gameType === 'caracole') {
+      setConfig({ limit: 100 })
+    } else if (gameType === 'universel') {
+      setConfig({ scoreDir: 'high', limit: 100 })
+    } else {
+      setConfig({})
+    }
+  }, [gameType])
 
+  const meta = gameType ? GAME_META[gameType] : null
   if (!meta) return null
 
   const toggleSavedPlayer = (p) => {
@@ -97,6 +104,13 @@ export function GameSetupSheet({ gameType, onClose }) {
     }
   }
 
+  const handleQuickBeloteTeams = () => {
+    const teamNous = createPlayer('Nous', '#3b82f6', '🤝')
+    const teamEux = createPlayer('Eux', '#ef4444', '👥')
+    createGame(gameType, [teamNous, teamEux], config)
+    onClose()
+  }
+
   const canStart = selectedPlayers.length >= (meta.minPlayers || 2)
 
   const handleStart = () => {
@@ -112,6 +126,16 @@ export function GameSetupSheet({ gameType, onClose }) {
           <p className="text-xs text-zinc-400 dark:text-zinc-500">
             {meta.minPlayers} à {meta.maxPlayers} joueurs
           </p>
+
+          {/* Raccourci 2 équipes pour Belote / Coinche */}
+          {gameType === 'belote' && (
+            <button
+              onClick={handleQuickBeloteTeams}
+              className="w-full py-3 px-4 rounded-xl font-bold text-sm border-2 border-[#fcc817] bg-[#fcc817]/15 text-zinc-900 dark:text-zinc-100 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+            >
+              ⚡ Lancer rapidement (Équipe Nous vs Équipe Eux)
+            </button>
+          )}
 
           {/* Joueurs sélectionnés */}
           {selectedPlayers.length > 0 && (
@@ -163,35 +187,62 @@ export function GameSetupSheet({ gameType, onClose }) {
             </div>
           )}
 
+          {/* Config spécifique Caracole */}
+          {gameType === 'caracole' && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                Palier d'élimination (points)
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {[50, 100, 200].map(val => (
+                  <button
+                    key={val}
+                    onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                    className={`py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                      (config.limit || 100) === val ? 'text-[#18181b]' : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                    }`}
+                    style={(config.limit || 100) === val ? { backgroundColor: '#fcc817' } : {}}
+                  >
+                    {val} pts
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Config spécifique Universel */}
           {gameType === 'universel' && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Mode</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Mode de victoire</p>
               {[
                 { value: 'high', label: '🏅 Le score le plus élevé gagne' },
-                { value: 'low_limit', label: '💀 Premier à X points perd' },
+                { value: 'low_limit', label: '💀 Le premier à X points perd' },
               ].map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => setConfig(c => ({ ...c, scoreDir: opt.value }))}
                   className={`w-full px-4 py-3 rounded-xl text-sm font-medium text-left transition-colors ${
-                    config.scoreDir === opt.value ? 'font-bold' : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                    (config.scoreDir || 'high') === opt.value ? 'font-bold' : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                   }`}
-                  style={config.scoreDir === opt.value ? { backgroundColor: '#fcc817', color: '#18181b' } : {}}
+                  style={(config.scoreDir || 'high') === opt.value ? { backgroundColor: '#fcc817', color: '#18181b' } : {}}
                 >
                   {opt.label}
                 </button>
               ))}
               {config.scoreDir === 'low_limit' && (
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">Seuil :</span>
-                  <input
-                    type="number"
-                    value={config.limit || 100}
-                    onChange={e => setConfig(c => ({ ...c, limit: parseInt(e.target.value) || 100 }))}
-                    className="w-24 px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-center font-bold"
-                  />
-                  <span className="text-sm text-zinc-500">points</span>
+                <div className="grid grid-cols-4 gap-2 pt-1">
+                  {[50, 100, 150, 200].map(val => (
+                    <button
+                      key={val}
+                      onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                      className={`py-2 rounded-xl text-xs font-bold transition-colors ${
+                        (config.limit || 100) === val ? 'text-[#18181b]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                      }`}
+                      style={(config.limit || 100) === val ? { backgroundColor: '#fcc817' } : {}}
+                    >
+                      {val} pts
+                    </button>
+                  ))}
                 </div>
               )}
             </div>

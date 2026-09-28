@@ -4,7 +4,7 @@ import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { Avatar } from '../ui/Avatar'
 import { useGame } from '../../context/GameContext'
-import { computeSkyjoRound, checkSkyjoEnd } from '../../engines/gameEngines'
+import { computeSkyjoRound, checkSkyjoEnd, isSkyjoScoreDoubled } from '../../engines/gameEngines'
 import { Dialog } from '../ui/Dialog'
 
 export function SkyjoEngine({ game, onFinish }) {
@@ -29,7 +29,7 @@ export function SkyjoEngine({ game, onFinish }) {
     const endPlayer = checkSkyjoEnd(newScores)
     if (endPlayer) {
       const winner = Object.entries(newScores).sort((a, b) => a[1] - b[1])[0][0]
-      setAlert({ message: `${game.players.find(p => p.id === endPlayer[0])?.name} a dépassé 100 points ! 🎉`, winnerId: winner })
+      setAlert({ message: `${game.players.find(p => p.id === endPlayer[0])?.name} a atteint ou dépassé 100 points ! 🎉`, winnerId: winner })
     } else {
       setRoundScores(Object.fromEntries(game.players.map(p => [p.id, 0])))
       setCloserId(null)
@@ -37,13 +37,14 @@ export function SkyjoEngine({ game, onFinish }) {
   }
 
   const canSubmit = closerId !== null
+  const closerDoubled = isSkyjoScoreDoubled(roundScores, closerId)
 
   return (
     <div className="space-y-4 pt-2">
       {/* Sélection du fermeur */}
       <div className="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-3">
-          Qui a fermé la manche ?
+          Qui a clôturé la manche ?
         </p>
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
           {game.players.map(p => (
@@ -59,11 +60,11 @@ export function SkyjoEngine({ game, onFinish }) {
             </button>
           ))}
         </div>
-        {closerId && roundScores[closerId] !== Math.min(...Object.values(roundScores)) && (
+        {closerDoubled && (
           <div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900">
             <AlertTriangle size={14} className="text-orange-500 flex-shrink-0" />
             <p className="text-xs text-orange-700 dark:text-orange-300">
-              Score du fermeur sera doublé (il n'a pas le plus bas) !
+              Score du fermeur doublé (il n'a pas le score strictement le plus bas) !
             </p>
           </div>
         )}
@@ -83,8 +84,8 @@ export function SkyjoEngine({ game, onFinish }) {
             >
               <Avatar player={p} size="xs" />
               <span className="flex-1 font-semibold text-sm text-left text-zinc-900 dark:text-zinc-100">{p.name}</span>
-              {closerId === p.id && roundScores[p.id] !== Math.min(...Object.values(roundScores)) && (
-                <span className="text-xs text-orange-500 font-bold">×2</span>
+              {closerId === p.id && closerDoubled && (
+                <span className="text-xs text-orange-500 font-bold">×2 ({roundScores[p.id] * 2})</span>
               )}
               <span className="text-lg font-black tabular-nums text-zinc-900 dark:text-zinc-100">
                 {roundScores[p.id] >= 0 ? '+' : ''}{roundScores[p.id]}

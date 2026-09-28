@@ -3,15 +3,22 @@
 import { TAROT_BOUTS_THRESHOLDS, TAROT_CONTRACTS, PRESIDENT_ROLES } from '../constants/games'
 
 // --- SKYJO ---
-export function computeSkyjoRound(scores, roundScores, closerId) {
-  // Si le fermer n'a pas le score le plus bas → son score est doublé
-  const minScore = Math.min(...Object.values(roundScores))
+export function isSkyjoScoreDoubled(roundScores, closerId) {
+  if (!closerId || roundScores[closerId] == null) return false
   const closerScore = roundScores[closerId]
+  if (closerScore <= 0) return false
+  const otherScores = Object.entries(roundScores)
+    .filter(([id]) => id !== closerId)
+    .map(([, s]) => s)
+  // Doublé s'il n'a pas le score strictement le plus bas
+  return otherScores.some(s => s <= closerScore)
+}
+
+export function computeSkyjoRound(scores, roundScores, closerId) {
   const adjusted = { ...roundScores }
-  if (closerScore > minScore) {
-    adjusted[closerId] = closerScore * 2
+  if (isSkyjoScoreDoubled(roundScores, closerId)) {
+    adjusted[closerId] = roundScores[closerId] * 2
   }
-  // Accumuler
   const newScores = {}
   for (const id in scores) {
     newScores[id] = (scores[id] || 0) + (adjusted[id] || 0)
@@ -31,14 +38,14 @@ export function computeTarotScore({ players, attackerId, partnerId, contract, bo
   const base = (25 + Math.abs(diff)) * meta.multiplier
   const won = diff >= 0
 
-  // Répartition selon nombre de joueurs
   let scores = {}
-  if (playerCount === 5 && partnerId) {
+  if (playerCount === 5 && partnerId && partnerId !== attackerId) {
     const attackPoints = won ? base * 2 : -base * 2
+    const partnerPoints = won ? base : -base
     const defensePoints = won ? -base : base
     players.forEach(p => {
       if (p.id === attackerId) scores[p.id] = attackPoints
-      else if (p.id === partnerId) scores[p.id] = attackPoints / 2
+      else if (p.id === partnerId) scores[p.id] = partnerPoints
       else scores[p.id] = defensePoints
     })
   } else {
@@ -53,29 +60,31 @@ export function computeTarotScore({ players, attackerId, partnerId, contract, bo
   return { scores, won, diff, base }
 }
 
-// --- BELOTE ---
-export function computeBeloteScore({ contract, announcements, takerTeam, pointsTaker, capot = false, generale = false }) {
+// --- BELOTE / COINCHE ---
+export function computeBeloteScore({ contract, announcements, takerTeam, pointsTaker }) {
   const total = 162
-  const contractValue = capot ? 250 : generale ? 500 : contract
+  const ann = announcements || 0
+  let takerScore = 0
+  let defenseScore = 0
 
-  let takerScore, defenseScore
-
-  if (generale) {
+  if (contract === 500) {
+    // Générale
     const won = pointsTaker === total
-    takerScore = won ? 500 : -500
-    defenseScore = won ? -500 : 500
-  } else if (capot) {
+    takerScore = won ? 500 + ann : 0
+    defenseScore = won ? 0 : 500 + ann
+  } else if (contract === 252) {
+    // Capot
     const won = pointsTaker === total
-    takerScore = won ? 250 : 0
-    defenseScore = won ? 0 : 250
+    takerScore = won ? 252 + ann : 0
+    defenseScore = won ? 0 : 252 + ann
   } else {
-    const won = pointsTaker >= contractValue
+    const won = pointsTaker >= 82 && (pointsTaker + ann) >= contract
     if (won) {
-      takerScore = contractValue + (announcements || 0)
-      defenseScore = total - takerScore
+      takerScore = pointsTaker + contract + ann
+      defenseScore = total - pointsTaker
     } else {
-      defenseScore = contractValue + total - pointsTaker + (announcements || 0)
       takerScore = 0
+      defenseScore = total + contract + ann
     }
   }
 
@@ -85,23 +94,21 @@ export function computeBeloteScore({ contract, announcements, takerTeam, pointsT
   }
 }
 
-// --- PRÉSIDENT ---
+// --- PRÉSIDENT (Trou du cul) ---
+export function getPresidentRole(rank, total) {
+  if (rank === 1) return PRESIDENT_ROLES[0] // Président (+2)
+  if (rank === total) return PRESIDENT_ROLES[4] // Trou du cul (-2)
+  if (total >= 4 && rank === 2) return PRESIDENT_ROLES[1] // Vice-Président (+1)
+  if (total >= 4 && rank === total - 1) return PRESIDENT_ROLES[3] // Vice-Trou (-1)
+  return PRESIDENT_ROLES[2] // Neutre (0)
+}
+
 export function computePresidentScores(playerOrder) {
-  // playerOrder: array of player ids in order of finish (1er = Président, dernier = Trou)
   const n = playerOrder.length
   const scores = {}
   playerOrder.forEach((id, idx) => {
-    const role = PRESIDENT_ROLES[Math.min(idx, PRESIDENT_ROLES.length - 1)]
-    // Plus précis : distribute roles selon N joueurs
+    const role = getPresidentRole(idx + 1, n)
     scores[id] = role.points
   })
   return scores
-}
-
-export function getPresidentRole(rank, total) {
-  if (rank === 1) return PRESIDENT_ROLES[0]
-  if (rank === 2) return PRESIDENT_ROLES[1]
-  if (rank === total) return PRESIDENT_ROLES[4]
-  if (rank === total - 1) return PRESIDENT_ROLES[3]
-  return PRESIDENT_ROLES[2]
 }
