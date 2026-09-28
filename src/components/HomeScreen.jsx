@@ -3,6 +3,7 @@ import { History, Users, ChevronRight, BookOpen, Play } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
+import { AppLogo } from './ui/AppLogo'
 import { GameSetupSheet } from './GameSetupSheet'
 import { RulesSheet } from './RulesSheet'
 import { formatDate } from '../utils/gameUtils'
@@ -21,11 +22,7 @@ export function HomeScreen() {
       {/* Header style cahier d'écolier / ardoise */}
       <header className="flex items-center justify-between px-4 pt-safe pt-3.5 pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <div className="flex items-center gap-2.5">
-          <img
-            src="/ardoise-fav.svg"
-            alt="Ardoise"
-            className="w-8 h-8 rounded-lg shadow-2xs flex-shrink-0"
-          />
+          <AppLogo className="w-8 h-8 shadow-2xs" />
           <div>
             <h1 className="font-serif-title text-xl font-bold tracking-tight leading-none">
               Ardoise
