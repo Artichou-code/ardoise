@@ -66,3 +66,34 @@ export function formatDate(ts) {
     hour: '2-digit', minute: '2-digit'
   }).format(new Date(ts))
 }
+
+export function formatGameStart(ts) {
+  if (!ts) return ''
+  const date = new Date(ts)
+  const now = new Date()
+  const isToday = date.toDateString() === now.toDateString()
+  const timeStr = new Intl.DateTimeFormat('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
+
+  if (isToday) {
+    return `aujourd'hui à ${timeStr}`
+  }
+
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (date.toDateString() === yesterday.toDateString()) {
+    return `hier à ${timeStr}`
+  }
+
+  const isSameYear = date.getFullYear() === now.getFullYear()
+  const dayMonth = new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'short',
+    ...(isSameYear ? {} : { year: 'numeric' }),
+  }).format(date)
+
+  return `le ${dayMonth} à ${timeStr}`
+}
+

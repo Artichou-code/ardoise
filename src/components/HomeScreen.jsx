@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react'
-import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2 } from 'lucide-react'
+import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { AppLogo } from './ui/AppLogo'
 import { GameSetupSheet } from './GameSetupSheet'
 import { RulesSheet } from './RulesSheet'
-import { formatDate } from '../utils/gameUtils'
+import { formatDate, formatGameStart } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
 
 export function HomeScreen() {
@@ -112,8 +112,14 @@ export function HomeScreen() {
                     <p className="text-xs text-stone-500 dark:text-slate-400 truncate mt-1">
                       {game.players.map(p => p.name).join(' · ')}
                     </p>
+                    {game.startedAt && (
+                      <p className="text-[11px] text-stone-400 dark:text-slate-500 flex items-center gap-1 mt-1">
+                        <Clock size={11} className="opacity-70 shrink-0" />
+                        <span>Lancée {formatGameStart(game.startedAt)}</span>
+                      </p>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white">
+                  <div className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white shrink-0">
                     <Play size={12} fill="currentColor" /> Reprendre
                   </div>
                 </button>
