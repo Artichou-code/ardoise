@@ -144,22 +144,20 @@ export function DourakEngine({ game, onFinish }) {
               >
                 <Avatar player={p} size="xs" leader={isSelected} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1">
-                    <span className="font-semibold text-xs truncate">
-                      {p.name}
-                    </span>
-                    {wasLastDourak && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-amber-500/20 text-amber-800 dark:text-amber-200 shrink-0">
-                        Sortant
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-0.5">
+                  <span className="font-semibold text-xs truncate block leading-tight">
+                    {p.name}
+                  </span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
                     {mode === 'defeats' ? (
                       <SchoolTally count={playerScore} />
                     ) : (
                       <span className="text-[10px] text-stone-500 dark:text-slate-400 tabular-nums truncate block">
                         {playerScore} carte{playerScore > 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {wasLastDourak && (
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-amber-500/20 text-amber-800 dark:text-amber-200 shrink-0">
+                        Sortant
                       </span>
                     )}
                   </div>
