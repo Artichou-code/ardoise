@@ -16,26 +16,32 @@ export function BottomSheet({
 }) {
   useScrollLock(open)
   const sheetRef = useRef(null)
+  const headerRef = useRef(null)
   const startY = useRef(null)
 
   useEffect(() => {
     if (!open || position === 'top') return
     const sheet = sheetRef.current
-    if (!sheet) return
+    const header = headerRef.current
+    if (!sheet || !header) return
 
-    const handleTouchStart = (e) => { startY.current = e.touches[0].clientY }
+    const handleTouchStart = (e) => {
+      startY.current = e.touches[0].clientY
+    }
+
     const handleTouchMove = (e) => {
       if (startY.current === null) return
       const dy = e.touches[0].clientY - startY.current
-      if (dy > 0 && sheet.scrollTop <= 0) {
+      if (dy > 0) {
         sheet.style.transform = `translateY(${dy}px)`
       }
     }
+
     const handleTouchEnd = (e) => {
       if (startY.current === null) return
       const dy = e.changedTouches[0].clientY - startY.current
       startY.current = null
-      if (dy > 100) {
+      if (dy > 80) {
         sheet.style.transform = ''
         onClose()
       } else {
@@ -43,13 +49,21 @@ export function BottomSheet({
       }
     }
 
-    sheet.addEventListener('touchstart', handleTouchStart, { passive: true })
-    sheet.addEventListener('touchmove', handleTouchMove, { passive: true })
-    sheet.addEventListener('touchend', handleTouchEnd, { passive: true })
+    const handleTouchCancel = () => {
+      startY.current = null
+      sheet.style.transform = ''
+    }
+
+    header.addEventListener('touchstart', handleTouchStart, { passive: true })
+    header.addEventListener('touchmove', handleTouchMove, { passive: true })
+    header.addEventListener('touchend', handleTouchEnd, { passive: true })
+    header.addEventListener('touchcancel', handleTouchCancel, { passive: true })
+
     return () => {
-      sheet.removeEventListener('touchstart', handleTouchStart)
-      sheet.removeEventListener('touchmove', handleTouchMove)
-      sheet.removeEventListener('touchend', handleTouchEnd)
+      header.removeEventListener('touchstart', handleTouchStart)
+      header.removeEventListener('touchmove', handleTouchMove)
+      header.removeEventListener('touchend', handleTouchEnd)
+      header.removeEventListener('touchcancel', handleTouchCancel)
     }
   }, [open, onClose, position])
 
@@ -103,29 +117,32 @@ export function BottomSheet({
         ref={sheetRef}
         className={`relative w-full max-w-lg school-card rounded-t-2xl shadow-2xl border-t transition-transform duration-200 max-h-[88dvh] flex flex-col ${className}`}
       >
-        {/* Poignée tactile */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full bg-stone-300 dark:bg-slate-700" />
-        </div>
-        {/* Header */}
-        {title && (
-          <div className="flex items-start justify-between px-5 py-2.5 border-b border-stone-100 dark:border-slate-800/80 flex-shrink-0">
-            <div>
-              <h2 className="font-serif-title text-xl font-bold leading-snug">{title}</h2>
-              {subtitle && (
-                <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 -mr-1 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-              aria-label="Fermer"
-            >
-              <X size={18} className="text-stone-500 dark:text-slate-400" />
-            </button>
+        {/* Zone tactile de glissement pour fermer (Poignée tactile + Titre) */}
+        <div ref={headerRef} className="touch-none select-none flex-shrink-0 cursor-grab active:cursor-grabbing">
+          {/* Poignée tactile */}
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1 rounded-full bg-stone-300 dark:bg-slate-700" />
           </div>
-        )}
+          {/* Header */}
+          {title && (
+            <div className="flex items-start justify-between px-5 py-2.5 border-b border-stone-100 dark:border-slate-800/80">
+              <div>
+                <h2 className="font-serif-title text-xl font-bold leading-snug">{title}</h2>
+                {subtitle && (
+                  <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2 -mr-1 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+                aria-label="Fermer"
+              >
+                <X size={18} className="text-stone-500 dark:text-slate-400" />
+              </button>
+            </div>
+          )}
+        </div>
         {/* Contenu scrollable */}
         <div className="overflow-y-auto flex-1 scrollbar-hide overscroll-contain">
           {children}
