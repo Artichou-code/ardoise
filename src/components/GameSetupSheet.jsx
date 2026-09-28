@@ -193,49 +193,50 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
         onClose={onClose}
         title={sheetTitle}
         subtitle={sheetSubtitle}
+        headerAction={
+          onOpenRules ? (
+            <button
+              type="button"
+              onClick={() => onOpenRules(gameType)}
+              className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 hover:text-[#c83b3b] transition-colors"
+              title="Consulter les règles"
+              aria-label="Règles"
+            >
+              <BookOpen size={18} />
+            </button>
+          ) : null
+        }
       >
         <div className="px-5 py-4 space-y-4">
-          <div className="flex items-center justify-between gap-2.5 min-h-[38px]">
+          <div className="min-h-[40px] flex items-center">
             {selectedPlayers.length === 0 ? (
-              <p className="text-xs text-stone-600 dark:text-slate-400 flex-1 leading-relaxed">
+              <p className="text-xs text-stone-600 dark:text-slate-400 leading-relaxed">
                 {meta.description}
               </p>
             ) : (
-              <div className="flex-1 min-w-0 overflow-x-auto scrollbar-hide py-1">
-                <div className="flex items-center gap-2.5">
+              <div className="w-full overflow-x-auto scrollbar-hide py-1 -mx-1 px-1">
+                <div className="flex items-center gap-3 px-2 py-0.5">
                   {selectedPlayers.map(p => (
                     <div key={p.id} className="shrink-0 flex flex-col items-center gap-0.5">
-                      <div className="relative p-0.5">
+                      <div className="relative p-1">
                         <Avatar player={p} size="sm" />
                         <button
                           type="button"
                           onClick={() => setSelectedPlayers(prev => prev.filter(sp => sp.id !== p.id))}
-                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-stone-800 dark:bg-slate-200 text-white dark:text-slate-900 flex items-center justify-center shadow-xs hover:bg-[#c83b3b] dark:hover:bg-[#c83b3b] hover:text-white transition-colors"
+                          className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-stone-800 dark:bg-slate-200 text-white dark:text-slate-900 flex items-center justify-center shadow-xs hover:bg-[#c83b3b] dark:hover:bg-[#c83b3b] hover:text-white transition-colors"
                           title={`Retirer ${p.name}`}
                           aria-label={`Retirer ${p.name}`}
                         >
                           <X size={10} strokeWidth={2.5} />
                         </button>
                       </div>
-                      <span className="text-[10px] font-semibold text-stone-700 dark:text-slate-300 max-w-[52px] truncate text-center">
+                      <span className="text-[10px] font-semibold text-stone-700 dark:text-slate-300 max-w-[54px] truncate text-center">
                         {p.name}
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
-
-            {onOpenRules && (
-              <button
-                type="button"
-                onClick={() => onOpenRules(gameType)}
-                className="w-8 h-8 rounded-xl border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-[#c83b3b] hover:text-[#c83b3b] flex items-center justify-center transition-colors shrink-0"
-                title="Consulter les règles"
-                aria-label="Règles"
-              >
-                <BookOpen size={16} />
-              </button>
             )}
           </div>
 

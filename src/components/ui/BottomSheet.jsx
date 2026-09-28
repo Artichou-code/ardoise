@@ -13,6 +13,7 @@ export function BottomSheet({
   children,
   className = '',
   position = 'bottom', // 'bottom' | 'top'
+  headerAction,
 }) {
   useScrollLock(open)
   const sheetRef = useRef(null)
@@ -88,14 +89,17 @@ export function BottomSheet({
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-1.5 -mr-1 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-                aria-label="Fermer"
-              >
-                <X size={18} className="text-stone-500 dark:text-slate-400" />
-              </button>
+              <div className="flex items-center gap-1.5 -mr-1">
+                {headerAction}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+                  aria-label="Fermer"
+                >
+                  <X size={18} className="text-stone-500 dark:text-slate-400" />
+                </button>
+              </div>
             </div>
           )}
           <div className="overflow-y-auto flex-1 scrollbar-hide overscroll-contain">
@@ -132,14 +136,17 @@ export function BottomSheet({
                   <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-2 -mr-1 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-                aria-label="Fermer"
-              >
-                <X size={18} className="text-stone-500 dark:text-slate-400" />
-              </button>
+              <div className="flex items-center gap-1 -mr-1">
+                {headerAction}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+                  aria-label="Fermer"
+                >
+                  <X size={18} className="text-stone-500 dark:text-slate-400" />
+                </button>
+              </div>
             </div>
           )}
         </div>
