@@ -7,6 +7,7 @@ import { AppLogo } from './ui/AppLogo'
 import { GameSetupSheet } from './GameSetupSheet'
 import { RulesSheet } from './RulesSheet'
 import { GameDetailSheet } from './GameDetailSheet'
+import { LegalModal } from './LegalModal'
 import { formatDate, formatGameStart } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
 
@@ -16,6 +17,7 @@ export function HomeScreen() {
   const [setupPreset, setSetupPreset] = useState(null)
   const [rulesGame, setRulesGame] = useState(null)
   const [detailGame, setDetailGame] = useState(null)
+  const [legalTab, setLegalTab] = useState(null)
 
   const activeGames = games.filter(g => g.status === 'active')
   const finishedGames = games.filter(g => g.status === 'finished').slice(0, 3)
@@ -354,6 +356,47 @@ export function HomeScreen() {
             </div>
           </section>
         )}
+
+        {/* Footer institutionnel & Hub Juridique */}
+        <footer className="mt-8 pt-6 pb-4 border-t border-stone-200/60 dark:border-slate-800/60 text-center space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <span className="font-serif-title font-bold text-xs text-stone-800 dark:text-slate-200">
+              Ardoise by ART-créa
+            </span>
+            <span className="text-stone-300 dark:text-slate-700">·</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400 font-semibold">
+              v1.4
+            </span>
+          </div>
+          <div className="flex items-center justify-center gap-3 text-[11px] font-semibold text-stone-600 dark:text-slate-400">
+            <button
+              type="button"
+              onClick={() => setLegalTab('mentions')}
+              className="hover:text-stone-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
+            >
+              Mentions Légales
+            </button>
+            <span className="text-stone-300 dark:text-slate-700">·</span>
+            <button
+              type="button"
+              onClick={() => setLegalTab('confidentialite')}
+              className="hover:text-stone-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
+            >
+              Confidentialité
+            </button>
+            <span className="text-stone-300 dark:text-slate-700">·</span>
+            <button
+              type="button"
+              onClick={() => setLegalTab('cgu')}
+              className="hover:text-stone-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
+            >
+              CGU
+            </button>
+          </div>
+          <p className="text-[10px] text-stone-400 dark:text-slate-500">
+            Conçu avec passion à Toulouse · 100% Local & Privé
+          </p>
+        </footer>
       </div>
 
       {/* Feuille de détails et déroulement complet */}
@@ -387,6 +430,14 @@ export function HomeScreen() {
         gameType={rulesGame}
         onClose={() => setRulesGame(null)}
         onStartSetup={(type) => setSetupGame(type)}
+      />
+
+      {/* Hub Juridique (Mentions Légales, Confidentialité RGPD, CGU) */}
+      <LegalModal
+        open={Boolean(legalTab)}
+        onClose={() => setLegalTab(null)}
+        activeTab={legalTab}
+        onSelectTab={setLegalTab}
       />
     </div>
   )
