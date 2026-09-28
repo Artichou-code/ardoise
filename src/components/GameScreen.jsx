@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, RotateCcw, ChevronDown, ChevronUp, Award, BookOpen } from 'lucide-react'
+import { ArrowLeft, RotateCcw, ChevronDown, ChevronUp, Flag, BookOpen } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { Avatar } from './ui/Avatar'
@@ -89,11 +89,11 @@ export function GameScreen() {
           <button
             type="button"
             onClick={() => setShowFinishConfirm(true)}
-            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:border-[#c83b3b] transition-colors"
-            title="Terminer la partie"
-            aria-label="Terminer la partie"
+            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+            title="Finir la partie plus tôt"
+            aria-label="Finir la partie plus tôt"
           >
-            <Award size={16} className="text-[#c83b3b]" />
+            <Flag size={16} className="text-stone-600 dark:text-slate-400" />
           </button>
           <ThemeToggle />
         </div>
@@ -150,6 +150,18 @@ export function GameScreen() {
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         <div className="px-4 pt-3 scroll-bottom-space">
           <Engine game={activeGame} leaderId={leaderId} onFinish={finishGame} />
+
+          {/* Bouton discret pour terminer la partie de façon anticipée */}
+          <div className="flex justify-center pt-3 pb-2">
+            <button
+              type="button"
+              onClick={() => setShowFinishConfirm(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200 border border-stone-200/90 dark:border-slate-800 hover:border-stone-300 dark:hover:border-slate-700 bg-white/70 dark:bg-slate-900/70 transition-all active:scale-[0.98] shadow-2xs"
+            >
+              <Flag size={12} className="text-stone-400 dark:text-slate-500" />
+              <span>Finir la partie plus tôt</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -223,9 +235,9 @@ export function GameScreen() {
         open={showFinishConfirm}
         onClose={() => setShowFinishConfirm(false)}
         onConfirm={() => finishGame(leaderId)}
-        title="Clôturer la partie ?"
-        message="Terminer la partie et afficher le palmarès final ?"
-        confirmLabel="Voir le palmarès"
+        title="Finir la partie plus tôt ?"
+        message="Voulez-vous clore la partie maintenant avec les scores actuels et voir le palmarès final ?"
+        confirmLabel="Clôturer la partie"
       />
     </div>
   )
