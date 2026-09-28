@@ -94,8 +94,8 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
         aria-hidden="true"
       />
 
-      {/* Conteneur principal adapté à la DA Ardoise (papier chaud / ardoise sombre) */}
-      <div className="relative w-full max-w-sm sm:max-w-md md:max-w-4xl bg-[#faf9f5] dark:bg-[#151719] text-stone-900 dark:text-slate-100 border border-stone-200/90 dark:border-slate-800/90 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200 school-card">
+      {/* Conteneur principal adapté à la DA Ardoise (cahier d'écolier avec petits carreaux) */}
+      <div className="relative w-full max-w-sm sm:max-w-md md:max-w-4xl school-surface text-stone-900 dark:text-slate-100 border border-stone-200/90 dark:border-slate-800/90 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
         {/* Liseré supérieur or ambré signature ART-créa */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#FFC107] to-transparent z-10" />
 
@@ -103,7 +103,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
         <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-amber-400/10 dark:bg-[#FFC107]/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Header de la modale */}
-        <div className="relative z-10 p-4 sm:p-5 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs flex items-start justify-between gap-4">
+        <div className="relative z-10 p-4 sm:p-5 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-start justify-between gap-4">
           <div>
             <h2
               id="artcrea-universe-title"

@@ -360,9 +360,9 @@ export function HomeScreen() {
           </section>
         )}
 
-        {/* Footer institutionnel & Hub Juridique minimaliste */}
-        <footer className="mt-4 pt-3 pb-1 border-t border-stone-200/50 dark:border-slate-800/50 flex flex-col items-center justify-center gap-1.5 text-center select-none">
-          <div className="flex items-center justify-center gap-1.5 text-stone-600 dark:text-slate-400">
+        {/* Footer institutionnel & Hub Juridique minimaliste sur une seule ligne */}
+        <footer className="mt-4 pt-3 pb-1 border-t border-stone-200/50 dark:border-slate-800/50 flex items-center justify-center gap-2 text-center select-none">
+          <div className="flex items-center gap-1.5 text-stone-600 dark:text-slate-400">
             <span className="font-serif-title font-bold text-stone-800 dark:text-slate-200 text-sm leading-none">
               Ardoise
             </span>
@@ -378,10 +378,12 @@ export function HomeScreen() {
             </button>
           </div>
 
+          <span className="text-stone-300 dark:text-slate-700 select-none">·</span>
+
           <button
             type="button"
             onClick={() => setLegalTab('mentions')}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
             title="Ouvrir le Hub juridique (Mentions légales, Confidentialité, CGU)"
           >
             <Scale size={12} className="text-[#c83b3b] group-hover:scale-110 transition-transform" />
