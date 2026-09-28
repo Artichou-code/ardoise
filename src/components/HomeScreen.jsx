@@ -48,7 +48,7 @@ export function HomeScreen() {
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
       {/* Header style cahier d'écolier / ardoise */}
-      <header className="flex items-center justify-between px-4 pt-safe pt-3.5 pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
+      <header className="flex items-center justify-between px-4 header-safe pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <div className="flex items-center gap-2.5">
           <AppLogo className="w-8 h-8 shadow-2xs" />
           <div>

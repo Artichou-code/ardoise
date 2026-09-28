@@ -72,6 +72,11 @@ html.dark {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/* En-tête sécurisé : espacement de 1.125rem (18px) sur navigateur standard qui s'additionne à l'encoche PWA */
+.header-safe {
+  padding-top: calc(1.125rem + env(safe-area-inset-top, 0px));
+}
+
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }

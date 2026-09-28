@@ -48,7 +48,7 @@ export function GameScreen() {
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
       {/* Header */}
-      <header className="flex items-center gap-2 px-4 pt-safe pt-3 pb-2.5 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
+      <header className="flex items-center gap-2 px-4 header-safe pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <button
           type="button"
           onClick={() => setShowExitConfirm(true)}
