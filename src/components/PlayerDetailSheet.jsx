@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Award, Swords, X } from 'lucide-react'
+import { Award, Swords, X, BarChart3 } from 'lucide-react'
+import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { Avatar } from './ui/Avatar'
 import { BottomSheet } from './ui/BottomSheet'
@@ -9,6 +10,7 @@ import { BottomSheet } from './ui/BottomSheet'
  * Utilisée à la fois dans StatsScreen et dans PlayersScreen (Carnet des joueurs)
  */
 export function PlayerDetailSheet({ player, open, onClose }) {
+  const { setScreen } = useGame()
   const [selectedBadgeId, setSelectedBadgeId] = useState(null)
   if (!player) return null
 
@@ -28,6 +30,21 @@ export function PlayerDetailSheet({ player, open, onClose }) {
       position="bottom"
       title={player.name}
       subtitle="Statistiques individuelles"
+      headerAction={
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedBadgeId(null)
+            onClose()
+            setScreen('stats')
+          }}
+          className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+          title="Statistiques"
+          aria-label="Statistiques"
+        >
+          <BarChart3 size={18} className="text-stone-500 dark:text-slate-400" />
+        </button>
+      }
     >
       <div className="px-4 py-3 space-y-4">
         {/* En-tête profil */}
