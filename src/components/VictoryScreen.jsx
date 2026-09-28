@@ -160,7 +160,7 @@ export function VictoryScreen() {
         )}
 
         {/* Classement complet */}
-        <div className="school-card rounded-xl p-3.5 space-y-1">
+        <div className="school-card rounded-xl p-3.5 space-y-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
             {isDourak ? 'Bilan de la soirée (du meilleur au Grand Dourak)' : 'Tableau final'}
           </p>

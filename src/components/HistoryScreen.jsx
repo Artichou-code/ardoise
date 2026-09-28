@@ -93,13 +93,13 @@ export function HistoryScreen() {
                   </div>
 
                   {/* Scores */}
-                  <div className="px-4 py-3 space-y-1.5">
+                  <div className="px-4 py-3 space-y-2.5">
                     {ranking.map(({ id, score, rank }) => {
                       const player = game.players.find(p => p.id === id)
                       if (!player) return null
                       const isWinner = rank === 1 && game.status === 'finished'
                       return (
-                        <div key={id} className="flex items-center gap-2.5">
+                        <div key={id} className="flex items-center gap-3 py-1">
                           <span className={`w-6 text-xs font-bold tabular-nums ${
                             isWinner ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
                           }`}>
