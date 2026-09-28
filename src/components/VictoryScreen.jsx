@@ -64,7 +64,7 @@ export function VictoryScreen() {
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
       <header className="flex items-center justify-between px-4 pt-safe pt-3.5 pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90">
         <span className="font-serif-title text-lg font-bold">
-          {isDourak ? 'Verdict du Dourak (Дурак)' : 'Palmarès de la partie'}
+          {isDourak ? "Verdict du Dourak (l'idiot)" : 'Palmarès de la partie'}
         </span>
         <ThemeToggle />
       </header>

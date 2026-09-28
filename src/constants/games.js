@@ -14,7 +14,7 @@ export const GAMES = {
 export const GAME_META = {
   [GAMES.DOURAK]: {
     id: GAMES.DOURAK,
-    name: 'Dourak (Дурак)',
+    name: "Dourak (l'idiot)",
     playersBadge: '2 à 6 j.',
     categoryBadge: 'Cartes (36)',
     description: 'Pas de vainqueur, le dernier joueur en main est le Dourak.',
