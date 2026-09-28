@@ -132,8 +132,8 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
           {/* Indicateur et tirets de pagination (visible sur mobile uniquement) */}
           <div className="flex md:hidden items-center justify-between px-1 mb-2.5">
             <span className="text-xs font-medium text-stone-600 dark:text-slate-400 flex items-center">
-              <span>Au-delà d'</span>
-              <span className="font-bold text-stone-900 dark:text-slate-100 ml-0.5 font-serif-title">Ardoise</span>
+              <span>Les autres sites d'</span>
+              <span className="font-bold text-stone-900 dark:text-slate-100 ml-0.5">ART-créa</span>
             </span>
 
             <div className="flex items-center gap-1.5" role="tablist" aria-label="Pagination projets">
