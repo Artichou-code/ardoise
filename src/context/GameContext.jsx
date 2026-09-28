@@ -9,8 +9,14 @@ import { GAME_META } from '../constants/games'
 
 const GameContext = createContext(null)
 
+const sortPlayersAlpha = (list) => {
+  return [...list].sort((a, b) =>
+    (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })
+  )
+}
+
 export function GameProvider({ children }) {
-  const [players, setPlayers] = useState(() => loadPlayers())
+  const [players, setPlayers] = useState(() => sortPlayersAlpha(loadPlayers()))
   const [games, setGames] = useState(() => loadGames())
   const [activeGameId, setActiveGameId] = useState(() => loadActiveGameId())
   const [screen, setScreen] = useState('home') // home | game | history | victory
@@ -128,12 +134,14 @@ export function GameProvider({ children }) {
   const savePlayer = useCallback((player) => {
     setPlayers(prev => {
       const idx = prev.findIndex(p => p.id === player.id)
+      let next
       if (idx >= 0) {
-        const next = [...prev]
+        next = [...prev]
         next[idx] = player
-        return next
+      } else {
+        next = [...prev, player]
       }
-      return [player, ...prev]
+      return sortPlayersAlpha(next)
     })
   }, [])
 

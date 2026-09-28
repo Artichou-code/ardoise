@@ -61,7 +61,7 @@ export function VictoryScreen() {
   const labels = ['2e', '1er', '3e']
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden school-surface">
+    <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
       <header className="flex items-center justify-between px-4 pt-safe pt-3.5 pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90">
         <span className="font-serif-title text-lg font-bold">
           {isDourak ? 'Verdict du Dourak (Дурак)' : 'Palmarès de la partie'}
@@ -69,7 +69,7 @@ export function VictoryScreen() {
         <ThemeToggle />
       </header>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-6">
+      <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain px-4 py-3 pb-6">
         {/* Lauréat & Grand Dourak (si jeu Dourak) */}
         {isDourak ? (
           <div className="grid grid-cols-2 gap-3 mt-4 mb-6">

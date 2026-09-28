@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Plus, X, Check, BookOpen } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
 import { Avatar, AvatarPicker } from './ui/Avatar'
@@ -68,6 +68,13 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
   const [selectedPlayers, setSelectedPlayers] = useState([])
   const [config, setConfig] = useState({ scoreDir: 'high', limit: 100 })
   const [showCreator, setShowCreator] = useState(false)
+
+  // Tri alphabétique strict A-Z (insensible à la casse et aux accents)
+  const sortedSavedPlayers = useMemo(() => {
+    return [...savedPlayers].sort((a, b) =>
+      (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })
+    )
+  }, [savedPlayers])
 
   useEffect(() => {
     if (gameType === 'dourak') {
@@ -179,13 +186,13 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
           )}
 
           {/* Joueurs enregistrés */}
-          {savedPlayers.length > 0 && (
+          {sortedSavedPlayers.length > 0 && (
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
                 Joueurs enregistrés ({selectedPlayers.length}/{meta.maxPlayers})
               </p>
-              <div className="space-y-1.5 max-h-44 overflow-y-auto scrollbar-hide">
-                {savedPlayers.map(p => {
+              <div className="space-y-1.5 max-h-44 overflow-y-auto scrollbar-hide overscroll-contain">
+                {sortedSavedPlayers.map(p => {
                   const isSelected = !!selectedPlayers.find(sp => sp.id === p.id)
                   return (
                     <button

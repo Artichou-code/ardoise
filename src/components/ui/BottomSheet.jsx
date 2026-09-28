@@ -84,7 +84,7 @@ export function BottomSheet({
               </button>
             </div>
           )}
-          <div className="overflow-y-auto flex-1 scrollbar-hide">
+          <div className="overflow-y-auto flex-1 scrollbar-hide overscroll-contain">
             {children}
           </div>
         </div>
@@ -127,7 +127,7 @@ export function BottomSheet({
           </div>
         )}
         {/* Contenu scrollable */}
-        <div className="overflow-y-auto flex-1 scrollbar-hide">
+        <div className="overflow-y-auto flex-1 scrollbar-hide overscroll-contain">
           {children}
         </div>
         {/* Safe area iOS */}

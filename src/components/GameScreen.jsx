@@ -46,7 +46,7 @@ export function GameScreen() {
   const Engine = ENGINE_MAP[activeGame.type] || UniverselEngine
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden school-surface">
+    <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
       {/* Header */}
       <header className="flex items-center gap-2 px-4 pt-safe pt-3 pb-2.5 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <button
@@ -147,8 +147,8 @@ export function GameScreen() {
       </div>
 
       {/* Moteur de saisie de manche */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="px-4 pb-4">
+      <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain">
+        <div className="px-4 py-3">
           <Engine game={activeGame} leaderId={leaderId} onFinish={finishGame} />
         </div>
       </div>
@@ -165,7 +165,7 @@ export function GameScreen() {
             {showHistory ? <ChevronDown size={15} /> : <ChevronUp size={15} />}
           </button>
           {showHistory && (
-            <div className="max-h-40 overflow-y-auto scrollbar-hide px-4 pb-3 space-y-1">
+            <div className="max-h-40 overflow-y-auto scrollbar-hide overscroll-contain px-4 pb-3 space-y-1">
               {[...activeGame.rounds].reverse().map((round, i) => (
                 <div
                   key={i}

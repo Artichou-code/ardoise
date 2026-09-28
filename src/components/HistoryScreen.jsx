@@ -14,7 +14,7 @@ export function HistoryScreen() {
   const sorted = [...games].sort((a, b) => (b.updatedAt || b.startedAt) - (a.updatedAt || a.startedAt))
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden school-surface">
+    <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
       <header className="flex items-center gap-2 px-4 pt-safe pt-3.5 pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <button
           type="button"
@@ -30,9 +30,9 @@ export function HistoryScreen() {
         <ThemeToggle />
       </header>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-6">
+      <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain px-4 py-3">
         {sorted.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center px-6">
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
             <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
               <History size={22} className="text-stone-400 dark:text-slate-500" />
             </div>
@@ -44,7 +44,7 @@ export function HistoryScreen() {
             </p>
           </div>
         ) : (
-          <div className="space-y-3 mt-4">
+          <div className="space-y-3">
             {sorted.map(game => {
               const meta = GAME_META[game.type]
               const scoreDir = game.config?.scoreDir === 'low' || game.config?.scoreDir === 'low_limit' || meta?.scoreDir === 'low' ? 'low' : 'high'

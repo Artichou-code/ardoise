@@ -43,7 +43,7 @@ export function HomeScreen() {
   }, [gamePlayCounts])
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden school-surface">
+    <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
       {/* Header style cahier d'écolier / ardoise */}
       <header className="flex items-center justify-between px-4 pt-safe pt-3.5 pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <div className="flex items-center gap-2.5">
@@ -81,7 +81,7 @@ export function HomeScreen() {
       </header>
 
       {/* Corps scrollable */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-6">
+      <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain px-4 py-3 pb-6">
         {/* Parties en cours */}
         {activeGames.length > 0 && (
           <section className="mt-4">
