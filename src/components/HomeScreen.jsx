@@ -361,12 +361,12 @@ export function HomeScreen() {
         )}
 
         {/* Footer institutionnel & Hub Juridique minimaliste */}
-        <footer className="mt-8 pt-5 pb-6 border-t border-stone-200/60 dark:border-slate-800/60 flex flex-col items-center justify-center gap-2 text-center select-none">
-          <div className="flex items-center justify-center gap-1.5 text-xs text-stone-600 dark:text-slate-400">
-            <span className="font-serif-title font-bold text-stone-800 dark:text-slate-200 text-sm">
+        <footer className="mt-4 pt-3 pb-1 border-t border-stone-200/50 dark:border-slate-800/50 flex flex-col items-center justify-center gap-1.5 text-center select-none">
+          <div className="flex items-center justify-center gap-1.5 text-stone-600 dark:text-slate-400">
+            <span className="font-serif-title font-bold text-stone-800 dark:text-slate-200 text-sm leading-none">
               Ardoise
             </span>
-            <span className="font-serif italic text-stone-400 dark:text-slate-500 text-xs">by</span>
+            <span className="font-serif italic text-stone-400 dark:text-slate-500 text-xs leading-none">by</span>
             <button
               type="button"
               onClick={() => setIsArtCreaModalOpen(true)}
@@ -374,21 +374,17 @@ export function HomeScreen() {
               title="Découvrir l'univers ART-créa"
               aria-label="Découvrir l'univers ART-créa"
             >
-              <ArtCreaLogo className="h-5.5 self-center" />
+              <ArtCreaLogo className="h-[17px] self-center" />
             </button>
-            <span className="text-stone-300 dark:text-slate-700 ml-0.5">·</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400 font-semibold">
-              v1.4
-            </span>
           </div>
 
           <button
             type="button"
             onClick={() => setLegalTab('mentions')}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
             title="Ouvrir le Hub juridique (Mentions légales, Confidentialité, CGU)"
           >
-            <Scale size={13} className="text-[#c83b3b] group-hover:scale-110 transition-transform" />
+            <Scale size={12} className="text-[#c83b3b] group-hover:scale-110 transition-transform" />
             <span className="underline underline-offset-2 decoration-stone-300 dark:decoration-slate-700 group-hover:decoration-current">
               Hub juridique
             </span>

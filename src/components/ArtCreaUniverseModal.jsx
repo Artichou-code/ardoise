@@ -37,7 +37,7 @@ const UNIVERS_CARDS = [
 
 /**
  * Modale de présentation de l'Univers ART-créa
- * Inspirée de celle présente dans ARENA.photo
+ * Adaptée à la charte graphique d'Ardoise (papier chaud écru & ardoise sombre)
  */
 export function ArtCreaUniverseModal({ isOpen, onClose }) {
   const cardsContainerRef = useRef(null)
@@ -47,6 +47,10 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
 
   useEffect(() => {
     if (!isOpen) return
+    setActiveCardIndex(0)
+    if (cardsContainerRef.current) {
+      cardsContainerRef.current.scrollLeft = 0
+    }
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose()
     }
@@ -83,31 +87,31 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
       aria-modal="true"
       aria-labelledby="artcrea-universe-title"
     >
-      {/* Backdrop sombre flouté */}
+      {/* Backdrop sombre avec flou doux */}
       <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300"
+        className="absolute inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Conteneur principal de la modale */}
-      <div className="relative w-full max-w-sm sm:max-w-md md:max-w-4xl bg-[#0F0F12] text-white border border-white/[0.09] shadow-[0_20px_60px_rgba(0,0,0,0.7),0_0_40px_rgba(252,199,23,0.08)] rounded-3xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
+      {/* Conteneur principal adapté à la DA Ardoise (papier chaud / ardoise sombre) */}
+      <div className="relative w-full max-w-sm sm:max-w-md md:max-w-4xl bg-[#faf9f5] dark:bg-[#151719] text-stone-900 dark:text-slate-100 border border-stone-200/90 dark:border-slate-800/90 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200 school-card">
         {/* Liseré supérieur or ambré signature ART-créa */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#FFC107] to-transparent z-10" />
 
         {/* Halo doré d'ambiance en arrière-plan */}
-        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-[#FFC107]/12 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-amber-400/10 dark:bg-[#FFC107]/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Header */}
-        <div className="relative z-10 p-4 sm:p-6 pb-3 sm:pb-4 border-b border-white/[0.06] flex items-start justify-between gap-4">
+        {/* Header de la modale */}
+        <div className="relative z-10 p-4 sm:p-5 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs flex items-start justify-between gap-4">
           <div>
             <h2
               id="artcrea-universe-title"
-              className="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight font-serif-title"
+              className="text-lg sm:text-xl font-bold tracking-tight leading-tight font-serif-title text-stone-900 dark:text-slate-100"
             >
-              L'Univers <span className="text-[#FFC107]">ART-créa</span>
+              L'Univers <span className="text-amber-600 dark:text-[#FFC107]">ART-créa</span>
             </h2>
-            <p className="text-xs sm:text-sm text-gray-300/80 font-medium mt-0.5">
+            <p className="text-xs text-stone-500 dark:text-slate-400 font-medium mt-0.5">
               Webdesign & Photographie • Toulouse
             </p>
           </div>
@@ -115,7 +119,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors focus:outline-none flex-shrink-0"
+            className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-200/60 dark:hover:bg-slate-800 transition-colors focus:outline-none flex-shrink-0 cursor-pointer"
             title="Fermer la fenêtre (Échap)"
             aria-label="Fermer"
           >
@@ -124,12 +128,12 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
         </div>
 
         {/* Corps de modale : carrousel swipe sur mobile & grille sur PC */}
-        <div className="relative z-10 p-4 sm:p-6 pt-3 sm:pt-4 pb-4 sm:pb-5 overflow-y-auto scrollbar-hide">
+        <div className="relative z-10 p-4 sm:p-5 pt-3 pb-4 sm:pb-5 overflow-y-auto scrollbar-hide">
           {/* Indicateur et tirets de pagination (visible sur mobile uniquement) */}
-          <div className="flex md:hidden items-center justify-between px-1 mb-3">
-            <span className="text-xs font-medium text-gray-300 flex items-center">
+          <div className="flex md:hidden items-center justify-between px-1 mb-2.5">
+            <span className="text-xs font-medium text-stone-600 dark:text-slate-400 flex items-center">
               <span>Au-delà d'</span>
-              <span className="font-bold text-white ml-0.5 font-serif-title">Ardoise</span>
+              <span className="font-bold text-stone-900 dark:text-slate-100 ml-0.5 font-serif-title">Ardoise</span>
             </span>
 
             <div className="flex items-center gap-1.5" role="tablist" aria-label="Pagination projets">
@@ -140,7 +144,9 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                   onClick={() => scrollToCard(i)}
                   aria-label={`Projet ${card.title}`}
                   className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    activeCardIndex === i ? 'w-6 bg-[#FFC107]' : 'w-1.5 bg-white/20 hover:bg-white/40'
+                    activeCardIndex === i
+                      ? 'w-6 bg-amber-500 dark:bg-[#FFC107]'
+                      : 'w-1.5 bg-stone-300 dark:bg-slate-700 hover:bg-stone-400'
                   }`}
                 />
               ))}
@@ -151,7 +157,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
           <div
             ref={cardsContainerRef}
             onScroll={handleCardsScroll}
-            className="flex md:grid md:grid-cols-3 gap-3.5 sm:gap-4 md:gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scrollbar-hide py-1.5 -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 overscroll-x-contain"
+            className="flex md:grid md:grid-cols-3 gap-3 sm:gap-4 md:gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 md:mx-0 md:px-0 overscroll-x-contain"
           >
             {UNIVERS_CARDS.map((card) => (
               <a
@@ -159,21 +165,18 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                 href={card.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-[82vw] max-w-[310px] sm:w-[320px] md:w-full md:max-w-none flex-shrink-0 snap-center flex flex-col justify-between p-4 sm:p-4.5 rounded-3xl bg-[#141417]/90 hover:bg-[#18181E] border border-white/[0.08] hover:border-[#FFC107]/50 shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(255,193,7,0.14)] backdrop-blur-xl transition-all duration-300 group relative overflow-hidden select-none"
+                className="w-[82vw] max-w-[310px] sm:w-[320px] md:w-full md:max-w-none flex-shrink-0 snap-center flex flex-col justify-between p-4 rounded-2xl school-card bg-white dark:bg-slate-900/90 border border-stone-200/80 dark:border-slate-800 hover:border-amber-500/70 dark:hover:border-amber-400/70 shadow-2xs hover:shadow-md transition-all duration-200 group relative overflow-hidden select-none cursor-pointer"
               >
-                {/* Gradient d'ambiance au survol */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FFC107]/8 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-3xl" />
-
                 <div className="relative z-10">
                   {/* Entête de carte avec vignette et badge */}
-                  <div className="flex items-start gap-3 mb-3">
+                  <div className="flex items-start gap-3 mb-2.5">
                     {/* Vignette logo officielle */}
                     {card.logoType === 'artcrea' && (
                       <div className="w-12 h-10 flex-shrink-0 flex items-center justify-start select-none pt-0.5">
                         <img
                           src="/ART-crea.svg"
                           alt="Logo ART-créa"
-                          className="h-7 w-auto max-w-full object-contain object-left select-none"
+                          className="h-6.5 w-auto max-w-full object-contain object-left select-none"
                           draggable={false}
                         />
                       </div>
@@ -184,7 +187,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                         <img
                           src={card.logoSrc}
                           alt={card.title}
-                          className="w-full h-full rounded-xl object-cover shadow-md"
+                          className="w-full h-full rounded-xl object-cover shadow-2xs"
                           draggable={false}
                         />
                       </div>
@@ -193,25 +196,25 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                     {/* Badge et Titre */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="text-[8px] font-black uppercase tracking-wider text-[#FFC107] px-1.5 py-0.5 rounded-full bg-[#FFC107]/10 border border-[#FFC107]/20 whitespace-nowrap">
+                        <span className="text-[8px] font-bold uppercase tracking-wider text-amber-700 dark:text-[#FFC107] px-1.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 whitespace-nowrap">
                           {card.badge}
                         </span>
-                        <ExternalLink size={12} className="text-current opacity-40 group-hover:opacity-100 group-hover:text-[#FFC107] transition-all flex-shrink-0" />
+                        <ExternalLink size={12} className="text-stone-400 group-hover:text-amber-600 dark:group-hover:text-[#FFC107] transition-all flex-shrink-0" />
                       </div>
-                      <h3 className="text-sm font-bold tracking-tight group-hover:text-[#FFC107] transition-colors leading-snug font-serif-title">
+                      <h3 className="text-sm font-bold tracking-tight group-hover:text-amber-600 dark:group-hover:text-[#FFC107] transition-colors leading-snug font-serif-title text-stone-900 dark:text-slate-100">
                         {card.title}
                       </h3>
                     </div>
                   </div>
 
                   {/* Description */}
-                  <p className="text-[11px] leading-relaxed text-gray-300 mb-3 line-clamp-3">
+                  <p className="text-[11px] leading-relaxed text-stone-600 dark:text-slate-400 mb-3 line-clamp-3">
                     {card.desc}
                   </p>
                 </div>
 
                 {/* CTA en bas */}
-                <div className="relative z-10 pt-2 border-t border-white/[0.06] flex items-center justify-between text-xs font-bold text-[#FFC107]">
+                <div className="relative z-10 pt-2 border-t border-stone-100 dark:border-slate-800/80 flex items-center justify-between text-xs font-bold text-amber-700 dark:text-[#FFC107]">
                   <span className="text-[11px]">{card.ctaText}</span>
                   <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
                 </div>
