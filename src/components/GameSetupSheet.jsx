@@ -164,24 +164,28 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
 
           {/* Joueurs sélectionnés */}
           {selectedPlayers.length > 0 && (
-            <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
-              {selectedPlayers.map(p => (
-                <div key={p.id} className="flex-shrink-0 flex flex-col items-center gap-1">
-                  <div className="relative">
-                    <Avatar player={p} size="sm" />
-                    <button
-                      type="button"
-                      onClick={() => setSelectedPlayers(prev => prev.filter(sp => sp.id !== p.id))}
-                      className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-stone-800 dark:bg-slate-200 flex items-center justify-center"
-                    >
-                      <X size={10} className="text-white dark:text-slate-900" />
-                    </button>
+            <div className="py-0.5">
+              <div className="flex gap-3 overflow-x-auto scrollbar-hide pt-2.5 pb-1.5 px-1.5">
+                {selectedPlayers.map(p => (
+                  <div key={p.id} className="flex-shrink-0 flex flex-col items-center gap-1">
+                    <div className="relative p-1">
+                      <Avatar player={p} size="sm" />
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPlayers(prev => prev.filter(sp => sp.id !== p.id))}
+                        className="absolute top-0 right-0 w-4.5 h-4.5 rounded-full bg-stone-800 dark:bg-slate-200 text-white dark:text-slate-900 flex items-center justify-center shadow-xs hover:bg-[#c83b3b] dark:hover:bg-[#c83b3b] hover:text-white transition-colors"
+                        title={`Retirer ${p.name}`}
+                        aria-label={`Retirer ${p.name}`}
+                      >
+                        <X size={10} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                    <span className="text-[11px] font-medium text-stone-700 dark:text-slate-300 max-w-[56px] truncate text-center">
+                      {p.name}
+                    </span>
                   </div>
-                  <span className="text-[11px] font-medium text-stone-700 dark:text-slate-300 max-w-[54px] truncate">
-                    {p.name}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
