@@ -1,12 +1,17 @@
 import { generateId } from '../store/storage'
-import { AVATAR_COLORS } from '../constants/games'
+import { AVATAR_COLORS, PRESET_AVATARS } from '../constants/games'
 
-export function createPlayer(name, color) {
+export function createPlayer(name, color, avatar) {
   const cleanName = name.trim()
+  const chosenAvatar =
+    avatar !== undefined
+      ? avatar
+      : PRESET_AVATARS[Math.floor(Math.random() * PRESET_AVATARS.length)]
   return {
     id: generateId(),
     name: cleanName,
     color: color || AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
+    avatar: chosenAvatar, // null si mode Initiale choisi explicitement
     createdAt: Date.now(),
   }
 }
@@ -15,6 +20,20 @@ export function getPlayerInitial(player) {
   if (!player || !player.name) return '?'
   const trimmed = player.name.trim()
   return trimmed.charAt(0).toUpperCase()
+}
+
+export function getPlayerAvatarUrl(player) {
+  if (!player) return null
+  // Si avatar explicitement mis à null (mode initiale), renvoyer null
+  if (player.avatar === null) return null
+  if (player.avatar) return player.avatar
+  // Pour les équipes rapides Nous / Eux, garder l'initiale
+  if (player.name === 'Nous' || player.name === 'Eux') return null
+  // Pour les joueurs existants sans champ avatar, attribuer un avatar Arena.photo stable selon le nom
+  const seed = (player.name || player.id || 'A')
+    .split('')
+    .reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
+  return PRESET_AVATARS[seed % PRESET_AVATARS.length]
 }
 
 export function getLeader(scores) {

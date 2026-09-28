@@ -1,20 +1,28 @@
 import { useState, useEffect } from 'react'
 import { Plus, X, Check, BookOpen } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
-import { Avatar, AvatarColorPicker } from './ui/Avatar'
+import { Avatar, AvatarPicker } from './ui/Avatar'
 import { useGame } from '../context/GameContext'
-import { GAME_META, AVATAR_COLORS } from '../constants/games'
+import { GAME_META, AVATAR_COLORS, PRESET_AVATARS } from '../constants/games'
 import { createPlayer } from '../utils/gameUtils'
 
 function PlayerCreatorSheet({ open, onClose, onAdd }) {
   const [name, setName] = useState('')
   const [color, setColor] = useState(AVATAR_COLORS[0])
+  const [avatar, setAvatar] = useState(PRESET_AVATARS[0])
+
+  useEffect(() => {
+    if (open) {
+      setAvatar(PRESET_AVATARS[Math.floor(Math.random() * PRESET_AVATARS.length)])
+    }
+  }, [open])
 
   const handleAdd = () => {
     if (!name.trim()) return
-    onAdd(createPlayer(name, color))
+    onAdd(createPlayer(name, color, avatar))
     setName('')
     setColor(AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)])
+    setAvatar(PRESET_AVATARS[Math.floor(Math.random() * PRESET_AVATARS.length)])
     onClose()
   }
 
@@ -22,7 +30,7 @@ function PlayerCreatorSheet({ open, onClose, onAdd }) {
     <BottomSheet open={open} onClose={onClose} title="Nouveau joueur">
       <div className="px-5 py-4 space-y-4">
         <div className="flex items-center gap-3">
-          <Avatar player={{ name: name || 'A', color }} size="lg" />
+          <Avatar player={{ name: name || 'A', color, avatar }} size="lg" />
           <input
             type="text"
             placeholder="Prénom du joueur"
@@ -35,12 +43,13 @@ function PlayerCreatorSheet({ open, onClose, onAdd }) {
           />
         </div>
 
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2">
-            Couleur de craie / encre
-          </p>
-          <AvatarColorPicker selected={color} onSelect={setColor} />
-        </div>
+        <AvatarPicker
+          selectedAvatar={avatar}
+          onSelectAvatar={setAvatar}
+          selectedColor={color}
+          onSelectColor={setColor}
+          playerName={name || 'A'}
+        />
 
         <button
           type="button"

@@ -267,7 +267,13 @@ export const BELOTE_CONTRACTS = [
   { value: 500, label: 'Générale (500)' },
 ]
 
-// Palette craies & feutres d'écolier (sans émojis)
+// Avatars illustrés importés depuis Arena.photo
+export const PRESET_AVATARS = Array.from(
+  { length: 9 },
+  (_, i) => `/avatar/Fichier ${i + 1}.png`
+)
+
+// Palette craies & feutres d'écolier (pour l'option initiale)
 export const AVATAR_COLORS = [
   '#c83b3b', // Rouge marge / maîtresse
   '#1e3a5f', // Bleu marine / encre

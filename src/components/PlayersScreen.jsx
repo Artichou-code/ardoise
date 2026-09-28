@@ -1,28 +1,36 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Plus, Pencil, Trash2, Users } from 'lucide-react'
 import { useGame } from '../context/GameContext'
-import { Avatar, AvatarColorPicker } from './ui/Avatar'
+import { Avatar, AvatarPicker } from './ui/Avatar'
 import { BottomSheet } from './ui/BottomSheet'
 import { ConfirmDialog } from './ui/Dialog'
 import { ThemeToggle } from './ui/ThemeToggle'
-import { createPlayer } from '../utils/gameUtils'
-import { AVATAR_COLORS } from '../constants/games'
+import { createPlayer, getPlayerAvatarUrl } from '../utils/gameUtils'
+import { AVATAR_COLORS, PRESET_AVATARS } from '../constants/games'
 
 function PlayerSheet({ open, onClose, initial, onSave }) {
   const [name, setName] = useState(initial?.name || '')
   const [color, setColor] = useState(initial?.color || AVATAR_COLORS[0])
+  const [avatar, setAvatar] = useState(
+    initial ? getPlayerAvatarUrl(initial) : PRESET_AVATARS[0]
+  )
 
   useEffect(() => {
     setName(initial?.name || '')
     setColor(initial?.color || AVATAR_COLORS[0])
+    setAvatar(
+      initial
+        ? getPlayerAvatarUrl(initial)
+        : PRESET_AVATARS[Math.floor(Math.random() * PRESET_AVATARS.length)]
+    )
   }, [initial, open])
 
   const handleSave = () => {
     if (!name.trim()) return
     onSave(
       initial
-        ? { ...initial, name: name.trim(), color }
-        : createPlayer(name, color)
+        ? { ...initial, name: name.trim(), color, avatar }
+        : createPlayer(name, color, avatar)
     )
     onClose()
   }
@@ -35,7 +43,7 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
     >
       <div className="px-5 py-4 space-y-4">
         <div className="flex items-center gap-3">
-          <Avatar player={{ name: name || 'A', color }} size="lg" />
+          <Avatar player={{ name: name || 'A', color, avatar }} size="lg" />
           <input
             type="text"
             placeholder="Prénom du joueur"
@@ -47,12 +55,15 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
             maxLength={20}
           />
         </div>
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2">
-            Couleur de craie / encre
-          </p>
-          <AvatarColorPicker selected={color} onSelect={setColor} />
-        </div>
+
+        <AvatarPicker
+          selectedAvatar={avatar}
+          onSelectAvatar={setAvatar}
+          selectedColor={color}
+          onSelectColor={setColor}
+          playerName={name || 'A'}
+        />
+
         <button
           type="button"
           onClick={handleSave}
