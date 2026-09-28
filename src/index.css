@@ -66,6 +66,10 @@ html.dark {
   * {
     -webkit-font-smoothing: antialiased;
   }
+
+  p, span, li, h1, h2, h3, h4, h5, h6, button, a, label {
+    text-wrap: pretty;
+  }
 }
 
 .pt-safe {

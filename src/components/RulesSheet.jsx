@@ -1,5 +1,6 @@
 import { BottomSheet } from './ui/BottomSheet'
 import { GAME_META } from '../constants/games'
+import { formatTypography } from '../utils/typography'
 
 /**
  * Fiche mémo des règles officielles (Bottom Sheet tactile avec scroll lock).
@@ -14,8 +15,8 @@ export function RulesSheet({ gameType, onClose, onStartSetup }) {
     <BottomSheet
       open={!!gameType}
       onClose={onClose}
-      title={`Règles — ${meta.name}`}
-      subtitle={`${meta.playersBadge} · ${meta.categoryBadge}`}
+      title={formatTypography(`Règles — ${meta.name}`)}
+      subtitle={formatTypography(`${meta.playersBadge} · ${meta.categoryBadge}`)}
     >
       <div className="px-5 py-4 space-y-5">
         {/* Si le jeu définit des sections structurées (ex. Dourak) */}
@@ -25,12 +26,12 @@ export function RulesSheet({ gameType, onClose, onStartSetup }) {
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="w-1.5 h-4 rounded-full bg-[#c83b3b]" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#c83b3b]">
-                  {idx + 1}. {sec.title}
+                  {idx + 1}. {formatTypography(sec.title)}
                 </h3>
               </div>
               {sec.content && (
                 <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
-                  {sec.content}
+                  {formatTypography(sec.content)}
                 </p>
               )}
               {sec.items && (
@@ -41,7 +42,7 @@ export function RulesSheet({ gameType, onClose, onStartSetup }) {
                       className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed flex items-start gap-2"
                     >
                       <span className="text-[#c83b3b] font-bold select-none">•</span>
-                      <span>{item}</span>
+                      <span>{formatTypography(item)}</span>
                     </li>
                   ))}
                 </ul>
@@ -59,7 +60,7 @@ export function RulesSheet({ gameType, onClose, onStartSetup }) {
                 </h3>
               </div>
               <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
-                {rules.objective}
+                {formatTypography(rules.objective)}
               </p>
             </section>
 
@@ -72,7 +73,7 @@ export function RulesSheet({ gameType, onClose, onStartSetup }) {
                 </h3>
               </div>
               <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
-                {rules.gameplay}
+                {formatTypography(rules.gameplay)}
               </p>
             </section>
 
@@ -85,7 +86,7 @@ export function RulesSheet({ gameType, onClose, onStartSetup }) {
                 </h3>
               </div>
               <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
-                {rules.scoring}
+                {formatTypography(rules.scoring)}
               </p>
             </section>
           </>
@@ -100,9 +101,9 @@ export function RulesSheet({ gameType, onClose, onStartSetup }) {
             <div className="divide-y divide-stone-200/70 dark:divide-slate-700/60">
               {rules.summaryTable.map((row, idx) => (
                 <div key={idx} className="flex items-center justify-between py-1.5 text-xs">
-                  <span className="text-stone-700 dark:text-slate-300 font-medium">{row.item}</span>
+                  <span className="text-stone-700 dark:text-slate-300 font-medium">{formatTypography(row.item)}</span>
                   <span className="font-bold text-stone-900 dark:text-slate-100 tabular-nums ml-3 text-right">
-                    {row.value}
+                    {formatTypography(row.value)}
                   </span>
                 </div>
               ))}

@@ -26,14 +26,14 @@ export const GAME_META = {
         {
           title: 'Le But',
           content:
-            "Se défausser de toutes ses cartes. Il n'y a pas de gagnant à proprement parler : le dernier joueur ayant encore des cartes en main devient le « Dourak » (l'idiot).",
+            "Se défausser de toutes ses cartes. Il n'y a pas de gagnant à proprement parler : le dernier joueur ayant encore des cartes en main devient le « Dourak » (l'idiot).",
         },
         {
           title: 'Préparation',
           items: [
             'Paquet de 36 cartes (du 6 à l’As).',
             '6 cartes distribuées à chaque joueur.',
-            "La carte suivante est retournée visible sous la pioche : sa couleur détermine l'Atout (Kozyr) pour toute la manche.",
+            "La carte suivante est retournée visible sous la pioche : sa couleur détermine l'Atout (Kozyr) pour toute la manche.",
           ],
         },
         {
@@ -48,15 +48,15 @@ export const GAME_META = {
         {
           title: 'Résolution du tour',
           items: [
-            "Défense réussie : toutes les cartes jouées sont écartées à la défausse (Otboy). Le défenseur devient le nouvel attaquant.",
-            "Défense échouée (Abandon) : le défenseur ramasse toutes les cartes posées sur la table et passe son tour d'attaque (le joueur à sa gauche attaque).",
+            "Défense réussie : toutes les cartes jouées sont écartées à la défausse (Otboy). Le défenseur devient le nouvel attaquant.",
+            "Défense échouée (Abandon) : le défenseur ramasse toutes les cartes posées sur la table et passe son tour d'attaque (le joueur à sa gauche attaque).",
           ],
         },
         {
           title: 'Recharge & Fin de manche',
           items: [
-            "Recharge : après chaque pli, tout le monde repioche pour remonter à 6 cartes en main (dans l'ordre : attaquant principal, autres attaquants, puis défenseur).",
-            "Fin de manche : lorsque la pioche est épuisée, on joue jusqu'à épuisement des mains. Le dernier joueur qui conserve des cartes est déclaré Dourak.",
+            "Recharge : après chaque pli, tout le monde repioche pour remonter à 6 cartes en main (dans l'ordre : attaquant principal, autres attaquants, puis défenseur).",
+            "Fin de manche : lorsque la pioche est épuisée, on joue jusqu'à épuisement des mains. Le dernier joueur qui conserve des cartes est déclaré Dourak.",
           ],
         },
       ],
@@ -88,8 +88,8 @@ export const GAME_META = {
           title: "Déroulement d'une manche",
           items: [
             "Chaque joueur dispose de 4 cartes face cachée devant lui disposées en carré. Au début de la manche, chacun mémorise secrètement 2 de ses 4 cartes.",
-            "À son tour, on pioche une carte (depuis la pioche ou la défausse) : on peut l'échanger avec l'une de ses cartes cachées, ou la défausser directement pour activer son effet (regarder une de ses cartes, espionner une carte adverse, échanger deux cartes).",
-            "Dès qu'un joueur estime avoir la plus petite valeur totale en main, il crie « Caracole ! ». Les autres joueurs jouent alors un dernier tour.",
+            "À son tour, on pioche une carte (depuis la pioche ou la défausse) : on peut l'échanger avec l'une de ses cartes cachées, ou la défausser directement pour activer son effet (regarder une de ses cartes, espionner une carte adverse, échanger deux cartes).",
+            "Dès qu'un joueur estime avoir la plus petite valeur totale en main, il crie « Caracole ! ». Les autres joueurs jouent alors un dernier tour.",
           ],
         },
         {
@@ -102,8 +102,8 @@ export const GAME_META = {
         {
           title: 'Règle spéciale du Sursis (pile à 100 ou 50 pts)',
           items: [
-            "Si à la fin d'une manche un joueur atteint EXACTEMENT 100 points, son score est automatiquement divisé par deux et retombe à 50 points ! Il gagne un sursis inespéré et reste en course au lieu d'être éliminé.",
-            "En partie courte à 50 points : si un joueur atteint pile 50 points, son score retombe à 25 points (ou est remis à zéro selon la variante locale choisie).",
+            "Si à la fin d'une manche un joueur atteint EXACTEMENT 100 points, son score est automatiquement divisé par deux et retombe à 50 points ! Il gagne un sursis inespéré et reste en course au lieu d'être éliminé.",
+            "En partie courte à 50 points : si un joueur atteint pile 50 points, son score retombe à 25 points (ou est remis à zéro selon la variante locale choisie).",
             "Tout score qui dépasse strictement le seuil (ex: 101 pts à 100, ou 51 pts à 50) élimine le joueur et déclenche la fin de la partie.",
           ],
         },
@@ -129,9 +129,9 @@ export const GAME_META = {
       objective:
         "Être le premier à vider sa main pour devenir Président et accumuler le plus de points au fil des manches.",
       gameplay:
-        "Ordre des cartes (de la plus faible à la plus forte) : 3, 4, 5, 6, 7, 8, 9, 10, Valet, Dame, Roi, As, et le 2 (qui coupe le pli). On pose des cartes simples, paires, brelans ou carrés de valeur supérieure ou égale. Avant chaque nouvelle manche, le Trou du cul donne ses 2 meilleures cartes au Président (qui lui rend 2 cartes de son choix) ; le Vice-Trou échange 1 carte avec le Vice-Président.",
+        "Ordre des cartes (de la plus faible à la plus forte) : 3, 4, 5, 6, 7, 8, 9, 10, Valet, Dame, Roi, As, et le 2 (qui coupe le pli). On pose des cartes simples, paires, brelans ou carrés de valeur supérieure ou égale. Avant chaque nouvelle manche, le Trou du cul donne ses 2 meilleures cartes au Président (qui lui rend 2 cartes de son choix) ; le Vice-Trou échange 1 carte avec le Vice-Président.",
       scoring:
-        "Les rôles et points sont attribués dans l'ordre de sortie : Président (+2 pts), Vice-Président (+1 pt), Neutre (0 pt), Vice-Trou (-1 pt), Trou du cul (-2 pts).",
+        "Les rôles et points sont attribués dans l'ordre de sortie : Président (+2 pts), Vice-Président (+1 pt), Neutre (0 pt), Vice-Trou (-1 pt), Trou du cul (-2 pts).",
       summaryTable: [
         { item: '1er — Président', value: '+2 pts (reçoit 2 cartes)' },
         { item: '2e — Vice-Président', value: '+1 pt (reçoit 1 carte)' },
@@ -157,7 +157,7 @@ export const GAME_META = {
       gameplay:
         "Chaque joueur dispose de 12 cartes face cachée en grille de 4 colonnes × 3 lignes (valeurs de -2 à 12). À son tour, on pioche (pioche ou défausse) pour remplacer une carte ou retourner une carte cachée. Si les 3 cartes d'une même colonne sont visibles et strictement identiques, toute la colonne est défaussée (0 pt).",
       scoring:
-        "Dès qu'un joueur retourne sa dernière carte, les autres jouent un dernier tour puis on additionne les cartes. Attention : le joueur qui a clôturé la manche doit avoir le score strictement le plus bas de la table ; sinon (même en cas d'égalité), son score de manche (s'il est positif) est doublé !",
+        "Dès qu'un joueur retourne sa dernière carte, les autres jouent un dernier tour puis on additionne les cartes. Attention : le joueur qui a clôturé la manche doit avoir le score strictement le plus bas de la table ; sinon (même en cas d'égalité), son score de manche (s'il est positif) est doublé !",
       summaryTable: [
         { item: 'Colonne de 3 cartes identiques', value: 'Défaussée (0 pt)' },
         { item: 'Clôtureur avec score strictement min.', value: 'Score normal' },
@@ -180,9 +180,9 @@ export const GAME_META = {
       objective:
         "En équipe (Nous vs Eux), remplir les contrats annoncés en réalisant au moins 82 points sur les 162 points de la donne.",
       gameplay:
-        "À l'atout : Valet (20 pts), 9 (14 pts), As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts). Hors atout : As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts), Valet (2 pts). Le dernier pli rapporte 10 pts (« dix de der »), soit un total de 162 points hors annonces.",
+        "À l'atout : Valet (20 pts), 9 (14 pts), As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts). Hors atout : As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts), Valet (2 pts). Le dernier pli rapporte 10 pts (« dix de der »), soit un total de 162 points hors annonces.",
       scoring:
-        "Si le preneur remplit son contrat (≥ 82 pts et ≥ contrat), l'équipe marque ses points + le contrat + les annonces (Belote-Rebelote +20). En cas de chute (« dedans »), la défense marque les 162 points + le contrat + les annonces. Capot (tous les plis) = 252 pts ; Générale (tous les plis par un seul joueur) = 500 pts.",
+        "Si le preneur remplit son contrat (≥ 82 pts et ≥ contrat), l'équipe marque ses points + le contrat + les annonces (Belote-Rebelote +20). En cas de chute (« dedans »), la défense marque les 162 points + le contrat + les annonces. Capot (tous les plis) = 252 pts ; Générale (tous les plis par un seul joueur) = 500 pts.",
       summaryTable: [
         { item: 'Total des plis (avec 10 de der)', value: '162 pts' },
         { item: 'Belote + Rebelote (Roi & Dame atout)', value: '+20 pts' },
@@ -204,7 +204,7 @@ export const GAME_META = {
       objective:
         "Le preneur (seul à 3 ou 4 joueurs, ou avec un partenaire appelé au Roi à 5 joueurs) doit atteindre un seuil de points dépendant du nombre de Bouts (21, Petit, Excuse) dans ses plis.",
       gameplay:
-        "Le jeu totalise 91 points. Le seuil à atteindre par l'attaque dépend des Bouts : 0 bout = 56 pts, 1 bout = 51 pts, 2 bouts = 41 pts, 3 bouts = 36 pts. Les enchères déterminent le coefficient : Petite (×1), Garde (×2), Garde Sans le chien (×4), Garde Contre le chien (×6).",
+        "Le jeu totalise 91 points. Le seuil à atteindre par l'attaque dépend des Bouts : 0 bout = 56 pts, 1 bout = 51 pts, 2 bouts = 41 pts, 3 bouts = 36 pts. Les enchères déterminent le coefficient : Petite (×1), Garde (×2), Garde Sans le chien (×4), Garde Contre le chien (×6).",
       scoring:
         "Score de base = (25 + écart au seuil) × coefficient du contrat. Si le Petit est mené au bout (dernier pli), bonus/malus de 10 × coefficient. Chaque défenseur donne (ou reçoit en cas de chute) ce total au preneur (à somme nulle).",
       summaryTable: [
@@ -217,7 +217,7 @@ export const GAME_META = {
   },
   [GAMES.SIX_QUI_PREND]: {
     id: GAMES.SIX_QUI_PREND,
-    name: '6 qui prend !',
+    name: '6 qui prend !',
     playersBadge: '2–10 j.',
     categoryBadge: 'Jeu 6 qui prend',
     description: 'Décompte des têtes de bœuf, arrêt à 66 têtes.',
@@ -231,7 +231,7 @@ export const GAME_META = {
       gameplay:
         "10 cartes par joueur, 4 rangées au centre. À chaque tour, tous choisissent une carte simultanément et les placent par ordre croissant sur la rangée dont la dernière carte est inférieure avec le plus petit écart. Si un joueur pose la 6e carte d'une rangée (ou une carte plus faible que toutes les rangées), il ramasse les cartes de la rangée et sa carte en devient la première.",
       scoring:
-        "Chaque carte ramassée vaut un nombre de têtes de bœuf : Carte 55 = 7 têtes ; Doublons (11, 22, 33...) = 5 têtes ; Multiples de 10 (10, 20, 30...) = 3 têtes ; Multiples de 5 (5, 15, 25...) = 2 têtes ; Autres cartes = 1 tête.",
+        "Chaque carte ramassée vaut un nombre de têtes de bœuf : Carte 55 = 7 têtes ; Doublons (11, 22, 33...) = 5 têtes ; Multiples de 10 (10, 20, 30...) = 3 têtes ; Multiples de 5 (5, 15, 25...) = 2 têtes ; Autres cartes = 1 tête.",
       summaryTable: [
         { item: 'Carte 55', value: '7 têtes' },
         { item: 'Doublons (11, 22, 33, 44…)', value: '5 têtes' },
@@ -254,7 +254,7 @@ export const GAME_META = {
       objective:
         "Noter librement les points manche après manche pour n'importe quel jeu de cartes ou de société (Uno, Rami, Scrabble, Molky, Flip 7, etc.).",
       gameplay:
-        "Choisissez à la création de la partie entre deux règles de classement : soit le score le plus élevé l'emporte, soit le score le plus faible gagne avec un seuil d'élimination paramétrable (50, 100, 150 ou 200 pts).",
+        "Choisissez à la création de la partie entre deux règles de classement : soit le score le plus élevé l'emporte, soit le score le plus faible gagne avec un seuil d'élimination paramétrable (50, 100, 150 ou 200 pts).",
       scoring:
         "Utilisez le pavé tactile rapide (+1, +5, +10, -1, 0) pour saisir les points de chaque joueur d'une seule main à la fin de chaque manche.",
       summaryTable: [

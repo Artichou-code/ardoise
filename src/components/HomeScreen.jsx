@@ -12,6 +12,7 @@ import { ArtCreaLogo } from './ui/ArtCreaLogo'
 import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
 import { formatDate, formatGameStart } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
+import { formatTypography } from '../utils/typography'
 
 export function HomeScreen() {
   const { games, setScreen, resumeGame, customPresets, deletePreset, createGame } = useGame()
@@ -250,7 +251,7 @@ export function HomeScreen() {
                   <div>
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-serif-title font-bold text-lg leading-snug">
-                        {meta.name}
+                        {formatTypography(meta.name)}
                       </h3>
                       <button
                         type="button"
@@ -267,7 +268,7 @@ export function HomeScreen() {
                     </div>
 
                     <p className="text-xs text-stone-500 dark:text-slate-400 mt-1 leading-relaxed">
-                      {meta.description}
+                      {formatTypography(meta.description)}
                     </p>
                   </div>
 
