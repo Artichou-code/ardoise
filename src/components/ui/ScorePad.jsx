@@ -125,7 +125,7 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
   const cur = currentValueRef.current
 
   return (
-    <div className="flex flex-col gap-3 pt-1">
+    <div className="flex flex-col gap-3 pt-2">
       {label && (
         <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-slate-400">
           {label}
@@ -140,16 +140,16 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}
           style={{ touchAction: 'none' }}
-          className={`relative select-none cursor-grab active:cursor-grabbing flex flex-col items-center justify-center transition-all duration-150 rounded-2xl border-2 ${
+          className={`relative select-none cursor-grab active:cursor-grabbing flex flex-col items-center justify-center transition-colors duration-150 rounded-2xl border-2 ${
             isDragging
-              ? 'py-4 bg-[#c83b3b]/10 dark:bg-[#c83b3b]/15 border-[#c83b3b] shadow-inner ring-4 ring-[#c83b3b]/20 scale-[1.02]'
-              : 'py-3.5 bg-stone-50/80 dark:bg-slate-800/40 border-stone-200 dark:border-slate-800 hover:border-[#c83b3b]/40'
+              ? 'py-3 bg-[#c83b3b]/10 dark:bg-[#c83b3b]/15 border-[#c83b3b] shadow-xs ring-2 ring-[#c83b3b]/30'
+              : 'py-3 bg-stone-50/80 dark:bg-slate-800/40 border-stone-200 dark:border-slate-800 hover:border-[#c83b3b]/40'
           }`}
         >
           {isDragging ? (
-            <div className="flex flex-col items-center justify-center overflow-hidden py-1 w-full pointer-events-none">
+            <div className="flex flex-col items-center justify-center overflow-hidden py-0.5 w-full pointer-events-none">
               {/* Badge pendant le glissement */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c83b3b]/20 text-[#c83b3b] dark:text-red-300 border border-[#c83b3b]/30 text-[11px] font-bold shadow-2xs mb-1.5 animate-pulse">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#c83b3b]/20 text-[#c83b3b] dark:text-red-300 border border-[#c83b3b]/30 text-[11px] font-bold shadow-2xs mb-1 animate-pulse">
                 <ArrowUpDown size={12} strokeWidth={2.5} />
                 <span>Score : {cur >= 0 ? '+' : ''}{cur}</span>
               </div>

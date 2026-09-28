@@ -173,7 +173,7 @@ export function CaracoleEngine({ game, onFinish }) {
           onClose={() => setOpen(false)}
           title={`${editingPlayer.name} — Points de pénalité`}
         >
-          <div className="px-5 pb-6">
+          <div className="px-5 pt-2 pb-6">
             <ScorePad
               value={roundPenalties[editingPlayer.id] || 0}
               onChange={v => setPenalty(editingPlayer.id, v)}
