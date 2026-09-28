@@ -261,7 +261,7 @@ export function HomeScreen() {
                       </button>
                     </div>
 
-                    <p className="text-xs text-stone-500 dark:text-slate-400 truncate mt-1">
+                    <p className="text-xs text-stone-500 dark:text-slate-400 mt-1 leading-relaxed">
                       {meta.description}
                     </p>
                   </div>
