@@ -78,7 +78,7 @@ html.dark {
 
 /* Espace de sécurité en bas de défilement pour ne jamais couper les cartes au-dessus de la barre système mobile */
 .scroll-bottom-space {
-  padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: calc(2.25rem + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 .font-serif-title {

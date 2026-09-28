@@ -57,32 +57,30 @@ export function VictoryScreen() {
     : null
 
   const podiumOrder = [ranking[1], ranking[0], ranking[2]].filter(Boolean)
-  const heights = ['h-20', 'h-28', 'h-16']
+  const heights = ['h-16', 'h-24', 'h-12']
   const labels = ['2e', '1er', '3e']
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
-      <header className="flex items-center justify-between px-4 pt-safe pt-3.5 pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90">
-        <span className="font-serif-title text-lg font-bold">
+      <header className="flex items-center justify-between px-4 pt-safe pt-2.5 pb-2 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90">
+        <span className="font-serif-title text-base sm:text-lg font-bold">
           {isDourak ? "Verdict du Dourak (l'idiot)" : 'Palmarès de la partie'}
         </span>
         <ThemeToggle />
       </header>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-2.5 pb-4 pb-safe">
         {/* Lauréat & Grand Dourak (si jeu Dourak) */}
         {isDourak ? (
-          <div className="grid grid-cols-2 gap-3 mt-4 mb-6">
+          <div className="grid grid-cols-2 gap-2.5 mt-2 mb-3">
             {/* Meilleur joueur (0 défaite / invaincu) */}
             {winner && (
-              <div className="school-card rounded-xl p-3.5 text-center border-t-4 border-t-emerald-700 dark:border-t-emerald-500">
-                <div className="inline-flex justify-center">
-                  <Avatar player={winner} size="md" />
-                </div>
-                <span className="mt-2 block text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+              <div className="school-card rounded-xl p-3 flex flex-col items-center justify-center text-center border-t-4 border-t-emerald-700 dark:border-t-emerald-500">
+                <Avatar player={winner} size="md" />
+                <span className="mt-1.5 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 w-full text-center">
                   Meilleur joueur
                 </span>
-                <p className="font-serif-title font-bold text-base truncate mt-0.5">
+                <p className="font-serif-title font-bold text-sm sm:text-base truncate w-full mt-0.5">
                   {winner.name}
                 </p>
                 <p className="text-xs font-bold text-stone-500 dark:text-slate-400 mt-0.5 tabular-nums">
@@ -93,14 +91,13 @@ export function VictoryScreen() {
 
             {/* Le Grand Dourak de la soirée */}
             {grandDourak && (
-              <div className="school-card rounded-xl p-3.5 text-center border-t-4 border-t-[#c83b3b] bg-[#c83b3b]/5">
-                <div className="inline-flex justify-center">
-                  <Avatar player={grandDourak} size="md" leader />
-                </div>
-                <span className="mt-2 inline-flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#c83b3b]">
-                  <AlertCircle size={11} /> Grand Dourak
+              <div className="school-card rounded-xl p-3 flex flex-col items-center justify-center text-center border-t-4 border-t-[#c83b3b] bg-[#c83b3b]/5">
+                <Avatar player={grandDourak} size="md" leader />
+                <span className="mt-1.5 flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#c83b3b] w-full text-center">
+                  <AlertCircle size={11} className="flex-shrink-0" />
+                  <span className="truncate">Grand Dourak</span>
                 </span>
-                <p className="font-serif-title font-bold text-base truncate mt-0.5">
+                <p className="font-serif-title font-bold text-sm sm:text-base truncate w-full mt-0.5">
                   {grandDourak.name}
                 </p>
                 <p className="text-xs font-black text-[#c83b3b] mt-0.5 tabular-nums">
@@ -111,14 +108,14 @@ export function VictoryScreen() {
           </div>
         ) : (
           winner && (
-            <div className="text-center mt-5 mb-6">
+            <div className="text-center mt-2 mb-3">
               <div className="inline-flex flex-col items-center">
-                <Avatar player={winner} size="xl" leader />
-                <span className="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#c83b3b] text-white text-[11px] font-bold uppercase tracking-wider">
+                <Avatar player={winner} size="lg" leader />
+                <span className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#c83b3b] text-white text-[10px] font-bold uppercase tracking-wider">
                   <Award size={12} /> Vainqueur
                 </span>
               </div>
-              <h1 className="font-serif-title text-2xl font-bold mt-2">
+              <h1 className="font-serif-title text-xl font-bold mt-1">
                 {winner.name} l'emporte
               </h1>
               <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
@@ -132,7 +129,7 @@ export function VictoryScreen() {
 
         {/* Podium typographique sans émoji */}
         {ranking.length >= 2 && (
-          <div className="flex items-end justify-center gap-2.5 mb-6">
+          <div className="flex items-end justify-center gap-2 mb-3">
             {podiumOrder.map((r, i) => {
               if (!r) return <div key={i} className="w-24" />
               const player = activeGame.players.find(p => p.id === r.id)
@@ -148,7 +145,7 @@ export function VictoryScreen() {
                     {r.score} {scoreUnit}
                   </span>
                   <div
-                    className={`${heights[i]} w-full rounded-t-xl flex items-start justify-center pt-2.5 font-serif-title font-bold text-sm border-t border-x ${
+                    className={`${heights[i]} w-full rounded-t-xl flex items-start justify-center pt-2 font-serif-title font-bold text-sm border-t border-x ${
                       isFirst
                         ? 'bg-[#c83b3b] text-white border-[#c83b3b]'
                         : 'school-card text-stone-600 dark:text-slate-300'
@@ -163,8 +160,8 @@ export function VictoryScreen() {
         )}
 
         {/* Classement complet */}
-        <div className="school-card rounded-xl p-4 space-y-2">
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+        <div className="school-card rounded-xl p-3.5 space-y-1">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
             {isDourak ? 'Bilan de la soirée (du meilleur au Grand Dourak)' : 'Tableau final'}
           </p>
           {ranking.map(({ id, score, rank }) => {
@@ -185,7 +182,7 @@ export function VictoryScreen() {
                   {rank === 1 ? '1er' : `${rank}e`}
                 </span>
                 <Avatar player={player} size="xs" />
-                <span className="flex-1 font-semibold text-sm truncate">
+                <span className="flex-1 font-semibold text-xs sm:text-sm truncate">
                   {player.name}
                 </span>
                 {isLast && (
@@ -194,7 +191,7 @@ export function VictoryScreen() {
                   </span>
                 )}
                 <span
-                  className={`font-black text-sm tabular-nums ${
+                  className={`font-black text-xs sm:text-sm tabular-nums ${
                     isLast ? 'text-[#c83b3b]' : ''
                   }`}
                 >
@@ -206,18 +203,18 @@ export function VictoryScreen() {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 mt-6">
+        <div className="flex gap-2.5 mt-3">
           <button
             type="button"
             onClick={exitGame}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl border border-stone-300 dark:border-slate-700 font-semibold text-sm hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-stone-300 dark:border-slate-700 font-semibold text-sm hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
           >
             <Home size={16} /> Accueil
           </button>
           <button
             type="button"
             onClick={rematch}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm btn-margin-red"
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm btn-margin-red"
           >
             <RotateCcw size={16} /> Revanche
           </button>
