@@ -27,7 +27,7 @@ function PlayerCreatorSheet({ open, onClose, onAdd }) {
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Nouveau joueur">
+    <BottomSheet open={open} onClose={onClose} position="top" title="Nouveau joueur">
       <div className="px-5 py-4 space-y-4">
         <div className="flex items-center gap-3">
           <Avatar player={{ name: name || 'A', color, avatar }} size="lg" />

@@ -39,6 +39,7 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
     <BottomSheet
       open={open}
       onClose={onClose}
+      position="top"
       title={initial ? 'Modifier le joueur' : 'Nouveau joueur'}
     >
       <div className="px-5 py-4 space-y-4">

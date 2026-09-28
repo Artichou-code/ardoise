@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { History, Users, ChevronRight, BookOpen, Play } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
@@ -16,6 +16,31 @@ export function HomeScreen() {
 
   const activeGames = games.filter(g => g.status === 'active')
   const finishedGames = games.filter(g => g.status === 'finished').slice(0, 3)
+
+  // Nombre de fois où chaque jeu a été joué (parties en cours + terminées)
+  const gamePlayCounts = useMemo(() => {
+    const counts = {}
+    games.forEach(g => {
+      if (g.type) counts[g.type] = (counts[g.type] || 0) + 1
+    })
+    return counts
+  }, [games])
+
+  // Tri dynamique : les jeux les plus joués se placent automatiquement en premier
+  const sortedGames = useMemo(() => {
+    const list = Object.values(GAME_META)
+    const initialIndex = list.reduce((acc, m, i) => {
+      acc[m.id] = i
+      return acc
+    }, {})
+
+    return [...list].sort((a, b) => {
+      const countA = gamePlayCounts[a.id] || 0
+      const countB = gamePlayCounts[b.id] || 0
+      if (countB !== countA) return countB - countA
+      return initialIndex[a.id] - initialIndex[b.id]
+    })
+  }, [gamePlayCounts])
 
   return (
     <div className="flex flex-col h-[100dvh] overflow-hidden school-surface">
@@ -111,53 +136,61 @@ export function HomeScreen() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {Object.values(GAME_META).map(meta => (
-              <div
-                key={meta.id}
-                onClick={() => setSetupGame(meta.id)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && setSetupGame(meta.id)}
-                className="relative flex flex-col justify-between p-4 rounded-xl school-card hover:border-[#c83b3b] transition-all active:scale-[0.99] cursor-pointer shadow-2xs border-l-4 border-l-[#c83b3b]/80"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-serif-title font-bold text-lg leading-snug">
-                      {meta.name}
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setRulesGame(meta.id)
-                      }}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800/80 text-[11px] font-semibold text-stone-700 dark:text-slate-300 hover:border-[#c83b3b] hover:text-[#c83b3b] transition-colors flex-shrink-0"
-                      title={`Lire les règles de ${meta.name}`}
-                    >
-                      <BookOpen size={12} />
-                      <span>Règles</span>
-                    </button>
+            {sortedGames.map(meta => {
+              const playCount = gamePlayCounts[meta.id] || 0
+              return (
+                <div
+                  key={meta.id}
+                  onClick={() => setSetupGame(meta.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && setSetupGame(meta.id)}
+                  className="relative flex flex-col justify-between p-4 rounded-xl school-card hover:border-[#c83b3b] transition-all active:scale-[0.99] cursor-pointer shadow-2xs border-l-4 border-l-[#c83b3b]/80"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-serif-title font-bold text-lg leading-snug">
+                        {meta.name}
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setRulesGame(meta.id)
+                        }}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800/80 text-[11px] font-semibold text-stone-700 dark:text-slate-300 hover:border-[#c83b3b] hover:text-[#c83b3b] transition-colors flex-shrink-0"
+                        title={`Lire les règles de ${meta.name}`}
+                      >
+                        <BookOpen size={12} />
+                        <span>Règles</span>
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-stone-500 dark:text-slate-400 truncate mt-1">
+                      {meta.description}
+                    </p>
                   </div>
 
-                  <p className="text-xs text-stone-500 dark:text-slate-400 truncate mt-1">
-                    {meta.description}
-                  </p>
+                  {/* Badges discrets d'écolier */}
+                  <div className="flex items-center gap-1.5 mt-3 pt-2.5 border-t border-stone-100 dark:border-slate-800/70">
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300">
+                      {meta.playersBadge}
+                    </span>
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded border border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400">
+                      {meta.categoryBadge}
+                    </span>
+                    {playCount > 0 && (
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#c83b3b]/10 text-[#c83b3b] border border-[#c83b3b]/20">
+                        {playCount} partie{playCount > 1 ? 's' : ''}
+                      </span>
+                    )}
+                    <span className="ml-auto text-xs font-bold text-[#c83b3b] flex items-center gap-0.5">
+                      Jouer <ChevronRight size={14} />
+                    </span>
+                  </div>
                 </div>
-
-                {/* Badges discrets d'écolier */}
-                <div className="flex items-center gap-1.5 mt-3 pt-2.5 border-t border-stone-100 dark:border-slate-800/70">
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300">
-                    {meta.playersBadge}
-                  </span>
-                  <span className="text-[11px] font-medium px-2 py-0.5 rounded border border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400">
-                    {meta.categoryBadge}
-                  </span>
-                  <span className="ml-auto text-xs font-bold text-[#c83b3b] flex items-center gap-0.5">
-                    Jouer <ChevronRight size={14} />
-                  </span>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </section>
 

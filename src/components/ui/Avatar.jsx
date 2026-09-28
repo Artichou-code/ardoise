@@ -13,17 +13,18 @@ export function Avatar({ player, size = 'md', leader = false }) {
 
   const avatarUrl = getPlayerAvatarUrl(player)
   const initial = getPlayerInitial(player)
-  const bgColor = player?.color || '#c83b3b'
+  const ringColor = leader ? '#c83b3b' : (player?.color || '#c83b3b')
+
+  // Espace (gap) de 2px entre l'avatar et l'anneau coloré
+  const floatingRingStyle = {
+    boxShadow: `0 0 0 2px var(--bg-card, #ffffff), 0 0 0 4px ${ringColor}`,
+  }
 
   if (avatarUrl) {
     return (
       <div
-        className={`${sizeClass} rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden select-none transition-all`}
-        style={{
-          boxShadow: leader
-            ? '0 0 0 2px var(--bg-page), 0 0 0 4px #c83b3b'
-            : `0 0 0 2px ${bgColor}`,
-        }}
+        className={`${sizeClass} rounded-full flex items-center justify-center flex-shrink-0 select-none transition-all relative`}
+        style={floatingRingStyle}
       >
         <img
           src={avatarUrl}
@@ -39,8 +40,8 @@ export function Avatar({ player, size = 'md', leader = false }) {
     <div
       className={`${sizeClass} rounded-full flex items-center justify-center flex-shrink-0 font-bold tracking-tight text-white select-none transition-all`}
       style={{
-        backgroundColor: bgColor,
-        boxShadow: leader ? '0 0 0 2px var(--bg-page), 0 0 0 4px #c83b3b' : undefined,
+        backgroundColor: ringColor,
+        ...floatingRingStyle,
       }}
     >
       <span>{initial}</span>
@@ -54,7 +55,7 @@ export function Avatar({ player, size = 'md', leader = false }) {
 export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, onSelectColor }) {
   return (
     <div className="space-y-4">
-      {/* 9 avatars purement ronds sans marges */}
+      {/* 9 avatars purement ronds avec anneau et espace de 2px */}
       <div>
         <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
           Choisir un avatar
@@ -72,7 +73,7 @@ export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, on
                 }`}
                 style={{
                   boxShadow: isSelected
-                    ? `0 0 0 2px var(--bg-card), 0 0 0 4px ${selectedColor || '#c83b3b'}`
+                    ? `0 0 0 2px var(--bg-card, #ffffff), 0 0 0 4px ${selectedColor || '#c83b3b'}`
                     : undefined,
                 }}
                 title={`Avatar ${idx + 1}`}
@@ -97,7 +98,7 @@ export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, on
         </div>
       </div>
 
-      {/* Choix de la couleur du joueur (pastilles rondes) */}
+      {/* Choix de la couleur du joueur (pastilles rondes avec anneau et espace de 2px) */}
       <div>
         <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
           Couleur du joueur ({AVATAR_COLOR_NAMES[selectedColor] || 'Teinte'})
@@ -117,7 +118,7 @@ export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, on
                 style={{
                   backgroundColor: color,
                   boxShadow: isSelected
-                    ? `0 0 0 2px var(--bg-card), 0 0 0 4px ${color}`
+                    ? `0 0 0 2px var(--bg-card, #ffffff), 0 0 0 4px ${color}`
                     : undefined,
                 }}
               >
