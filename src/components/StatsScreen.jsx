@@ -252,6 +252,55 @@ export function StatsScreen() {
 
   const { kpis, titles, gamesDistribution } = stats
 
+  const honorsList = useMemo(() => {
+    const list = []
+    if (titles.bestStrategist && titles.bestStrategist.winRate > 0) {
+      list.push({
+        id: 'strategist',
+        player: titles.bestStrategist,
+        label: 'Meilleur stratège',
+        sub: `${titles.bestStrategist.winRate}% victoires`,
+        cardStyle: 'border-amber-200/90 dark:border-amber-900/40 bg-amber-50/70 dark:bg-amber-950/20',
+        labelStyle: 'text-amber-700 dark:text-amber-300',
+        subStyle: 'text-amber-800/80 dark:text-amber-400/80',
+      })
+    }
+    if (titles.mostActive && titles.mostActive.totalGames >= 2) {
+      list.push({
+        id: 'active',
+        player: titles.mostActive,
+        label: 'Fidèle au poste',
+        sub: `${titles.mostActive.totalGames} parties`,
+        cardStyle: 'border-blue-200/90 dark:border-blue-900/40 bg-blue-50/70 dark:bg-blue-950/20',
+        labelStyle: 'text-blue-700 dark:text-blue-300',
+        subStyle: 'text-blue-800/80 dark:text-blue-400/80',
+      })
+    }
+    if (titles.grandDourak && titles.grandDourak.dourakLosses > 0) {
+      list.push({
+        id: 'dourak',
+        player: titles.grandDourak,
+        label: 'Grand Dourak',
+        sub: `${titles.grandDourak.dourakLosses} revers`,
+        cardStyle: 'border-rose-200/90 dark:border-rose-900/40 bg-rose-50/70 dark:bg-rose-950/20',
+        labelStyle: 'text-rose-700 dark:text-rose-300',
+        subStyle: 'text-rose-800/80 dark:text-rose-400/80',
+      })
+    }
+    if (titles.podiumKing && titles.podiumKing.podiums >= 2 && titles.podiumKing.name !== titles.bestStrategist?.name) {
+      list.push({
+        id: 'podium',
+        player: titles.podiumKing,
+        label: 'Roi du podium',
+        sub: `${titles.podiumKing.podiums} Top 3`,
+        cardStyle: 'border-emerald-200/90 dark:border-emerald-900/40 bg-emerald-50/70 dark:bg-emerald-950/20',
+        labelStyle: 'text-emerald-700 dark:text-emerald-300',
+        subStyle: 'text-emerald-800/80 dark:text-emerald-400/80',
+      })
+    }
+    return list
+  }, [titles])
+
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
       {/* Header avec espacement mobile sécurisé */}
@@ -405,7 +454,7 @@ export function StatsScreen() {
             </div>
 
             {/* Distinctions / Panthéon (si des titres sont attribués) */}
-            {(titles.bestStrategist || titles.mostActive || titles.grandDourak || titles.podiumKing) && (
+            {honorsList.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5 px-0.5">
                   <Award size={15} className="text-amber-600 dark:text-amber-400" />
@@ -415,85 +464,31 @@ export function StatsScreen() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  {titles.bestStrategist && (
-                    <div
-                      onClick={() => setSelectedPlayer(titles.bestStrategist)}
-                      className="p-2.5 rounded-xl border border-amber-200/90 dark:border-amber-900/40 bg-amber-50/70 dark:bg-amber-950/20 flex items-center gap-2.5 cursor-pointer active:scale-[0.98] transition-transform"
-                    >
-                      <Avatar player={titles.bestStrategist} size="sm" />
-                      <div className="min-w-0 flex-1">
-                        <span className="block text-[10px] font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider">
-                          Meilleur stratège
-                        </span>
-                        <p className="font-semibold text-xs text-stone-900 dark:text-slate-100 truncate">
-                          {titles.bestStrategist.name}
-                        </p>
-                        <span className="text-[10px] text-amber-800/80 dark:text-amber-400/80">
-                          {titles.bestStrategist.winRate}% victoires
-                        </span>
+                  {honorsList.map((honor, index) => {
+                    const isOddLast = honorsList.length % 2 !== 0 && index === honorsList.length - 1
+                    return (
+                      <div
+                        key={honor.id}
+                        onClick={() => setSelectedPlayer(honor.player)}
+                        className={`p-2.5 rounded-xl border ${honor.cardStyle} flex items-center gap-2.5 cursor-pointer active:scale-[0.98] transition-transform ${
+                          isOddLast ? 'col-span-2' : ''
+                        }`}
+                      >
+                        <Avatar player={honor.player} size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <span className={`block text-[10px] font-bold ${honor.labelStyle} uppercase tracking-wider`}>
+                            {honor.label}
+                          </span>
+                          <p className="font-semibold text-xs text-stone-900 dark:text-slate-100 truncate">
+                            {honor.player.name}
+                          </p>
+                          <span className={`text-[10px] ${honor.subStyle}`}>
+                            {honor.sub}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  )}
-
-                  {titles.mostActive && (
-                    <div
-                      onClick={() => setSelectedPlayer(titles.mostActive)}
-                      className="p-2.5 rounded-xl border border-blue-200/90 dark:border-blue-900/40 bg-blue-50/70 dark:bg-blue-950/20 flex items-center gap-2.5 cursor-pointer active:scale-[0.98] transition-transform"
-                    >
-                      <Avatar player={titles.mostActive} size="sm" />
-                      <div className="min-w-0 flex-1">
-                        <span className="block text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
-                          Fidèle au poste
-                        </span>
-                        <p className="font-semibold text-xs text-stone-900 dark:text-slate-100 truncate">
-                          {titles.mostActive.name}
-                        </p>
-                        <span className="text-[10px] text-blue-800/80 dark:text-blue-400/80">
-                          {titles.mostActive.totalGames} parties
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {titles.grandDourak && (
-                    <div
-                      onClick={() => setSelectedPlayer(titles.grandDourak)}
-                      className="p-2.5 rounded-xl border border-rose-200/90 dark:border-rose-900/40 bg-rose-50/70 dark:bg-rose-950/20 flex items-center gap-2.5 cursor-pointer active:scale-[0.98] transition-transform"
-                    >
-                      <Avatar player={titles.grandDourak} size="sm" />
-                      <div className="min-w-0 flex-1">
-                        <span className="block text-[10px] font-bold text-rose-700 dark:text-rose-300 uppercase tracking-wider">
-                          Grand Dourak
-                        </span>
-                        <p className="font-semibold text-xs text-stone-900 dark:text-slate-100 truncate">
-                          {titles.grandDourak.name}
-                        </p>
-                        <span className="text-[10px] text-rose-800/80 dark:text-rose-400/80">
-                          {titles.grandDourak.dourakLosses} revers
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {titles.podiumKing && titles.podiumKing.name !== titles.bestStrategist?.name && (
-                    <div
-                      onClick={() => setSelectedPlayer(titles.podiumKing)}
-                      className="p-2.5 rounded-xl border border-emerald-200/90 dark:border-emerald-900/40 bg-emerald-50/70 dark:bg-emerald-950/20 flex items-center gap-2.5 cursor-pointer active:scale-[0.98] transition-transform"
-                    >
-                      <Avatar player={titles.podiumKing} size="sm" />
-                      <div className="min-w-0 flex-1">
-                        <span className="block text-[10px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
-                          Roi du podium
-                        </span>
-                        <p className="font-semibold text-xs text-stone-900 dark:text-slate-100 truncate">
-                          {titles.podiumKing.name}
-                        </p>
-                        <span className="text-[10px] text-emerald-800/80 dark:text-emerald-400/80">
-                          {titles.podiumKing.podiums} Top 3
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -501,49 +496,54 @@ export function StatsScreen() {
             {/* Section Classement des Joueurs */}
             <div className="space-y-2.5">
               <div className="flex items-center justify-between px-0.5">
-                <div className="flex items-center gap-1.5">
-                  <Trophy size={16} className="text-[#c83b3b]" />
-                  <h3 className="font-serif-title font-bold text-base text-stone-900 dark:text-slate-100">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Trophy size={16} className="text-[#c83b3b] flex-shrink-0" />
+                  <h3 className="font-serif-title font-bold text-base text-stone-900 dark:text-slate-100 whitespace-nowrap">
                     Classement des joueurs
                   </h3>
                 </div>
+                {sortedPlayers.length > 0 && (
+                  <span className="text-xs text-stone-500 dark:text-slate-400 font-medium flex-shrink-0">
+                    {sortedPlayers.length} joueur{sortedPlayers.length > 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
 
-                {/* Filtres de tri */}
-                <div className="flex items-center bg-stone-200/70 dark:bg-slate-800/80 p-0.5 rounded-lg text-[11px] font-semibold">
-                  <button
-                    type="button"
-                    onClick={() => setSortBy('winRate')}
-                    className={`px-2 py-0.5 rounded-md transition-all ${
-                      sortBy === 'winRate'
-                        ? 'bg-white dark:bg-slate-700 text-stone-900 dark:text-slate-100 shadow-xs font-bold'
-                        : 'text-stone-600 dark:text-slate-400 hover:text-stone-900'
-                    }`}
-                  >
-                    Taux (%)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSortBy('wins')}
-                    className={`px-2 py-0.5 rounded-md transition-all ${
-                      sortBy === 'wins'
-                        ? 'bg-white dark:bg-slate-700 text-stone-900 dark:text-slate-100 shadow-xs font-bold'
-                        : 'text-stone-600 dark:text-slate-400 hover:text-stone-900'
-                    }`}
-                  >
-                    Victoires
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSortBy('games')}
-                    className={`px-2 py-0.5 rounded-md transition-all ${
-                      sortBy === 'games'
-                        ? 'bg-white dark:bg-slate-700 text-stone-900 dark:text-slate-100 shadow-xs font-bold'
-                        : 'text-stone-600 dark:text-slate-400 hover:text-stone-900'
-                    }`}
-                  >
-                    Parties
-                  </button>
-                </div>
+              {/* Filtres de tri en bandeau 3 colonnes responsive */}
+              <div className="grid grid-cols-3 bg-stone-200/70 dark:bg-slate-800/80 p-0.5 rounded-xl text-xs font-semibold text-center">
+                <button
+                  type="button"
+                  onClick={() => setSortBy('winRate')}
+                  className={`py-1.5 px-1 rounded-lg transition-all whitespace-nowrap text-[11px] sm:text-xs ${
+                    sortBy === 'winRate'
+                      ? 'bg-white dark:bg-slate-700 text-stone-900 dark:text-slate-100 shadow-xs font-bold'
+                      : 'text-stone-600 dark:text-slate-400 hover:text-stone-900'
+                  }`}
+                >
+                  Taux (%)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortBy('wins')}
+                  className={`py-1.5 px-1 rounded-lg transition-all whitespace-nowrap text-[11px] sm:text-xs ${
+                    sortBy === 'wins'
+                      ? 'bg-white dark:bg-slate-700 text-stone-900 dark:text-slate-100 shadow-xs font-bold'
+                      : 'text-stone-600 dark:text-slate-400 hover:text-stone-900'
+                  }`}
+                >
+                  Victoires
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortBy('games')}
+                  className={`py-1.5 px-1 rounded-lg transition-all whitespace-nowrap text-[11px] sm:text-xs ${
+                    sortBy === 'games'
+                      ? 'bg-white dark:bg-slate-700 text-stone-900 dark:text-slate-100 shadow-xs font-bold'
+                      : 'text-stone-600 dark:text-slate-400 hover:text-stone-900'
+                  }`}
+                >
+                  Parties
+                </button>
               </div>
 
               {sortedPlayers.length === 0 ? (
