@@ -222,6 +222,7 @@ export function DourakEngine({ game, onFinish }) {
               value={cardsLeft}
               onChange={v => setCardsLeft(Math.max(1, v))}
               onConfirm={() => setSheetOpen(false)}
+              min={1}
             />
           </div>
         </BottomSheet>

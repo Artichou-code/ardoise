@@ -91,6 +91,7 @@ export function SixQuiPrendEngine({ game, onFinish }) {
               value={roundScores[editingPlayer.id] || 0}
               onChange={v => setRoundScores(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, v) }))}
               onConfirm={() => setOpen(false)}
+              min={0}
             />
           </div>
         </BottomSheet>

@@ -178,6 +178,7 @@ export function CaracoleEngine({ game, onFinish }) {
               value={roundPenalties[editingPlayer.id] || 0}
               onChange={v => setPenalty(editingPlayer.id, v)}
               onConfirm={() => setOpen(false)}
+              min={0}
             />
           </div>
         </BottomSheet>
