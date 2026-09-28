@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy } from 'lucide-react'
+import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
@@ -8,6 +8,8 @@ import { GameSetupSheet } from './GameSetupSheet'
 import { RulesSheet } from './RulesSheet'
 import { GameDetailSheet } from './GameDetailSheet'
 import { LegalModal } from './LegalModal'
+import { ArtCreaLogo } from './ui/ArtCreaLogo'
+import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
 import { formatDate, formatGameStart } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
 
@@ -18,6 +20,7 @@ export function HomeScreen() {
   const [rulesGame, setRulesGame] = useState(null)
   const [detailGame, setDetailGame] = useState(null)
   const [legalTab, setLegalTab] = useState(null)
+  const [isArtCreaModalOpen, setIsArtCreaModalOpen] = useState(false)
 
   const activeGames = games.filter(g => g.status === 'active')
   const finishedGames = games.filter(g => g.status === 'finished').slice(0, 3)
@@ -311,7 +314,7 @@ export function HomeScreen() {
             </div>
             <div className="space-y-2">
               {finishedGames.map(game => {
-                const winner = game.players.find(p => p.id === game.winner)
+                const winner = game.players.find(p => p.id === (game.winner?.id || game.winner))
                 return (
                   <div
                     key={game.id}
@@ -335,7 +338,7 @@ export function HomeScreen() {
                       </p>
                     </div>
                     {winner && (
-                      <div className="flex flex-col items-center gap-0.5 shrink-0 min-w-[54px]">
+                      <div className="flex flex-col items-center shrink-0 min-w-[56px] pt-1">
                         <div className="relative">
                           <Avatar player={winner} size="xs" leader leaderColor="#10b981" />
                           <span
@@ -345,7 +348,7 @@ export function HomeScreen() {
                             <Trophy size={8} strokeWidth={2.5} />
                           </span>
                         </div>
-                        <span className="text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate max-w-[64px] text-center leading-tight">
+                        <span className="text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate max-w-[64px] text-center leading-none mt-2">
                           {winner.name}
                         </span>
                       </div>
@@ -357,45 +360,39 @@ export function HomeScreen() {
           </section>
         )}
 
-        {/* Footer institutionnel & Hub Juridique */}
-        <footer className="mt-8 pt-6 pb-4 border-t border-stone-200/60 dark:border-slate-800/60 text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <span className="font-serif-title font-bold text-xs text-stone-800 dark:text-slate-200">
-              Ardoise by ART-créa
+        {/* Footer institutionnel & Hub Juridique minimaliste */}
+        <footer className="mt-8 pt-5 pb-6 border-t border-stone-200/60 dark:border-slate-800/60 flex flex-col items-center justify-center gap-2 text-center select-none">
+          <div className="flex items-center justify-center gap-1.5 text-xs text-stone-600 dark:text-slate-400">
+            <span className="font-serif-title font-bold text-stone-800 dark:text-slate-200 text-sm">
+              Ardoise
             </span>
-            <span className="text-stone-300 dark:text-slate-700">·</span>
+            <span className="font-serif italic text-stone-400 dark:text-slate-500 text-xs">by</span>
+            <button
+              type="button"
+              onClick={() => setIsArtCreaModalOpen(true)}
+              className="inline-flex items-center cursor-pointer hover:scale-105 active:scale-95 transition-transform focus:outline-none"
+              title="Découvrir l'univers ART-créa"
+              aria-label="Découvrir l'univers ART-créa"
+            >
+              <ArtCreaLogo className="h-5.5 self-center" />
+            </button>
+            <span className="text-stone-300 dark:text-slate-700 ml-0.5">·</span>
             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400 font-semibold">
               v1.4
             </span>
           </div>
-          <div className="flex items-center justify-center gap-3 text-[11px] font-semibold text-stone-600 dark:text-slate-400">
-            <button
-              type="button"
-              onClick={() => setLegalTab('mentions')}
-              className="hover:text-stone-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
-            >
-              Mentions Légales
-            </button>
-            <span className="text-stone-300 dark:text-slate-700">·</span>
-            <button
-              type="button"
-              onClick={() => setLegalTab('confidentialite')}
-              className="hover:text-stone-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
-            >
-              Confidentialité
-            </button>
-            <span className="text-stone-300 dark:text-slate-700">·</span>
-            <button
-              type="button"
-              onClick={() => setLegalTab('cgu')}
-              className="hover:text-stone-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
-            >
-              CGU
-            </button>
-          </div>
-          <p className="text-[10px] text-stone-400 dark:text-slate-500">
-            Conçu avec passion à Toulouse · 100% Local & Privé
-          </p>
+
+          <button
+            type="button"
+            onClick={() => setLegalTab('mentions')}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
+            title="Ouvrir le Hub juridique (Mentions légales, Confidentialité, CGU)"
+          >
+            <Scale size={13} className="text-[#c83b3b] group-hover:scale-110 transition-transform" />
+            <span className="underline underline-offset-2 decoration-stone-300 dark:decoration-slate-700 group-hover:decoration-current">
+              Hub juridique
+            </span>
+          </button>
         </footer>
       </div>
 
@@ -438,6 +435,12 @@ export function HomeScreen() {
         onClose={() => setLegalTab(null)}
         activeTab={legalTab}
         onSelectTab={setLegalTab}
+      />
+
+      {/* Modale interactive : Univers ART-créa */}
+      <ArtCreaUniverseModal
+        isOpen={isArtCreaModalOpen}
+        onClose={() => setIsArtCreaModalOpen(false)}
       />
     </div>
   )
