@@ -1,4 +1,4 @@
-// Moteurs de calcul pour chaque jeu
+// Moteurs de calcul officiels pour chaque jeu
 
 import { TAROT_BOUTS_THRESHOLDS, TAROT_CONTRACTS, PRESIDENT_ROLES } from '../constants/games'
 
@@ -10,7 +10,6 @@ export function isSkyjoScoreDoubled(roundScores, closerId) {
   const otherScores = Object.entries(roundScores)
     .filter(([id]) => id !== closerId)
     .map(([, s]) => s)
-  // Doublé s'il n'a pas le score strictement le plus bas
   return otherScores.some(s => s <= closerScore)
 }
 
@@ -31,33 +30,46 @@ export function checkSkyjoEnd(scores) {
 }
 
 // --- TAROT ---
-export function computeTarotScore({ players, attackerId, partnerId, contract, bouts, points, playerCount }) {
+export function computeTarotScore({
+  players,
+  attackerId,
+  partnerId,
+  contract,
+  bouts,
+  points,
+  playerCount,
+  petitAuBout = 'none', // 'none' | 'attack' | 'defense'
+}) {
   const meta = TAROT_CONTRACTS.find(c => c.id === contract)
   const threshold = TAROT_BOUTS_THRESHOLDS[bouts]
   const diff = points - threshold
-  const base = (25 + Math.abs(diff)) * meta.multiplier
   const won = diff >= 0
 
-  let scores = {}
+  let petitBonus = 0
+  if (petitAuBout === 'attack') petitBonus = 10
+  else if (petitAuBout === 'defense') petitBonus = -10
+
+  // Base signée du point de vue de l'attaque avant multiplicateur
+  const signedBase = (won ? 25 + Math.abs(diff) : -(25 + Math.abs(diff))) + petitBonus
+  const unitScore = signedBase * meta.multiplier
+
+  const scores = {}
   if (playerCount === 5 && partnerId && partnerId !== attackerId) {
-    const attackPoints = won ? base * 2 : -base * 2
-    const partnerPoints = won ? base : -base
-    const defensePoints = won ? -base : base
+    // 2 contre 3 (attaquant 2 parts, partenaire 1 part, 3 défenseurs -1 part chacun)
     players.forEach(p => {
-      if (p.id === attackerId) scores[p.id] = attackPoints
-      else if (p.id === partnerId) scores[p.id] = partnerPoints
-      else scores[p.id] = defensePoints
+      if (p.id === attackerId) scores[p.id] = unitScore * 2
+      else if (p.id === partnerId) scores[p.id] = unitScore
+      else scores[p.id] = -unitScore
     })
   } else {
+    // 1 contre (N - 1)
     const n = playerCount
-    const attackPoints = won ? base * (n - 1) : -base * (n - 1)
-    const defensePoints = won ? -base : base
     players.forEach(p => {
-      if (p.id === attackerId) scores[p.id] = attackPoints
-      else scores[p.id] = defensePoints
+      if (p.id === attackerId) scores[p.id] = unitScore * (n - 1)
+      else scores[p.id] = -unitScore
     })
   }
-  return { scores, won, diff, base }
+  return { scores, won, diff, base: Math.abs(unitScore) }
 }
 
 // --- BELOTE / COINCHE ---
@@ -68,12 +80,10 @@ export function computeBeloteScore({ contract, announcements, takerTeam, pointsT
   let defenseScore = 0
 
   if (contract === 500) {
-    // Générale
     const won = pointsTaker === total
     takerScore = won ? 500 + ann : 0
     defenseScore = won ? 0 : 500 + ann
   } else if (contract === 252) {
-    // Capot
     const won = pointsTaker === total
     takerScore = won ? 252 + ann : 0
     defenseScore = won ? 0 : 252 + ann
@@ -96,11 +106,11 @@ export function computeBeloteScore({ contract, announcements, takerTeam, pointsT
 
 // --- PRÉSIDENT (Trou du cul) ---
 export function getPresidentRole(rank, total) {
-  if (rank === 1) return PRESIDENT_ROLES[0] // Président (+2)
-  if (rank === total) return PRESIDENT_ROLES[4] // Trou du cul (-2)
-  if (total >= 4 && rank === 2) return PRESIDENT_ROLES[1] // Vice-Président (+1)
-  if (total >= 4 && rank === total - 1) return PRESIDENT_ROLES[3] // Vice-Trou (-1)
-  return PRESIDENT_ROLES[2] // Neutre (0)
+  if (rank === 1) return PRESIDENT_ROLES[0]
+  if (rank === total) return PRESIDENT_ROLES[4]
+  if (total >= 4 && rank === 2) return PRESIDENT_ROLES[1]
+  if (total >= 4 && rank === total - 1) return PRESIDENT_ROLES[3]
+  return PRESIDENT_ROLES[2]
 }
 
 export function computePresidentScores(playerOrder) {

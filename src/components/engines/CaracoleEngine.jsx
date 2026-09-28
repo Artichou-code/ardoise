@@ -12,6 +12,8 @@ export function CaracoleEngine({ game, onFinish }) {
   )
   const [editingPlayer, setEditingPlayer] = useState(null)
 
+  const limit = game.config?.limit || 100
+
   const setPenalty = (id, val) => {
     setRoundPenalties(prev => ({ ...prev, [id]: Math.max(0, val) }))
   }
@@ -28,8 +30,6 @@ export function CaracoleEngine({ game, onFinish }) {
     setRoundPenalties(Object.fromEntries(game.players.map(p => [p.id, 0])))
     setOpen(false)
 
-    // Vérifier fin (un joueur a ≥ seuil — configurable, défaut 100)
-    const limit = game.config?.limit || 100
     const eliminated = Object.entries(newScores).find(([, s]) => s >= limit)
     if (eliminated) {
       const winner = Object.entries(newScores).sort((a, b) => a[1] - b[1])[0][0]
@@ -39,20 +39,28 @@ export function CaracoleEngine({ game, onFinish }) {
 
   return (
     <div className="space-y-4 pt-2">
-      <div className="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-4">
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
-          Saisir les cartes restantes en main de chaque joueur (pénalités).
-        </p>
+      <div className="school-card rounded-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+            Pénalités de la manche (cartes en main)
+          </p>
+          <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500">
+            Seuil : {limit} pts
+          </span>
+        </div>
         <div className="space-y-2">
           {game.players.map(p => (
             <button
               key={p.id}
+              type="button"
               onClick={() => { setEditingPlayer(p); setOpen(true) }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 active:scale-[0.98] transition-all"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl school-subtle hover:border-[#c83b3b] active:scale-[0.99] transition-all"
             >
               <Avatar player={p} size="xs" />
-              <span className="flex-1 font-semibold text-sm text-left text-zinc-900 dark:text-zinc-100">{p.name}</span>
-              <span className="text-lg font-black tabular-nums text-zinc-900 dark:text-zinc-100">
+              <span className="flex-1 font-semibold text-sm text-left truncate">
+                {p.name}
+              </span>
+              <span className="text-lg font-black tabular-nums">
                 +{roundPenalties[p.id] || 0}
               </span>
             </button>
@@ -61,9 +69,9 @@ export function CaracoleEngine({ game, onFinish }) {
       </div>
 
       <button
+        type="button"
         onClick={submitRound}
-        className="w-full py-3.5 rounded-xl font-bold text-base text-[#18181b] transition-all active:scale-[0.98]"
-        style={{ backgroundColor: '#fcc817' }}
+        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red"
       >
         Valider la manche
       </button>
@@ -72,9 +80,9 @@ export function CaracoleEngine({ game, onFinish }) {
         <BottomSheet
           open={open}
           onClose={() => setOpen(false)}
-          title={`${editingPlayer.emoji} ${editingPlayer.name} — Cartes restantes`}
+          title={`${editingPlayer.name} — Points de pénalité`}
         >
-          <div className="px-4 pb-6">
+          <div className="px-5 pb-6">
             <ScorePad
               value={roundPenalties[editingPlayer.id] || 0}
               onChange={v => setPenalty(editingPlayer.id, v)}

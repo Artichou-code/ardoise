@@ -1,74 +1,96 @@
 import { useState } from 'react'
-import { Plus, History, Users, ChevronRight } from 'lucide-react'
+import { History, Users, ChevronRight, BookOpen, Play } from 'lucide-react'
 import { useGame } from '../context/GameContext'
-import { GAME_META, GAMES } from '../constants/games'
+import { GAME_META } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { GameSetupSheet } from './GameSetupSheet'
+import { RulesSheet } from './RulesSheet'
 import { formatDate } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
 
 export function HomeScreen() {
   const { games, setScreen, resumeGame } = useGame()
   const [setupGame, setSetupGame] = useState(null)
+  const [rulesGame, setRulesGame] = useState(null)
 
   const activeGames = games.filter(g => g.status === 'active')
   const finishedGames = games.filter(g => g.status === 'finished').slice(0, 3)
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden bg-white dark:bg-zinc-950">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 pt-safe pt-4 pb-3 flex-shrink-0 border-b border-zinc-100 dark:border-zinc-900">
+    <div className="flex flex-col h-[100dvh] overflow-hidden school-surface">
+      {/* Header style cahier d'écolier / ardoise */}
+      <header className="flex items-center justify-between px-4 pt-safe pt-3.5 pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <div className="flex items-center gap-2.5">
-          <svg className="w-7 h-7" viewBox="0 0 64 64" fill="none">
-            <rect width="64" height="64" rx="14" fill="#18181b"/>
-            <path d="M16 48 L32 16 L48 48" stroke="#fcc817" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M22 38 L42 38" stroke="#fcc817" strokeWidth="4" strokeLinecap="round"/>
-          </svg>
-          <span className="text-xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">Ardoise</span>
+          <div className="w-8 h-8 rounded-lg bg-[#151719] dark:bg-slate-800 border border-stone-300 dark:border-slate-700 flex items-center justify-center relative overflow-hidden">
+            <span className="absolute left-1.5 top-0 bottom-0 w-[2px] bg-[#c83b3b]" />
+            <span className="font-serif-title font-bold text-white text-base pl-1">A</span>
+          </div>
+          <div>
+            <h1 className="font-serif-title text-xl font-bold tracking-tight leading-none">
+              Ardoise
+            </h1>
+            <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-none mt-0.5">
+              Carnet de scores & règles
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <button
+            type="button"
             onClick={() => setScreen('history')}
-            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            aria-label="Historique"
+            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label="Historique des parties"
+            title="Historique"
           >
-            <History size={20} className="text-zinc-600 dark:text-zinc-400" />
+            <History size={18} className="text-stone-700 dark:text-slate-300" />
           </button>
           <button
+            type="button"
             onClick={() => setScreen('players')}
-            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            aria-label="Joueurs"
+            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label="Bibliothèque de joueurs"
+            title="Joueurs"
           >
-            <Users size={20} className="text-zinc-600 dark:text-zinc-400" />
+            <Users size={18} className="text-stone-700 dark:text-slate-300" />
           </button>
           <ThemeToggle />
         </div>
       </header>
 
-      {/* Scrollable body */}
+      {/* Corps scrollable */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-6">
         {/* Parties en cours */}
         {activeGames.length > 0 && (
-          <section className="mt-5">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-3">
-              En cours
-            </h2>
+          <section className="mt-4">
+            <div className="flex items-center gap-2 mb-2.5">
+              <span className="w-1.5 h-3.5 rounded-full bg-[#c83b3b]" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+                Parties en cours
+              </h2>
+            </div>
             <div className="space-y-2">
               {activeGames.map(game => (
                 <button
                   key={game.id}
+                  type="button"
                   onClick={() => resumeGame(game.id)}
-                  className="w-full flex items-center gap-3 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-left hover:border-[#fcc817] transition-colors active:scale-[0.98]"
+                  className="w-full flex items-center gap-3 p-3.5 rounded-xl school-card hover:border-[#c83b3b] transition-all active:scale-[0.99] text-left shadow-2xs"
                 >
-                  <span className="text-2xl">{GAME_META[game.type]?.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">{game.name}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                    <div className="flex items-center gap-2">
+                      <p className="font-serif-title font-bold text-base leading-tight">
+                        {game.name}
+                      </p>
+                      <span className="text-[11px] font-medium px-1.5 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-400">
+                        Manche {game.rounds.length + 1}
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-500 dark:text-slate-400 truncate mt-1">
                       {game.players.map(p => p.name).join(' · ')}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg" style={{ backgroundColor: '#fcc81722', color: '#fcc817' }}>
-                    Reprendre
+                  <div className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white">
+                    <Play size={12} fill="currentColor" /> Reprendre
                   </div>
                 </button>
               ))}
@@ -76,40 +98,87 @@ export function HomeScreen() {
           </section>
         )}
 
-        {/* Nouveaux jeux */}
-        <section className="mt-5">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-3">
-            Nouvelle partie
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
+        {/* Grille des jeux (Zéro émoji, style Cahier & Ardoise) */}
+        <section className="mt-4">
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-3.5 rounded-full bg-[#c83b3b]" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+                Choisir un jeu
+              </h2>
+            </div>
+            <span className="text-[11px] text-stone-400 dark:text-slate-500">
+              7 calculateurs officiels
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {Object.values(GAME_META).map(meta => (
-              <button
+              <div
                 key={meta.id}
                 onClick={() => setSetupGame(meta.id)}
-                className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-left hover:border-[#fcc817] transition-all active:scale-[0.97] group"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && setSetupGame(meta.id)}
+                className="relative flex flex-col justify-between p-4 rounded-xl school-card hover:border-[#c83b3b] transition-all active:scale-[0.99] cursor-pointer shadow-2xs border-l-4 border-l-[#c83b3b]/80"
               >
-                <span className="text-3xl">{meta.emoji}</span>
                 <div>
-                  <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100 leading-tight">{meta.name}</p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 leading-snug line-clamp-2">{meta.description}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-serif-title font-bold text-lg leading-snug">
+                      {meta.name}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setRulesGame(meta.id)
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800/80 text-[11px] font-semibold text-stone-700 dark:text-slate-300 hover:border-[#c83b3b] hover:text-[#c83b3b] transition-colors flex-shrink-0"
+                      title={`Lire les règles de ${meta.name}`}
+                    >
+                      <BookOpen size={12} />
+                      <span>Règles</span>
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-stone-500 dark:text-slate-400 truncate mt-1">
+                    {meta.description}
+                  </p>
                 </div>
-              </button>
+
+                {/* Badges discrets d'écolier */}
+                <div className="flex items-center gap-1.5 mt-3 pt-2.5 border-t border-stone-100 dark:border-slate-800/70">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300">
+                    {meta.playersBadge}
+                  </span>
+                  <span className="text-[11px] font-medium px-2 py-0.5 rounded border border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400">
+                    {meta.categoryBadge}
+                  </span>
+                  <span className="ml-auto text-xs font-bold text-[#c83b3b] flex items-center gap-0.5">
+                    Jouer <ChevronRight size={14} />
+                  </span>
+                </div>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* Dernières parties */}
+        {/* Dernières parties terminées */}
         {finishedGames.length > 0 && (
           <section className="mt-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                Dernières parties
-              </h2>
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-3.5 rounded-full bg-stone-400 dark:bg-slate-600" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+                  Dernières parties
+                </h2>
+              </div>
               <button
+                type="button"
                 onClick={() => setScreen('history')}
-                className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 flex items-center gap-0.5"
+                className="text-xs font-semibold text-[#c83b3b] flex items-center gap-0.5"
               >
-                Voir tout <ChevronRight size={14} />
+                Tout voir <ChevronRight size={14} />
               </button>
             </div>
             <div className="space-y-2">
@@ -118,17 +187,22 @@ export function HomeScreen() {
                 return (
                   <div
                     key={game.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800"
+                    className="flex items-center gap-3 p-3 rounded-xl school-card"
                   >
-                    <span className="text-xl">{GAME_META[game.type]?.emoji}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-zinc-800 dark:text-zinc-200">{game.name}</p>
-                      <p className="text-xs text-zinc-400 dark:text-zinc-500">{formatDate(game.finishedAt || game.startedAt)}</p>
+                      <p className="font-serif-title font-bold text-sm">
+                        {game.name}
+                      </p>
+                      <p className="text-[11px] text-stone-500 dark:text-slate-400">
+                        {formatDate(game.finishedAt || game.startedAt)}
+                      </p>
                     </div>
                     {winner && (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         <Avatar player={winner} size="xs" />
-                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">{winner.name}</span>
+                        <span className="text-xs font-bold">
+                          {winner.name}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -139,15 +213,18 @@ export function HomeScreen() {
         )}
       </div>
 
-      {/* FAB */}
-      <div className="absolute bottom-6 right-4 safe-bottom">
-        {/* Already handled by the grid above */}
-      </div>
-
-      {/* Setup sheet */}
+      {/* Modale de préparation de partie */}
       <GameSetupSheet
         gameType={setupGame}
         onClose={() => setSetupGame(null)}
+        onOpenRules={(type) => setRulesGame(type)}
+      />
+
+      {/* Bottom Sheet de consultation des Règles Officielles */}
+      <RulesSheet
+        gameType={rulesGame}
+        onClose={() => setRulesGame(null)}
+        onStartSetup={(type) => setSetupGame(type)}
       />
     </div>
   )

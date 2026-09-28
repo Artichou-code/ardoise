@@ -1,65 +1,54 @@
 import { useState, useEffect } from 'react'
-import { Plus, X, Check } from 'lucide-react'
+import { Plus, X, Check, BookOpen } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
-import { Avatar, AvatarColorPicker, AvatarEmojiPicker } from './ui/Avatar'
+import { Avatar, AvatarColorPicker } from './ui/Avatar'
 import { useGame } from '../context/GameContext'
-import { GAME_META, AVATAR_COLORS, AVATAR_EMOJIS } from '../constants/games'
+import { GAME_META, AVATAR_COLORS } from '../constants/games'
 import { createPlayer } from '../utils/gameUtils'
 
 function PlayerCreatorSheet({ open, onClose, onAdd }) {
   const [name, setName] = useState('')
   const [color, setColor] = useState(AVATAR_COLORS[0])
-  const [emoji, setEmoji] = useState(AVATAR_EMOJIS[0])
-  const [tab, setTab] = useState('emoji')
 
   const handleAdd = () => {
     if (!name.trim()) return
-    onAdd(createPlayer(name, color, emoji))
+    onAdd(createPlayer(name, color))
     setName('')
     setColor(AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)])
-    setEmoji(AVATAR_EMOJIS[Math.floor(Math.random() * AVATAR_EMOJIS.length)])
     onClose()
   }
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Nouveau joueur">
-      <div className="px-4 pb-4 space-y-4">
+      <div className="px-5 py-4 space-y-4">
+        {/* Aperçu de l'avatar à initiale + saisie du prénom */}
         <div className="flex items-center gap-3">
-          <Avatar player={{ name, color, emoji }} size="lg" />
+          <Avatar player={{ name: name || 'A', color }} size="lg" />
           <input
             type="text"
             placeholder="Prénom du joueur"
             value={name}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            className="flex-1 px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-base font-semibold text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#fcc817]"
+            className="flex-1 px-4 py-3 rounded-xl border border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-base font-semibold text-stone-900 dark:text-slate-100 placeholder-stone-400 focus:outline-none focus:border-[#c83b3b]"
             autoFocus
             maxLength={20}
           />
         </div>
-        <div className="flex gap-2">
-          {[['emoji', 'Emoji'], ['color', 'Couleur']].map(([id, lbl]) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                tab === id ? 'text-[#18181b]' : 'text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800'
-              }`}
-              style={tab === id ? { backgroundColor: '#fcc817' } : {}}
-            >
-              {lbl}
-            </button>
-          ))}
+
+        {/* Sélecteur de teintes de craies / feutres d'écolier */}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2">
+            Couleur de craie / encre
+          </p>
+          <AvatarColorPicker selected={color} onSelect={setColor} />
         </div>
-        {tab === 'emoji'
-          ? <AvatarEmojiPicker selected={emoji} onSelect={setEmoji} />
-          : <AvatarColorPicker selected={color} onSelect={setColor} />
-        }
+
         <button
+          type="button"
           onClick={handleAdd}
           disabled={!name.trim()}
-          className="w-full py-3.5 rounded-xl font-bold text-base disabled:opacity-40 transition-all active:scale-[0.98] text-[#18181b]"
-          style={{ backgroundColor: '#fcc817' }}
+          className="w-full py-3.5 rounded-xl font-bold text-base disabled:opacity-40 btn-margin-red"
         >
           Ajouter
         </button>
@@ -68,7 +57,7 @@ function PlayerCreatorSheet({ open, onClose, onAdd }) {
   )
 }
 
-export function GameSetupSheet({ gameType, onClose }) {
+export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
   const { players: savedPlayers, savePlayer, createGame } = useGame()
   const [selectedPlayers, setSelectedPlayers] = useState([])
   const [config, setConfig] = useState({ scoreDir: 'high', limit: 100 })
@@ -105,8 +94,8 @@ export function GameSetupSheet({ gameType, onClose }) {
   }
 
   const handleQuickBeloteTeams = () => {
-    const teamNous = createPlayer('Nous', '#3b82f6', '🤝')
-    const teamEux = createPlayer('Eux', '#ef4444', '👥')
+    const teamNous = createPlayer('Nous', '#1e3a5f')
+    const teamEux = createPlayer('Eux', '#c83b3b')
     createGame(gameType, [teamNous, teamEux], config)
     onClose()
   }
@@ -120,38 +109,57 @@ export function GameSetupSheet({ gameType, onClose }) {
 
   return (
     <>
-      <BottomSheet open={!!gameType} onClose={onClose} title={`${meta.emoji} ${meta.name}`}>
-        <div className="px-4 pb-4 space-y-4">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">{meta.description}</p>
-          <p className="text-xs text-zinc-400 dark:text-zinc-500">
-            {meta.minPlayers} à {meta.maxPlayers} joueurs
-          </p>
+      <BottomSheet
+        open={!!gameType}
+        onClose={onClose}
+        title={meta.name}
+        subtitle={`${meta.playersBadge} · ${meta.categoryBadge}`}
+      >
+        <div className="px-5 py-4 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-stone-600 dark:text-slate-400 flex-1">
+              {meta.description}
+            </p>
+            {onOpenRules && (
+              <button
+                type="button"
+                onClick={() => onOpenRules(gameType)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 text-xs font-semibold text-stone-700 dark:text-slate-300 hover:border-[#c83b3b] hover:text-[#c83b3b] transition-colors flex-shrink-0"
+              >
+                <BookOpen size={13} /> Règles
+              </button>
+            )}
+          </div>
 
           {/* Raccourci 2 équipes pour Belote / Coinche */}
           {gameType === 'belote' && (
             <button
+              type="button"
               onClick={handleQuickBeloteTeams}
-              className="w-full py-3 px-4 rounded-xl font-bold text-sm border-2 border-[#fcc817] bg-[#fcc817]/15 text-zinc-900 dark:text-zinc-100 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+              className="w-full py-3 px-4 rounded-xl font-bold text-xs border border-[#c83b3b] bg-[#c83b3b]/10 text-[#c83b3b] dark:text-red-300 flex items-center justify-center gap-2 active:scale-[0.99] transition-all"
             >
-              ⚡ Lancer rapidement (Équipe Nous vs Équipe Eux)
+              Lancer directement : Équipe Nous vs Équipe Eux
             </button>
           )}
 
           {/* Joueurs sélectionnés */}
           {selectedPlayers.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1">
               {selectedPlayers.map(p => (
                 <div key={p.id} className="flex-shrink-0 flex flex-col items-center gap-1">
                   <div className="relative">
                     <Avatar player={p} size="sm" />
                     <button
+                      type="button"
                       onClick={() => setSelectedPlayers(prev => prev.filter(sp => sp.id !== p.id))}
-                      className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-zinc-800 dark:bg-zinc-200 flex items-center justify-center"
+                      className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-stone-800 dark:bg-slate-200 flex items-center justify-center"
                     >
-                      <X size={10} className="text-white dark:text-zinc-900" />
+                      <X size={10} className="text-white dark:text-slate-900" />
                     </button>
                   </div>
-                  <span className="text-[10px] text-zinc-600 dark:text-zinc-400 max-w-[48px] truncate">{p.name}</span>
+                  <span className="text-[11px] font-medium text-stone-700 dark:text-slate-300 max-w-[54px] truncate">
+                    {p.name}
+                  </span>
                 </div>
               ))}
             </div>
@@ -160,26 +168,26 @@ export function GameSetupSheet({ gameType, onClose }) {
           {/* Joueurs enregistrés */}
           {savedPlayers.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">
-                Joueurs récents
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+                Joueurs enregistrés ({selectedPlayers.length}/{meta.maxPlayers})
               </p>
-              <div className="space-y-1">
+              <div className="space-y-1.5 max-h-48 overflow-y-auto scrollbar-hide">
                 {savedPlayers.map(p => {
                   const isSelected = !!selectedPlayers.find(sp => sp.id === p.id)
                   return (
                     <button
                       key={p.id}
+                      type="button"
                       onClick={() => toggleSavedPlayer(p)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-colors ${
                         isSelected
-                          ? 'bg-zinc-950 dark:bg-white text-white dark:text-zinc-950'
-                          : 'bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                          ? 'border-[#c83b3b] bg-[#c83b3b]/10 text-stone-900 dark:text-slate-100'
+                          : 'border-stone-200 dark:border-slate-800 bg-stone-50/70 dark:bg-slate-800/40 text-stone-800 dark:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800'
                       }`}
-                      style={isSelected ? { backgroundColor: '#fcc817', color: '#18181b' } : {}}
                     >
                       <Avatar player={p} size="xs" />
                       <span className="font-semibold text-sm">{p.name}</span>
-                      {isSelected && <Check size={16} className="ml-auto" />}
+                      {isSelected && <Check size={16} className="ml-auto text-[#c83b3b]" />}
                     </button>
                   )
                 })}
@@ -190,18 +198,20 @@ export function GameSetupSheet({ gameType, onClose }) {
           {/* Config spécifique Caracole */}
           {gameType === 'caracole' && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                Palier d'élimination (points)
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
+                Seuil d'élimination
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {[50, 100, 200].map(val => (
                   <button
                     key={val}
+                    type="button"
                     onClick={() => setConfig(c => ({ ...c, limit: val }))}
-                    className={`py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                      (config.limit || 100) === val ? 'text-[#18181b]' : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                    className={`py-2.5 rounded-xl text-xs font-bold border transition-colors ${
+                      (config.limit || 100) === val
+                        ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                        : 'border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-800 text-stone-700 dark:text-slate-300'
                     }`}
-                    style={(config.limit || 100) === val ? { backgroundColor: '#fcc817' } : {}}
                   >
                     {val} pts
                   </button>
@@ -213,18 +223,22 @@ export function GameSetupSheet({ gameType, onClose }) {
           {/* Config spécifique Universel */}
           {gameType === 'universel' && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Mode de victoire</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
+                Règle de victoire
+              </p>
               {[
-                { value: 'high', label: '🏅 Le score le plus élevé gagne' },
-                { value: 'low_limit', label: '💀 Le premier à X points perd' },
+                { value: 'high', label: 'Le score le plus élevé gagne' },
+                { value: 'low_limit', label: 'Le premier à X points perd' },
               ].map(opt => (
                 <button
                   key={opt.value}
+                  type="button"
                   onClick={() => setConfig(c => ({ ...c, scoreDir: opt.value }))}
-                  className={`w-full px-4 py-3 rounded-xl text-sm font-medium text-left transition-colors ${
-                    (config.scoreDir || 'high') === opt.value ? 'font-bold' : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                  className={`w-full px-4 py-3 rounded-xl text-sm font-semibold text-left border transition-colors ${
+                    (config.scoreDir || 'high') === opt.value
+                      ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                      : 'border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-800 text-stone-700 dark:text-slate-300'
                   }`}
-                  style={(config.scoreDir || 'high') === opt.value ? { backgroundColor: '#fcc817', color: '#18181b' } : {}}
                 >
                   {opt.label}
                 </button>
@@ -234,11 +248,13 @@ export function GameSetupSheet({ gameType, onClose }) {
                   {[50, 100, 150, 200].map(val => (
                     <button
                       key={val}
+                      type="button"
                       onClick={() => setConfig(c => ({ ...c, limit: val }))}
-                      className={`py-2 rounded-xl text-xs font-bold transition-colors ${
-                        (config.limit || 100) === val ? 'text-[#18181b]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                      className={`py-2 rounded-xl text-xs font-bold border transition-colors ${
+                        (config.limit || 100) === val
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                          : 'border-stone-200 dark:border-slate-800 bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300'
                       }`}
-                      style={(config.limit || 100) === val ? { backgroundColor: '#fcc817' } : {}}
                     >
                       {val} pts
                     </button>
@@ -250,16 +266,17 @@ export function GameSetupSheet({ gameType, onClose }) {
 
           <div className="flex gap-3 pt-1">
             <button
+              type="button"
               onClick={() => setShowCreator(true)}
-              className="flex items-center gap-1.5 px-4 py-3 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 text-sm font-semibold text-zinc-500 dark:text-zinc-400 hover:border-zinc-400 transition-colors"
+              className="flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl border border-stone-300 dark:border-slate-700 text-sm font-semibold text-stone-700 dark:text-slate-300 hover:border-[#c83b3b] transition-colors"
             >
-              <Plus size={16} /> Nouveau joueur
+              <Plus size={16} /> Ajouter joueur
             </button>
             <button
+              type="button"
               onClick={handleStart}
               disabled={!canStart}
-              className="flex-1 py-3 rounded-xl font-bold text-base disabled:opacity-40 transition-all active:scale-[0.98] text-[#18181b]"
-              style={{ backgroundColor: '#fcc817' }}
+              className="flex-1 py-3.5 rounded-xl font-bold text-base disabled:opacity-40 btn-margin-red"
             >
               Lancer ({selectedPlayers.length}/{meta.minPlayers}+)
             </button>

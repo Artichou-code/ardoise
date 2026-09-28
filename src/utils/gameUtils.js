@@ -1,14 +1,20 @@
 import { generateId } from '../store/storage'
-import { AVATAR_COLORS, AVATAR_EMOJIS } from '../constants/games'
+import { AVATAR_COLORS } from '../constants/games'
 
-export function createPlayer(name, color, emoji) {
+export function createPlayer(name, color) {
+  const cleanName = name.trim()
   return {
     id: generateId(),
-    name: name.trim(),
+    name: cleanName,
     color: color || AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
-    emoji: emoji || AVATAR_EMOJIS[Math.floor(Math.random() * AVATAR_EMOJIS.length)],
     createdAt: Date.now(),
   }
+}
+
+export function getPlayerInitial(player) {
+  if (!player || !player.name) return '?'
+  const trimmed = player.name.trim()
+  return trimmed.charAt(0).toUpperCase()
 }
 
 export function getLeader(scores) {

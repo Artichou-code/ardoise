@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useScrollLock } from '../../hooks/useScrollLock'
 import { X } from 'lucide-react'
 
@@ -6,7 +6,7 @@ import { X } from 'lucide-react'
  * Bottom Sheet tactile avec poignée de glissement.
  * Remplace les <select> natifs et les boîtes de dialogue sur mobile.
  */
-export function BottomSheet({ open, onClose, title, children, className = '' }) {
+export function BottomSheet({ open, onClose, title, subtitle, children, className = '' }) {
   useScrollLock(open)
   const sheetRef = useRef(null)
   const startY = useRef(null)
@@ -18,11 +18,16 @@ export function BottomSheet({ open, onClose, title, children, className = '' }) 
 
     const handleTouchStart = (e) => { startY.current = e.touches[0].clientY }
     const handleTouchMove = (e) => {
+      if (startY.current === null) return
       const dy = e.touches[0].clientY - startY.current
-      if (dy > 0) sheet.style.transform = `translateY(${dy}px)`
+      if (dy > 0 && sheet.scrollTop <= 0) {
+        sheet.style.transform = `translateY(${dy}px)`
+      }
     }
     const handleTouchEnd = (e) => {
+      if (startY.current === null) return
       const dy = e.changedTouches[0].clientY - startY.current
+      startY.current = null
       if (dy > 100) {
         sheet.style.transform = ''
         onClose()
@@ -44,25 +49,35 @@ export function BottomSheet({ open, onClose, title, children, className = '' }) 
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div
         ref={sheetRef}
-        className={`relative w-full bg-white dark:bg-zinc-900 rounded-t-2xl shadow-xl border-t border-zinc-200 dark:border-zinc-800 transition-transform duration-200 max-h-[90dvh] flex flex-col ${className}`}
+        className={`relative w-full max-w-lg school-card rounded-t-2xl shadow-2xl border-t transition-transform duration-200 max-h-[88dvh] flex flex-col ${className}`}
       >
         {/* Poignée */}
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-          <div className="w-10 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+          <div className="w-10 h-1 rounded-full bg-stone-300 dark:bg-slate-700" />
         </div>
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-4 py-2 flex-shrink-0">
-            <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">{title}</h2>
+          <div className="flex items-start justify-between px-5 py-2.5 border-b border-stone-100 dark:border-slate-800/80 flex-shrink-0">
+            <div>
+              <h2 className="font-serif-title text-xl font-bold leading-snug">{title}</h2>
+              {subtitle && (
+                <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+              )}
+            </div>
             <button
+              type="button"
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="p-2 -mr-1 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Fermer"
             >
-              <X size={18} className="text-zinc-500" />
+              <X size={18} className="text-stone-500 dark:text-slate-400" />
             </button>
           </div>
         )}
@@ -76,45 +91,3 @@ export function BottomSheet({ open, onClose, title, children, className = '' }) 
     </div>
   )
 }
-
-/**
- * Sélecteur custom — remplace <select> natif.
- */
-export function CustomSelect({ options, value, onChange, label, placeholder = 'Sélectionner...' }) {
-  const selected = options.find(o => o.value === value)
-  const [open, setOpen] = React.useState(false)
-
-  return (
-    <>
-      <button
-        onClick={() => setOpen(true)}
-        className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-left text-sm"
-      >
-        <span className={selected ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'}>
-          {selected ? selected.label : placeholder}
-        </span>
-        <span className="text-zinc-400">▼</span>
-      </button>
-      <BottomSheet open={open} onClose={() => setOpen(false)} title={label}>
-        <div className="px-4 pb-4 space-y-1">
-          {options.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => { onChange(opt.value); setOpen(false) }}
-              className={`w-full px-4 py-3 rounded-xl text-sm text-left font-medium transition-colors ${
-                opt.value === value
-                  ? 'bg-zinc-950 dark:bg-white text-white dark:text-zinc-950'
-                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
-              }`}
-              style={opt.value === value ? { backgroundColor: '#fcc817', color: '#18181b' } : {}}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </BottomSheet>
-    </>
-  )
-}
-
-import React from 'react'

@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { ArrowLeft, RotateCcw, ChevronDown, ChevronUp, Trophy } from 'lucide-react'
+import { ArrowLeft, RotateCcw, ChevronDown, ChevronUp, Award, BookOpen } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { Avatar } from './ui/Avatar'
 import { ConfirmDialog } from './ui/Dialog'
+import { RulesSheet } from './RulesSheet'
 import { getRanking } from '../utils/gameUtils'
 import { GAME_META, GAMES } from '../constants/games'
 import { CaracoleEngine } from './engines/CaracoleEngine'
@@ -29,6 +30,7 @@ export function GameScreen() {
   const [showHistory, setShowHistory] = useState(false)
   const [showExitConfirm, setShowExitConfirm] = useState(false)
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
+  const [showRules, setShowRules] = useState(false)
 
   if (!activeGame) {
     return null
@@ -42,47 +44,60 @@ export function GameScreen() {
   const Engine = ENGINE_MAP[activeGame.type] || UniverselEngine
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden bg-white dark:bg-zinc-950">
+    <div className="flex flex-col h-[100dvh] overflow-hidden school-surface">
       {/* Header */}
-      <header className="flex items-center gap-2 px-4 pt-safe pt-3 pb-3 flex-shrink-0 border-b border-zinc-100 dark:border-zinc-900">
+      <header className="flex items-center gap-2 px-4 pt-safe pt-3 pb-2.5 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <button
+          type="button"
           onClick={() => setShowExitConfirm(true)}
-          className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
           aria-label="Quitter la partie"
         >
-          <ArrowLeft size={20} className="text-zinc-600 dark:text-zinc-400" />
+          <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
         </button>
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="text-xl">{meta?.emoji}</span>
-          <span className="font-bold text-zinc-900 dark:text-zinc-100 truncate">{activeGame.name}</span>
-          <span className="text-xs text-zinc-400 dark:text-zinc-500 ml-1">
+        <div className="flex items-baseline gap-2 flex-1 min-w-0">
+          <span className="font-serif-title font-bold text-base truncate">
+            {activeGame.name}
+          </span>
+          <span className="text-xs font-semibold text-[#c83b3b] flex-shrink-0">
             M.{activeGame.rounds.length + 1}
           </span>
         </div>
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setShowRules(true)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-xs font-semibold text-stone-700 dark:text-slate-300 hover:border-[#c83b3b] transition-colors"
+            title="Consulter les règles"
+          >
+            <BookOpen size={14} />
+            <span className="hidden xs:inline">Règles</span>
+          </button>
           {canUndo && (
             <button
+              type="button"
               onClick={undoLastRound}
-              className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
               title="Annuler la dernière manche"
               aria-label="Annuler la dernière manche"
             >
-              <RotateCcw size={18} className="text-zinc-500" />
+              <RotateCcw size={16} className="text-stone-600 dark:text-slate-400" />
             </button>
           )}
           <button
+            type="button"
             onClick={() => setShowFinishConfirm(true)}
-            className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:border-[#c83b3b] transition-colors"
             title="Terminer la partie"
             aria-label="Terminer la partie"
           >
-            <Trophy size={18} style={{ color: '#fcc817' }} />
+            <Award size={16} className="text-[#c83b3b]" />
           </button>
           <ThemeToggle />
         </div>
       </header>
 
-      {/* Scores */}
+      {/* Tableau des scores */}
       <div className="flex-shrink-0 px-4 pt-3 pb-2">
         <div className={`grid gap-2 ${
           activeGame.players.length <= 2 ? 'grid-cols-2' :
@@ -96,57 +111,77 @@ export function GameScreen() {
             return (
               <div
                 key={id}
-                className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${
+                className={`flex flex-col items-center gap-1 p-2.5 rounded-xl transition-all ${
                   isLeader
-                    ? 'bg-[#fcc817]/15 dark:bg-[#fcc817]/15 border border-[#fcc817]/40'
-                    : 'bg-zinc-50 dark:bg-zinc-900 border border-transparent'
+                    ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
+                    : 'school-card'
                 }`}
               >
+                <div className="flex items-center justify-between w-full px-0.5">
+                  <span className={`text-[10px] font-bold uppercase ${
+                    isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
+                  }`}>
+                    {rank === 1 ? '1er' : `${rank}e`}
+                  </span>
+                  {isLeader && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
+                  )}
+                </div>
                 <Avatar player={player} size="sm" leader={isLeader} />
-                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 truncate max-w-full text-center px-1">{player.name}</span>
+                <span className="text-xs font-semibold truncate max-w-full text-center px-1">
+                  {player.name}
+                </span>
                 <span
-                  className={`text-xl font-black tabular-nums ${isLeader ? '' : 'text-zinc-900 dark:text-zinc-100'}`}
-                  style={isLeader ? { color: '#fcc817' } : {}}
+                  className={`text-xl font-black tabular-nums ${
+                    isLeader ? 'text-[#c83b3b]' : ''
+                  }`}
                 >
                   {score}
                 </span>
-                {rank === 1 && <span className="text-[10px]">👑</span>}
               </div>
             )
           })}
         </div>
       </div>
 
-      {/* Engine (saisie manche) */}
+      {/* Moteur de saisie de manche */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         <div className="px-4 pb-4">
           <Engine game={activeGame} leaderId={leaderId} onFinish={finishGame} />
         </div>
       </div>
 
-      {/* Historique des manches */}
+      {/* Historique des manches déroulable */}
       {activeGame.rounds.length > 0 && (
-        <div className="flex-shrink-0 border-t border-zinc-100 dark:border-zinc-900">
+        <div className="flex-shrink-0 border-t border-stone-200 dark:border-slate-800 bg-[#faf9f5]/95 dark:bg-[#151719]/95">
           <button
+            type="button"
             onClick={() => setShowHistory(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400"
+            className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold text-stone-600 dark:text-slate-400"
           >
-            <span>Historique ({activeGame.rounds.length} manche{activeGame.rounds.length > 1 ? 's' : ''})</span>
-            {showHistory ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            <span>Relevé des manches ({activeGame.rounds.length})</span>
+            {showHistory ? <ChevronDown size={15} /> : <ChevronUp size={15} />}
           </button>
           {showHistory && (
             <div className="max-h-40 overflow-y-auto scrollbar-hide px-4 pb-3 space-y-1">
               {[...activeGame.rounds].reverse().map((round, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 py-1 border-b border-zinc-50 dark:border-zinc-900">
-                  <span className="font-semibold text-zinc-400 w-16 flex-shrink-0">
+                <div
+                  key={i}
+                  className="flex items-center gap-2 text-xs text-stone-600 dark:text-slate-400 py-1 border-b border-stone-200/50 dark:border-slate-800/50"
+                >
+                  <span className="font-bold text-stone-400 dark:text-slate-500 w-12 flex-shrink-0">
                     M.{activeGame.rounds.length - i}
                   </span>
-                  {activeGame.players.map(p => (
-                    <span key={p.id} className="flex items-center gap-1">
-                      <span style={{ color: p.color }}>●</span>
-                      <span>{round.delta?.[p.id] != null ? (round.delta[p.id] >= 0 ? '+' : '') + round.delta[p.id] : '—'}</span>
-                    </span>
-                  ))}
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    {activeGame.players.map(p => (
+                      <span key={p.id} className="flex items-center gap-1 tabular-nums">
+                        <span className="font-medium text-stone-500 dark:text-slate-400">{p.name}:</span>
+                        <span className="font-bold text-stone-800 dark:text-slate-200">
+                          {round.delta?.[p.id] != null ? (round.delta[p.id] >= 0 ? '+' : '') + round.delta[p.id] : '—'}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -154,24 +189,30 @@ export function GameScreen() {
         </div>
       )}
 
-      {/* Confirm exit */}
+      {/* Règles officielles */}
+      <RulesSheet
+        gameType={showRules ? activeGame.type : null}
+        onClose={() => setShowRules(false)}
+      />
+
+      {/* Confirmation sortie */}
       <ConfirmDialog
         open={showExitConfirm}
         onClose={() => setShowExitConfirm(false)}
         onConfirm={exitGame}
         title="Quitter la partie ?"
-        message="La partie en cours est sauvegardée et pourra être reprise depuis l'accueil ou l'historique."
+        message="La partie en cours est automatiquement sauvegardée et pourra être reprise depuis l'accueil."
         confirmLabel="Quitter"
       />
 
-      {/* Confirm finish */}
+      {/* Confirmation fin de partie */}
       <ConfirmDialog
         open={showFinishConfirm}
         onClose={() => setShowFinishConfirm(false)}
         onConfirm={() => finishGame(leaderId)}
-        title="Terminer la partie ?"
-        message="Clôturer cette partie et afficher le podium final avec le vainqueur ?"
-        confirmLabel="Voir le podium 🏆"
+        title="Clôturer la partie ?"
+        message="Terminer la partie et afficher le palmarès final ?"
+        confirmLabel="Voir le palmarès"
       />
     </div>
   )

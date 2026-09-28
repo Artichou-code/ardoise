@@ -2,22 +2,50 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
-  --color-accent: #fcc817;
-  --color-accent-hover: #e5b310;
-  --color-accent-text: #18181b;
+:root {
+  --bg-page: #faf9f5;
+  --bg-card: #ffffff;
+  --bg-subtle: #f3f1ec;
+  --text-main: #1c1917;
+  --text-muted: #57534e;
+  --text-faint: #78716c;
+  --border-color: #e7e5e4;
+  --border-strong: #d6d3d1;
+  --accent-red: #c83b3b;
+  --accent-red-hover: #b91c1c;
+  --grid-color: rgba(28, 25, 23, 0.055);
+  --margin-line: rgba(200, 59, 59, 0.18);
+}
+
+html.dark {
+  --bg-page: #151719;
+  --bg-card: #1d2024;
+  --bg-subtle: #25292e;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --border-color: #2a2f37;
+  --border-strong: #383f4a;
+  --accent-red: #c83b3b;
+  --accent-red-hover: #b91c1c;
+  --grid-color: rgba(241, 245, 249, 0.04);
+  --margin-line: rgba(200, 59, 59, 0.22);
 }
 
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    background-color: var(--bg-page);
+    color: var(--text-main);
   }
 
   body {
-    @apply bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+    background-color: var(--bg-page);
+    color: var(--text-main);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     overscroll-behavior: none;
+    margin: 0;
   }
 
   * {
@@ -25,36 +53,52 @@
   }
 }
 
-@layer utilities {
-  .bg-accent {
-    background-color: #fcc817;
-  }
-  .bg-accent-hover:hover {
-    background-color: #e5b310;
-  }
-  .text-accent {
-    color: #fcc817;
-  }
-  .border-accent {
-    border-color: #fcc817;
-  }
-  .ring-accent {
-    --tw-ring-color: #fcc817;
-  }
+.font-serif-title {
+  font-family: 'Newsreader', Georgia, Cambria, serif;
+}
 
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+/* Fond Cahier d'écolier (clair) & Ardoise gravée (sombre) */
+.school-surface {
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  background-image:
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
 
-  .touch-pan-y {
-    touch-action: pan-y;
-  }
+.school-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
 
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
+.school-subtle {
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.btn-margin-red {
+  background-color: #c83b3b;
+  color: #ffffff;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.btn-margin-red:hover:not(:disabled) {
+  background-color: #b91c1c;
+}
+.btn-margin-red:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }

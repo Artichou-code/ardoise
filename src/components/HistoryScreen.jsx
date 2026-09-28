@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, Trash2, Play } from 'lucide-react'
+import { ArrowLeft, Trash2, Play, History } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { Avatar } from './ui/Avatar'
@@ -14,30 +14,41 @@ export function HistoryScreen() {
   const sorted = [...games].sort((a, b) => (b.updatedAt || b.startedAt) - (a.updatedAt || a.startedAt))
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden bg-white dark:bg-zinc-950">
-      <header className="flex items-center gap-2 px-4 pt-safe pt-4 pb-3 flex-shrink-0 border-b border-zinc-100 dark:border-zinc-900">
+    <div className="flex flex-col h-[100dvh] overflow-hidden school-surface">
+      <header className="flex items-center gap-2 px-4 pt-safe pt-3.5 pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <button
+          type="button"
           onClick={() => setScreen('home')}
-          className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+          aria-label="Retour"
         >
-          <ArrowLeft size={20} className="text-zinc-600 dark:text-zinc-400" />
+          <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
         </button>
-        <h1 className="flex-1 font-black text-zinc-900 dark:text-zinc-100 text-lg">Historique</h1>
+        <h1 className="flex-1 font-serif-title font-bold text-lg">
+          Archives des parties
+        </h1>
         <ThemeToggle />
       </header>
 
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-6">
         {sorted.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <span className="text-5xl mb-4">🃏</span>
-            <p className="text-zinc-400 dark:text-zinc-500 text-sm">Aucune partie enregistrée</p>
+          <div className="flex flex-col items-center justify-center h-full text-center px-6">
+            <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
+              <History size={22} className="text-stone-400 dark:text-slate-500" />
+            </div>
+            <p className="font-serif-title font-bold text-base mb-1">
+              Aucune partie archivée
+            </p>
+            <p className="text-stone-500 dark:text-slate-400 text-xs">
+              Vos parties en cours et terminées apparaîtront ici.
+            </p>
           </div>
         ) : (
           <div className="space-y-3 mt-4">
             {sorted.map(game => {
               const meta = GAME_META[game.type]
-              const ranking = getRanking(game.scores, meta?.scoreDir === 'low' ? 'low' : 'high')
-              const winner = game.players.find(p => p.id === game.winner)
+              const scoreDir = game.config?.scoreDir === 'low' || game.config?.scoreDir === 'low_limit' || meta?.scoreDir === 'low' ? 'low' : 'high'
+              const ranking = getRanking(game.scores, scoreDir)
               const duration = game.finishedAt
                 ? formatDuration(game.finishedAt - game.startedAt)
                 : null
@@ -45,22 +56,24 @@ export function HistoryScreen() {
               return (
                 <div
                   key={game.id}
-                  className="bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden"
+                  className="school-card rounded-xl overflow-hidden"
                 >
                   {/* Header */}
-                  <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
-                    <span className="text-2xl">{meta?.emoji}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{game.name}</p>
-                      <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                  <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-stone-100 dark:border-slate-800">
+                    <div className="min-w-0">
+                      <p className="font-serif-title font-bold text-base">
+                        {game.name}
+                      </p>
+                      <p className="text-[11px] text-stone-500 dark:text-slate-400">
                         {formatDate(game.startedAt)}
                         {duration ? ` · ${duration}` : ''}
+                        {` · ${game.rounds.length} manche${game.rounds.length > 1 ? 's' : ''}`}
                       </p>
                     </div>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-lg ${
+                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg ${
                       game.status === 'active'
-                        ? 'bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400'
-                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'
+                        ? 'bg-[#c83b3b]/15 text-[#c83b3b]'
+                        : 'bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-400'
                     }`}>
                       {game.status === 'active' ? 'En cours' : 'Terminée'}
                     </span>
@@ -71,14 +84,21 @@ export function HistoryScreen() {
                     {ranking.map(({ id, score, rank }) => {
                       const player = game.players.find(p => p.id === id)
                       if (!player) return null
+                      const isWinner = rank === 1 && game.status === 'finished'
                       return (
                         <div key={id} className="flex items-center gap-2.5">
-                          <span className="w-5 text-center text-sm">
-                            {rank === 1 && game.status === 'finished' ? '🥇' : rank}
+                          <span className={`w-6 text-xs font-bold tabular-nums ${
+                            isWinner ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
+                          }`}>
+                            {rank === 1 ? '1er' : `${rank}e`}
                           </span>
                           <Avatar player={player} size="xs" />
-                          <span className="flex-1 text-sm font-semibold text-zinc-800 dark:text-zinc-200">{player.name}</span>
-                          <span className="font-black tabular-nums text-sm" style={rank === 1 && game.status === 'finished' ? { color: '#fcc817' } : {}}>
+                          <span className="flex-1 text-sm font-semibold truncate">
+                            {player.name}
+                          </span>
+                          <span className={`font-black tabular-nums text-sm ${
+                            isWinner ? 'text-[#c83b3b]' : ''
+                          }`}>
                             {score}
                           </span>
                         </div>
@@ -87,20 +107,21 @@ export function HistoryScreen() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex border-t border-zinc-100 dark:border-zinc-800">
+                  <div className="flex border-t border-stone-100 dark:border-slate-800">
                     <button
+                      type="button"
                       onClick={() => setConfirmDelete(game.id)}
-                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                      className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-semibold text-stone-500 dark:text-slate-400 hover:text-[#c83b3b] hover:bg-stone-50 dark:hover:bg-slate-800/50 transition-colors"
                     >
-                      <Trash2 size={14} /> Supprimer
+                      <Trash2 size={13} /> Supprimer
                     </button>
                     {game.status === 'active' && (
                       <button
+                        type="button"
                         onClick={() => resumeGame(game.id)}
-                        className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-bold border-l border-zinc-100 dark:border-zinc-800 transition-colors"
-                        style={{ color: '#fcc817' }}
+                        className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-bold border-l border-stone-100 dark:border-slate-800 text-[#c83b3b] hover:bg-[#c83b3b]/5 transition-colors"
                       >
-                        <Play size={14} /> Reprendre
+                        <Play size={13} /> Reprendre
                       </button>
                     )}
                   </div>
@@ -116,7 +137,7 @@ export function HistoryScreen() {
         onClose={() => setConfirmDelete(null)}
         onConfirm={() => removeGame(confirmDelete)}
         title="Supprimer la partie ?"
-        message="Cette action est irréversible."
+        message="Cette action supprimera définitivement cette feuille de score."
         confirmLabel="Supprimer"
         danger
       />
