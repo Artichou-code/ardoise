@@ -104,21 +104,21 @@ export function HistoryScreen() {
                             key={id}
                             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs transition-colors ${
                               isWinner
-                                ? 'bg-[#c83b3b]/10 border-[#c83b3b]/30 text-stone-900 dark:text-slate-100 font-bold'
+                                ? 'bg-emerald-500/10 border-emerald-500/30 text-stone-900 dark:text-slate-100 font-bold'
                                 : 'bg-stone-50/60 dark:bg-slate-800/40 border-stone-200/60 dark:border-slate-800 text-stone-700 dark:text-slate-300'
                             }`}
                           >
                             <span className={`text-[10px] font-extrabold tabular-nums shrink-0 ${
-                              isWinner ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
+                              isWinner ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-400 dark:text-slate-500'
                             }`}>
                               {rank === 1 ? '1er' : `${rank}e`}
                             </span>
-                            <Avatar player={player} size="xs" leader={isWinner} />
+                            <Avatar player={player} size="xs" leader={isWinner} leaderColor="#10b981" />
                             <span className="flex-1 truncate font-semibold text-xs min-w-0">
                               {player.name}
                             </span>
                             <span className={`font-black tabular-nums text-xs shrink-0 ${
-                              isWinner ? 'text-[#c83b3b]' : ''
+                              isWinner ? 'text-emerald-700 dark:text-emerald-400' : ''
                             }`}>
                               {score}
                             </span>

@@ -2,7 +2,7 @@ import { AVATAR_COLORS, AVATAR_COLOR_NAMES, PRESET_AVATARS } from '../../constan
 import { getPlayerInitial, getPlayerAvatarUrl } from '../../utils/gameUtils'
 import { Check } from 'lucide-react'
 
-export function Avatar({ player, size = 'md', leader = false }) {
+export function Avatar({ player, size = 'md', leader = false, leaderColor, ringColor: customRingColor }) {
   const sizeClass = {
     xs: 'w-7 h-7 text-xs',
     sm: 'w-9 h-9 text-sm',
@@ -13,7 +13,7 @@ export function Avatar({ player, size = 'md', leader = false }) {
 
   const avatarUrl = getPlayerAvatarUrl(player)
   const initial = getPlayerInitial(player)
-  const ringColor = leader ? '#c83b3b' : (player?.color || '#c83b3b')
+  const ringColor = customRingColor || (leader ? (leaderColor || '#c83b3b') : (player?.color || '#c83b3b'))
 
   // Espace (gap) de 2px entre l'avatar et l'anneau coloré
   const floatingRingStyle = {

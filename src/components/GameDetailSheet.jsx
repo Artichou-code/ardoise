@@ -77,7 +77,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
         {/* Statut & Vainqueur */}
         <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/80">
           <div className="flex items-center gap-2.5 min-w-0">
-            {winner && <Avatar player={winner} size="sm" leader={game.status === 'finished'} />}
+            {winner && <Avatar player={winner} size="sm" leader={game.status === 'finished'} leaderColor="#10b981" />}
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
@@ -101,7 +101,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
             <span className="text-xs font-bold text-stone-500 dark:text-slate-400 block">
               Score vainqueur
             </span>
-            <span className="font-black text-base text-[#c83b3b] dark:text-red-400 tabular-nums">
+            <span className="font-black text-base text-emerald-700 dark:text-emerald-400 tabular-nums">
               {winner ? game.scores[winner.id] || 0 : 0} {scoreUnit}
             </span>
           </div>
@@ -155,7 +155,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                       </span>
                     )}
                   </div>
-                  <Avatar player={player} size="xs" leader={isFirst} />
+                  <Avatar player={player} size="xs" leader={isFirst} leaderColor="#10b981" />
                   <span className="text-[11px] sm:text-xs font-semibold truncate w-full mt-0.5 px-0.5">
                     {player.name}
                   </span>

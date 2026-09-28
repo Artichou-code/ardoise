@@ -335,7 +335,7 @@ export function HomeScreen() {
                     {winner && (
                       <div className="flex flex-col items-center gap-0.5 shrink-0 min-w-[54px]">
                         <div className="relative">
-                          <Avatar player={winner} size="xs" leader />
+                          <Avatar player={winner} size="xs" leader leaderColor="#10b981" />
                           <span
                             className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-2xs ring-1 ring-white dark:ring-slate-900"
                             title="Vainqueur"
