@@ -1,6 +1,7 @@
 // Constantes et règles officielles pour tous les jeux intégrés (Zéro émoji)
 
 export const GAMES = {
+  DOURAK: 'dourak',
   CARACOLE: 'caracole',
   PRESIDENT: 'president',
   SKYJO: 'skyjo',
@@ -11,6 +12,62 @@ export const GAMES = {
 }
 
 export const GAME_META = {
+  [GAMES.DOURAK]: {
+    id: GAMES.DOURAK,
+    name: 'Dourak (Дурак)',
+    playersBadge: '2 à 6 j.',
+    categoryBadge: 'Cartes (36)',
+    description: 'Pas de vainqueur, le dernier joueur en main est le Dourak.',
+    minPlayers: 2,
+    maxPlayers: 6,
+    scoreDir: 'low',
+    rules: {
+      sections: [
+        {
+          title: 'Le But',
+          content:
+            "Se défausser de toutes ses cartes. Il n'y a pas de gagnant à proprement parler : le dernier joueur ayant encore des cartes en main devient le « Dourak » (l'idiot).",
+        },
+        {
+          title: 'Préparation',
+          items: [
+            'Paquet de 36 cartes (du 6 à l’As).',
+            '6 cartes distribuées à chaque joueur.',
+            "La carte suivante est retournée visible sous la pioche : sa couleur détermine l'Atout (Kozyr) pour toute la manche.",
+          ],
+        },
+        {
+          title: "Déroulement d'un tour",
+          items: [
+            "Le joueur ayant le plus petit atout commence en tant qu'Attaquant.",
+            'Le joueur situé à sa gauche est le Défenseur.',
+            "L'attaquant pose une carte. Le défenseur doit la battre avec une carte plus forte de la même couleur, ou avec un atout. Si l'attaque est un atout, seul un atout supérieur peut la battre.",
+            "Les autres joueurs (ou l'attaquant) peuvent ajouter des cartes de même valeur que celles déjà posées sur la table (limité à 6 cartes max ou au nombre de cartes en main du défenseur).",
+          ],
+        },
+        {
+          title: 'Résolution du tour',
+          items: [
+            "Défense réussie : toutes les cartes jouées sont écartées à la défausse (Otboy). Le défenseur devient le nouvel attaquant.",
+            "Défense échouée (Abandon) : le défenseur ramasse toutes les cartes posées sur la table et passe son tour d'attaque (le joueur à sa gauche attaque).",
+          ],
+        },
+        {
+          title: 'Recharge & Fin de manche',
+          items: [
+            "Recharge : après chaque pli, tout le monde repioche pour remonter à 6 cartes en main (dans l'ordre : attaquant principal, autres attaquants, puis défenseur).",
+            "Fin de manche : lorsque la pioche est épuisée, on joue jusqu'à épuisement des mains. Le dernier joueur qui conserve des cartes est déclaré Dourak.",
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Paquet utilisé', value: '36 cartes (6 à As)' },
+        { item: 'Main de départ / Recharge', value: '6 cartes' },
+        { item: 'Limite par assaut', value: '6 cartes max.' },
+        { item: 'Perdant de la manche', value: '+1 Dourak (ou cartes restantes)' },
+      ],
+    },
+  },
   [GAMES.CARACOLE]: {
     id: GAMES.CARACOLE,
     name: 'Caracole',

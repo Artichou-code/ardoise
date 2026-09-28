@@ -109,7 +109,7 @@ export function HomeScreen() {
               </h2>
             </div>
             <span className="text-[11px] text-stone-400 dark:text-slate-500">
-              7 calculateurs officiels
+              {Object.keys(GAME_META).length} calculateurs officiels
             </span>
           </div>
 

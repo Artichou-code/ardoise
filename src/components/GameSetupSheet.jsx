@@ -21,7 +21,6 @@ function PlayerCreatorSheet({ open, onClose, onAdd }) {
   return (
     <BottomSheet open={open} onClose={onClose} title="Nouveau joueur">
       <div className="px-5 py-4 space-y-4">
-        {/* Aperçu de l'avatar à initiale + saisie du prénom */}
         <div className="flex items-center gap-3">
           <Avatar player={{ name: name || 'A', color }} size="lg" />
           <input
@@ -36,7 +35,6 @@ function PlayerCreatorSheet({ open, onClose, onAdd }) {
           />
         </div>
 
-        {/* Sélecteur de teintes de craies / feutres d'écolier */}
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2">
             Couleur de craie / encre
@@ -64,7 +62,14 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
   const [showCreator, setShowCreator] = useState(false)
 
   useEffect(() => {
-    if (gameType === 'belote') {
+    if (gameType === 'dourak') {
+      setConfig({
+        scoreDir: 'low',
+        mode: 'defeats',
+        endCondition: 'limit',
+        limit: 5,
+      })
+    } else if (gameType === 'belote') {
       setConfig({ limit: 1000 })
     } else if (gameType === 'caracole') {
       setConfig({ limit: 100 })
@@ -171,7 +176,7 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
               <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
                 Joueurs enregistrés ({selectedPlayers.length}/{meta.maxPlayers})
               </p>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto scrollbar-hide">
+              <div className="space-y-1.5 max-h-44 overflow-y-auto scrollbar-hide">
                 {savedPlayers.map(p => {
                   const isSelected = !!selectedPlayers.find(sp => sp.id === p.id)
                   return (
@@ -191,6 +196,114 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
                     </button>
                   )
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* Config spécifique Dourak */}
+          {gameType === 'dourak' && (
+            <div className="space-y-3 pt-1">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
+                  Mode de comptage
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: 'defeats', label: 'Classique (+1 défaite)', defaultLimit: 5 },
+                    { id: 'cards', label: 'Pénalité aux cartes', defaultLimit: 30 },
+                  ].map(opt => {
+                    const active = (config.mode || 'defeats') === opt.id
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() =>
+                          setConfig(c => ({
+                            ...c,
+                            mode: opt.id,
+                            limit: c.endCondition === 'rounds' ? c.limit : opt.defaultLimit,
+                          }))
+                        }
+                        className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-colors ${
+                          active
+                            ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                            : 'school-subtle'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
+                  Condition de fin de partie
+                </p>
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  {[
+                    {
+                      id: 'limit',
+                      label:
+                        config.mode === 'cards'
+                          ? 'Seuil de cartes'
+                          : 'Seuil de défaites',
+                      defaultVal: config.mode === 'cards' ? 30 : 5,
+                    },
+                    { id: 'rounds', label: 'Nombre de manches', defaultVal: 10 },
+                  ].map(cond => {
+                    const active = (config.endCondition || 'limit') === cond.id
+                    return (
+                      <button
+                        key={cond.id}
+                        type="button"
+                        onClick={() =>
+                          setConfig(c => ({
+                            ...c,
+                            endCondition: cond.id,
+                            limit: cond.defaultVal,
+                          }))
+                        }
+                        className={`py-2 px-3 rounded-xl text-xs font-bold border transition-colors ${
+                          active
+                            ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                            : 'school-subtle'
+                        }`}
+                      >
+                        {cond.label}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Choix du palier */}
+                <div className="grid grid-cols-3 gap-2">
+                  {(config.endCondition === 'rounds'
+                    ? [5, 10, 15]
+                    : config.mode === 'cards'
+                    ? [20, 30, 50]
+                    : [3, 5, 10]
+                  ).map(val => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                      className={`py-2 rounded-xl text-xs font-bold border transition-colors ${
+                        config.limit === val
+                          ? 'border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b]'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      {val}{' '}
+                      {config.endCondition === 'rounds'
+                        ? 'manches'
+                        : config.mode === 'cards'
+                        ? 'cartes'
+                        : 'défaites'}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}

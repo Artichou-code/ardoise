@@ -7,6 +7,7 @@ import { ConfirmDialog } from './ui/Dialog'
 import { RulesSheet } from './RulesSheet'
 import { getRanking } from '../utils/gameUtils'
 import { GAME_META, GAMES } from '../constants/games'
+import { DourakEngine } from './engines/DourakEngine'
 import { CaracoleEngine } from './engines/CaracoleEngine'
 import { SkyjoEngine } from './engines/SkyjoEngine'
 import { PresidentEngine } from './engines/PresidentEngine'
@@ -16,6 +17,7 @@ import { SixQuiPrendEngine } from './engines/SixQuiPrendEngine'
 import { UniverselEngine } from './engines/UniverselEngine'
 
 const ENGINE_MAP = {
+  [GAMES.DOURAK]: DourakEngine,
   [GAMES.CARACOLE]: CaracoleEngine,
   [GAMES.SKYJO]: SkyjoEngine,
   [GAMES.PRESIDENT]: PresidentEngine,

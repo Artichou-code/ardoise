@@ -18,44 +18,78 @@ export function RulesSheet({ gameType, onClose, onStartSetup }) {
       subtitle={`${meta.playersBadge} · ${meta.categoryBadge}`}
     >
       <div className="px-5 py-4 space-y-5">
-        {/* 1. Objectif */}
-        <section>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="w-1.5 h-4 rounded-full bg-[#c83b3b]" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#c83b3b]">
-              1. Objectif
-            </h3>
-          </div>
-          <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
-            {rules.objective}
-          </p>
-        </section>
+        {/* Si le jeu définit des sections structurées (ex. Dourak) */}
+        {rules.sections ? (
+          rules.sections.map((sec, idx) => (
+            <section key={idx}>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-1.5 h-4 rounded-full bg-[#c83b3b]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#c83b3b]">
+                  {idx + 1}. {sec.title}
+                </h3>
+              </div>
+              {sec.content && (
+                <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
+                  {sec.content}
+                </p>
+              )}
+              {sec.items && (
+                <ul className="space-y-1.5 mt-1">
+                  {sec.items.map((item, i) => (
+                    <li
+                      key={i}
+                      className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed flex items-start gap-2"
+                    >
+                      <span className="text-[#c83b3b] font-bold select-none">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          ))
+        ) : (
+          <>
+            {/* 1. Objectif */}
+            <section>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-1.5 h-4 rounded-full bg-[#c83b3b]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#c83b3b]">
+                  1. Objectif
+                </h3>
+              </div>
+              <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
+                {rules.objective}
+              </p>
+            </section>
 
-        {/* 2. Déroulement d'une manche */}
-        <section>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="w-1.5 h-4 rounded-full bg-[#c83b3b]" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#c83b3b]">
-              2. Déroulement d'une manche
-            </h3>
-          </div>
-          <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
-            {rules.gameplay}
-          </p>
-        </section>
+            {/* 2. Déroulement d'une manche */}
+            <section>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-1.5 h-4 rounded-full bg-[#c83b3b]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#c83b3b]">
+                  2. Déroulement d'une manche
+                </h3>
+              </div>
+              <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
+                {rules.gameplay}
+              </p>
+            </section>
 
-        {/* 3. Comptage des points */}
-        <section>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="w-1.5 h-4 rounded-full bg-[#c83b3b]" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#c83b3b]">
-              3. Comptage des points
-            </h3>
-          </div>
-          <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
-            {rules.scoring}
-          </p>
-        </section>
+            {/* 3. Comptage des points */}
+            <section>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-1.5 h-4 rounded-full bg-[#c83b3b]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#c83b3b]">
+                  3. Comptage des points
+                </h3>
+              </div>
+              <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
+                {rules.scoring}
+              </p>
+            </section>
+          </>
+        )}
 
         {/* Tableau récapitulatif / Barème */}
         {rules.summaryTable && rules.summaryTable.length > 0 && (
