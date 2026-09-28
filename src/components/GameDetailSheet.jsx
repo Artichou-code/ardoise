@@ -12,37 +12,40 @@ import { getRanking, formatDate, formatDuration } from '../utils/gameUtils'
  * - Actions (Revanche ou Reprendre)
  */
 export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
-  if (!game) return null
-
-  const meta = GAME_META[game.type]
-  const isDourak = game.type === GAMES.DOURAK
-  const isDourakCards = isDourak && game.config?.mode === 'cards'
+  const meta = game ? GAME_META[game.type] : null
+  const isDourak = game?.type === GAMES.DOURAK
+  const isDourakCards = isDourak && game?.config?.mode === 'cards'
   const scoreUnit = isDourak ? (isDourakCards ? 'cartes' : 'déf.') : 'pts'
 
   const scoreDir =
-    game.config?.scoreDir === 'low' ||
-    game.config?.scoreDir === 'low_limit' ||
+    game?.config?.scoreDir === 'low' ||
+    game?.config?.scoreDir === 'low_limit' ||
     meta?.scoreDir === 'low'
       ? 'low'
       : 'high'
 
-  const ranking = getRanking(game.scores || {}, scoreDir)
-  const winner =
-    game.players.find(p => p.id === game.winner) ||
-    game.players.find(p => p.id === ranking[0]?.id)
+  const ranking = useMemo(() => {
+    if (!game) return []
+    return getRanking(game.scores || {}, scoreDir)
+  }, [game, scoreDir])
 
-  const grandDourakEntry = ranking[ranking.length - 1]
-  const grandDourak = isDourak
-    ? game.players.find(p => p.id === grandDourakEntry?.id)
-    : null
+  const winner = useMemo(() => {
+    if (!game) return null
+    return (
+      game.players.find(p => p.id === game.winner) ||
+      game.players.find(p => p.id === ranking[0]?.id) ||
+      null
+    )
+  }, [game, ranking])
 
-  const duration = game.finishedAt
-    ? formatDuration(game.finishedAt - game.startedAt)
-    : null
+  const duration = useMemo(() => {
+    if (!game?.finishedAt) return null
+    return formatDuration(game.finishedAt - game.startedAt)
+  }, [game])
 
   // Calcul des scores cumulés manche par manche de manière sûre
   const runningTotals = useMemo(() => {
-    if (!game?.rounds) return []
+    if (!game?.rounds || !game?.players) return []
     let cumulative = Object.fromEntries(game.players.map(p => [p.id, 0]))
     return game.rounds.map((round) => {
       if (round.scores) {
@@ -58,6 +61,8 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
       return { ...cumulative }
     })
   }, [game])
+
+  if (!game) return null
 
   const subtitle = `${formatDate(game.startedAt)}${duration ? ` · ${duration}` : ''} · ${game.rounds.length} manche${game.rounds.length > 1 ? 's' : ''}`
 
