@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, Trash2, Play, History, FileText, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Trash2, Play, History, FileText, ChevronRight, BarChart3 } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { Avatar } from './ui/Avatar'
@@ -29,6 +29,15 @@ export function HistoryScreen() {
         <h1 className="flex-1 font-serif-title font-bold text-lg">
           Archives des parties
         </h1>
+        <button
+          type="button"
+          onClick={() => setScreen('stats')}
+          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+          title="Statistiques"
+          aria-label="Statistiques"
+        >
+          <BarChart3 size={18} className="text-stone-700 dark:text-slate-300" />
+        </button>
         <ThemeToggle />
       </header>
 

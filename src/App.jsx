@@ -3,6 +3,7 @@ import { HomeScreen } from './components/HomeScreen'
 import { GameScreen } from './components/GameScreen'
 import { VictoryScreen } from './components/VictoryScreen'
 import { HistoryScreen } from './components/HistoryScreen'
+import { StatsScreen } from './components/StatsScreen'
 import { PlayersScreen } from './components/PlayersScreen'
 import { PullToRefreshIndicator } from './components/ui/PullToRefresh'
 
@@ -16,6 +17,7 @@ export default function App() {
       {screen === 'game' && <GameScreen />}
       {screen === 'victory' && <VictoryScreen />}
       {screen === 'history' && <HistoryScreen />}
+      {screen === 'stats' && <StatsScreen />}
       {screen === 'players' && <PlayersScreen />}
     </>
   )
