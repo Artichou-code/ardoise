@@ -73,12 +73,12 @@ export function BottomSheet({
   if (position === 'top') {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-start justify-center p-2.5 pt-safe pt-2 sm:pt-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
+        className="fixed inset-0 z-50 flex items-start justify-center p-3 pt-safe pt-5 sm:pt-8 bg-black/60 backdrop-blur-sm overflow-y-auto"
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <div
           ref={sheetRef}
-          className={`relative w-full max-w-lg school-card rounded-2xl shadow-2xl border transition-all duration-150 max-h-[calc(100dvh-1rem)] flex flex-col mt-0 mb-auto ${className}`}
+          className={`relative w-full max-w-lg school-card rounded-2xl shadow-2xl border transition-all duration-150 max-h-[calc(100dvh-2rem)] flex flex-col mt-1 sm:mt-3 mb-auto ${className}`}
         >
           {title && (
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-100 dark:border-slate-800/80 flex-shrink-0">
