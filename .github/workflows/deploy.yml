@@ -3,11 +3,9 @@ name: Deploy Ardoise to Cloudflare Pages
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     name: Build & Deploy
     permissions:
@@ -34,5 +32,5 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=ardoise --branch=${{ github.ref_name }}
+          accountId: bcd33999daa2907877bd9fc48f39cfbf
+          command: pages deploy dist --project-name=ardoise --branch=main
