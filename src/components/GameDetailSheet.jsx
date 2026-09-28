@@ -181,15 +181,13 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
             <div className="border border-stone-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-2xs max-h-[48vh] sm:max-h-[54vh] overflow-y-auto overflow-x-auto scrollbar-hide relative">
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="sticky top-0 z-20 shadow-xs">
-                  <tr className="bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700 text-[11px] font-bold text-stone-700 dark:text-slate-200">
-                    <th className="py-2.5 px-3 sticky left-0 top-0 z-30 bg-stone-100 dark:bg-slate-800 w-16 border-r border-stone-200/80 dark:border-slate-700">
+                  <tr className="bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700 text-[10px] font-bold text-stone-700 dark:text-slate-200">
+                    <th className="py-1.5 px-2 sticky left-0 top-0 z-30 bg-stone-100 dark:bg-slate-800 w-12 border-r border-stone-200/80 dark:border-slate-700">
                       Manche
                     </th>
                     {game.players.map(p => (
-                      <th key={p.id} className="py-2.5 px-3 text-center min-w-[90px] sticky top-0 bg-stone-100 dark:bg-slate-800 z-20">
-                        <div className="flex flex-col items-center gap-0.5">
-                          <span className="truncate max-w-[80px] font-bold">{p.name}</span>
-                        </div>
+                      <th key={p.id} className="py-1.5 px-2 text-center min-w-[72px] sticky top-0 bg-stone-100 dark:bg-slate-800 z-20">
+                        <span className="truncate max-w-[68px] font-bold block">{p.name}</span>
                       </th>
                     ))}
                   </tr>
@@ -202,7 +200,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                         key={rIdx}
                         className="hover:bg-stone-50/80 dark:hover:bg-slate-800/40 transition-colors"
                       >
-                        <td className="py-2.5 px-3 font-bold text-stone-400 dark:text-slate-500 sticky left-0 bg-white dark:bg-slate-900 z-10 border-r border-stone-100 dark:border-slate-800/60">
+                        <td className="py-1 px-2 font-bold text-stone-400 dark:text-slate-500 sticky left-0 bg-white dark:bg-slate-900 z-10 border-r border-stone-100 dark:border-slate-800/60 text-[11px]">
                           M.{rIdx + 1}
                         </td>
                         {game.players.map(p => {
@@ -212,34 +210,34 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                           const isRoundLoser = round.loserId === p.id
 
                           return (
-                            <td key={p.id} className="py-2.5 px-3 text-center tabular-nums">
-                              <div className="flex flex-col items-center">
-                                <span className={`font-bold text-xs ${
-                                  isRoundLoser
-                                    ? 'text-[#c83b3b]'
-                                    : delta != null && delta < 0
-                                    ? 'text-emerald-600 dark:text-emerald-400'
-                                    : 'text-stone-800 dark:text-slate-200'
-                                }`}>
-                                  {delta != null ? (delta > 0 ? `+${delta}` : delta) : '—'}
-                                </span>
-
-                                {/* Score cumulé sous le delta */}
-                                {cumul != null && (
-                                  <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
-                                    tot. {cumul}
+                            <td key={p.id} className="py-1 px-1.5 text-center tabular-nums">
+                              <div className="flex flex-col items-center justify-center leading-tight">
+                                <div className="flex items-center gap-1">
+                                  <span className={`font-bold text-xs ${
+                                    isRoundLoser
+                                      ? 'text-[#c83b3b]'
+                                      : delta != null && delta < 0
+                                      ? 'text-emerald-600 dark:text-emerald-400'
+                                      : 'text-stone-800 dark:text-slate-200'
+                                  }`}>
+                                    {delta != null ? (delta > 0 ? `+${delta}` : delta) : '—'}
                                   </span>
-                                )}
 
-                                {/* Badges spécifiques de faits de jeu */}
+                                  {cumul != null && (
+                                    <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
+                                      ({cumul})
+                                    </span>
+                                  )}
+                                </div>
+
                                 {isRoundLoser && (
-                                  <span className="text-[9px] font-bold text-[#c83b3b] bg-[#c83b3b]/10 px-1 rounded mt-0.5">
+                                  <span className="text-[8px] font-bold text-[#c83b3b] bg-[#c83b3b]/10 px-1 py-0.2 rounded mt-0.5 uppercase tracking-wider">
                                     Dourak
                                   </span>
                                 )}
                                 {rep && (
                                   <span
-                                    className="text-[9px] font-bold text-amber-700 bg-amber-500/15 dark:text-amber-300 px-1 rounded mt-0.5"
+                                    className="text-[8px] font-bold text-amber-700 bg-amber-500/15 dark:text-amber-300 px-1 py-0.2 rounded mt-0.5"
                                     title={`Sursis : ${rep.original} → ${rep.reduced}`}
                                   >
                                     sursis ({rep.reduced})
@@ -256,16 +254,16 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                 {/* Total final sticky en bas */}
                 <tfoot className="sticky bottom-0 z-20 shadow-xs">
                   <tr className="bg-stone-100 dark:bg-slate-800 border-t-2 border-stone-300 dark:border-slate-700 font-bold text-xs">
-                    <td className="py-3 px-3 font-black text-stone-900 dark:text-slate-100 sticky bottom-0 left-0 z-30 bg-stone-100 dark:bg-slate-800 border-r border-stone-200 dark:border-slate-700">
+                    <td className="py-1.5 px-2 font-black text-stone-900 dark:text-slate-100 sticky bottom-0 left-0 z-30 bg-stone-100 dark:bg-slate-800 border-r border-stone-200 dark:border-slate-700">
                       Total
                     </td>
                     {game.players.map(p => {
                       const finalScore = game.scores[p.id] || 0
                       const isWin = p.id === winner?.id
                       return (
-                        <td key={p.id} className="py-3 px-3 text-center tabular-nums sticky bottom-0 bg-stone-100 dark:bg-slate-800 z-20">
-                          <div className="flex flex-col items-center">
-                            <span className={`text-sm font-black ${
+                        <td key={p.id} className="py-1.5 px-1.5 text-center tabular-nums sticky bottom-0 bg-stone-100 dark:bg-slate-800 z-20">
+                          <div className="flex items-center justify-center gap-1 leading-tight">
+                            <span className={`text-xs font-black ${
                               isWin
                                 ? 'text-emerald-700 dark:text-emerald-400'
                                 : 'text-stone-900 dark:text-slate-100'
@@ -273,7 +271,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                               {finalScore}
                             </span>
                             {isWin && (
-                              <span className="text-[9px] font-bold uppercase text-emerald-600 dark:text-emerald-400">
+                              <span className="text-[8px] font-bold uppercase text-emerald-600 dark:text-emerald-400 px-1 py-0.2 rounded bg-emerald-500/15">
                                 Gagnant
                               </span>
                             )}
