@@ -21,10 +21,11 @@ export function HomeScreen() {
       {/* Header style cahier d'écolier / ardoise */}
       <header className="flex items-center justify-between px-4 pt-safe pt-3.5 pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#151719] dark:bg-slate-800 border border-stone-300 dark:border-slate-700 flex items-center justify-center relative overflow-hidden">
-            <span className="absolute left-1.5 top-0 bottom-0 w-[2px] bg-[#c83b3b]" />
-            <span className="font-serif-title font-bold text-white text-base pl-1">A</span>
-          </div>
+          <img
+            src="/ardoise-fav.svg"
+            alt="Ardoise"
+            className="w-8 h-8 rounded-lg shadow-2xs flex-shrink-0"
+          />
           <div>
             <h1 className="font-serif-title text-xl font-bold tracking-tight leading-none">
               Ardoise

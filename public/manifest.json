@@ -4,14 +4,26 @@
   "description": "Carnet de scores et règles pour jeux de cartes et de société",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#faf9f5",
-  "theme_color": "#c83b3b",
+  "background_color": "#151719",
+  "theme_color": "#151719",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/ardoise-icon.svg",
+      "src": "/ardoise-fav.svg",
       "sizes": "any",
       "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/ardoise-fav-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/ardoise-fav-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
