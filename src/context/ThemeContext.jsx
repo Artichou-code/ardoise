@@ -24,7 +24,7 @@ export function ThemeProvider({ children }) {
     }
     const svgFavicon = document.querySelector('link[rel="icon"][type="image/svg+xml"]')
     if (svgFavicon) {
-      svgFavicon.setAttribute('href', theme === 'dark' ? '/logo-ardoise-noir.svg' : '/logo-ardoise-white.svg')
+      svgFavicon.setAttribute('href', theme === 'dark' ? '/Ardoise_v2-dark.svg' : '/Ardoise_v2-white.svg')
     }
     saveTheme(theme)
   }, [theme])
