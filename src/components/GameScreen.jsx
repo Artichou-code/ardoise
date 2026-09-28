@@ -147,7 +147,7 @@ export function GameScreen() {
       </div>
 
       {/* Moteur de saisie de manche */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain">
+      <div className="flex-1 overflow-y-auto scrollbar-hide">
         <div className="px-4 pt-3 scroll-bottom-space">
           <Engine game={activeGame} leaderId={leaderId} onFinish={finishGame} />
         </div>
