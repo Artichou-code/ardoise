@@ -2,12 +2,12 @@ import { useTheme } from '../../context/ThemeContext'
 
 /**
  * Logo officiel Ardoise :
- * - Mode White (clair) : /ardoise-fav-white.svg
- * - Mode Dark (sombre) : /ardoise-fav.svg
+ * - Mode Dark (sombre) : /logo-ardoise-noir.svg
+ * - Mode White (clair) : /logo-ardoise-white.svg
  */
 export function AppLogo({ className = 'w-8 h-8' }) {
   const { theme } = useTheme()
-  const src = theme === 'dark' ? '/ardoise-fav.svg' : '/ardoise-fav-white.svg'
+  const src = theme === 'dark' ? '/logo-ardoise-noir.svg' : '/logo-ardoise-white.svg'
 
   return (
     <img
