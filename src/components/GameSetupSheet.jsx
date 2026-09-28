@@ -195,17 +195,46 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
         subtitle={sheetSubtitle}
       >
         <div className="px-5 py-4 space-y-4">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-stone-600 dark:text-slate-400 flex-1">
-              {meta.description}
-            </p>
+          <div className="flex items-center justify-between gap-2.5 min-h-[38px]">
+            {selectedPlayers.length === 0 ? (
+              <p className="text-xs text-stone-600 dark:text-slate-400 flex-1 leading-relaxed">
+                {meta.description}
+              </p>
+            ) : (
+              <div className="flex-1 min-w-0 overflow-x-auto scrollbar-hide py-1">
+                <div className="flex items-center gap-2.5">
+                  {selectedPlayers.map(p => (
+                    <div key={p.id} className="shrink-0 flex flex-col items-center gap-0.5">
+                      <div className="relative p-0.5">
+                        <Avatar player={p} size="sm" />
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPlayers(prev => prev.filter(sp => sp.id !== p.id))}
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-stone-800 dark:bg-slate-200 text-white dark:text-slate-900 flex items-center justify-center shadow-xs hover:bg-[#c83b3b] dark:hover:bg-[#c83b3b] hover:text-white transition-colors"
+                          title={`Retirer ${p.name}`}
+                          aria-label={`Retirer ${p.name}`}
+                        >
+                          <X size={10} strokeWidth={2.5} />
+                        </button>
+                      </div>
+                      <span className="text-[10px] font-semibold text-stone-700 dark:text-slate-300 max-w-[52px] truncate text-center">
+                        {p.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {onOpenRules && (
               <button
                 type="button"
                 onClick={() => onOpenRules(gameType)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 text-xs font-semibold text-stone-700 dark:text-slate-300 hover:border-[#c83b3b] hover:text-[#c83b3b] transition-colors flex-shrink-0"
+                className="w-8 h-8 rounded-xl border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-[#c83b3b] hover:text-[#c83b3b] flex items-center justify-center transition-colors shrink-0"
+                title="Consulter les règles"
+                aria-label="Règles"
               >
-                <BookOpen size={13} /> Règles
+                <BookOpen size={16} />
               </button>
             )}
           </div>
@@ -219,33 +248,6 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
             >
               Lancer directement : Équipe Nous vs Équipe Eux
             </button>
-          )}
-
-          {/* Joueurs sélectionnés */}
-          {selectedPlayers.length > 0 && (
-            <div className="py-0.5">
-              <div className="flex gap-3 overflow-x-auto scrollbar-hide pt-2.5 pb-1.5 px-1.5">
-                {selectedPlayers.map(p => (
-                  <div key={p.id} className="flex-shrink-0 flex flex-col items-center gap-1">
-                    <div className="relative p-1">
-                      <Avatar player={p} size="sm" />
-                      <button
-                        type="button"
-                        onClick={() => setSelectedPlayers(prev => prev.filter(sp => sp.id !== p.id))}
-                        className="absolute top-0 right-0 w-4.5 h-4.5 rounded-full bg-stone-800 dark:bg-slate-200 text-white dark:text-slate-900 flex items-center justify-center shadow-xs hover:bg-[#c83b3b] dark:hover:bg-[#c83b3b] hover:text-white transition-colors"
-                        title={`Retirer ${p.name}`}
-                        aria-label={`Retirer ${p.name}`}
-                      >
-                        <X size={10} strokeWidth={2.5} />
-                      </button>
-                    </div>
-                    <span className="text-[11px] font-medium text-stone-700 dark:text-slate-300 max-w-[56px] truncate text-center">
-                      {p.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
           )}
 
           {/* Joueurs enregistrés */}
