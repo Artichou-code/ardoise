@@ -267,9 +267,9 @@ export const BELOTE_CONTRACTS = [
   { value: 500, label: 'Générale (500)' },
 ]
 
-// Avatars illustrés importés depuis Arena.photo
+// Avatars illustrés (10 avatars complétant la grille 5x2)
 export const PRESET_AVATARS = Array.from(
-  { length: 9 },
+  { length: 10 },
   (_, i) => `/avatar/Fichier ${i + 1}.png`
 )
 
