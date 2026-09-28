@@ -353,21 +353,22 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { val: 50, label: '50 pts (Courte)' },
-                    { val: 100, label: '100 pts (Classique)' },
-                    { val: 200, label: '200 pts (Longue)' },
-                  ].map(({ val, label }) => (
+                    { val: 50, title: '50 pts', sub: '(Courte)' },
+                    { val: 100, title: '100 pts', sub: '(Classique)' },
+                    { val: 200, title: '200 pts', sub: '(Longue)' },
+                  ].map(({ val, title, sub }) => (
                     <button
                       key={val}
                       type="button"
                       onClick={() => setConfig(c => ({ ...c, limit: val }))}
-                      className={`py-2.5 px-1 rounded-xl text-xs font-bold border transition-colors ${
+                      className={`py-2 px-1 rounded-xl text-center border transition-colors ${
                         (config.limit || 100) === val
                           ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
                           : 'school-subtle'
                       }`}
                     >
-                      {label}
+                      <span className="block font-bold text-xs">{title}</span>
+                      <span className="block text-[10px] font-semibold opacity-85 mt-0.5">{sub}</span>
                     </button>
                   ))}
                 </div>
@@ -377,16 +378,17 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
                 <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
                   Règle du sursis (pile au seuil)
                 </p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className={`grid ${config.limit === 50 ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
                   {[
                     {
                       id: 'half',
-                      label: `Divisé par 2 (→ ${Math.floor((config.limit || 100) / 2)} pts)`,
+                      title: 'Divisé par 2',
+                      sub: `(→ ${Math.floor((config.limit || 100) / 2)} pts)`,
                     },
                     ...(config.limit === 50
-                      ? [{ id: 'zero', label: 'Remis à 0 pt' }]
+                      ? [{ id: 'zero', title: 'Remis à 0', sub: '(0 pt)' }]
                       : []),
-                    { id: 'none', label: 'Sans sursis' },
+                    { id: 'none', title: 'Sans sursis' },
                   ].map(opt => {
                     const active =
                       (config.sursis !== false && (config.sursisType || 'half') === opt.id) ||
@@ -402,13 +404,18 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
                             sursisType: opt.id === 'none' ? 'none' : opt.id,
                           }))
                         }
-                        className={`py-2 px-1 text-center rounded-xl text-xs font-bold border transition-colors ${
+                        className={`py-2 px-1 text-center rounded-xl border transition-colors ${
                           active
                             ? 'border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b]'
                             : 'school-subtle'
                         }`}
                       >
-                        {opt.label}
+                        <span className="block font-bold text-xs leading-tight">{opt.title}</span>
+                        {opt.sub && (
+                          <span className="block text-[10px] font-semibold opacity-85 leading-tight mt-0.5">
+                            {opt.sub}
+                          </span>
+                        )}
                       </button>
                     )
                   })}
@@ -482,9 +489,9 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
                     </p>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { id: 'half', label: 'Divisé par 2 (÷2)' },
-                        { id: 'zero', label: 'Remis à 0' },
-                        { id: 'none', label: 'Désactivé' },
+                        { id: 'half', title: 'Divisé par 2', sub: '(÷2)' },
+                        { id: 'zero', title: 'Remis à 0' },
+                        { id: 'none', title: 'Désactivé' },
                       ].map(opt => {
                         const active =
                           (config.sursis && (config.sursisType || 'half') === opt.id) ||
@@ -500,13 +507,18 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
                                 sursisType: opt.id === 'none' ? 'none' : opt.id,
                               }))
                             }
-                            className={`py-2 px-1 text-center rounded-xl text-xs font-bold border transition-colors ${
+                            className={`py-2 px-1 text-center rounded-xl border transition-colors ${
                               active
                                 ? 'border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b]'
                                 : 'school-subtle'
                             }`}
                           >
-                            {opt.label}
+                            <span className="block font-bold text-xs leading-tight">{opt.title}</span>
+                            {opt.sub && (
+                              <span className="block text-[10px] font-semibold opacity-85 leading-tight mt-0.5">
+                                {opt.sub}
+                              </span>
+                            )}
                           </button>
                         )
                       })}
@@ -515,7 +527,7 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
                       {config.sursis && config.sursisType !== 'none'
                         ? `Si un joueur atteint exactement ${config.limit || 100} pts, son score retombe à ${
                             config.sursisType === 'zero' ? 0 : Math.floor((config.limit || 100) / 2)
-                          } pts (sursis style Cabo / Tamalou).`
+                          } pts (sursis style Caracole).`
                         : "Le premier joueur qui atteint ou dépasse le seuil est éliminé."}
                     </p>
                   </div>

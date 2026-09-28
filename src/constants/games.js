@@ -70,10 +70,10 @@ export const GAME_META = {
   },
   [GAMES.CARACOLE]: {
     id: GAMES.CARACOLE,
-    name: 'Caracole (CABO / Tamalou)',
+    name: 'Caracole',
     playersBadge: '2–8 j.',
     categoryBadge: 'Mémoire & Cartes',
-    description: 'Objectif score minimal (Cabo, Tamalou). Sursis pile au seuil !',
+    description: 'Objectif score minimal, cartes cachées et règle du sursis.',
     minPlayers: 2,
     maxPlayers: 8,
     scoreDir: 'low',
@@ -89,7 +89,7 @@ export const GAME_META = {
           items: [
             "Chaque joueur dispose de 4 cartes face cachée devant lui disposées en carré. Au début de la manche, chacun mémorise secrètement 2 de ses 4 cartes.",
             "À son tour, on pioche une carte (depuis la pioche ou la défausse) : on peut l'échanger avec l'une de ses cartes cachées, ou la défausser directement pour activer son effet (regarder une de ses cartes, espionner une carte adverse, échanger deux cartes).",
-            "Dès qu'un joueur estime avoir la plus petite valeur totale en main, il crie « Caracole ! » (ou « Cabo ! » / « Tamalou ! »). Les autres joueurs jouent alors un dernier tour.",
+            "Dès qu'un joueur estime avoir la plus petite valeur totale en main, il crie « Caracole ! ». Les autres joueurs jouent alors un dernier tour.",
           ],
         },
         {
@@ -109,8 +109,8 @@ export const GAME_META = {
         },
       ],
       summaryTable: [
-        { item: 'Score pile à 100 pts', value: 'Divisé par 2 (-> 50 pts)' },
-        { item: 'Score pile à 50 pts (partie courte)', value: 'Divisé par 2 (-> 25 pts)' },
+        { item: 'Score pile à 100 pts', value: 'Divisé par 2 (→ 50 pts)' },
+        { item: 'Score pile à 50 pts (partie courte)', value: 'Divisé par 2 (→ 25 pts)' },
         { item: 'Dépassement du seuil (> seuil)', value: 'Fin de partie / Élimination' },
         { item: 'Vainqueur final', value: 'Score le plus bas' },
       ],
