@@ -5,15 +5,6 @@ import { useScrollLock } from '../hooks/useScrollLock'
 
 const UNIVERS_CARDS = [
   {
-    id: 'webdesign',
-    badge: "1\u00A0000€ HT • SITE CLÉ EN MAIN",
-    title: "ART-créa Web-Design",
-    desc: "Création de sites internet sur-mesure. Un modèle artisanal sans industrialisation : projets sélectionnés au coup de cœur sur liste d'attente.",
-    url: "https://art-crea.fr/",
-    logoType: 'artcrea',
-    ctaText: "Découvrir l'offre ART-créa",
-  },
-  {
     id: 'arena-photo',
     badge: "EXPÉRIENCE INTERACTIVE",
     title: "ARENA.photo",
@@ -22,6 +13,15 @@ const UNIVERS_CARDS = [
     logoType: 'image',
     logoSrc: "/images/VS-192px.png",
     ctaText: "Découvrir ARENA.photo",
+  },
+  {
+    id: 'webdesign',
+    badge: "1\u00A0000€ HT • SITE CLÉ EN MAIN",
+    title: "ART-créa Web-Design",
+    desc: "Création de sites internet sur-mesure. Un modèle artisanal sans industrialisation : projets sélectionnés au coup de cœur sur liste d'attente.",
+    url: "https://art-crea.fr/",
+    logoType: 'artcrea',
+    ctaText: "Découvrir l'offre ART-créa",
   },
   {
     id: 'photo',
