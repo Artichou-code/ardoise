@@ -107,16 +107,26 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
           <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
             Classement des joueurs
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className={`grid ${
+            ranking.length <= 2 ? 'grid-cols-2 gap-2' :
+            ranking.length === 3 ? 'grid-cols-3 gap-2' :
+            ranking.length === 4 ? 'grid-cols-4 gap-1.5 sm:gap-2' :
+            ranking.length === 5 ? 'grid-cols-5 gap-1.5' :
+            ranking.length === 6 ? 'grid-cols-6 gap-1' :
+            'grid-cols-3 sm:grid-cols-4 gap-2'
+          }`}>
             {ranking.map(({ id, score, rank }) => {
               const player = game.players.find(p => p.id === id)
               if (!player) return null
               const isFirst = rank === 1
               const isLast = isDourak && rank === ranking.length
+              const isCrowded = ranking.length >= 5
               return (
                 <div
                   key={id}
-                  className={`p-2.5 rounded-xl border flex flex-col items-center text-center transition-all ${
+                  className={`rounded-xl border flex flex-col items-center text-center transition-all ${
+                    isCrowded ? 'p-1.5 gap-0.5' : 'p-2.5'
+                  } ${
                     isFirst
                       ? 'bg-emerald-500/10 border-emerald-500/30 dark:bg-emerald-950/20'
                       : isLast
@@ -124,8 +134,8 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                       : 'school-card border-stone-200 dark:border-slate-800'
                   }`}
                 >
-                  <div className="flex items-center justify-between w-full mb-1">
-                    <span className={`text-[10px] font-extrabold uppercase ${
+                  <div className="flex items-center justify-between w-full mb-0.5 px-0.5">
+                    <span className={`text-[9px] font-extrabold uppercase ${
                       isFirst
                         ? 'text-emerald-700 dark:text-emerald-400'
                         : isLast
@@ -135,16 +145,16 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                       {rank === 1 ? '1er' : `${rank}e`}
                     </span>
                     {isLast && (
-                      <span className="text-[9px] font-bold text-[#c83b3b] uppercase">
+                      <span className="text-[8px] font-bold text-[#c83b3b] uppercase tracking-tight">
                         Dourak
                       </span>
                     )}
                   </div>
                   <Avatar player={player} size="xs" leader={isFirst} />
-                  <span className="text-xs font-semibold truncate w-full mt-1">
+                  <span className="text-[11px] sm:text-xs font-semibold truncate w-full mt-0.5 px-0.5">
                     {player.name}
                   </span>
-                  <span className={`font-black text-sm tabular-nums mt-0.5 ${
+                  <span className={`font-black text-xs sm:text-sm tabular-nums mt-0.5 ${
                     isFirst ? 'text-emerald-700 dark:text-emerald-400' : isLast ? 'text-[#c83b3b]' : ''
                   }`}>
                     {score} {scoreUnit}
