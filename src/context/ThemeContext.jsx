@@ -22,6 +22,10 @@ export function ThemeProvider({ children }) {
     if (metaTheme) {
       metaTheme.setAttribute('content', theme === 'dark' ? '#151719' : '#faf9f5')
     }
+    const svgFavicon = document.querySelector('link[rel="icon"][type="image/svg+xml"]')
+    if (svgFavicon) {
+      svgFavicon.setAttribute('href', theme === 'dark' ? '/ardoise-fav.svg' : '/ardoise-fav-white.svg')
+    }
     saveTheme(theme)
   }, [theme])
 
