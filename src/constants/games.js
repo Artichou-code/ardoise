@@ -70,25 +70,49 @@ export const GAME_META = {
   },
   [GAMES.CARACOLE]: {
     id: GAMES.CARACOLE,
-    name: 'Caracole',
+    name: 'Caracole (CABO / Tamalou)',
     playersBadge: '2–8 j.',
-    categoryBadge: 'Cartes',
-    description: 'Pénalités selon les cartes restantes en main.',
+    categoryBadge: 'Mémoire & Cartes',
+    description: 'Objectif score minimal (Cabo, Tamalou). Sursis pile au seuil !',
     minPlayers: 2,
     maxPlayers: 8,
     scoreDir: 'low',
     rules: {
-      objective:
-        "Se débarrasser de toutes ses cartes avant les autres à chaque manche et totaliser le moins de points de pénalité possible. La partie s'arrête dès qu'un joueur atteint le seuil éliminatoire (50, 100 ou 200 pts).",
-      gameplay:
-        "Chaque joueur reçoit ses cartes et cherche à s'en défausser selon la couleur ou la valeur demandée. Lorsqu'un joueur pose sa dernière carte, la manche s'arrête immédiatement (0 point pour lui).",
-      scoring:
-        "Les autres joueurs additionnent la valeur des cartes qu'il leur reste en main : Cartes numériques = valeur faciale (2 à 10 pts), Valet/Dame/Roi = 10 pts, As = 11 ou 15 pts, Cartes spéciales / Jokers = 20 à 50 pts selon la variante.",
+      sections: [
+        {
+          title: 'Objectif & Seuil',
+          content:
+            "Avoir le total de points le plus bas possible. La partie se joue habituellement jusqu'à 100 points (ou 50 points en partie rapide/courte). Dès qu'un joueur dépasse le seuil éliminatoire, la partie s'arrête et le joueur au score le plus bas l'emporte.",
+        },
+        {
+          title: "Déroulement d'une manche",
+          items: [
+            "Chaque joueur dispose de 4 cartes face cachée devant lui disposées en carré. Au début de la manche, chacun mémorise secrètement 2 de ses 4 cartes.",
+            "À son tour, on pioche une carte (depuis la pioche ou la défausse) : on peut l'échanger avec l'une de ses cartes cachées, ou la défausser directement pour activer son effet (regarder une de ses cartes, espionner une carte adverse, échanger deux cartes).",
+            "Dès qu'un joueur estime avoir la plus petite valeur totale en main, il crie « Caracole ! » (ou « Cabo ! » / « Tamalou ! »). Les autres joueurs jouent alors un dernier tour.",
+          ],
+        },
+        {
+          title: 'Comptage des pénalités',
+          items: [
+            "Toutes les cartes de la table sont révélées. Chaque joueur additionne la valeur faciale de ses cartes restantes (As = 1 pt, 2 à 10 = valeur faciale, Valet/Dame = 10 pts, Rois rouges = 0 ou -1 pt selon variantes).",
+            "Si l'annonceur a effectivement le score strictement le plus faible, il marque 0 point. S'il est battu ou égalé, il encaisse la valeur de ses cartes plus une pénalité (+10 ou +20 pts selon la table).",
+          ],
+        },
+        {
+          title: 'Règle spéciale du Sursis (pile à 100 ou 50 pts)',
+          items: [
+            "Si à la fin d'une manche un joueur atteint EXACTEMENT 100 points, son score est automatiquement divisé par deux et retombe à 50 points ! Il gagne un sursis inespéré et reste en course au lieu d'être éliminé.",
+            "En partie courte à 50 points : si un joueur atteint pile 50 points, son score retombe à 25 points (ou est remis à zéro selon la variante locale choisie).",
+            "Tout score qui dépasse strictement le seuil (ex: 101 pts à 100, ou 51 pts à 50) élimine le joueur et déclenche la fin de la partie.",
+          ],
+        },
+      ],
       summaryTable: [
-        { item: 'Manche gagnée (0 carte)', value: '0 pt' },
-        { item: 'Cartes 2 à 10', value: 'Valeur faciale' },
-        { item: 'Figures (V, D, R)', value: '10 pts' },
-        { item: 'As / Cartes spéciales', value: '15 à 50 pts' },
+        { item: 'Score pile à 100 pts', value: 'Divisé par 2 (-> 50 pts)' },
+        { item: 'Score pile à 50 pts (partie courte)', value: 'Divisé par 2 (-> 25 pts)' },
+        { item: 'Dépassement du seuil (> seuil)', value: 'Fin de partie / Élimination' },
+        { item: 'Vainqueur final', value: 'Score le plus bas' },
       ],
     },
   },

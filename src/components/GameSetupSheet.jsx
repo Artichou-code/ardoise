@@ -87,9 +87,9 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
     } else if (gameType === 'belote') {
       setConfig({ limit: 1000 })
     } else if (gameType === 'caracole') {
-      setConfig({ limit: 100 })
+      setConfig({ limit: 100, sursis: true, sursisType: 'half' })
     } else if (gameType === 'universel') {
-      setConfig({ scoreDir: 'high', limit: 100 })
+      setConfig({ scoreDir: 'high', limit: 100, sursis: false, sursisType: 'half' })
     } else {
       setConfig({})
     }
@@ -342,69 +342,180 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
 
           {/* Config spécifique Caracole */}
           {gameType === 'caracole' && (
-            <div className="space-y-2">
-              <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
-                Seuil d'élimination
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {[50, 100, 200].map(val => (
-                  <button
-                    key={val}
-                    type="button"
-                    onClick={() => setConfig(c => ({ ...c, limit: val }))}
-                    className={`py-2.5 rounded-xl text-xs font-bold border transition-colors ${
-                      (config.limit || 100) === val
-                        ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
-                        : 'border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-800 text-stone-700 dark:text-slate-300'
-                    }`}
-                  >
-                    {val} pts
-                  </button>
-                ))}
+            <div className="space-y-3 pt-1">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
+                  Seuil d'élimination
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { val: 50, label: '50 pts (Courte)' },
+                    { val: 100, label: '100 pts (Classique)' },
+                    { val: 200, label: '200 pts (Longue)' },
+                  ].map(({ val, label }) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                      className={`py-2.5 px-1 rounded-xl text-xs font-bold border transition-colors ${
+                        (config.limit || 100) === val
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
+                  Règle du sursis (pile au seuil)
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    {
+                      id: 'half',
+                      label: `Divisé par 2 (→ ${Math.floor((config.limit || 100) / 2)} pts)`,
+                    },
+                    ...(config.limit === 50
+                      ? [{ id: 'zero', label: 'Remis à 0 pt' }]
+                      : []),
+                    { id: 'none', label: 'Sans sursis' },
+                  ].map(opt => {
+                    const active =
+                      (config.sursis !== false && (config.sursisType || 'half') === opt.id) ||
+                      (config.sursis === false && opt.id === 'none')
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() =>
+                          setConfig(c => ({
+                            ...c,
+                            sursis: opt.id !== 'none',
+                            sursisType: opt.id === 'none' ? 'none' : opt.id,
+                          }))
+                        }
+                        className={`py-2 px-1 text-center rounded-xl text-xs font-bold border transition-colors ${
+                          active
+                            ? 'border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b]'
+                            : 'school-subtle'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    )
+                  })}
+                </div>
+                <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-1">
+                  {config.sursis !== false
+                    ? `Si un joueur atteint exactement ${config.limit || 100} pts, son score retombe à ${
+                        config.sursisType === 'zero' ? 0 : Math.floor((config.limit || 100) / 2)
+                      } pts au lieu d'être éliminé.`
+                    : "Aucun sursis : atteindre ou dépasser le seuil élimine le joueur."}
+                </p>
               </div>
             </div>
           )}
 
           {/* Config spécifique Universel */}
           {gameType === 'universel' && (
-            <div className="space-y-2">
-              <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
-                Règle de victoire
-              </p>
-              {[
-                { value: 'high', label: 'Le score le plus élevé gagne' },
-                { value: 'low_limit', label: 'Le premier à X points perd' },
-              ].map(opt => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setConfig(c => ({ ...c, scoreDir: opt.value }))}
-                  className={`w-full px-4 py-3 rounded-xl text-sm font-semibold text-left border transition-colors ${
-                    (config.scoreDir || 'high') === opt.value
-                      ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
-                      : 'border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-800 text-stone-700 dark:text-slate-300'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-              {config.scoreDir === 'low_limit' && (
-                <div className="grid grid-cols-4 gap-2 pt-1">
-                  {[50, 100, 150, 200].map(val => (
+            <div className="space-y-3 pt-1">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
+                  Règle de victoire
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {[
+                    { value: 'high', label: 'Score le plus élevé gagne' },
+                    { value: 'low_limit', label: 'Le premier à X points perd (seuil)' },
+                  ].map(opt => (
                     <button
-                      key={val}
+                      key={opt.value}
                       type="button"
-                      onClick={() => setConfig(c => ({ ...c, limit: val }))}
-                      className={`py-2 rounded-xl text-xs font-bold border transition-colors ${
-                        (config.limit || 100) === val
-                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
-                          : 'border-stone-200 dark:border-slate-800 bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300'
+                      onClick={() => setConfig(c => ({ ...c, scoreDir: opt.value }))}
+                      className={`px-3 py-2.5 rounded-xl text-xs font-semibold text-left border transition-colors ${
+                        (config.scoreDir || 'high') === opt.value
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white font-bold'
+                          : 'school-subtle'
                       }`}
                     >
-                      {val} pts
+                      {opt.label}
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {config.scoreDir === 'low_limit' && (
+                <>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
+                      Seuil de fin de partie
+                    </p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[50, 100, 150, 200].map(val => (
+                        <button
+                          key={val}
+                          type="button"
+                          onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                          className={`py-2 rounded-xl text-xs font-bold border transition-colors ${
+                            (config.limit || 100) === val
+                              ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                              : 'school-subtle'
+                          }`}
+                        >
+                          {val} pts
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
+                      Règle du sursis (pile au seuil)
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { id: 'half', label: 'Divisé par 2 (÷2)' },
+                        { id: 'zero', label: 'Remis à 0' },
+                        { id: 'none', label: 'Désactivé' },
+                      ].map(opt => {
+                        const active =
+                          (config.sursis && (config.sursisType || 'half') === opt.id) ||
+                          (!config.sursis && opt.id === 'none')
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() =>
+                              setConfig(c => ({
+                                ...c,
+                                sursis: opt.id !== 'none',
+                                sursisType: opt.id === 'none' ? 'none' : opt.id,
+                              }))
+                            }
+                            className={`py-2 px-1 text-center rounded-xl text-xs font-bold border transition-colors ${
+                              active
+                                ? 'border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b]'
+                                : 'school-subtle'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-1">
+                      {config.sursis && config.sursisType !== 'none'
+                        ? `Si un joueur atteint exactement ${config.limit || 100} pts, son score retombe à ${
+                            config.sursisType === 'zero' ? 0 : Math.floor((config.limit || 100) / 2)
+                          } pts (sursis style Cabo / Tamalou).`
+                        : "Le premier joueur qui atteint ou dépasse le seuil est éliminé."}
+                    </p>
+                  </div>
+                </>
               )}
             </div>
           )}

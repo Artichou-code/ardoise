@@ -175,14 +175,25 @@ export function GameScreen() {
                     M.{activeGame.rounds.length - i}
                   </span>
                   <div className="flex flex-wrap gap-x-3 gap-y-1">
-                    {activeGame.players.map(p => (
-                      <span key={p.id} className="flex items-center gap-1 tabular-nums">
-                        <span className="font-medium text-stone-500 dark:text-slate-400">{p.name}:</span>
-                        <span className="font-bold text-stone-800 dark:text-slate-200">
-                          {round.delta?.[p.id] != null ? (round.delta[p.id] >= 0 ? '+' : '') + round.delta[p.id] : '—'}
+                    {activeGame.players.map(p => {
+                      const rep = round.reprieves?.find(r => r.playerId === p.id)
+                      return (
+                        <span key={p.id} className="flex items-center gap-1 tabular-nums">
+                          <span className="font-medium text-stone-500 dark:text-slate-400">{p.name}:</span>
+                          <span className="font-bold text-stone-800 dark:text-slate-200">
+                            {round.delta?.[p.id] != null ? (round.delta[p.id] >= 0 ? '+' : '') + round.delta[p.id] : '—'}
+                          </span>
+                          {rep && (
+                            <span
+                              className="text-[10px] font-bold text-[#c83b3b] bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 px-1 py-0.2 rounded"
+                              title={`Sursis accordé : ${rep.original} -> ${rep.reduced} pts`}
+                            >
+                              sursis
+                            </span>
+                          )}
                         </span>
-                      </span>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               ))}
