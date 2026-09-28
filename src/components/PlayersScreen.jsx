@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ArrowLeft, Plus, Pencil, Trash2, Users } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trash2, Users, Award } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { Avatar, AvatarPicker } from './ui/Avatar'
 import { BottomSheet } from './ui/BottomSheet'
 import { ConfirmDialog } from './ui/Dialog'
 import { ThemeToggle } from './ui/ThemeToggle'
+import { PlayerDetailSheet } from './PlayerDetailSheet'
 import { createPlayer, getPlayerAvatarUrl } from '../utils/gameUtils'
+import { computeStats, normalizePlayerName } from '../utils/statsUtils'
 import { AVATAR_COLORS, PRESET_AVATARS } from '../constants/games'
 
 function PlayerSheet({ open, onClose, initial, onSave }) {
@@ -78,10 +80,19 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
 }
 
 export function PlayersScreen() {
-  const { players, savePlayer, removePlayer, setScreen } = useGame()
+  const { players, savePlayer, removePlayer, setScreen, games } = useGame()
   const [showCreate, setShowCreate] = useState(false)
   const [editPlayer, setEditPlayer] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(null)
+  const [detailPlayer, setDetailPlayer] = useState(null)
+
+  // Statistiques calculées pour afficher badges et fiches
+  const playerStatsMap = useMemo(() => {
+    const stats = computeStats(games, 'all', players)
+    const map = new Map()
+    stats.playersStats.forEach(ps => map.set(normalizePlayerName(ps.name), ps))
+    return map
+  }, [games, players])
 
   // Tri alphabétique strict A-Z (insensible à la casse et aux accents)
   const sortedPlayers = useMemo(() => {
@@ -136,33 +147,72 @@ export function PlayersScreen() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            {sortedPlayers.map(p => (
-              <div
-                key={p.id}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl school-card"
-              >
-                <Avatar player={p} size="md" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm truncate">{p.name}</p>
+            {sortedPlayers.map(p => {
+              const pStat = playerStatsMap.get(normalizePlayerName(p.name))
+              const fullPlayerData = pStat || {
+                ...p,
+                totalGames: 0,
+                finishedGames: 0,
+                wins: 0,
+                podiums: 0,
+                winRate: 0,
+                badges: [],
+                gameBreakdown: {},
+                recentHistory: [],
+                topOpponent: null,
+              }
+
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => setDetailPlayer(fullPlayerData)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl school-card cursor-pointer active:scale-[0.99] transition-all hover:border-stone-300 dark:hover:border-slate-700"
+                >
+                  <Avatar player={p} size="md" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm truncate">{p.name}</p>
+                    {pStat?.badges && pStat.badges.length > 0 ? (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.2 rounded border border-amber-200/80 dark:border-amber-800/60 truncate">
+                          <Award size={10} className="flex-shrink-0" />
+                          <span className="truncate">{pStat.badges[0].title}</span>
+                        </span>
+                      </div>
+                    ) : pStat?.totalGames > 0 ? (
+                      <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5 truncate">
+                        {pStat.wins} vict. · {pStat.winRate}% ({pStat.finishedGames} p.)
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-stone-400 dark:text-slate-500 mt-0.5">
+                        Nouvelle recrue
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setEditPlayer(p)
+                    }}
+                    className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+                    aria-label={`Modifier ${p.name}`}
+                  >
+                    <Pencil size={15} className="text-stone-500 dark:text-slate-400" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setConfirmDelete(p.id)
+                    }}
+                    className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                    aria-label={`Supprimer ${p.name}`}
+                  >
+                    <Trash2 size={15} className="text-[#c83b3b]" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setEditPlayer(p)}
-                  className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-                  aria-label={`Modifier ${p.name}`}
-                >
-                  <Pencil size={15} className="text-stone-500 dark:text-slate-400" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(p.id)}
-                  className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                  aria-label={`Supprimer ${p.name}`}
-                >
-                  <Trash2 size={15} className="text-[#c83b3b]" />
-                </button>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
@@ -188,6 +238,11 @@ export function PlayersScreen() {
         message="Il sera retiré de votre bibliothèque (les parties archivées ne sont pas affectées)."
         confirmLabel="Supprimer"
         danger
+      />
+      <PlayerDetailSheet
+        player={detailPlayer}
+        open={Boolean(detailPlayer)}
+        onClose={() => setDetailPlayer(null)}
       />
     </div>
   )

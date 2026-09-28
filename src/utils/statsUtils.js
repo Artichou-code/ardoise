@@ -287,9 +287,40 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
     }
   })
 
+  // Leaders thématiques par jeu
+  const gameWinners = {
+    [GAMES.PRESIDENT]: { player: null, wins: 0, title: 'Président éternel', desc: 'Expert du Trou du cul' },
+    [GAMES.CARACOLE]: { player: null, wins: 0, title: 'As du Sursis', desc: 'Maître de la Caracole' },
+    [GAMES.SKYJO]: { player: null, wins: 0, title: 'Zéro faute', desc: 'Score minimal au Skyjo' },
+    [GAMES.BELOTE]: { player: null, wins: 0, title: 'Grand Preneur', desc: 'Champion de Belote' },
+    [GAMES.TAROT]: { player: null, wins: 0, title: 'Maître du Bout', desc: 'As du Tarot' },
+    [GAMES.SIX_QUI_PREND]: { player: null, wins: 0, title: 'Dompteur de taureaux', desc: 'Évite les bœufs' },
+  }
+
+  playersStats.forEach(p => {
+    Object.entries(gameWinners).forEach(([type, info]) => {
+      const gWins = p.gameBreakdown[type]?.wins || 0
+      if (gWins > info.wins && gWins >= 1) {
+        info.wins = gWins
+        info.player = p
+      }
+    })
+  })
+
   // Titres pour chaque joueur
   playersStats.forEach(p => {
     p.badges = []
+
+    // Invincible (100% de victoires sur au moins 3 parties)
+    if (p.winRate === 100 && p.finishedGames >= 3) {
+      p.badges.push({
+        id: 'invincible',
+        title: 'Invincible',
+        desc: `${p.finishedGames} victoires d'affilée`,
+        type: 'gold',
+      })
+    }
+
     if (bestStrategist && p.name === bestStrategist.name && maxWinRate > 0) {
       p.badges.push({
         id: 'strategist',
@@ -298,14 +329,16 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         type: 'gold',
       })
     }
+
     if (grandDourak && p.name === grandDourak.name && maxDourakLosses > 0) {
       p.badges.push({
         id: 'dourak',
         title: 'Grand Dourak',
-        desc: `${p.dourakLosses} défaites`,
+        desc: `${p.dourakLosses} revers`,
         type: 'red',
       })
     }
+
     if (mostActive && p.name === mostActive.name && maxTotalGames >= 3) {
       p.badges.push({
         id: 'active',
@@ -314,6 +347,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         type: 'blue',
       })
     }
+
     if (podiumKing && p.name === podiumKing.name && maxPodiums >= 2 && p.name !== bestStrategist?.name) {
       p.badges.push({
         id: 'podium',
@@ -322,6 +356,18 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         type: 'emerald',
       })
     }
+
+    // Titres thématiques par jeu
+    Object.entries(gameWinners).forEach(([type, info]) => {
+      if (info.player && p.name === info.player.name && info.wins >= 1) {
+        p.badges.push({
+          id: `master_${type}`,
+          title: info.title,
+          desc: `${info.wins} vict. ${GAME_META[type]?.name.split(' (')[0] || ''}`.trim(),
+          type: 'theme',
+        })
+      }
+    })
   })
 
   return {
@@ -341,6 +387,34 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       mostActive,
       podiumKing,
     },
+  }
+}
+
+/**
+ * Récupère les statistiques détaillées d'un joueur individuel
+ */
+export function getPlayerStats(games = [], player = null, registeredPlayers = []) {
+  if (!player || !player.name) return null
+  const stats = computeStats(games, 'all', registeredPlayers)
+  const key = normalizePlayerName(player.name)
+  const found = stats.playersStats.find(p => normalizePlayerName(p.name) === key)
+  if (found) return found
+  return {
+    id: player.id,
+    name: player.name,
+    color: player.color,
+    avatar: player.avatar,
+    totalGames: 0,
+    finishedGames: 0,
+    activeGames: 0,
+    wins: 0,
+    podiums: 0,
+    winRate: 0,
+    podiumRate: 0,
+    badges: [],
+    gameBreakdown: {},
+    recentHistory: [],
+    topOpponent: null,
   }
 }
 
