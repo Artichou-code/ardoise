@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { History, Users, ChevronRight, BookOpen, Play } from 'lucide-react'
+import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2 } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
@@ -10,8 +10,9 @@ import { formatDate } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
 
 export function HomeScreen() {
-  const { games, setScreen, resumeGame } = useGame()
+  const { games, setScreen, resumeGame, customPresets, deletePreset } = useGame()
   const [setupGame, setSetupGame] = useState(null)
+  const [setupPreset, setSetupPreset] = useState(null)
   const [rulesGame, setRulesGame] = useState(null)
 
   const activeGames = games.filter(g => g.status === 'active')
@@ -117,6 +118,92 @@ export function HomeScreen() {
                   </div>
                 </button>
               ))}
+            </div>
+          </section>
+        )}
+
+        {/* Jeux personnalisés enregistrés */}
+        {customPresets && customPresets.length > 0 && (
+          <section className="mt-4">
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-3.5 rounded-full bg-amber-500" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+                  Mes jeux enregistrés
+                </h2>
+              </div>
+              <span className="text-[11px] text-stone-400 dark:text-slate-500">
+                {customPresets.length} modèle{customPresets.length > 1 ? 's' : ''}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {customPresets.map(preset => {
+                const isSpecial = preset.specialRule?.enabled
+                const ruleDesc = isSpecial
+                  ? `Si ${preset.specialRule.target} pts → ${
+                      preset.specialRule.action === 'divide'
+                        ? `÷${preset.specialRule.value || 2}`
+                        : preset.specialRule.action === 'multiply'
+                        ? `×${preset.specialRule.value || 2}`
+                        : `${preset.specialRule.value || 0} pts`
+                    }`
+                  : (preset.scoreDir === 'low_limit' ? `Seuil de ${preset.limit || 100} pts` : 'Score le plus élevé')
+
+                return (
+                  <div
+                    key={preset.id}
+                    onClick={() => {
+                      setSetupPreset(preset)
+                      setSetupGame('universel')
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setSetupPreset(preset)
+                        setSetupGame('universel')
+                      }
+                    }}
+                    className="relative flex flex-col justify-between p-3.5 rounded-xl school-card hover:border-amber-500 transition-all active:scale-[0.99] cursor-pointer shadow-2xs border-l-4 border-l-amber-500"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Bookmark size={15} className="text-amber-500 shrink-0" />
+                          <h3 className="font-serif-title font-bold text-base leading-snug truncate">
+                            {preset.name}
+                          </h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            deletePreset(preset.id)
+                          }}
+                          className="p-1 rounded-lg text-stone-400 hover:text-red-500 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                          title="Supprimer ce modèle"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+
+                      <p className="text-xs text-stone-500 dark:text-slate-400 truncate mt-1">
+                        {ruleDesc}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-stone-100 dark:border-slate-800/70">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20">
+                        {preset.scoreDir === 'low_limit' ? `Seuil ${preset.limit || 100} pts` : 'Score max'}
+                      </span>
+                      <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-0.5">
+                        Lancer <ChevronRight size={14} />
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </section>
         )}
@@ -247,7 +334,11 @@ export function HomeScreen() {
       {/* Modale de préparation de partie */}
       <GameSetupSheet
         gameType={setupGame}
-        onClose={() => setSetupGame(null)}
+        initialPreset={setupPreset}
+        onClose={() => {
+          setSetupGame(null)
+          setSetupPreset(null)
+        }}
         onOpenRules={(type) => setRulesGame(type)}
       />
 

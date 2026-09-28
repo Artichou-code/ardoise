@@ -3,6 +3,7 @@ import {
   saveGame, loadGames, deleteGame,
   savePlayers, loadPlayers,
   saveActiveGameId, loadActiveGameId,
+  saveCustomPreset, deleteCustomPreset, loadCustomPresets,
   generateId
 } from '../store/storage'
 import { GAME_META } from '../constants/games'
@@ -18,6 +19,7 @@ const sortPlayersAlpha = (list) => {
 export function GameProvider({ children }) {
   const [players, setPlayers] = useState(() => sortPlayersAlpha(loadPlayers()))
   const [games, setGames] = useState(() => loadGames())
+  const [customPresets, setCustomPresets] = useState(() => loadCustomPresets())
   const [activeGameId, setActiveGameId] = useState(() => loadActiveGameId())
   const [screen, setScreen] = useState('home') // home | game | history | victory
   const historyRef = useRef([]) // undo stack
@@ -50,7 +52,7 @@ export function GameProvider({ children }) {
     const game = {
       id: generateId(),
       type: gameType,
-      name: meta.name,
+      name: config.customGameName?.trim() || meta.name,
       players: gamePlayers,
       scores: Object.fromEntries(gamePlayers.map(p => [p.id, 0])),
       rounds: [],
@@ -149,12 +151,26 @@ export function GameProvider({ children }) {
     setPlayers(prev => prev.filter(p => p.id !== id))
   }, [])
 
+  // Gestion modèles personnalisés
+  const savePreset = useCallback((preset) => {
+    const updated = saveCustomPreset(preset)
+    setCustomPresets(updated)
+    return updated
+  }, [])
+
+  const deletePreset = useCallback((id) => {
+    const updated = deleteCustomPreset(id)
+    setCustomPresets(updated)
+    return updated
+  }, [])
+
   const canUndo = historyRef.current.length > 0
 
   return (
     <GameContext.Provider value={{
       players, savePlayer, removePlayer,
       games, activeGame, activeGameId,
+      customPresets, savePreset, deletePreset,
       screen, setScreen,
       createGame, updateScores, undoLastRound, canUndo,
       finishGame, rematch, exitGame, removeGame, resumeGame,

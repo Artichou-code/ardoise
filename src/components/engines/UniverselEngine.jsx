@@ -16,8 +16,49 @@ export function UniverselEngine({ game, onFinish }) {
 
   const scoreDir = game.config?.scoreDir || 'high'
   const limit = game.config?.limit || null
-  const sursisEnabled = !!(game.config?.sursis && scoreDir === 'low_limit' && limit)
-  const sursisTarget = game.config?.sursisType === 'zero' ? 0 : Math.floor((limit || 100) / 2)
+
+  // Règle spéciale modulable ou sursis classique
+  const specialRule = game.config?.specialRule
+  const isSpecialActive = !!(specialRule?.enabled && specialRule.target != null)
+  const targetScore = isSpecialActive
+    ? Number(specialRule.target)
+    : (game.config?.sursis ? (limit || 100) : null)
+  const ruleAction = isSpecialActive
+    ? specialRule.action // 'divide' | 'multiply' | 'set'
+    : (game.config?.sursisType === 'zero' ? 'set' : 'divide')
+  const ruleValue = isSpecialActive
+    ? Number(specialRule.value)
+    : (ruleAction === 'set' ? 0 : 2)
+  const isRuleActive = isSpecialActive || (game.config?.sursis && scoreDir === 'low_limit' && limit != null)
+
+  const getTransformedScore = (score) => {
+    if (ruleAction === 'divide') {
+      const div = ruleValue || 2
+      return Math.floor(score / div)
+    }
+    if (ruleAction === 'multiply') {
+      const mul = ruleValue || 2
+      return score * mul
+    }
+    if (ruleAction === 'set') {
+      return ruleValue != null ? ruleValue : 0
+    }
+    return score
+  }
+
+  const getActionLabel = () => {
+    if (ruleAction === 'divide') return `divisé par ${ruleValue || 2}`
+    if (ruleAction === 'multiply') return `multiplié par ${ruleValue || 2}`
+    if (ruleAction === 'set') return `ramené à ${ruleValue || 0} pt`
+    return 'règle spéciale'
+  }
+
+  const getShortActionLabel = () => {
+    if (ruleAction === 'divide') return `÷${ruleValue || 2}`
+    if (ruleAction === 'multiply') return `×${ruleValue || 2}`
+    if (ruleAction === 'set') return `→ ${ruleValue || 0}`
+    return 'règle'
+  }
 
   const submitRound = () => {
     const newScores = {}
@@ -30,14 +71,17 @@ export function UniverselEngine({ game, onFinish }) {
       const projected = current + pts
       delta[p.id] = pts
 
-      if (sursisEnabled && projected === limit) {
+      if (isRuleActive && targetScore != null && projected === targetScore) {
+        const transformed = getTransformedScore(projected)
         reprieves.push({
           playerId: p.id,
           name: p.name,
           original: projected,
-          reduced: sursisTarget,
+          reduced: transformed,
+          actionLabel: getActionLabel(),
+          shortLabel: getShortActionLabel(),
         })
-        newScores[p.id] = sursisTarget
+        newScores[p.id] = transformed
       } else {
         newScores[p.id] = projected
       }
@@ -51,6 +95,8 @@ export function UniverselEngine({ game, onFinish }) {
         playerId: r.playerId,
         original: r.original,
         reduced: r.reduced,
+        actionLabel: r.actionLabel,
+        shortLabel: r.shortLabel,
       })),
     })
 
@@ -59,7 +105,7 @@ export function UniverselEngine({ game, onFinish }) {
 
     if (reprieves.length > 0) {
       const msg = reprieves
-        .map(r => `${r.name} : pile ${r.original} pts -> retombe à ${r.reduced} pts !`)
+        .map(r => `${r.name} : pile ${r.original} pts (${r.actionLabel}) → score : ${r.reduced} pts !`)
         .join(' · ')
       setReprieveNotice(msg)
     } else {
@@ -77,12 +123,12 @@ export function UniverselEngine({ game, onFinish }) {
 
   return (
     <div className="space-y-4 pt-2">
-      {/* Bannière de notification en cas de sursis */}
+      {/* Bannière de notification en cas de règle spéciale / sursis */}
       {reprieveNotice && (
         <div className="p-3 rounded-xl border border-[#c83b3b] bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 flex items-start gap-2.5">
           <Sparkles size={16} className="text-[#c83b3b] mt-0.5 flex-shrink-0" />
           <div className="flex-1 text-xs">
-            <span className="font-bold text-[#c83b3b] block">Sursis accordé !</span>
+            <span className="font-bold text-[#c83b3b] block">Règle de palier appliquée !</span>
             <span className="text-stone-700 dark:text-slate-300 font-medium leading-relaxed">
               {reprieveNotice}
             </span>
@@ -105,8 +151,8 @@ export function UniverselEngine({ game, onFinish }) {
           </p>
           <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500">
             {scoreDir === 'high'
-              ? 'Score élevé gagne'
-              : `Seuil : ${limit} pts${sursisEnabled ? ` (sursis : ${sursisTarget} pts)` : ''}`}
+              ? (isRuleActive && targetScore != null ? `Cumul libre · Palier ${targetScore} (${getShortActionLabel()})` : 'Score élevé gagne')
+              : `Seuil : ${limit} pts${isRuleActive && targetScore != null ? ` · Palier ${targetScore} (${getShortActionLabel()})` : ''}`}
           </span>
         </div>
         <div className="space-y-2">
@@ -114,8 +160,9 @@ export function UniverselEngine({ game, onFinish }) {
             const current = game.scores[p.id] || 0
             const pts = roundScores[p.id] || 0
             const projected = current + pts
-            const isReprieve = sursisEnabled && projected === limit
-            const isEliminated = scoreDir === 'low_limit' && limit && projected >= limit && !isReprieve
+            const isSpecial = isRuleActive && targetScore != null && projected === targetScore
+            const transformed = isSpecial ? getTransformedScore(projected) : projected
+            const isEliminated = scoreDir === 'low_limit' && limit && transformed >= limit && !isSpecial
 
             return (
               <button
@@ -126,7 +173,7 @@ export function UniverselEngine({ game, onFinish }) {
                   setOpen(true)
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all active:scale-[0.99] ${
-                  isReprieve
+                  isSpecial
                     ? 'border-[#c83b3b] bg-[#c83b3b]/10 ring-1 ring-[#c83b3b]/40'
                     : isEliminated
                     ? 'border-red-400/80 bg-red-500/10'
@@ -138,21 +185,25 @@ export function UniverselEngine({ game, onFinish }) {
                   <span className="font-semibold text-sm truncate block">
                     {p.name}
                   </span>
-                  {scoreDir === 'low_limit' && limit && (
-                    <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400">
-                      {pts !== 0 ? (
-                        isReprieve ? (
-                          <span className="text-[#c83b3b] font-bold">
-                            {projected} → {sursisTarget} pts (sursis !)
-                          </span>
-                        ) : (
-                          `${current} + ${pts} = ${projected}/${limit}`
-                        )
+                  <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400">
+                    {pts !== 0 ? (
+                      isSpecial ? (
+                        <span className="text-[#c83b3b] font-bold">
+                          {projected} → {transformed} pts ({getShortActionLabel()})
+                        </span>
                       ) : (
+                        scoreDir === 'low_limit' && limit
+                          ? `${current} + ${pts} = ${projected}/${limit}`
+                          : `${current} + ${pts} = ${projected} pts`
+                      )
+                    ) : (
+                      scoreDir === 'low_limit' && limit ? (
                         `${current}/${limit} pts`
-                      )}
-                    </span>
-                  )}
+                      ) : (
+                        `${current} pts`
+                      )
+                    )}
+                  </span>
                 </div>
                 <span className="text-lg font-black tabular-nums">
                   {pts >= 0 ? '+' : ''}{pts}

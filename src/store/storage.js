@@ -5,6 +5,7 @@ const STORAGE_KEYS = {
   GAMES: 'ardoise_games',
   ACTIVE_GAME: 'ardoise_active_game',
   THEME: 'ardoise_theme',
+  CUSTOM_PRESETS: 'ardoise_custom_presets',
 }
 
 // --- Joueurs ---
@@ -35,6 +36,31 @@ export const loadGames = () => {
 export const deleteGame = (id) => {
   const games = loadGames().filter(g => g.id !== id)
   localStorage.setItem(STORAGE_KEYS.GAMES, JSON.stringify(games))
+}
+
+// --- Modèles de jeux personnalisés ---
+export const saveCustomPresets = (presets) =>
+  localStorage.setItem(STORAGE_KEYS.CUSTOM_PRESETS, JSON.stringify(presets))
+
+export const loadCustomPresets = () => {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_PRESETS)) || []
+  } catch { return [] }
+}
+
+export const saveCustomPreset = (preset) => {
+  const presets = loadCustomPresets()
+  const idx = presets.findIndex(p => p.id === preset.id)
+  if (idx >= 0) presets[idx] = preset
+  else presets.unshift(preset)
+  saveCustomPresets(presets)
+  return presets
+}
+
+export const deleteCustomPreset = (id) => {
+  const presets = loadCustomPresets().filter(p => p.id !== id)
+  saveCustomPresets(presets)
+  return presets
 }
 
 // --- Partie active ---

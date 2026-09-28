@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Plus, X, Check, BookOpen } from 'lucide-react'
+import { Plus, X, Check, BookOpen, Bookmark, BookmarkPlus, Sparkles } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
 import { Avatar, AvatarPicker } from './ui/Avatar'
 import { useGame } from '../context/GameContext'
@@ -63,10 +63,12 @@ function PlayerCreatorSheet({ open, onClose, onAdd }) {
   )
 }
 
-export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
-  const { players: savedPlayers, savePlayer, createGame } = useGame()
+export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }) {
+  const { players: savedPlayers, savePlayer, createGame, customPresets, savePreset, deletePreset } = useGame()
   const [selectedPlayers, setSelectedPlayers] = useState([])
   const [config, setConfig] = useState({ scoreDir: 'high', limit: 100 })
+  const [customGameName, setCustomGameName] = useState('')
+  const [savedSuccessMsg, setSavedSuccessMsg] = useState(null)
   const [showCreator, setShowCreator] = useState(false)
 
   // Tri alphabétique strict A-Z (insensible à la casse et aux accents)
@@ -77,6 +79,17 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
   }, [savedPlayers])
 
   useEffect(() => {
+    if (initialPreset) {
+      setCustomGameName(initialPreset.name || '')
+      setConfig({
+        scoreDir: initialPreset.scoreDir || 'high',
+        limit: initialPreset.limit || 100,
+        specialRule: initialPreset.specialRule || { enabled: false, target: 100, action: 'divide', value: 2 },
+      })
+      setSavedSuccessMsg(null)
+      return
+    }
+
     if (gameType === 'dourak') {
       setConfig({
         scoreDir: 'low',
@@ -84,16 +97,26 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
         endCondition: 'limit',
         limit: 5,
       })
+      setCustomGameName('')
     } else if (gameType === 'belote') {
       setConfig({ limit: 1000 })
+      setCustomGameName('')
     } else if (gameType === 'caracole') {
       setConfig({ limit: 100, sursis: true, sursisType: 'half' })
+      setCustomGameName('')
     } else if (gameType === 'universel') {
-      setConfig({ scoreDir: 'high', limit: 100, sursis: false, sursisType: 'half' })
+      setConfig({
+        scoreDir: 'high',
+        limit: 100,
+        specialRule: { enabled: false, target: 100, action: 'divide', value: 2 },
+      })
+      setCustomGameName('')
     } else {
       setConfig({})
+      setCustomGameName('')
     }
-  }, [gameType])
+    setSavedSuccessMsg(null)
+  }, [gameType, initialPreset])
 
   const meta = gameType ? GAME_META[gameType] : null
   if (!meta) return null
@@ -120,20 +143,56 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
     onClose()
   }
 
+  const loadPresetIntoConfig = (preset) => {
+    setCustomGameName(preset.name || '')
+    setConfig({
+      scoreDir: preset.scoreDir || 'high',
+      limit: preset.limit || 100,
+      specialRule: preset.specialRule || { enabled: false, target: 100, action: 'divide', value: 2 },
+    })
+    setSavedSuccessMsg(`Modèle « ${preset.name} » chargé`)
+    setTimeout(() => setSavedSuccessMsg(null), 2500)
+  }
+
+  const handleSaveCurrentAsPreset = () => {
+    const name = customGameName.trim() || 'Mon Jeu'
+    const newPreset = {
+      id: initialPreset?.id || Date.now().toString(),
+      name,
+      scoreDir: config.scoreDir || 'high',
+      limit: config.limit || 100,
+      specialRule: config.specialRule || { enabled: false, target: 100, action: 'divide', value: 2 },
+      updatedAt: Date.now(),
+    }
+    savePreset(newPreset)
+    setCustomGameName(name)
+    setSavedSuccessMsg(`Modèle « ${name} » enregistré !`)
+    setTimeout(() => setSavedSuccessMsg(null), 3000)
+  }
+
   const canStart = selectedPlayers.length >= (meta.minPlayers || 2)
 
   const handleStart = () => {
-    createGame(gameType, selectedPlayers, config)
+    const finalConfig = {
+      ...config,
+      customGameName: gameType === 'universel' ? (customGameName.trim() || undefined) : undefined,
+    }
+    createGame(gameType, selectedPlayers, finalConfig)
     onClose()
   }
+
+  const sheetTitle = gameType === 'universel' && customGameName.trim() ? customGameName.trim() : meta.name
+  const sheetSubtitle = gameType === 'universel' && customGameName.trim()
+    ? `Modèle personnalisé · ${meta.playersBadge}`
+    : `${meta.playersBadge} · ${meta.categoryBadge}`
 
   return (
     <>
       <BottomSheet
         open={!!gameType}
         onClose={onClose}
-        title={meta.name}
-        subtitle={`${meta.playersBadge} · ${meta.categoryBadge}`}
+        title={sheetTitle}
+        subtitle={sheetSubtitle}
       >
         <div className="px-5 py-4 space-y-4">
           <div className="flex items-center justify-between gap-2">
@@ -433,7 +492,59 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
 
           {/* Config spécifique Universel */}
           {gameType === 'universel' && (
-            <div className="space-y-3 pt-1">
+            <div className="space-y-3.5 pt-1">
+              {/* Modèles personnalisés sauvegardés */}
+              {customPresets && customPresets.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5 flex items-center gap-1.5">
+                    <Bookmark size={13} className="text-[#c83b3b]" /> Vos modèles enregistrés
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {customPresets.map(preset => (
+                      <div
+                        key={preset.id}
+                        className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800/80 text-xs font-semibold hover:border-[#c83b3b] transition-all group"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => loadPresetIntoConfig(preset)}
+                          className="text-stone-800 dark:text-slate-200 hover:text-[#c83b3b] transition-colors"
+                        >
+                          {preset.name}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            deletePreset(preset.id)
+                          }}
+                          title="Supprimer ce modèle"
+                          className="p-1 rounded-full text-stone-400 hover:text-red-500 hover:bg-stone-200 dark:hover:bg-slate-700 transition-colors"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Champ Nom du jeu */}
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5 block">
+                  Nom du jeu
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Cabo, Tamalou, Golf, Skyjo..."
+                  value={customGameName}
+                  onChange={(e) => setCustomGameName(e.target.value)}
+                  maxLength={30}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-stone-900 dark:text-slate-100 placeholder-stone-400 focus:outline-none focus:border-[#c83b3b]"
+                />
+              </div>
+
+              {/* Règle de victoire */}
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
                   Règle de victoire
@@ -459,80 +570,236 @@ export function GameSetupSheet({ gameType, onClose, onOpenRules }) {
                 </div>
               </div>
 
+              {/* Seuil si low_limit */}
               {config.scoreDir === 'low_limit' && (
-                <>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
-                      Seuil de fin de partie
-                    </p>
-                    <div className="grid grid-cols-4 gap-2">
-                      {[50, 100, 150, 200].map(val => (
-                        <button
-                          key={val}
-                          type="button"
-                          onClick={() => setConfig(c => ({ ...c, limit: val }))}
-                          className={`py-2 rounded-xl text-xs font-bold border transition-colors ${
-                            (config.limit || 100) === val
-                              ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
-                              : 'school-subtle'
-                          }`}
-                        >
-                          {val} pts
-                        </button>
-                      ))}
-                    </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
+                    Seuil de fin de partie
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[50, 100, 150, 200].map(val => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                        className={`py-2 rounded-xl text-xs font-bold border transition-colors ${
+                          (config.limit || 100) === val
+                            ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                            : 'school-subtle'
+                        }`}
+                      >
+                        {val} pts
+                      </button>
+                    ))}
                   </div>
+                </div>
+              )}
 
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
-                      Règle du sursis (pile au seuil)
-                    </p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { id: 'half', title: 'Divisé par 2', sub: '(÷2)' },
-                        { id: 'zero', title: 'Remis à 0' },
-                        { id: 'none', title: 'Désactivé' },
-                      ].map(opt => {
-                        const active =
-                          (config.sursis && (config.sursisType || 'half') === opt.id) ||
-                          (!config.sursis && opt.id === 'none')
-                        return (
-                          <button
-                            key={opt.id}
-                            type="button"
-                            onClick={() =>
+              {/* Règle spécifique de palier modulable (Cabo / Tamalou / etc.) */}
+              <div className="pt-2 border-t border-stone-200 dark:border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles size={15} className="text-[#c83b3b]" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300">
+                      Règle de palier spécifique
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfig(c => {
+                        const currentRule = c.specialRule || { enabled: false, target: c.limit || 100, action: 'divide', value: 2 }
+                        return {
+                          ...c,
+                          specialRule: {
+                            ...currentRule,
+                            enabled: !currentRule.enabled,
+                            target: currentRule.target || c.limit || 100,
+                          }
+                        }
+                      })
+                    }}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all border ${
+                      config.specialRule?.enabled
+                        ? 'bg-[#c83b3b] text-white border-[#c83b3b]'
+                        : 'border-stone-300 dark:border-slate-700 text-stone-500 dark:text-slate-400 hover:border-stone-400'
+                    }`}
+                  >
+                    {config.specialRule?.enabled ? 'Activée' : 'Désactivée'}
+                  </button>
+                </div>
+
+                {config.specialRule?.enabled && (
+                  <div className="p-3 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200 dark:border-slate-700/80 space-y-3">
+                    {/* Score cible */}
+                    <div>
+                      <label className="text-[11px] font-bold text-stone-600 dark:text-slate-300 uppercase tracking-wide block mb-1">
+                        Si un joueur atteint exactement :
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 flex gap-1.5">
+                          {[50, 100, 150, 200].map(val => (
+                            <button
+                              key={val}
+                              type="button"
+                              onClick={() => setConfig(c => ({
+                                ...c,
+                                specialRule: { ...c.specialRule, target: val }
+                              }))}
+                              className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                                (config.specialRule?.target ?? 100) === val
+                                  ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                                  : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-stone-700 dark:text-slate-300'
+                              }`}
+                            >
+                              {val}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-1 w-20">
+                          <input
+                            type="number"
+                            min="1"
+                            max="9999"
+                            value={config.specialRule?.target ?? 100}
+                            onChange={e => {
+                              const val = parseInt(e.target.value, 10)
                               setConfig(c => ({
                                 ...c,
-                                sursis: opt.id !== 'none',
-                                sursisType: opt.id === 'none' ? 'none' : opt.id,
+                                specialRule: { ...c.specialRule, target: isNaN(val) ? '' : val }
                               }))
-                            }
-                            className={`py-2 px-1 text-center rounded-xl border transition-colors ${
-                              active
-                                ? 'border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b]'
-                                : 'school-subtle'
+                            }}
+                            className="w-full px-2 py-1.5 text-center text-xs font-bold rounded-lg border border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-stone-900 dark:text-slate-100 focus:outline-none focus:border-[#c83b3b]"
+                          />
+                          <span className="text-[11px] font-semibold text-stone-400">pts</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action */}
+                    <div>
+                      <label className="text-[11px] font-bold text-stone-600 dark:text-slate-300 uppercase tracking-wide block mb-1">
+                        Effet sur ses points :
+                      </label>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { id: 'divide', label: 'Diviser par', icon: '÷' },
+                          { id: 'multiply', label: 'Multiplier par', icon: '×' },
+                          { id: 'set', label: 'Ramener à', icon: '=' },
+                        ].map(act => (
+                          <button
+                            key={act.id}
+                            type="button"
+                            onClick={() => setConfig(c => {
+                              const currentAction = c.specialRule?.action || 'divide'
+                              let defVal = c.specialRule?.value ?? 2
+                              if (act.id === 'set' && currentAction !== 'set') defVal = 0
+                              if (act.id !== 'set' && currentAction === 'set') defVal = 2
+                              return {
+                                ...c,
+                                specialRule: { ...c.specialRule, action: act.id, value: defVal }
+                              }
+                            })}
+                            className={`py-2 px-1 text-center rounded-lg text-xs font-bold border transition-colors ${
+                              (config.specialRule?.action || 'divide') === act.id
+                                ? 'border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 font-extrabold'
+                                : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-stone-700 dark:text-slate-300'
                             }`}
                           >
-                            <span className="block font-bold text-xs leading-tight">{opt.title}</span>
-                            {opt.sub && (
-                              <span className="block text-[10px] font-semibold opacity-85 leading-tight mt-0.5">
-                                {opt.sub}
-                              </span>
-                            )}
+                            <span className="block text-sm leading-none mb-0.5">{act.icon}</span>
+                            <span className="block text-[11px] leading-tight">{act.label}</span>
                           </button>
-                        )
-                      })}
+                        ))}
+                      </div>
                     </div>
-                    <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-1">
-                      {config.sursis && config.sursisType !== 'none'
-                        ? `Si un joueur atteint exactement ${config.limit || 100} pts, son score retombe à ${
-                            config.sursisType === 'zero' ? 0 : Math.floor((config.limit || 100) / 2)
-                          } pts (sursis style Caracole).`
-                        : "Le premier joueur qui atteint ou dépasse le seuil est éliminé."}
-                    </p>
+
+                    {/* Valeur de l'effet */}
+                    <div>
+                      <label className="text-[11px] font-bold text-stone-600 dark:text-slate-300 uppercase tracking-wide block mb-1">
+                        {config.specialRule?.action === 'divide' && 'Diviseur :'}
+                        {config.specialRule?.action === 'multiply' && 'Multiplicateur :'}
+                        {config.specialRule?.action === 'set' && 'Nouveau score fixe :'}
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 flex gap-1.5">
+                          {(config.specialRule?.action === 'divide' ? [2, 3, 4] :
+                            config.specialRule?.action === 'multiply' ? [2, 3, 5] :
+                            [0, 25, 50]
+                          ).map(val => (
+                            <button
+                              key={val}
+                              type="button"
+                              onClick={() => setConfig(c => ({
+                                ...c,
+                                specialRule: { ...c.specialRule, value: val }
+                              }))}
+                              className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                                (config.specialRule?.value ?? (config.specialRule?.action === 'set' ? 0 : 2)) === val
+                                  ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                                  : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-stone-700 dark:text-slate-300'
+                              }`}
+                            >
+                              {config.specialRule?.action === 'divide' ? `÷${val}` :
+                               config.specialRule?.action === 'multiply' ? `×${val}` :
+                               `${val} pts`}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-1 w-20">
+                          <input
+                            type="number"
+                            min="0"
+                            max="9999"
+                            value={config.specialRule?.value ?? (config.specialRule?.action === 'set' ? 0 : 2)}
+                            onChange={e => {
+                              const val = parseInt(e.target.value, 10)
+                              setConfig(c => ({
+                                ...c,
+                                specialRule: { ...c.specialRule, value: isNaN(val) ? '' : val }
+                              }))
+                            }}
+                            className="w-full px-2 py-1.5 text-center text-xs font-bold rounded-lg border border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-stone-900 dark:text-slate-100 focus:outline-none focus:border-[#c83b3b]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Aperçu dynamique */}
+                    <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] leading-relaxed text-amber-900 dark:text-amber-200">
+                      <span className="font-bold">Effet en jeu : </span>
+                      {(() => {
+                        const tgt = config.specialRule?.target || 100
+                        const act = config.specialRule?.action || 'divide'
+                        const val = config.specialRule?.value ?? (act === 'set' ? 0 : 2)
+                        let result = tgt
+                        if (act === 'divide') result = Math.floor(tgt / (val || 1))
+                        if (act === 'multiply') result = tgt * val
+                        if (act === 'set') result = val
+                        return `Si un joueur atteint exactement ${tgt} pts, ses points deviennent ${result} pts !`
+                      })()}
+                    </div>
                   </div>
-                </>
-              )}
+                )}
+
+                {/* Bouton pour enregistrer le modèle */}
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={handleSaveCurrentAsPreset}
+                    className="w-full py-2.5 px-3 rounded-xl border border-stone-300 dark:border-slate-700 hover:border-[#c83b3b] dark:hover:border-[#c83b3b] text-stone-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-2 transition-all bg-white dark:bg-slate-800"
+                  >
+                    <BookmarkPlus size={15} className="text-[#c83b3b]" />
+                    Enregistrer ces règles comme modèle
+                  </button>
+
+                  {savedSuccessMsg && (
+                    <div className="mt-2 p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-semibold text-center flex items-center justify-center gap-1.5 animate-fadeIn">
+                      <Check size={14} className="text-emerald-600 dark:text-emerald-400" />
+                      {savedSuccessMsg}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
