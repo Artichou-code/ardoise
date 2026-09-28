@@ -168,114 +168,112 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
               Aucune manche enregistrée pour le moment.
             </div>
           ) : (
-            <div className="border border-stone-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-2xs">
-              <div className="overflow-x-auto scrollbar-hide">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-stone-100/80 dark:bg-slate-800/80 border-b border-stone-200 dark:border-slate-800 text-[11px] font-bold text-stone-600 dark:text-slate-300">
-                      <th className="py-2.5 px-3 sticky left-0 bg-stone-100 dark:bg-slate-800 z-10 w-16">
-                        Manche
+            <div className="border border-stone-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-2xs max-h-[48vh] sm:max-h-[54vh] overflow-y-auto overflow-x-auto scrollbar-hide relative">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="sticky top-0 z-20 shadow-xs">
+                  <tr className="bg-stone-100 dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700 text-[11px] font-bold text-stone-700 dark:text-slate-200">
+                    <th className="py-2.5 px-3 sticky left-0 top-0 z-30 bg-stone-100 dark:bg-slate-800 w-16 border-r border-stone-200/80 dark:border-slate-700">
+                      Manche
+                    </th>
+                    {game.players.map(p => (
+                      <th key={p.id} className="py-2.5 px-3 text-center min-w-[90px] sticky top-0 bg-stone-100 dark:bg-slate-800 z-20">
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="truncate max-w-[80px] font-bold">{p.name}</span>
+                        </div>
                       </th>
-                      {game.players.map(p => (
-                        <th key={p.id} className="py-2.5 px-3 text-center min-w-[90px]">
-                          <div className="flex flex-col items-center gap-0.5">
-                            <span className="truncate max-w-[80px]">{p.name}</span>
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-100 dark:divide-slate-800/60 font-sans">
-                    {game.rounds.map((round, rIdx) => {
-                      const cumuls = runningTotals[rIdx] || {}
-                      return (
-                        <tr
-                          key={rIdx}
-                          className="hover:bg-stone-50/80 dark:hover:bg-slate-800/40 transition-colors"
-                        >
-                          <td className="py-2.5 px-3 font-bold text-stone-400 dark:text-slate-500 sticky left-0 bg-white dark:bg-slate-900 z-10 border-r border-stone-100 dark:border-slate-800/60">
-                            M.{rIdx + 1}
-                          </td>
-                          {game.players.map(p => {
-                            const delta = round.delta?.[p.id]
-                            const cumul = cumuls[p.id]
-                            const rep = round.reprieves?.find(r => r.playerId === p.id)
-                            const isRoundLoser = round.loserId === p.id
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100 dark:divide-slate-800/60 font-sans">
+                  {game.rounds.map((round, rIdx) => {
+                    const cumuls = runningTotals[rIdx] || {}
+                    return (
+                      <tr
+                        key={rIdx}
+                        className="hover:bg-stone-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                      >
+                        <td className="py-2.5 px-3 font-bold text-stone-400 dark:text-slate-500 sticky left-0 bg-white dark:bg-slate-900 z-10 border-r border-stone-100 dark:border-slate-800/60">
+                          M.{rIdx + 1}
+                        </td>
+                        {game.players.map(p => {
+                          const delta = round.delta?.[p.id]
+                          const cumul = cumuls[p.id]
+                          const rep = round.reprieves?.find(r => r.playerId === p.id)
+                          const isRoundLoser = round.loserId === p.id
 
-                            return (
-                              <td key={p.id} className="py-2.5 px-3 text-center tabular-nums">
-                                <div className="flex flex-col items-center">
-                                  <span className={`font-bold text-xs ${
-                                    isRoundLoser
-                                      ? 'text-[#c83b3b]'
-                                      : delta != null && delta < 0
-                                      ? 'text-emerald-600 dark:text-emerald-400'
-                                      : 'text-stone-800 dark:text-slate-200'
-                                  }`}>
-                                    {delta != null ? (delta > 0 ? `+${delta}` : delta) : '—'}
+                          return (
+                            <td key={p.id} className="py-2.5 px-3 text-center tabular-nums">
+                              <div className="flex flex-col items-center">
+                                <span className={`font-bold text-xs ${
+                                  isRoundLoser
+                                    ? 'text-[#c83b3b]'
+                                    : delta != null && delta < 0
+                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                    : 'text-stone-800 dark:text-slate-200'
+                                }`}>
+                                  {delta != null ? (delta > 0 ? `+${delta}` : delta) : '—'}
+                                </span>
+
+                                {/* Score cumulé sous le delta */}
+                                {cumul != null && (
+                                  <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
+                                    tot. {cumul}
                                   </span>
+                                )}
 
-                                  {/* Score cumulé sous le delta */}
-                                  {cumul != null && (
-                                    <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
-                                      tot. {cumul}
-                                    </span>
-                                  )}
-
-                                  {/* Badges spécifiques de faits de jeu */}
-                                  {isRoundLoser && (
-                                    <span className="text-[9px] font-bold text-[#c83b3b] bg-[#c83b3b]/10 px-1 rounded mt-0.5">
-                                      Dourak
-                                    </span>
-                                  )}
-                                  {rep && (
-                                    <span
-                                      className="text-[9px] font-bold text-amber-700 bg-amber-500/15 dark:text-amber-300 px-1 rounded mt-0.5"
-                                      title={`Sursis : ${rep.original} → ${rep.reduced}`}
-                                    >
-                                      sursis ({rep.reduced})
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                            )
-                          })}
-                        </tr>
+                                {/* Badges spécifiques de faits de jeu */}
+                                {isRoundLoser && (
+                                  <span className="text-[9px] font-bold text-[#c83b3b] bg-[#c83b3b]/10 px-1 rounded mt-0.5">
+                                    Dourak
+                                  </span>
+                                )}
+                                {rep && (
+                                  <span
+                                    className="text-[9px] font-bold text-amber-700 bg-amber-500/15 dark:text-amber-300 px-1 rounded mt-0.5"
+                                    title={`Sursis : ${rep.original} → ${rep.reduced}`}
+                                  >
+                                    sursis ({rep.reduced})
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    )
+                  })}
+                </tbody>
+                {/* Total final sticky en bas */}
+                <tfoot className="sticky bottom-0 z-20 shadow-xs">
+                  <tr className="bg-stone-100 dark:bg-slate-800 border-t-2 border-stone-300 dark:border-slate-700 font-bold text-xs">
+                    <td className="py-3 px-3 font-black text-stone-900 dark:text-slate-100 sticky bottom-0 left-0 z-30 bg-stone-100 dark:bg-slate-800 border-r border-stone-200 dark:border-slate-700">
+                      Total
+                    </td>
+                    {game.players.map(p => {
+                      const finalScore = game.scores[p.id] || 0
+                      const isWin = p.id === winner?.id
+                      return (
+                        <td key={p.id} className="py-3 px-3 text-center tabular-nums sticky bottom-0 bg-stone-100 dark:bg-slate-800 z-20">
+                          <div className="flex flex-col items-center">
+                            <span className={`text-sm font-black ${
+                              isWin
+                                ? 'text-emerald-700 dark:text-emerald-400'
+                                : 'text-stone-900 dark:text-slate-100'
+                            }`}>
+                              {finalScore}
+                            </span>
+                            {isWin && (
+                              <span className="text-[9px] font-bold uppercase text-emerald-600 dark:text-emerald-400">
+                                Gagnant
+                              </span>
+                            )}
+                          </div>
+                        </td>
                       )
                     })}
-                  </tbody>
-                  {/* Total final */}
-                  <tfoot>
-                    <tr className="bg-stone-100/90 dark:bg-slate-800/90 border-t-2 border-stone-300 dark:border-slate-700 font-bold text-xs">
-                      <td className="py-3 px-3 font-black text-stone-900 dark:text-slate-100 sticky left-0 bg-stone-100 dark:bg-slate-800 z-10 border-r border-stone-200 dark:border-slate-700">
-                        Total
-                      </td>
-                      {game.players.map(p => {
-                        const finalScore = game.scores[p.id] || 0
-                        const isWin = p.id === winner?.id
-                        return (
-                          <td key={p.id} className="py-3 px-3 text-center tabular-nums">
-                            <div className="flex flex-col items-center">
-                              <span className={`text-sm font-black ${
-                                isWin
-                                  ? 'text-emerald-700 dark:text-emerald-400'
-                                  : 'text-stone-900 dark:text-slate-100'
-                              }`}>
-                                {finalScore}
-                              </span>
-                              {isWin && (
-                                <span className="text-[9px] font-bold uppercase text-emerald-600 dark:text-emerald-400">
-                                  Gagnant
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
           )}
         </div>
