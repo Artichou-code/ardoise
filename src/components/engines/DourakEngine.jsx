@@ -136,7 +136,7 @@ export function DourakEngine({ game, onFinish }) {
                 key={p.id}
                 type="button"
                 onClick={() => handleSelectPlayer(p)}
-                className={`flex items-center gap-2 p-2.5 rounded-xl border transition-all active:scale-[0.98] text-left ${
+                className={`flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all active:scale-[0.98] text-left ${
                   isSelected
                     ? 'border-[#c83b3b] bg-[#c83b3b]/10 ring-1 ring-[#c83b3b]/30 font-bold'
                     : 'school-subtle hover:border-[#c83b3b]/60'
@@ -144,34 +144,40 @@ export function DourakEngine({ game, onFinish }) {
               >
                 <Avatar player={p} size="xs" leader={isSelected} />
                 <div className="flex-1 min-w-0">
-                  <span className="font-semibold text-xs truncate block leading-tight">
-                    {p.name}
-                  </span>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    {mode === 'defeats' ? (
-                      <SchoolTally count={playerScore} />
-                    ) : (
-                      <span className="text-[10px] text-stone-500 dark:text-slate-400 tabular-nums truncate block">
-                        {playerScore} carte{playerScore > 1 ? 's' : ''}
-                      </span>
-                    )}
+                  {/* Ligne 1 : Nom du joueur à gauche, Badge Sortant à droite */}
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-semibold text-xs truncate">
+                      {p.name}
+                    </span>
                     {wasLastDourak && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-1 py-0.2 rounded bg-amber-500/20 text-amber-800 dark:text-amber-200 shrink-0">
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-800 dark:text-amber-200 shrink-0">
                         Sortant
                       </span>
                     )}
                   </div>
-                </div>
 
-                {isSelected ? (
-                  <span className="px-2 py-0.5 rounded-lg bg-[#c83b3b] text-white text-[11px] font-bold shrink-0">
-                    {mode === 'cards' ? `+${cardsLeft} c.` : '+1'}
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-semibold text-stone-400 dark:text-slate-500 shrink-0">
-                    Désigner
-                  </span>
-                )}
+                  {/* Ligne 2 : Décompte/Bâtons à gauche, Désigner/+1 à droite */}
+                  <div className="flex items-center justify-between gap-1 mt-0.5">
+                    <div className="min-w-0">
+                      {mode === 'defeats' ? (
+                        <SchoolTally count={playerScore} />
+                      ) : (
+                        <span className="text-[10px] text-stone-500 dark:text-slate-400 tabular-nums truncate block">
+                          {playerScore} carte{playerScore > 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
+                    {isSelected ? (
+                      <span className="px-1.5 py-0.2 rounded bg-[#c83b3b] text-white text-[10px] font-black shrink-0">
+                        {mode === 'cards' ? `+${cardsLeft} c.` : '+1'}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-stone-400 dark:text-slate-500 shrink-0">
+                        Désigner
+                      </span>
+                    )}
+                  </div>
+                </div>
               </button>
             )
           })}
