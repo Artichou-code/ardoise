@@ -3,7 +3,7 @@ import { useScrollLock } from '../../hooks/useScrollLock'
 import { X } from 'lucide-react'
 
 /**
- * Bottom Sheet tactile (position="bottom") ou Modale haute (position="top") pour éviter le masquage par clavier mobile.
+ * Bottom Sheet tactile (position="bottom") ou Modale haute (position="top") placée au plus haut de l'écran pour éviter le masquage par le clavier virtuel mobile.
  */
 export function BottomSheet({
   open,
@@ -55,29 +55,29 @@ export function BottomSheet({
 
   if (!open) return null
 
-  // Mode positionné en haut (idéal pour formulaires avec clavier mobile)
+  // Mode positionné au plus haut (anti-clavier mobile)
   if (position === 'top') {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-start justify-center p-3 pt-safe pt-3 sm:pt-8 bg-black/50 backdrop-blur-sm overflow-y-auto"
+        className="fixed inset-0 z-50 flex items-start justify-center p-2.5 pt-safe pt-2 sm:pt-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <div
           ref={sheetRef}
-          className={`relative w-full max-w-lg school-card rounded-2xl shadow-2xl border transition-all duration-200 max-h-[90dvh] flex flex-col my-auto sm:my-0 ${className}`}
+          className={`relative w-full max-w-lg school-card rounded-2xl shadow-2xl border transition-all duration-150 max-h-[calc(100dvh-1rem)] flex flex-col mt-0 mb-auto ${className}`}
         >
           {title && (
-            <div className="flex items-start justify-between px-5 py-3 border-b border-stone-100 dark:border-slate-800/80 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-100 dark:border-slate-800/80 flex-shrink-0">
               <div>
-                <h2 className="font-serif-title text-xl font-bold leading-snug">{title}</h2>
+                <h2 className="font-serif-title text-lg font-bold leading-tight">{title}</h2>
                 {subtitle && (
-                  <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+                  <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
                 )}
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 -mr-1 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+                className="p-1.5 -mr-1 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
                 aria-label="Fermer"
               >
                 <X size={18} className="text-stone-500 dark:text-slate-400" />

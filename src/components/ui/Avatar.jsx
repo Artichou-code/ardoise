@@ -7,8 +7,8 @@ export function Avatar({ player, size = 'md', leader = false }) {
     xs: 'w-7 h-7 text-xs',
     sm: 'w-9 h-9 text-sm',
     md: 'w-11 h-11 text-base',
-    lg: 'w-14 h-14 text-xl',
-    xl: 'w-18 h-18 text-2xl',
+    lg: 'w-13 h-13 text-xl',
+    xl: 'w-16 h-16 text-2xl',
   }[size] || 'w-11 h-11 text-base'
 
   const avatarUrl = getPlayerAvatarUrl(player)
@@ -50,17 +50,17 @@ export function Avatar({ player, size = 'md', leader = false }) {
 }
 
 /**
- * Sélecteur des 9 avatars ronds (sans cadre carré ni marge) + choix de couleur du joueur.
+ * Sélecteur compact des 9 avatars ronds + pastilles de couleur.
  */
 export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, onSelectColor }) {
   return (
-    <div className="space-y-4">
-      {/* 9 avatars purement ronds avec anneau et espace de 2px */}
+    <div className="space-y-3">
+      {/* 9 avatars ronds avec anneau et espace de 2px */}
       <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2">
           Choisir un avatar
         </p>
-        <div className="grid grid-cols-5 gap-3 place-items-center">
+        <div className="grid grid-cols-5 gap-2.5 place-items-center">
           {PRESET_AVATARS.map((src, idx) => {
             const isSelected = selectedAvatar === src
             return (
@@ -68,12 +68,12 @@ export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, on
                 key={src}
                 type="button"
                 onClick={() => onSelectAvatar(src)}
-                className={`relative w-12 h-12 rounded-full transition-transform active:scale-90 focus:outline-none ${
+                className={`relative w-11 h-11 rounded-full transition-transform active:scale-90 focus:outline-none ${
                   isSelected ? 'scale-105' : 'opacity-85 hover:opacity-100'
                 }`}
                 style={{
                   boxShadow: isSelected
-                    ? `0 0 0 2px var(--bg-card, #ffffff), 0 0 0 4px ${selectedColor || '#c83b3b'}`
+                    ? `0 0 0 2px var(--bg-card, #ffffff), 0 0 0 3.5px ${selectedColor || '#c83b3b'}`
                     : undefined,
                 }}
                 title={`Avatar ${idx + 1}`}
@@ -89,7 +89,7 @@ export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, on
                     className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-white flex items-center justify-center shadow-xs"
                     style={{ backgroundColor: selectedColor || '#c83b3b' }}
                   >
-                    <Check size={10} strokeWidth={3} />
+                    <Check size={9} strokeWidth={3} />
                   </span>
                 )}
               </button>
@@ -100,10 +100,10 @@ export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, on
 
       {/* Choix de la couleur du joueur (pastilles rondes avec anneau et espace de 2px) */}
       <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2">
           Couleur du joueur ({AVATAR_COLOR_NAMES[selectedColor] || 'Teinte'})
         </p>
-        <div className="flex items-center justify-between gap-2 px-1">
+        <div className="flex items-center justify-between gap-1.5 px-0.5">
           {AVATAR_COLORS.map(color => {
             const isSelected = selectedColor === color
             return (
@@ -112,17 +112,17 @@ export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, on
                 type="button"
                 onClick={() => onSelectColor(color)}
                 title={AVATAR_COLOR_NAMES[color]}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform active:scale-90 ${
+                className={`w-7 h-7 rounded-full flex items-center justify-center transition-transform active:scale-90 ${
                   isSelected ? 'scale-110' : 'opacity-80 hover:opacity-100'
                 }`}
                 style={{
                   backgroundColor: color,
                   boxShadow: isSelected
-                    ? `0 0 0 2px var(--bg-card, #ffffff), 0 0 0 4px ${color}`
+                    ? `0 0 0 2px var(--bg-card, #ffffff), 0 0 0 3.5px ${color}`
                     : undefined,
                 }}
               >
-                {isSelected && <Check size={14} className="text-white" strokeWidth={3} />}
+                {isSelected && <Check size={12} className="text-white" strokeWidth={3} />}
               </button>
             )
           })}

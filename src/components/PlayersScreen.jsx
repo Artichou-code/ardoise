@@ -42,16 +42,16 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
       position="top"
       title={initial ? 'Modifier le joueur' : 'Nouveau joueur'}
     >
-      <div className="px-5 py-4 space-y-4">
+      <div className="px-4 py-3 space-y-3">
         <div className="flex items-center gap-3">
-          <Avatar player={{ name: name || 'A', color, avatar }} size="lg" />
+          <Avatar player={{ name: name || 'A', color, avatar }} size="md" />
           <input
             type="text"
             placeholder="Prénom du joueur"
             value={name}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSave()}
-            className="flex-1 px-4 py-3 rounded-xl border border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-base font-semibold text-stone-900 dark:text-slate-100 placeholder-stone-400 focus:outline-none focus:border-[#c83b3b]"
+            className="flex-1 px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-stone-900 dark:text-slate-100 placeholder-stone-400 focus:outline-none focus:border-[#c83b3b]"
             autoFocus
             maxLength={20}
           />
@@ -62,14 +62,13 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
           onSelectAvatar={setAvatar}
           selectedColor={color}
           onSelectColor={setColor}
-          playerName={name || 'A'}
         />
 
         <button
           type="button"
           onClick={handleSave}
           disabled={!name.trim()}
-          className="w-full py-3.5 rounded-xl font-bold text-base disabled:opacity-40 btn-margin-red"
+          className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-40 btn-margin-red"
         >
           {initial ? 'Enregistrer' : 'Ajouter'}
         </button>
