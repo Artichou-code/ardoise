@@ -1,10 +1,17 @@
+import { useTheme } from '../../context/ThemeContext'
+
 /**
- * Logo officiel Ardoise (version V2 blanche avec feuillet, petits carreaux et bâtons de comptage)
+ * Logo officiel Ardoise dans l'en-tête :
+ * - Mode Sombre : /Ardoise_v2-dark.svg
+ * - Mode Clair  : /Ardoise_v2-white.svg
  */
 export function AppLogo({ className = 'w-8 h-8' }) {
+  const { theme } = useTheme()
+  const src = theme === 'dark' ? '/Ardoise_v2-dark.svg' : '/Ardoise_v2-white.svg'
+
   return (
     <img
-      src="/Ardoise_v2-white.svg"
+      src={src}
       alt="Logo Ardoise"
       className={`${className} flex-shrink-0 select-none block`}
       draggable={false}
