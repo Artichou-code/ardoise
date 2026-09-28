@@ -69,7 +69,7 @@ export function VictoryScreen() {
         <ThemeToggle />
       </header>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain px-4 py-3 pb-6">
+      <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain px-4 pt-3 scroll-bottom-space">
         {/* Lauréat & Grand Dourak (si jeu Dourak) */}
         {isDourak ? (
           <div className="grid grid-cols-2 gap-3 mt-4 mb-6">

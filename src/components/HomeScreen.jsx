@@ -81,7 +81,7 @@ export function HomeScreen() {
       </header>
 
       {/* Corps scrollable */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain px-4 py-3 pb-6">
+      <div className="flex-1 overflow-y-auto scrollbar-hide overscroll-contain px-4 pt-3 scroll-bottom-space">
         {/* Parties en cours */}
         {activeGames.length > 0 && (
           <section className="mt-4">
