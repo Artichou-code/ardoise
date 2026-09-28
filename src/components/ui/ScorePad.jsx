@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUpDown, Check } from 'lucide-react'
+import { ArrowUpDown } from 'lucide-react'
 
 /**
  * Pavé de saisie tactile pour scores avec roulette interactive.
- * - Boutons colorés et ludiques (+1 en bleu, +5 en ambre, +10 en rouge marge).
- * - Roulette tactile sur le score central : glissement vertical continu avec retour haptique
- *   et validation instantanée dès qu'on relâche le doigt !
+ * - Boutons aux nuances rouges Ardoise avec transparences graduées (#c83b3b).
+ * - Roulette tactile sur le score central : glissement vertical continu avec retour haptique.
+ * - Le relâchement du doigt conserve le score choisi sans fermer la page.
+ * - La validation finale et fermeture se fait par le bouton rouge « Valider ».
  */
 export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
   const [isDragging, setIsDragging] = useState(false)
@@ -28,12 +29,38 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
     return val
   }
 
+  // Déclinaison monochrome rouge Ardoise avec transparences graduées
   const buttons = [
-    { label: '+1', delta: 1, colorClass: 'bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white shadow-xs' },
-    { label: '+5', delta: 5, colorClass: 'bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white shadow-xs' },
-    { label: '+10', delta: 10, colorClass: 'bg-[#c83b3b] hover:bg-[#b03030] active:bg-[#9a2828] text-white shadow-xs' },
-    { label: '-1', delta: -1, colorClass: 'bg-stone-200 hover:bg-stone-300 active:bg-stone-400 dark:bg-slate-700 dark:hover:bg-slate-600 text-stone-800 dark:text-slate-100' },
-    { label: '0', delta: -value, colorClass: 'bg-white dark:bg-slate-900 border-2 border-stone-300 dark:border-slate-700 hover:border-stone-400 text-stone-600 dark:text-slate-400' },
+    {
+      label: '+1',
+      delta: 1,
+      colorClass:
+        'bg-[#c83b3b]/15 hover:bg-[#c83b3b]/25 dark:bg-[#c83b3b]/20 dark:hover:bg-[#c83b3b]/30 text-[#c83b3b] dark:text-red-300 border border-[#c83b3b]/25',
+    },
+    {
+      label: '+5',
+      delta: 5,
+      colorClass:
+        'bg-[#c83b3b]/35 hover:bg-[#c83b3b]/45 dark:bg-[#c83b3b]/40 dark:hover:bg-[#c83b3b]/50 text-[#c83b3b] dark:text-red-200 border border-[#c83b3b]/35',
+    },
+    {
+      label: '+10',
+      delta: 10,
+      colorClass:
+        'bg-[#c83b3b] hover:bg-[#b03030] active:bg-[#9a2828] text-white border border-[#c83b3b] shadow-2xs',
+    },
+    {
+      label: '-1',
+      delta: -1,
+      colorClass:
+        'bg-[#c83b3b]/8 hover:bg-[#c83b3b]/15 dark:bg-[#c83b3b]/10 dark:hover:bg-[#c83b3b]/20 text-stone-700 dark:text-slate-300 border border-[#c83b3b]/15',
+    },
+    {
+      label: '0',
+      delta: -value,
+      colorClass:
+        'bg-white dark:bg-slate-900 border-2 border-stone-200 dark:border-slate-700 hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400',
+    },
   ]
 
   const handlePointerDown = (e) => {
@@ -79,16 +106,11 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
       e.currentTarget.releasePointerCapture(e.pointerId)
     } catch {}
 
-    // Si le joueur a fait défiler la roulette, on valide automatiquement dès le relâchement !
+    // Le score choisi reste sélectionné dans le champ, la validation se fait au clic sur le bouton "Valider"
     if (hasMovedRef.current) {
       try {
-        navigator.vibrate?.([15, 60, 20])
+        navigator.vibrate?.(15)
       } catch {}
-      if (onConfirm) {
-        setTimeout(() => {
-          onConfirm()
-        }, 50)
-      }
     }
   }
 
@@ -126,10 +148,10 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
         >
           {isDragging ? (
             <div className="flex flex-col items-center justify-center overflow-hidden py-1 w-full pointer-events-none">
-              {/* Badge Relâcher pour valider */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c83b3b] text-white text-[11px] font-bold shadow-sm mb-1.5 animate-pulse">
-                <Check size={12} strokeWidth={3} />
-                <span>Relâcher pour valider</span>
+              {/* Badge pendant le glissement */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#c83b3b]/20 text-[#c83b3b] dark:text-red-300 border border-[#c83b3b]/30 text-[11px] font-bold shadow-2xs mb-1.5 animate-pulse">
+                <ArrowUpDown size={12} strokeWidth={2.5} />
+                <span>Score : {cur >= 0 ? '+' : ''}{cur}</span>
               </div>
 
               {/* Cylindre de roulette */}
@@ -172,7 +194,7 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
         </div>
       </div>
 
-      {/* Boutons incrémentaux colorés & fun */}
+      {/* Boutons incrémentaux aux nuances de rouge avec transparences */}
       <div className="grid grid-cols-5 gap-2 pt-1">
         {buttons.map(({ label: lbl, delta, colorClass }) => (
           <button
@@ -191,12 +213,12 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
         ))}
       </div>
 
-      {/* Bouton valider */}
+      {/* Bouton valider final */}
       {onConfirm && (
         <button
           type="button"
           onClick={onConfirm}
-          className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red mt-1"
+          className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red mt-1 shadow-sm"
         >
           Valider
         </button>
