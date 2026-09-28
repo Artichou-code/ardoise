@@ -497,3 +497,103 @@ export function formatStatDuration(ms) {
   if (remainingMinutes === 0) return `${hours} h`
   return `${hours}h ${remainingMinutes}m`
 }
+
+/**
+ * Catalogue complet des trophées et distinctions
+ */
+export const TROPHIES_CATALOG = [
+  {
+    id: 'strategist',
+    title: 'Meilleur stratège',
+    category: 'Général',
+    condition: 'Avoir le plus haut taux de victoire (%) de la table (minimum 2 parties disputées).',
+    description: 'Récompense la régularité et la tactique globale sur l’ensemble des jeux.',
+    color: 'gold',
+  },
+  {
+    id: 'active',
+    title: 'Fidèle au poste',
+    category: 'Général',
+    condition: 'Avoir disputé le plus grand nombre total de parties (minimum 3 parties).',
+    description: 'Attribué au joueur le plus présent et infatigable autour de la table.',
+    color: 'blue',
+  },
+  {
+    id: 'dourak',
+    title: 'Grand Dourak',
+    category: 'Dourak',
+    condition: 'Avoir subi le plus grand nombre de défaites au Dourak (au moins 1 revers).',
+    description: "Le titre craint de tous : le joueur qui a le plus souvent conservé les cartes en main.",
+    color: 'rose',
+  },
+  {
+    id: 'podium',
+    title: 'Roi du podium',
+    category: 'Général',
+    condition: 'Avoir terminé le plus grand nombre de fois dans le Top 3 (minimum 2 podiums).',
+    description: 'Récompense la constance aux avant-postes sur les parties disputées.',
+    color: 'emerald',
+  },
+  {
+    id: 'invincible',
+    title: 'Invincible',
+    category: 'Prestige',
+    condition: 'Réaliser 100% de victoires sur au moins 3 parties terminées.',
+    description: 'L’exploit absolu : n’avoir jamais connu la défaite sur un cycle significatif.',
+    color: 'purple',
+  },
+  {
+    id: 'master_president',
+    gameType: GAMES.PRESIDENT,
+    title: 'Président éternel',
+    category: 'Trou du cul',
+    condition: 'Avoir remporté le plus grand nombre de victoires en tant que Président au Trou du cul.',
+    description: 'Le monarque incontesté de la hiérarchie et des échanges de cartes.',
+    color: 'gold',
+  },
+  {
+    id: 'master_caracole',
+    gameType: GAMES.CARACOLE,
+    title: 'As du Sursis',
+    category: 'Caracole',
+    condition: 'Cumuler le plus grand nombre de victoires (score minimal) à la Caracole.',
+    description: 'Maître du bluff, de la mémoire des cartes cachées et de la règle du sursis.',
+    color: 'blue',
+  },
+  {
+    id: 'master_skyjo',
+    gameType: GAMES.SKYJO,
+    title: 'Zéro faute',
+    category: 'Skyjo',
+    condition: 'Avoir remporté le plus grand nombre de victoires à 100 points au Skyjo.',
+    description: 'Dompteur de la grille de 12 cartes, expert des colonnes alignées à 0 point.',
+    color: 'emerald',
+  },
+  {
+    id: 'master_belote',
+    gameType: GAMES.BELOTE,
+    title: 'Grand Preneur',
+    category: 'Belote / Coinche',
+    condition: 'Avoir mené son camp au plus grand nombre de victoires à la Belote.',
+    description: 'Le preneur intrépide qui réussit ses contrats et capitalise sur le 10 de der.',
+    color: 'rose',
+  },
+  {
+    id: 'master_tarot',
+    gameType: GAMES.TAROT,
+    title: 'Maître du Bout',
+    category: 'Tarot',
+    condition: 'Avoir réussi le plus grand nombre de victoires en attaque au Tarot.',
+    description: 'Le stratège qui maîtrise la gestion du Petit au bout, des 21 et des Excuses.',
+    color: 'purple',
+  },
+  {
+    id: 'master_six_qui_prend',
+    gameType: GAMES.SIX_QUI_PREND,
+    title: 'Dompteur de taureaux',
+    category: '6 qui prend',
+    condition: 'Avoir remporté le plus grand nombre de victoires à 6 qui prend.',
+    description: 'Le joueur qui anticipe les 6èmes cartes et évite le ramassage des bœufs.',
+    color: 'gold',
+  },
+]

@@ -16,6 +16,7 @@ import { GAME_META } from '../constants/games'
 import { Avatar } from './ui/Avatar'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { PlayerDetailSheet } from './PlayerDetailSheet'
+import { TrophiesSheet } from './TrophiesSheet'
 import {
   computeStats,
   sortPlayers,
@@ -27,6 +28,7 @@ export function StatsScreen() {
   const [selectedGameType, setSelectedGameType] = useState('all') // 'all' | gameId
   const [sortBy, setSortBy] = useState('winRate') // 'winRate' (défaut) | 'wins' | 'games'
   const [selectedPlayer, setSelectedPlayer] = useState(null)
+  const [showTrophies, setShowTrophies] = useState(false)
 
   // Calcul des statistiques
   const stats = useMemo(() => {
@@ -118,6 +120,15 @@ export function StatsScreen() {
             Statistiques
           </h1>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowTrophies(true)}
+          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+          title="Guide des trophées & distinctions"
+          aria-label="Guide des trophées"
+        >
+          <Award size={18} className="text-stone-700 dark:text-slate-300" />
+        </button>
         <ThemeToggle />
       </header>
 
@@ -481,6 +492,13 @@ export function StatsScreen() {
         player={selectedPlayer}
         open={Boolean(selectedPlayer)}
         onClose={() => setSelectedPlayer(null)}
+      />
+
+      {/* Guide complet des trophées & distinctions */}
+      <TrophiesSheet
+        open={showTrophies}
+        onClose={() => setShowTrophies(false)}
+        playersStats={stats.playersStats}
       />
     </div>
   )
