@@ -332,8 +332,8 @@ export function BurgerMenu({
                 onClick={() => handleAction(onOpenArtCrea)}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-lg bg-white/85 dark:bg-slate-800/85 border border-stone-200/90 dark:border-slate-700/70 group-hover:border-[#c83b3b]/35 flex items-center justify-center shrink-0 transition-all">
-                  <ArtCreaLogo className="h-4 w-auto group-hover:scale-105 transition-transform" />
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                  <ArtCreaLogo className="h-5 w-auto group-hover:scale-105 transition-transform" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
