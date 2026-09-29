@@ -82,10 +82,10 @@ export function BottomSheet({
       >
         <div
           ref={sheetRef}
-          className={`relative w-full max-w-lg school-card rounded-2xl shadow-2xl border transition-all duration-150 max-h-[calc(100dvh-4rem)] flex flex-col mb-auto ${className}`}
+          className={`relative w-full max-w-lg school-surface rounded-2xl shadow-2xl border border-stone-200 dark:border-slate-800 transition-all duration-150 max-h-[calc(100dvh-4rem)] flex flex-col mb-auto ${className}`}
         >
           {title && (
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-100 dark:border-slate-800/80 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-200/80 dark:border-slate-800/80 bg-[#faf9f5]/90 dark:bg-[#151719]/90 rounded-t-2xl flex-shrink-0">
               <div>
                 <h2 className="font-serif-title text-lg font-bold leading-tight">{title}</h2>
                 {subtitle && (
@@ -122,10 +122,10 @@ export function BottomSheet({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div
         ref={sheetRef}
-        className={`relative w-full max-w-lg school-card rounded-t-2xl shadow-2xl border-t transition-transform duration-200 max-h-[88dvh] flex flex-col ${className}`}
+        className={`relative w-full max-w-lg school-surface rounded-t-2xl shadow-2xl border-t border-stone-200 dark:border-slate-800 transition-transform duration-200 max-h-[88dvh] flex flex-col ${className}`}
       >
         {/* Zone tactile de glissement pour fermer (Poignée tactile + Titre) */}
-        <div ref={headerRef} className="touch-none select-none flex-shrink-0 cursor-grab active:cursor-grabbing">
+        <div ref={headerRef} className="touch-none select-none flex-shrink-0 cursor-grab active:cursor-grabbing bg-[#faf9f5]/90 dark:bg-[#151719]/90 rounded-t-2xl">
           {/* Poignée tactile */}
           <div className="flex justify-center pt-3 pb-1">
             <div className="w-10 h-1 rounded-full bg-stone-300 dark:bg-slate-700" />

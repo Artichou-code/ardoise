@@ -12,9 +12,14 @@ import { BottomSheet } from './ui/BottomSheet'
 export function PlayerDetailSheet({ player, open, onClose }) {
   const { setScreen } = useGame()
   const [selectedBadgeId, setSelectedBadgeId] = useState(null)
+  const [showAllBadges, setShowAllBadges] = useState(false)
   if (!player) return null
 
-  const selectedBadge = player.badges?.find(b => b && b.id === selectedBadgeId) || null
+  const badges = player.badges || []
+  const MAX_VISIBLE_BADGES = 4
+  const visibleBadges = showAllBadges ? badges : badges.slice(0, MAX_VISIBLE_BADGES)
+  const hiddenCount = Math.max(0, badges.length - MAX_VISIBLE_BADGES)
+  const selectedBadge = badges.find(b => b && b.id === selectedBadgeId) || null
 
   const gamesPlayedEntries = Object.entries(player.gameBreakdown || {}).filter(
     ([, data]) => data && data.played > 0
@@ -25,6 +30,7 @@ export function PlayerDetailSheet({ player, open, onClose }) {
       open={open}
       onClose={() => {
         setSelectedBadgeId(null)
+        setShowAllBadges(false)
         onClose()
       }}
       position="bottom"
@@ -35,10 +41,11 @@ export function PlayerDetailSheet({ player, open, onClose }) {
           type="button"
           onClick={() => {
             setSelectedBadgeId(null)
+            setShowAllBadges(false)
             onClose()
             setScreen('stats')
           }}
-          className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+          className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           title="Statistiques"
           aria-label="Statistiques"
         >
@@ -48,74 +55,94 @@ export function PlayerDetailSheet({ player, open, onClose }) {
     >
       <div className="px-4 py-3 space-y-4">
         {/* En-tête profil */}
-        <div className="flex items-center gap-3.5 p-3 rounded-2xl school-card">
-          <Avatar player={player} size="lg" />
-          <div className="flex-1 min-w-0">
-            <h3 className="font-serif-title font-bold text-lg text-stone-900 dark:text-slate-100 truncate">
-              {player.name}
-            </h3>
-            {player.badges && player.badges.length > 0 ? (
-              <div className="mt-1 space-y-1.5">
-                <div className="flex flex-wrap gap-1.5">
-                  {player.badges.map(b => {
-                    const isSelected = selectedBadgeId === b.id
-                    return (
-                      <button
-                        key={b.id}
-                        type="button"
-                        onClick={() => setSelectedBadgeId(isSelected ? null : b.id)}
-                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all border ${
-                          isSelected
-                            ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-100 border-amber-400 dark:border-amber-600 shadow-xs scale-[1.02]'
-                            : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100/70'
-                        }`}
-                        title="Toucher pour voir l'explication"
-                      >
-                        <Award size={12} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                        <span>{b.title}</span>
-                        <span
-                          className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold ${
-                            isSelected
-                              ? 'bg-amber-300 dark:bg-amber-700 text-amber-900 dark:text-white'
-                              : 'bg-amber-200/80 dark:bg-amber-900/80 text-amber-800 dark:text-amber-300'
-                          }`}
-                        >
-                          ?
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
+        <div className="p-3.5 rounded-2xl school-card">
+          <div className="flex items-center gap-3.5">
+            <Avatar player={player} size="lg" />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-serif-title font-bold text-lg text-stone-900 dark:text-slate-100 truncate">
+                {player.name}
+              </h3>
+              <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
+                {player.finishedGames
+                  ? `${player.finishedGames} partie${player.finishedGames > 1 ? 's' : ''} terminée${player.finishedGames > 1 ? 's' : ''}`
+                  : 'Aucune partie jouée'}
+                {badges.length > 0 && (
+                  <span className="text-amber-700 dark:text-amber-400 font-semibold">
+                    {` · ${badges.length} trophée${badges.length > 1 ? 's' : ''}`}
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
 
-                {/* Volet explicatif de la distinction sélectionnée */}
-                {selectedBadge && (
-                  <div className="p-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200/90 dark:border-amber-800/60 text-xs text-amber-950 dark:text-amber-200 animate-in fade-in duration-150">
-                    <div className="flex items-center justify-between font-bold mb-1">
-                      <span className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
-                        <Award size={13} />
-                        {selectedBadge.title}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedBadgeId(null)}
-                        className="p-0.5 rounded hover:bg-amber-200/50 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400"
-                        aria-label="Fermer"
+          {/* Trophées sur toute la largeur de la carte pour éviter tout souci de responsive */}
+          {badges.length > 0 && (
+            <div className="mt-3 pt-2.5 border-t border-stone-100 dark:border-slate-800/80 space-y-2">
+              <div className="flex flex-wrap items-center gap-1.5">
+                {visibleBadges.map(b => {
+                  const isSelected = selectedBadgeId === b.id
+                  return (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => setSelectedBadgeId(isSelected ? null : b.id)}
+                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-semibold transition-all border focus:outline-none cursor-pointer ${
+                        isSelected
+                          ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-100 border-amber-400 dark:border-amber-500 ring-2 ring-amber-400/25 shadow-2xs'
+                          : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60 hover:bg-amber-100/70'
+                      }`}
+                      title="Toucher pour voir l'explication"
+                    >
+                      <Award size={12} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                      <span className="truncate max-w-[160px]">{b.title}</span>
+                      <span
+                        className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${
+                          isSelected
+                            ? 'bg-amber-300 dark:bg-amber-700 text-amber-900 dark:text-white'
+                            : 'bg-amber-200/80 dark:bg-amber-900/80 text-amber-800 dark:text-amber-300'
+                        }`}
                       >
-                        <X size={13} />
-                      </button>
-                    </div>
-                    <p className="text-[11px] leading-relaxed text-stone-600 dark:text-slate-300">
-                      {selectedBadge.explanation || selectedBadge.desc}
-                    </p>
-                  </div>
+                        ?
+                      </span>
+                    </button>
+                  )
+                })}
+
+                {hiddenCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllBadges(prev => !prev)}
+                    className="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-bold bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:bg-stone-200 dark:hover:bg-slate-700 transition-colors focus:outline-none cursor-pointer"
+                  >
+                    {showAllBadges ? 'Réduire' : `+${hiddenCount} autre${hiddenCount > 1 ? 's' : ''}`}
+                  </button>
                 )}
               </div>
-            ) : (
-              <p className="text-xs text-stone-500 dark:text-slate-400">
-                {player.finishedGames ? `${player.finishedGames} partie${player.finishedGames > 1 ? 's' : ''} terminée${player.finishedGames > 1 ? 's' : ''}` : 'Aucune partie jouée'}
-              </p>
-            )}
-          </div>
+
+              {/* Volet explicatif de la distinction sélectionnée (pleine largeur) */}
+              {selectedBadge && (
+                <div className="p-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200/90 dark:border-amber-800/60 text-xs text-amber-950 dark:text-amber-200 animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between font-bold mb-1">
+                    <span className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
+                      <Award size={13} />
+                      {selectedBadge.title}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBadgeId(null)}
+                      className="p-0.5 rounded hover:bg-amber-200/50 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 focus:outline-none cursor-pointer"
+                      aria-label="Fermer"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-stone-600 dark:text-slate-300">
+                    {selectedBadge.explanation || selectedBadge.desc}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Indicateurs clés du joueur */}
@@ -190,7 +217,7 @@ export function PlayerDetailSheet({ player, open, onClose }) {
                 return (
                   <div
                     key={type}
-                    className="p-2.5 rounded-xl border border-stone-200/80 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 flex items-center justify-between gap-3 text-xs"
+                    className="p-2.5 rounded-xl school-card flex items-center justify-between gap-3 text-xs"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -239,7 +266,7 @@ export function PlayerDetailSheet({ player, open, onClose }) {
               {player.recentHistory.filter(Boolean).slice(0, 8).map((hist, idx) => (
                 <div
                   key={`${hist.gameId || idx}-${idx}`}
-                  className="flex items-center justify-between p-2 rounded-lg bg-stone-50 dark:bg-slate-900/40 text-xs"
+                  className="flex items-center justify-between p-2 rounded-lg school-card text-xs"
                 >
                   <div className="flex items-center gap-2 truncate">
                     <span
