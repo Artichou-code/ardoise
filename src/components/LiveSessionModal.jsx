@@ -9,6 +9,7 @@ import {
   LogOut,
   ArrowRight,
   Crown,
+  Info,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import {
@@ -277,10 +278,10 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 <button
                   type="button"
                   onClick={() => setActiveTab('create')}
-                  className={`flex-1 pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+                  className={`flex-1 pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer focus:outline-none ${
                     activeTab === 'create'
                       ? 'border-[#c83b3b] text-[#c83b3b]'
-                      : 'border-transparent text-stone-500'
+                      : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-slate-300'
                   }`}
                 >
                   Créer la session
@@ -288,10 +289,10 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 <button
                   type="button"
                   onClick={() => setActiveTab('join')}
-                  className={`flex-1 pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+                  className={`flex-1 pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer focus:outline-none ${
                     activeTab === 'join'
                       ? 'border-[#c83b3b] text-[#c83b3b]'
-                      : 'border-transparent text-stone-500'
+                      : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-slate-300'
                   }`}
                 >
                   Rejoindre un salon
@@ -336,6 +337,17 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                     <span>Lancer la table en direct</span>
                     <ArrowRight size={14} />
                   </button>
+
+                  {/* Micro-explication avec exemple concret */}
+                  <div className="p-3 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-800 text-[11px] text-stone-600 dark:text-slate-400 space-y-1">
+                    <p className="font-semibold text-stone-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <Info size={13} className="text-[#c83b3b] shrink-0" />
+                      <span>Comment ça marche&nbsp;?</span>
+                    </p>
+                    <p className="leading-relaxed">
+                      Lancez la session sur votre tablette ou PC, puis partagez le QR code à vos amis pour qu'ils suivent les scores en temps réel sur leur téléphone (aucun compte requis).
+                    </p>
+                  </div>
                 </form>
               ) : (
                 <form onSubmit={handleJoin} className="space-y-3">
@@ -375,6 +387,17 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                     <span>Rejoindre la table</span>
                     <ArrowRight size={14} />
                   </button>
+
+                  {/* Micro-explication avec exemple concret */}
+                  <div className="p-3 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-800 text-[11px] text-stone-600 dark:text-slate-400 space-y-1">
+                    <p className="font-semibold text-stone-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <Info size={13} className="text-[#c83b3b] shrink-0" />
+                      <span>Comment rejoindre&nbsp;?</span>
+                    </p>
+                    <p className="leading-relaxed">
+                      Scannez le QR code affiché sur l'écran de l'hôte ou tapez le code du salon (ex.&nbsp;: ARD-7B92) pour suivre les points en direct.
+                    </p>
+                  </div>
                 </form>
               )}
             </div>

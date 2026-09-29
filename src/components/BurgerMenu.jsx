@@ -10,7 +10,6 @@ import {
   Scale,
   Sun,
   Moon,
-  ChevronRight,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useTheme } from '../context/ThemeContext'
@@ -50,20 +49,20 @@ export function BurgerMenu({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[1000] flex justify-end animate-in fade-in duration-200"
+      className="fixed inset-0 z-[1000] flex justify-end"
       role="dialog"
       aria-modal="true"
       aria-labelledby="burger-menu-title"
     >
-      {/* Backdrop sombre */}
+      {/* Backdrop sombre avec fondu fluide */}
       <div
-        className="absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-xs transition-opacity duration-300"
+        className="absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-xs transition-opacity duration-300 animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Tiroir coulissant depuis la droite */}
-      <div className="relative w-full max-w-xs sm:max-w-sm h-full school-surface text-stone-900 dark:text-slate-100 border-l border-stone-200/90 dark:border-slate-800/90 shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-250 ease-out">
+      {/* Tiroir coulissant depuis la droite fluide */}
+      <div className="relative w-full max-w-xs sm:max-w-sm h-full school-surface text-stone-900 dark:text-slate-100 border-l border-stone-200/90 dark:border-slate-800/90 shadow-2xl flex flex-col z-10 animate-slide-in-right">
         {/* Liseré supérieur rouge signature */}
         <div className="h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent shrink-0" />
 
@@ -115,7 +114,6 @@ export function BurgerMenu({
                     Gérer les profils et avatars
                   </p>
                 </div>
-                <ChevronRight size={14} className="text-stone-300 dark:text-slate-600 group-hover:text-stone-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
               </button>
 
               <button
@@ -134,7 +132,6 @@ export function BurgerMenu({
                     Consulter les feuilles passées
                   </p>
                 </div>
-                <ChevronRight size={14} className="text-stone-300 dark:text-slate-600 group-hover:text-stone-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
               </button>
 
               <button
@@ -153,7 +150,6 @@ export function BurgerMenu({
                     Podiums, records et distinctions
                   </p>
                 </div>
-                <ChevronRight size={14} className="text-stone-300 dark:text-slate-600 group-hover:text-stone-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
               </button>
             </div>
           </div>
@@ -195,7 +191,6 @@ export function BurgerMenu({
                     {liveSession ? `Salon : ${liveSession.name}` : 'Jouer ensemble sur plusieurs écrans'}
                   </p>
                 </div>
-                <ChevronRight size={14} className="text-stone-300 dark:text-slate-600 group-hover:text-stone-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
               </button>
 
               <button
@@ -214,7 +209,6 @@ export function BurgerMenu({
                     Multi-appareils ou fichier de secours
                   </p>
                 </div>
-                <ChevronRight size={14} className="text-stone-300 dark:text-slate-600 group-hover:text-stone-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
               </button>
             </div>
           </div>
@@ -230,9 +224,9 @@ export function BurgerMenu({
                 onClick={() => handleAction(onOpenArtCrea)}
                 className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="w-8 h-8 rounded-lg bg-stone-900 dark:bg-slate-800 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform p-1.5 shadow-2xs">
-                  <ArtCreaLogo className="h-3.5 w-auto" />
-                </span>
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                  <ArtCreaLogo className="h-4.5 w-auto group-hover:scale-105 transition-transform" />
+                </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
                     Univers ART-créa
@@ -241,7 +235,6 @@ export function BurgerMenu({
                     Webdesign & Photographie
                   </p>
                 </div>
-                <ChevronRight size={14} className="text-stone-300 dark:text-slate-600 group-hover:text-stone-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
               </button>
 
               <button
@@ -260,7 +253,6 @@ export function BurgerMenu({
                     Mentions, CGU & Confidentialité
                   </p>
                 </div>
-                <ChevronRight size={14} className="text-stone-300 dark:text-slate-600 group-hover:text-stone-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
               </button>
             </div>
           </div>

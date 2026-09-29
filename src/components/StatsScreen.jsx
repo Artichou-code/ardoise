@@ -314,24 +314,24 @@ export function StatsScreen() {
             </div>
 
             {/* Bannière de Synchronisation & Sauvegarde des Statistiques */}
-            <div className="p-3 rounded-2xl border border-stone-200/90 dark:border-slate-800/90 bg-white/70 dark:bg-slate-900/60 flex items-center justify-between gap-3 shadow-2xs">
-              <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-3 rounded-2xl border border-stone-200/90 dark:border-slate-800/90 bg-white/70 dark:bg-slate-900/60 flex items-center justify-between gap-2.5 shadow-2xs">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <div className="w-8 h-8 rounded-xl bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 flex items-center justify-center flex-shrink-0 text-[#c83b3b]">
                   <Cloud size={16} />
                 </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-xs text-stone-800 dark:text-slate-200 truncate">
-                    Sauvegarder & Partager mes stats
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-xs text-stone-800 dark:text-slate-200 leading-snug">
+                    Sauvegarde & Partage
                   </p>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Synchronisez vos données sur votre PC ou un autre téléphone
+                  <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-tight">
+                    Synchronisez vos données sur tous vos écrans
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowSyncModal(true)}
-                className="px-3 py-1.5 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex-shrink-0 transition-colors cursor-pointer shadow-2xs"
+                className="px-3 py-1.5 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex-shrink-0 transition-all cursor-pointer shadow-2xs active:scale-95"
               >
                 Gérer
               </button>
