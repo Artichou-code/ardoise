@@ -7,9 +7,7 @@ import {
   Users,
   Radio,
   Cloud,
-  BookOpen,
   Scale,
-  Sparkles,
   Sun,
   Moon,
   ChevronRight,
@@ -17,6 +15,7 @@ import {
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useTheme } from '../context/ThemeContext'
 import { AppLogo } from './ui/AppLogo'
+import { ArtCreaLogo } from './ui/ArtCreaLogo'
 
 export function BurgerMenu({
   isOpen,
@@ -102,18 +101,18 @@ export function BurgerMenu({
             <div className="space-y-1">
               <button
                 type="button"
-                onClick={() => handleAction(() => onNavigate('stats'))}
+                onClick={() => handleAction(() => onNavigate('players'))}
                 className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 text-[#c83b3b] dark:text-[#FFC107] shrink-0 group-hover:scale-105 transition-transform">
-                  <BarChart3 size={16} />
+                  <Users size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
-                    Statistiques
+                    Joueurs de la table
                   </p>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Podiums, records et distinctions
+                    Gérer les profils et avatars
                   </p>
                 </div>
                 <ChevronRight size={14} className="text-stone-300 dark:text-slate-600 group-hover:text-stone-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
@@ -140,18 +139,18 @@ export function BurgerMenu({
 
               <button
                 type="button"
-                onClick={() => handleAction(() => onNavigate('players'))}
+                onClick={() => handleAction(() => onNavigate('stats'))}
                 className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
-                  <Users size={16} />
+                  <BarChart3 size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
-                    Joueurs de la table
+                    Statistiques
                   </p>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Gérer les profils et avatars
+                    Podiums, records et distinctions
                   </p>
                 </div>
                 <ChevronRight size={14} className="text-stone-300 dark:text-slate-600 group-hover:text-stone-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
@@ -228,37 +227,18 @@ export function BurgerMenu({
             <div className="space-y-1">
               <button
                 type="button"
-                onClick={() => handleAction(onOpenRules)}
-                className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
-              >
-                <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
-                  <BookOpen size={16} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
-                    Règles officielles
-                  </p>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Belote, Tarot, Skyjo, Dourak…
-                  </p>
-                </div>
-                <ChevronRight size={14} className="text-stone-300 dark:text-slate-600 group-hover:text-stone-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
-              </button>
-
-              <button
-                type="button"
                 onClick={() => handleAction(onOpenArtCrea)}
                 className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 text-[#c83b3b] dark:text-[#FFC107] shrink-0 group-hover:scale-105 transition-transform">
-                  <Sparkles size={16} />
+                <span className="w-8 h-8 rounded-lg bg-stone-900 dark:bg-slate-800 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform p-1.5 shadow-2xs">
+                  <ArtCreaLogo className="h-3.5 w-auto" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
                     Univers ART-créa
                   </p>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Créateur de jeux & applications
+                    Webdesign & Photographie
                   </p>
                 </div>
                 <ChevronRight size={14} className="text-stone-300 dark:text-slate-600 group-hover:text-stone-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
