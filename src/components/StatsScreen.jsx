@@ -156,15 +156,6 @@ export function StatsScreen() {
         </div>
         <button
           type="button"
-          onClick={() => setShowSyncModal(true)}
-          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-          title="Sauvegarder & Partager mes statistiques"
-          aria-label="Sauvegarde et synchronisation"
-        >
-          <Cloud size={18} className="text-stone-700 dark:text-slate-300" />
-        </button>
-        <button
-          type="button"
           onClick={() => setScreen('trophies')}
           className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           title="Guide des trophées & distinctions"
@@ -192,7 +183,7 @@ export function StatsScreen() {
                 onClick={(e) => handleSelectTab(tab.id, e.currentTarget)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${
                   isActive
-                    ? 'bg-[#1e3a5f] dark:bg-slate-100 text-white dark:text-slate-900 shadow-xs'
+                    ? 'bg-[#c83b3b] text-white shadow-xs'
                     : 'bg-white/80 dark:bg-slate-900/80 text-stone-600 dark:text-slate-300 border border-stone-200 dark:border-slate-800 hover:bg-stone-100 dark:hover:bg-slate-800'
                 }`}
               >
@@ -201,7 +192,7 @@ export function StatsScreen() {
                   <span
                     className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
                       isActive
-                        ? 'bg-white/20 dark:bg-slate-900/20 text-white dark:text-slate-900'
+                        ? 'bg-white/25 text-white'
                         : 'bg-stone-200/80 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
                     }`}
                   >
@@ -238,7 +229,7 @@ export function StatsScreen() {
                   <span className="text-[11px] font-semibold uppercase tracking-wider">
                     Parties
                   </span>
-                  <History size={16} className="text-[#1e3a5f] dark:text-blue-400" />
+                  <History size={16} className="text-[#c83b3b]" />
                 </div>
                 <div>
                   <p className="font-serif-title font-bold text-2xl text-stone-900 dark:text-slate-100">
@@ -310,30 +301,6 @@ export function StatsScreen() {
                   </p>
                 </div>
               </div>
-            </div>
-
-            {/* Bannière de Synchronisation & Sauvegarde des Statistiques */}
-            <div className="p-3 rounded-2xl border border-stone-200/90 dark:border-slate-800/90 bg-white/70 dark:bg-slate-900/60 flex items-center justify-between gap-2.5 shadow-2xs">
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div className="w-8 h-8 rounded-xl bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 flex items-center justify-center flex-shrink-0 text-[#c83b3b]">
-                  <Cloud size={16} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-xs text-stone-800 dark:text-slate-200 leading-snug">
-                    Sauvegarde & Partage
-                  </p>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-tight">
-                    Synchronisez vos données sur tous vos écrans
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowSyncModal(true)}
-                className="px-3 py-1.5 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex-shrink-0 transition-all cursor-pointer shadow-2xs active:scale-95"
-              >
-                Gérer
-              </button>
             </div>
 
             {/* Distinctions / Panthéon (si des titres sont attribués) */}
@@ -545,7 +512,7 @@ export function StatsScreen() {
                         {/* Barre de proportion relative */}
                         <div className="w-full bg-stone-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
                           <div
-                            className="bg-[#1e3a5f] dark:bg-blue-500 h-full rounded-full transition-all duration-300"
+                            className="bg-[#c83b3b] h-full rounded-full transition-all duration-300"
                             style={{ width: `${item.percent}%` }}
                           />
                         </div>
