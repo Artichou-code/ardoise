@@ -52,29 +52,29 @@ export function GameScreen() {
         <button
           type="button"
           onClick={() => setShowExitConfirm(true)}
-          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors shrink-0"
           aria-label="Quitter la partie"
         >
           <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
         </button>
-        <div className="flex items-baseline gap-2 flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="font-serif-title font-bold text-base truncate">
             {activeGame.name}
           </span>
-          <span className="text-xs font-semibold text-[#c83b3b] flex-shrink-0">
+          <span className="text-xs font-semibold text-[#c83b3b] shrink-0 whitespace-nowrap">
             M.{activeGame.rounds.length + 1}
           </span>
-        </div>
-        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => setShowRules(true)}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-xs font-semibold text-stone-700 dark:text-slate-300 hover:border-[#c83b3b] transition-colors"
+            className="p-1.5 rounded-lg border border-stone-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-stone-600 dark:text-slate-400 hover:text-[#c83b3b] hover:border-[#c83b3b] transition-colors shrink-0 cursor-pointer"
             title="Consulter les règles"
+            aria-label="Consulter les règles"
           >
             <BookOpen size={14} />
-            <span className="hidden xs:inline">Règles</span>
           </button>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
           {canUndo && (
             <button
               type="button"
@@ -86,15 +86,6 @@ export function GameScreen() {
               <RotateCcw size={16} className="text-stone-600 dark:text-slate-400" />
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => setShowFinishConfirm(true)}
-            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            title="Finir la partie plus tôt"
-            aria-label="Finir la partie plus tôt"
-          >
-            <Flag size={16} className="text-stone-600 dark:text-slate-400" />
-          </button>
           <BurgerMenuButton />
         </div>
       </header>
