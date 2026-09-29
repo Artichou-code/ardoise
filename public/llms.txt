@@ -18,7 +18,7 @@
 ## Pages et Règles par Jeu
 - [Accueil — Ardoise](https://ardoise.art-crea.fr/) : Application principale de comptage de scores et règles.
 - [Caracole — Règles officielles & Compteur de points](https://ardoise.art-crea.fr/jeux/caracole) : Règles de la Caracole (52 cartes, poser/piocher, 8 = 0 pt, annonce Caracole ≤10 pts, pénalité 30 pts, sursis pile à 100 pts).
-- [Dourak (L'Idiot) — Règles officielles & Compteur](https://ardoise.art-crea.fr/jeux/dourak) : Règles du Dourak à 36 cartes (Attaque, Défense, Atout Kozyr, Défausse Otboy).
+- [Dourak (L'Idiot) — Règles officielles & Compteur](https://ardoise.art-crea.fr/jeux/dourak) : Règles du Dourak à 36 cartes (Attaque, Défense, Kozyr, Otboy, transfert Perevodnoy, décompte classique défaites ou pénalité aux cartes).
 - [Skyjo — Règles officielles & Compteur de points](https://ardoise.art-crea.fr/jeux/skyjo) : Grille 4×3, colonnes identiques défaussées, règle du score doublé pour le clôtureur et seuil de 100 points.
 - [Belote & Coinche — Feuille de score & Règles](https://ardoise.art-crea.fr/jeux/belote) : Valeur des cartes à l'atout et hors atout, total de 162 points, dix de der, Belote-Rebelote, Capot (252 pts) et Générale (500 pts).
 - [Tarot — Calculateur de points (3, 4 et 5 joueurs) & Règles](https://ardoise.art-crea.fr/jeux/tarot) : Seuils selon les Bouts (56, 51, 41, 36 pts), coefficients (Petite ×1, Garde ×2, Garde Sans ×4, Garde Contre ×6) et Petit au bout.

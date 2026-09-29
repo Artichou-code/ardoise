@@ -18,46 +18,57 @@ export const GAME_META = {
     playersBadge: '2 à 6 j.',
     categoryBadge: '36 cartes',
     description:
-      "Défendez-vous des attaques et débarrassez-vous vite de vos cartes. Il n'y a aucun gagnant : le dernier joueur avec des cartes en main devient le Dourak !",
+      "Défendez-vous des attaques et débarrassez-vous vite de vos cartes. Il n'y a aucun gagnant : le dernier joueur avec des cartes en main devient le Dourak !",
     minPlayers: 2,
     maxPlayers: 6,
     scoreDir: 'low',
     rules: {
       sections: [
         {
-          title: 'Le But',
-          content:
-            "Se défausser de toutes ses cartes. Il n'y a pas de gagnant à proprement parler : le dernier joueur ayant encore des cartes en main devient le « Dourak » (l'idiot).",
-        },
-        {
-          title: 'Préparation',
+          title: '1. Informations générales & But',
           items: [
-            'Paquet de 36 cartes (du 6 à l’As).',
-            '6 cartes distribuées à chaque joueur.',
-            "La carte suivante est retournée visible sous la pioche : sa couleur détermine l'Atout (Kozyr) pour toute la manche.",
+            'Nombre de joueurs : 2 à 6 joueurs.',
+            'Matériel : Paquet de 36 cartes (du 6 à l’As).',
+            "Objectif : Se débarrasser de toutes ses cartes au plus vite. Il n'y a pas de gagnant : le dernier joueur conservant des cartes en main est déclaré « Dourak » (l'idiot).",
           ],
         },
         {
-          title: "Déroulement d'un tour",
+          title: '2. Préparation & Atout (Kozyr)',
           items: [
-            "Le joueur ayant le plus petit atout commence en tant qu'Attaquant.",
-            'Le joueur situé à sa gauche est le Défenseur.',
-            "L'attaquant pose une carte. Le défenseur doit la battre avec une carte plus forte de la même couleur, ou avec un atout. Si l'attaque est un atout, seul un atout supérieur peut la battre.",
-            "Les autres joueurs (ou l'attaquant) peuvent ajouter des cartes de même valeur que celles déjà posées sur la table (limité à 6 cartes max ou au nombre de cartes en main du défenseur).",
+            'Distribuer 6 cartes à chaque joueur.',
+            "La carte suivante est retournée face visible sous la pioche : sa couleur détermine l'Atout (Kozyr) pour toute la manche.",
+            "Le joueur détenant le plus petit atout commence en tant qu'Attaquant initial.",
           ],
         },
         {
-          title: 'Résolution du tour',
+          title: "3. Déroulement de l'Attaque & Défense",
           items: [
-            "Défense réussie : toutes les cartes jouées sont écartées à la défausse (Otboy). Le défenseur devient le nouvel attaquant.",
-            "Défense échouée (Abandon) : le défenseur ramasse toutes les cartes posées sur la table et passe son tour d'attaque (le joueur à sa gauche attaque).",
+            "Le joueur situé à gauche de l'attaquant est le Défenseur.",
+            "L'attaquant pose une ou plusieurs cartes de même valeur faciale.",
+            "Le défenseur doit battre chaque carte attaquante : soit par une carte supérieure de la même couleur, soit par un atout (un atout ne peut être battu que par un atout supérieur).",
+            "Les autres joueurs (ou l'attaquant) peuvent ajouter de nouvelles cartes d'attaque, à condition qu'elles soient de même valeur qu'une carte déjà posée sur la table lors de ce pli (limité à 6 cartes max ou au nombre de cartes en main du défenseur).",
           ],
         },
         {
-          title: 'Recharge & Fin de manche',
+          title: "4. Variante d'attaque : Simple vs Transfert (Perevodnoy)",
           items: [
-            "Recharge : après chaque pli, tout le monde repioche pour remonter à 6 cartes en main (dans l'ordre : attaquant principal, autres attaquants, puis défenseur).",
-            "Fin de manche : lorsque la pioche est épuisée, on joue jusqu'à épuisement des mains. Le dernier joueur qui conserve des cartes est déclaré Dourak.",
+            "Dourak simple (Podkidnoy) : Le défenseur doit impérativement contrer toutes les cartes ou abandonner.",
+            "Dourak avec transfert (Perevodnoy) : Avant de poser la moindre carte de défense, si le défenseur possède une carte de même valeur que l'attaque, il peut la poser pour transférer l'attaque complète au joueur à sa gauche, qui devient le nouveau défenseur.",
+          ],
+        },
+        {
+          title: '5. Résolution du pli & Recharge',
+          items: [
+            "Défense réussie : Toutes les cartes jouées sont écartées définitivement à la défausse (Otboy). Le défenseur devient le nouvel attaquant.",
+            "Défense échouée (Abandon) : Le défenseur ramasse toutes les cartes posées sur la table et passe son tour d'attaque (le joueur à sa gauche attaque).",
+            "Recharge : Tant que la pioche n'est pas vide, chaque joueur repioche pour remonter à 6 cartes en main (dans l'ordre : attaquant principal, autres attaquants, puis défenseur).",
+          ],
+        },
+        {
+          title: '6. Les 2 Modes de Comptage dans Ardoise',
+          items: [
+            "Mode Classique (+1 défaite) : Le Dourak de la manche reçoit 1 défaite (symbolisée par les bâtons de craie d'écolier). Le premier joueur à atteindre la limite fixée (ex: 5 défaites) perd la partie.",
+            "Mode Pénalité aux cartes : À la fin de la manche, le Dourak encaisse autant de points de pénalité qu'il lui reste de cartes en main (1 à 6 cartes). Le premier à atteindre le seuil éliminatoire (ex: 30 cartes) est le perdant.",
           ],
         },
       ],
@@ -65,7 +76,9 @@ export const GAME_META = {
         { item: 'Paquet utilisé', value: '36 cartes (6 à As)' },
         { item: 'Main de départ / Recharge', value: '6 cartes' },
         { item: 'Limite par assaut', value: '6 cartes max.' },
-        { item: 'Perdant de la manche', value: '+1 Dourak (ou cartes restantes)' },
+        { item: 'Mode Classique', value: '+1 défaite au Dourak (bâtons)' },
+        { item: 'Mode Pénalité cartes', value: '+1 pt par carte restante' },
+        { item: 'Fin de partie', value: 'Seuil atteint (min gagne)' },
       ],
     },
   },
@@ -179,18 +192,66 @@ export const GAME_META = {
     maxPlayers: 8,
     scoreDir: 'high',
     rules: {
-      objective:
-        "Être le premier à vider sa main pour devenir Président et accumuler le plus de points au fil des manches.",
-      gameplay:
-        "Ordre des cartes (de la plus faible à la plus forte) : 3, 4, 5, 6, 7, 8, 9, 10, Valet, Dame, Roi, As, et le 2 (qui coupe le pli). On pose des cartes simples, paires, brelans ou carrés de valeur supérieure ou égale. Avant chaque nouvelle manche, le Trou du cul donne ses 2 meilleures cartes au Président (qui lui rend 2 cartes de son choix) ; le Vice-Trou échange 1 carte avec le Vice-Président.",
-      scoring:
-        "Les rôles et points sont attribués dans l'ordre de sortie : Président (+2 pts), Vice-Président (+1 pt), Neutre (0 pt), Vice-Trou (-1 pt), Trou du cul (-2 pts).",
+      sections: [
+        {
+          title: '1. Informations générales & But',
+          items: [
+            'Nombre de joueurs : 3 à 8 joueurs (idéal à 4-6 joueurs).',
+            'Matériel : Un jeu de 54 cartes standard (avec ou sans Jokers).',
+            'Objectif : Être le premier à vider sa main pour devenir Président et accumuler le plus de points au fil des manches.',
+          ],
+        },
+        {
+          title: '2. Hiérarchie des cartes',
+          items: [
+            'Ordre croissant : 3 (plus faible), 4, 5, 6, 7, 8, 9, 10, Valet, Dame, Roi, As.',
+            "Le 2 : Carte maîtresse absolue qui bat n'importe quelle carte et coupe immédiatement le pli.",
+          ],
+        },
+        {
+          title: "3. Déroulement d'un tour",
+          items: [
+            'Le joueur qui a la main pose une carte simple, une paire, un brelan ou un carré.',
+            'Les joueurs suivants doivent poser le même nombre de cartes, avec une valeur égale ou supérieure (ex. : une paire supérieure sur une paire).',
+            "Passer son tour : Un joueur peut passer à tout moment même s'il peut jouer. Quand tous les joueurs passent consécutivement, le pli est vidé et le dernier joueur à avoir posé ouvre le nouveau pli.",
+          ],
+        },
+        {
+          title: '4. Règles spéciales : Le 2 et la Révolution',
+          items: [
+            "Le 2 : Poser un 2 (ou une paire de 2) coupe immédiatement le tour. Les cartes vont à la défausse et le joueur rejoue aussitôt ce qu'il souhaite.",
+            "Révolution (Carré de 4 cartes identiques) : Inverse la hiérarchie pour le reste de la manche ! Le 3 devient la carte la plus forte et l'As la plus faible (le 2 conserve généralement son pouvoir de coupe). Une seconde révolution remet l'ordre à l'endroit.",
+          ],
+        },
+        {
+          title: '5. Rôles et Échanges de début de manche',
+          items: [
+            'Les joueurs reçoivent leur rôle selon leur ordre de sortie lors de la manche précédente :',
+            '1er — Président : Reçoit les 2 meilleures cartes du Trou du cul et lui donne 2 cartes de son choix.',
+            '2e — Vice-Président : Reçoit la meilleure carte du Vice-Trou et lui donne 1 carte de son choix.',
+            'Milieu — Neutres : Aucun échange de cartes.',
+            'Avant-dernier — Vice-Trou : Donne obligatoirement sa meilleure carte au Vice-Président.',
+            'Dernier — Trou du cul : Donne obligatoirement ses 2 meilleures cartes au Président.',
+          ],
+        },
+        {
+          title: '6. Comptage des points dans Ardoise',
+          items: [
+            'Président : +2 points par manche.',
+            'Vice-Président : +1 point par manche.',
+            'Neutre : 0 point.',
+            'Vice-Trou : -1 point par manche.',
+            'Trou du cul : -2 points par manche.',
+          ],
+        },
+      ],
       summaryTable: [
         { item: '1er — Président', value: '+2 pts (reçoit 2 cartes)' },
         { item: '2e — Vice-Président', value: '+1 pt (reçoit 1 carte)' },
         { item: 'Milieu — Neutre', value: '0 pt' },
         { item: 'Avant-dernier — Vice-Trou', value: '-1 pt (donne 1 carte)' },
         { item: 'Dernier — Trou du cul', value: '-2 pts (donne 2 meilleures)' },
+        { item: 'Le 2 / Carré', value: 'Coupe le pli / Révolution' },
       ],
     },
   },
@@ -206,17 +267,62 @@ export const GAME_META = {
     scoreDir: 'low',
     endScore: 100,
     rules: {
-      objective:
-        "Avoir le total de points le plus faible possible à la fin de la partie, qui s'arrête dès qu'un joueur atteint ou dépasse 100 points.",
-      gameplay:
-        "Chaque joueur dispose de 12 cartes face cachée en grille de 4 colonnes × 3 lignes (valeurs de -2 à 12). À son tour, on pioche (pioche ou défausse) pour remplacer une carte ou retourner une carte cachée. Si les 3 cartes d'une même colonne sont visibles et strictement identiques, toute la colonne est défaussée (0 pt).",
-      scoring:
-        "Dès qu'un joueur retourne sa dernière carte, les autres jouent un dernier tour puis on additionne les cartes. Attention : le joueur qui a clôturé la manche doit avoir le score strictement le plus bas de la table ; sinon (même en cas d'égalité), son score de manche (s'il est positif) est doublé !",
+      sections: [
+        {
+          title: '1. Informations générales & Objectif',
+          items: [
+            'Nombre de joueurs : 2 à 8 joueurs.',
+            'Matériel : 150 cartes Skyjo numérotées de -2 à 12.',
+            'Objectif : Obtenir le total de points le plus bas possible au fil des manches. La partie s’arrête dès qu’un joueur atteint ou dépasse 100 points.',
+          ],
+        },
+        {
+          title: '2. Mise en place & Révélation initiale',
+          items: [
+            'Chaque joueur reçoit 12 cartes face cachée qu’il dispose devant lui en une grille de 4 colonnes × 3 lignes.',
+            'Le reste des cartes forme la pioche face cachée au centre, avec une première carte retournée pour ouvrir la défausse.',
+            'Tous les joueurs retournent 2 cartes de leur choix face visible. Le joueur ayant la somme la plus élevée commence la partie.',
+          ],
+        },
+        {
+          title: "3. Déroulement d'un tour",
+          content:
+            "À son tour, le joueur choisit obligatoirement entre piocher dans la pioche cachée ou dans la défausse visible :",
+          items: [
+            'Option Pioche cachée : Le joueur regarde la carte. Il peut soit l’échanger avec l’une des 12 cartes de sa grille (face visible ou cachée), soit la défausser directement pour retourner l’une de ses cartes cachées face visible.',
+            'Option Défausse visible : Le joueur prend la carte visible et l’échange obligatoirement avec une carte de sa grille.',
+          ],
+        },
+        {
+          title: '4. Règle des colonnes identiques (Défausse complète)',
+          items: [
+            'Dès qu’une colonne verticale de 3 cartes comporte 3 cartes face visible strictement identiques (ex. : trois cartes 8), cette colonne est immédiatement retirée du jeu et envoyée à la défausse.',
+            'Avantage clé : Cela élimine 3 cartes de sa grille et retire tous leurs points de son décompte final !',
+          ],
+        },
+        {
+          title: '5. Fin de manche & Règle clé du clôtureur',
+          items: [
+            'Dès qu’un joueur a révélé toutes ses 12 cartes (le Clôtureur), les autres joueurs disposent d’un ultime tour de jeu.',
+            'Chacun dévoile ensuite ses cartes cachées restantes et additionne tous les points de sa grille.',
+            'Malus du Clôtureur : Le joueur ayant fini en premier doit avoir STRICTEMENT le score le plus faible de la manche. S’il est égalé ou battu par un autre joueur, son score positif est automatiquement multiplié par 2 !',
+          ],
+        },
+        {
+          title: '6. Fin de partie & Vainqueur',
+          items: [
+            'Les points de chaque manche sont cumulés manche après manche.',
+            'Dès qu’un joueur atteint ou dépasse 100 points, la partie prend fin.',
+            'Le vainqueur est le joueur possédant le plus petit score cumulé.',
+          ],
+        },
+      ],
       summaryTable: [
-        { item: 'Colonne de 3 cartes identiques', value: 'Défaussée (0 pt)' },
-        { item: 'Clôtureur avec score strictement min.', value: 'Score normal' },
+        { item: 'Grille de départ', value: '12 cartes (4 colonnes × 3 lignes)' },
+        { item: 'Colonne de 3 identiques', value: 'Défaussée (0 pt)' },
+        { item: 'Clôtureur avec score min. strict', value: 'Score normal' },
         { item: 'Clôtureur battu ou égalé (score > 0)', value: 'Score × 2 (malus)' },
-        { item: 'Seuil de fin de partie', value: '100 points' },
+        { item: 'Seuil de fin de partie', value: '100 points (le plus bas gagne)' },
       ],
     },
   },
@@ -226,23 +332,61 @@ export const GAME_META = {
     playersBadge: '2 éq. (4 j.)',
     categoryBadge: '32 cartes',
     description:
-      "Le grand classique en 2 contre 2 : prenez l'atout, réalisez vos plis et atteignez votre contrat pour marquer les 162 points (ou réussir un Capot).",
+      "Le grand classique en 2 contre 2 : prenez l'atout, réalisez vos plis et atteignez votre contrat pour marquer les 162 points (ou réussir un Capot).",
     minPlayers: 2,
     maxPlayers: 4,
     scoreDir: 'high',
     teams: true,
     rules: {
-      objective:
-        "En équipe (Nous vs Eux), remplir les contrats annoncés en réalisant au moins 82 points sur les 162 points de la donne.",
-      gameplay:
-        "À l'atout : Valet (20 pts), 9 (14 pts), As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts). Hors atout : As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts), Valet (2 pts). Le dernier pli rapporte 10 pts (« dix de der »), soit un total de 162 points hors annonces.",
-      scoring:
-        "Si le preneur remplit son contrat (≥ 82 pts et ≥ contrat), l'équipe marque ses points + le contrat + les annonces (Belote-Rebelote +20). En cas de chute (« dedans »), la défense marque les 162 points + le contrat + les annonces. Capot (tous les plis) = 252 pts ; Générale (tous les plis par un seul joueur) = 500 pts.",
+      sections: [
+        {
+          title: '1. Informations générales & Équipes',
+          items: [
+            'Nombre de joueurs : 4 joueurs répartis en 2 équipes de 2 partenaires assis face à face (Nous vs Eux).',
+            'Matériel : Un jeu de 32 cartes (du 7 à l’As).',
+            'Objectif : Remplir les contrats annoncés en cumulant au fil des donnes le plus grand nombre de points (souvent jusqu’à 1000 ou 1500 points).',
+          ],
+        },
+        {
+          title: '2. Ordre et Valeur des cartes (162 pts)',
+          items: [
+            'À l’Atout : Valet (20 pts), 9 (14 pts), As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts), 8 et 7 (0 pt).',
+            'Hors Atout : As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts), Valet (2 pts), 9, 8 et 7 (0 pt).',
+            'Dix de der : 10 points bonus attribués à l’équipe qui remporte le 8e et dernier pli.',
+            'Total des levées : 152 points de cartes + 10 pts de der = exactement 162 points.',
+          ],
+        },
+        {
+          title: '3. Prise et Contrats (Belote vs Coinche)',
+          items: [
+            'Belote classique : Une carte est retournée au centre. Les joueurs choisissent tour à tour de la prendre (la couleur devient l’atout) ou de passer. Contrat minimal : réaliser au moins 82 points.',
+            'Coinche : Les joueurs enchérissent par paliers de 10 points (de 80 à 160) en annonçant la couleur d’atout. Possibilité de Contrer (« Coincher ») pour doubler les points, ou « Surcoincher » pour quadrupler.',
+            'Capot : Réaliser les 8 plis de la donne (vaut 252 points).',
+            'Générale (Coinche) : Un seul joueur réalise les 8 plis à lui tout seul (vaut 500 points).',
+          ],
+        },
+        {
+          title: '4. Annonces spéciales (Belote-Rebelote)',
+          items: [
+            'Belote et Rebelote (+20 pts) : Accordé au joueur possédant le Roi et la Dame d’atout. Il annonce « Belote » en posant la première carte, puis « Rebelote » en posant la seconde.',
+            'Ces 20 points sont inviolables : ils restent acquis même si l’équipe preneuse chute son contrat.',
+          ],
+        },
+        {
+          title: '5. Décompte des points & Chute (Dedans)',
+          items: [
+            'Contrat réussi : L’équipe preneuse marque ses points réalisés + le montant de son contrat + annonces. La défense marque ses points faits.',
+            'Chute (« Dedans ») : Si les preneurs font moins de 82 points (ou moins que leur enchère), ils ne marquent rien (sauf Belote éventuelle). La défense empoche les 162 points + le contrat + annonces.',
+          ],
+        },
+      ],
       summaryTable: [
         { item: 'Total des plis (avec 10 de der)', value: '162 pts' },
-        { item: 'Belote + Rebelote (Roi & Dame atout)', value: '+20 pts' },
-        { item: 'Capot (8 plis réalisés)', value: '252 pts' },
-        { item: 'Générale (8 plis d’une main)', value: '500 pts' },
+        { item: 'Belote + Rebelote (Roi & Dame atout)', value: '+20 pts inviolables' },
+        { item: 'Contrat minimum (Belote classique)', value: '82 pts' },
+        { item: 'Capot (tous les 8 plis)', value: '252 pts' },
+        { item: 'Générale (Coinche)', value: '500 pts' },
+        { item: 'Chute (« Dedans »)', value: 'Défense prend les 162 pts + contrat' },
       ],
     },
   },
@@ -252,49 +396,136 @@ export const GAME_META = {
     playersBadge: '3–5 j.',
     categoryBadge: '78 cartes',
     description:
-      "Le Preneur défie la table : capturez les Bouts (le Petit, le 21, l'Excuse) et remportez un maximum de plis pour faire passer votre Garde face à la Défense.",
+      "Le Preneur défie la table : capturez les Bouts (le Petit, le 21, l'Excuse) et remportez un maximum de plis pour faire passer votre Garde face à la Défense.",
     minPlayers: 3,
     maxPlayers: 5,
     scoreDir: 'high',
     rules: {
-      objective:
-        "Le preneur (seul à 3 ou 4 joueurs, ou avec un partenaire appelé au Roi à 5 joueurs) doit atteindre un seuil de points dépendant du nombre de Bouts (21, Petit, Excuse) dans ses plis.",
-      gameplay:
-        "Le jeu totalise 91 points. Le seuil à atteindre par l'attaque dépend des Bouts : 0 bout = 56 pts, 1 bout = 51 pts, 2 bouts = 41 pts, 3 bouts = 36 pts. Les enchères déterminent le coefficient : Petite (×1), Garde (×2), Garde Sans le chien (×4), Garde Contre le chien (×6).",
-      scoring:
-        "Score de base = (25 + écart au seuil) × coefficient du contrat. Si le Petit est mené au bout (dernier pli), bonus/malus de 10 × coefficient. Chaque défenseur donne (ou reçoit en cas de chute) ce total au preneur (à somme nulle).",
+      sections: [
+        {
+          title: '1. Matériel & Total des points',
+          items: [
+            'Nombre de joueurs : 3, 4 ou 5 joueurs (seul contre tous à 3 ou 4 j. ; preneur avec partenaire appelé au Roi à 5 j.).',
+            'Matériel : Un jeu de 78 cartes comprenant 21 atouts numérotés, l’Excuse, et 4 couleurs de 14 cartes (Roi, Dame, Cavalier, Valet, 10 à As).',
+            'Total des levées : 91 points au total sur l’ensemble de la donne.',
+          ],
+        },
+        {
+          title: '2. Les 3 Bouts (Oudlers) et Seuils à atteindre',
+          items: [
+            'Les Bouts : Le 21 d’atout, le Petit (1 d’atout) et l’Excuse valent 4,5 points chacun.',
+            'Le seuil minimal à atteindre par l’Attaque dépend du nombre de Bouts dans ses levées :',
+            '3 Bouts : 36 points nécessaires.',
+            '2 Bouts : 41 points nécessaires.',
+            '1 Bout : 51 points nécessaires.',
+            '0 Bout : 56 points nécessaires.',
+          ],
+        },
+        {
+          title: '3. Les Enchères et Coefficients',
+          items: [
+            'Petite : Coefficient ×1 (avec Chien incorporé).',
+            'Garde : Coefficient ×2 (avec Chien incorporé).',
+            'Garde Sans le chien : Coefficient ×4 (Chien acquis au preneur sans être regardé ni échangé).',
+            'Garde Contre le chien : Coefficient ×6 (Chien laissé à la Défense).',
+          ],
+        },
+        {
+          title: '4. Primes : Petit au bout, Poignées & Chelem',
+          items: [
+            'Petit au bout (±10 pts × coef) : Accordé au camp qui remporte le 18e et dernier pli de la donne avec le Petit (1 d’atout).',
+            'Poignées : Annoncées au 1er tour par un joueur détenant 10 atouts (Simple = 20 pts), 13 atouts (Double = 30 pts) ou 15 atouts (Triple = 40 pts).',
+            'Chelem : Réaliser tous les plis de la donne (prime de 200 à 400 pts).',
+          ],
+        },
+        {
+          title: '5. Calcul officiel des scores (Somme nulle)',
+          items: [
+            'Formule : Score = (25 + |Points faits - Seuil|) × Coeff + Prime Petit au bout.',
+            'À 3 ou 4 joueurs : Le Preneur gagne (ou perd) ce score multiplié par le nombre de défenseurs, chaque défenseur recevant (ou donnant) le score de base.',
+            'À 5 joueurs (Appel au Roi) : Le Preneur marque ×2, son Partenaire secret marque ×1, et les 3 Défenseurs marquent -1 chacun.',
+          ],
+        },
+      ],
       summaryTable: [
         { item: 'Seuils (0 / 1 / 2 / 3 Bouts)', value: '56 / 51 / 41 / 36 pts' },
         { item: 'Petite / Garde', value: '×1 / ×2' },
         { item: 'Garde Sans / Garde Contre', value: '×4 / ×6' },
-        { item: 'Petit au bout (1er atout au 18e pli)', value: '±10 pts × coeff.' },
+        { item: 'Petit au bout (au 18e pli)', value: '±10 pts × coeff.' },
+        { item: 'Total des points en jeu', value: '91 points (somme nulle)' },
       ],
     },
   },
   [GAMES.SIX_QUI_PREND]: {
     id: GAMES.SIX_QUI_PREND,
-    name: '6 qui prend !',
+    name: '6 qui prend !',
     playersBadge: '2–10 j.',
     categoryBadge: 'Jeu 6 qui prend',
     description:
-      "Placez vos numéros sur les rangées dans l'ordre croissant sans jamais poser la 6ᵉ carte, sous peine de ramasser toute la ligne et ses têtes de bœuf !",
+      "Placez vos numéros sur les rangées dans l'ordre croissant sans jamais poser la 6ᵉ carte, sous peine de ramasser toute la ligne et ses têtes de bœuf !",
     minPlayers: 2,
     maxPlayers: 10,
     scoreDir: 'low',
     eliminationScore: 66,
     rules: {
-      objective:
-        "Récolter le moins de têtes de bœuf (points de pénalité) possible. La partie prend fin dès qu'un joueur atteint ou dépasse 66 têtes de bœuf.",
-      gameplay:
-        "10 cartes par joueur, 4 rangées au centre. À chaque tour, tous choisissent une carte simultanément et les placent par ordre croissant sur la rangée dont la dernière carte est inférieure avec le plus petit écart. Si un joueur pose la 6e carte d'une rangée (ou une carte plus faible que toutes les rangées), il ramasse les cartes de la rangée et sa carte en devient la première.",
-      scoring:
-        "Chaque carte ramassée vaut un nombre de têtes de bœuf : Carte 55 = 7 têtes ; Doublons (11, 22, 33...) = 5 têtes ; Multiples de 10 (10, 20, 30...) = 3 têtes ; Multiples de 5 (5, 15, 25...) = 2 têtes ; Autres cartes = 1 tête.",
+      sections: [
+        {
+          title: '1. Informations générales & But',
+          items: [
+            'Nombre de joueurs : 2 à 10 joueurs.',
+            'Matériel : 104 cartes numérotées de 1 à 104 comportant des têtes de bœuf (points de pénalité).',
+            'Objectif : Récolter le moins de têtes de bœuf possible. La partie s’arrête dès qu’un joueur atteint ou dépasse 66 points.',
+          ],
+        },
+        {
+          title: '2. Mise en place & Choix simultané',
+          items: [
+            'Chaque joueur reçoit 10 cartes en main.',
+            '4 cartes sont tirées de la pioche et disposées face visible au centre de la table pour démarrer 4 rangées distinctes.',
+            'À chaque tour, tous les joueurs choisissent simultanément une carte de leur main et la posent face cachée devant eux.',
+            'Une fois tout le monde prêt, les cartes sont révélées en même temps.',
+          ],
+        },
+        {
+          title: '3. Ordre de pose sur les rangées',
+          items: [
+            'Les cartes révélées sont jouées dans l’ordre numérique croissant (de la plus petite à la plus grande valeur).',
+            'Chaque carte doit être placée sur la rangée dont la dernière carte est inférieure avec la plus petite différence de valeur.',
+          ],
+        },
+        {
+          title: '4. Règle de la 6e carte & Carte trop basse',
+          items: [
+            'La 6e carte (Ramassage) : Une rangée ne peut contenir que 5 cartes maximum. Si un joueur doit poser la 6e carte d’une rangée, il ramasse obligatoirement les 5 cartes de la rangée (qui forment son tas de pénalités) et sa carte devient la 1re de la nouvelle rangée !',
+            'Carte inférieure à toutes les rangées : Si la carte d’un joueur est plus petite que la dernière carte de chacune des 4 rangées, il doit choisir librement l’une des 4 rangées, en ramasser toutes les cartes, et placer sa carte à la place.',
+          ],
+        },
+        {
+          title: '5. Barème des têtes de bœuf',
+          items: [
+            'Carte 55 : 7 têtes de bœuf (la plus redoutable !).',
+            'Doublons (11, 22, 33, 44, 66, 77, 88, 99) : 5 têtes de bœuf.',
+            'Multiples de 10 (10, 20, 30, 40, 50, 60, 70, 80, 90, 100) : 3 têtes de bœuf.',
+            'Multiples de 5 (5, 15, 25, 35, 45, 65, 75, 85, 95) : 2 têtes de bœuf.',
+            'Toutes les autres cartes : 1 tête de bœuf.',
+          ],
+        },
+        {
+          title: '6. Fin de manche & Vainqueur',
+          items: [
+            'Une manche dure 10 tours (jusqu’à épuisement des mains). Chacun compte ses têtes de bœuf ramassées.',
+            'Dès qu’un joueur atteint ou dépasse le seuil éliminatoire de 66 têtes de bœuf, la partie prend fin.',
+            'Le vainqueur est le joueur qui a cumulé le plus petit total de têtes de bœuf.',
+          ],
+        },
+      ],
       summaryTable: [
-        { item: 'Carte 55', value: '7 têtes' },
+        { item: 'Carte 55', value: '7 têtes de bœuf' },
         { item: 'Doublons (11, 22, 33, 44…)', value: '5 têtes' },
-        { item: 'Multiples de 10 (10, 20, 30…)', value: '3 têtes' },
-        { item: 'Multiples de 5 (5, 15, 25…)', value: '2 têtes' },
-        { item: 'Autres cartes / Fin de partie', value: '1 tête / 66 têtes' },
+        { item: 'Multiples de 10 (10, 20…)', value: '3 têtes' },
+        { item: 'Multiples de 5 (5, 15…)', value: '2 têtes' },
+        { item: 'Autres cartes', value: '1 tête' },
+        { item: 'Seuil de fin de partie', value: '66 têtes (le plus bas gagne)' },
       ],
     },
   },
@@ -308,15 +539,42 @@ export const GAME_META = {
     maxPlayers: 12,
     scoreDir: 'configurable',
     rules: {
-      objective:
-        "Noter librement les points manche après manche pour n'importe quel jeu de cartes ou de société (Uno, Rami, Scrabble, Molky, Flip 7, etc.).",
-      gameplay:
-        "Choisissez à la création de la partie entre deux règles de classement : soit le score le plus élevé l'emporte, soit le score le plus faible gagne avec un seuil d'élimination paramétrable (50, 100, 150 ou 200 pts).",
-      scoring:
-        "Utilisez le pavé tactile rapide (+1, +5, +10, -1, 0) pour saisir les points de chaque joueur d'une seule main à la fin de chaque manche.",
+      sections: [
+        {
+          title: '1. Présentation & Polyvalence',
+          items: [
+            'Ardoise de score universelle tout-terrain pour tous vos jeux de société et de cartes : Uno, Rami, Scrabble, Mölkky, Flip 7, Qwirkle, Mille Bornes, 1000 Bornes, etc.',
+            'Permet d’accueillir de 2 à 12 joueurs avec leurs avatars personnalisés.',
+          ],
+        },
+        {
+          title: '2. Choix du mode de décompte',
+          items: [
+            'Mode Score Élevé (Course aux points) : Les points s’additionnent et le total le plus haut l’emporte (ex. : Scrabble, Rami, Belote libre).',
+            'Mode Seuil Éliminatoire (Pénalités) : Chaque manche ajoute des pénalités. Le premier joueur à franchir le seuil paramétré (50, 100, 150 ou 200 pts) est éliminé ou met fin à la partie. Le score le plus bas l’emporte (ex. : Uno).',
+          ],
+        },
+        {
+          title: '3. Option de Règle Spéciale (Sursis personnalisé)',
+          items: [
+            'Division par 2 au seuil : Si un joueur atteint EXACTEMENT le seuil fixé, son score est divisé par 2 (style Caracole).',
+            'Remise à zéro : Si un joueur atteint pile le seuil, son score retombe à zéro.',
+            'Dépassement strict : Tout score supérieur au seuil entraîne la défaite.',
+          ],
+        },
+        {
+          title: '4. Modèles de jeux enregistrés',
+          items: [
+            'Vous pouvez nommer et enregistrer vos configurations de jeux favorites (nom du jeu, seuil, règles).',
+            'Vos modèles sauvegardés apparaissent directement sur l’accueil pour relancer une partie en un seul tap.',
+          ],
+        },
+      ],
       summaryTable: [
         { item: 'Mode Score élevé', value: 'Le plus grand total gagne' },
         { item: 'Mode Seuil éliminatoire', value: 'Le plus petit total gagne' },
+        { item: 'Règle spéciale de sursis', value: 'Divisé par 2 ou remise à 0 au seuil' },
+        { item: 'Modèles personnalisés', value: 'Sauvegarde réutilisable en 1 clic' },
       ],
     },
   },

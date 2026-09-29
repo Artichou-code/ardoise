@@ -53,10 +53,14 @@ Tarif : 100 % Gratuit, sans publicité, sans abonnement, fonctionnel hors-ligne.
   - Le joueur ayant le plus petit atout commence en tant qu'**Attaquant**. Le joueur à sa gauche est le **Défenseur**.
   - L'attaquant pose une carte. Le défenseur doit la battre avec une carte supérieure de la même couleur, ou avec un atout. Si l'attaque est un atout, seul un atout supérieur peut la battre.
   - Les autres joueurs (ou l'attaquant) peuvent ajouter des cartes de même valeur faciale que celles déjà posées sur la table (maximum 6 cartes par assaut, limité au nombre de cartes en main du défenseur).
+  - **Variante Transfert (Perevodnoy)** : avant de défendre, poser une carte de même valeur pour transférer l'attaque au joueur suivant.
 - **Résolution & Recharge** :
   - **Défense réussie** : les cartes jouées vont à la défausse (*Otboy*) et le défenseur devient le nouvel attaquant.
   - **Défense échouée (Abandon)** : le défenseur ramasse toutes les cartes posées sur la table et passe son tour d'attaque.
-  - **Recharge** : après chaque pli, chaque joueur repioche pour remonter à 6 cartes (attaquant d'abord, défenseur en dernier) tant que la pioche n'est pas vide.
+  - **Recharge** : après chaque pli, chaque joueur repioche pour remonter à 6 cartes tant que la pioche n'est pas vide.
+- **Les 2 Modes de Comptage dans Ardoise** :
+  - **Mode Classique (+1 défaite)** : Le Dourak reçoit 1 défaite par manche (marquée en bâtons de craie d'écolier). Le premier au seuil fixé (ex: 5 défaites) perd la partie.
+  - **Mode Pénalité aux cartes** : Le Dourak encaisse autant de points de pénalité qu'il lui reste de cartes en main (1 à 6 cartes). Le premier à atteindre le seuil de points (ex: 30 cartes) perd la partie.
 
 ---
 
