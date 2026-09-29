@@ -157,7 +157,7 @@ export function HistoryScreen() {
         <h1 className="flex-1 font-serif-title font-bold text-lg truncate">
           {isSelectionMode
             ? `${selectedIds.length} sélectionnée${selectedIds.length > 1 ? 's' : ''}`
-            : 'Archives des parties'}
+            : 'Historique'}
         </h1>
 
         {isSelectionMode ? (

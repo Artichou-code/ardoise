@@ -112,8 +112,8 @@ export function PlayersScreen() {
         >
           <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
         </button>
-        <h1 className="flex-1 font-serif-title font-bold text-lg">
-          Carnet de joueurs
+        <h1 className="flex-1 font-serif-title font-bold text-lg truncate">
+          Joueurs
         </h1>
         <button
           type="button"

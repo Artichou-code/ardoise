@@ -69,7 +69,7 @@ export function TrophiesScreen() {
 
         <div className="flex-1 min-w-0">
           <h1 className="font-serif-title font-bold text-lg leading-tight truncate">
-            Guide des trophées
+            Trophées
           </h1>
         </div>
 
