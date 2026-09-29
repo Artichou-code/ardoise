@@ -46,8 +46,8 @@ export function SkyjoEngine({ game, onFinish }) {
     <div className="space-y-4 pt-2">
       {/* Sélection du fermeur */}
       <div className="school-card rounded-xl p-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-3">
-          Joueur ayant retourné sa dernière carte
+        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
+          Clôtureur de la manche
         </p>
         <div className={`grid gap-2 ${
           game.players.length === 2 ? 'grid-cols-2' :
