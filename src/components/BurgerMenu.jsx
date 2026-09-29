@@ -10,6 +10,7 @@ import {
   Scale,
   Sun,
   Moon,
+  Share2,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useTheme } from '../context/ThemeContext'
@@ -21,6 +22,7 @@ export function BurgerMenu({
   onClose,
   onNavigate,
   onOpenLiveSession,
+  onOpenShareGames,
   onOpenSync,
   onOpenRules,
   onOpenLegal,
@@ -260,7 +262,25 @@ export function BurgerMenu({
                     )}
                   </div>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    {liveSession ? `Salon : ${liveSession.name}` : 'Jouer ensemble sur plusieurs écrans'}
+                    {liveSession ? `Salon : ${liveSession.name}` : 'Synchroniser les parties en temps réel'}
+                  </p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleAction(onOpenShareGames)}
+                className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
+              >
+                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-transform">
+                  <Share2 size={16} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
+                    Partager des parties
+                  </p>
+                  <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
+                    Envoyer ou importer un lot par QR code
                   </p>
                 </div>
               </button>

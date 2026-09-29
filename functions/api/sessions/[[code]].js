@@ -57,7 +57,7 @@ export async function onRequest(context) {
     // 2. GET : Récupérer l'état de la session
     if (request.method === 'GET') {
       const row = await env.DB.prepare(
-        'SELECT session_code, host_name, state_json, updated_at FROM live_sessions WHERE session_code = ?'
+        'SELECT session_code, host_name, state_json, closed, updated_at FROM live_sessions WHERE session_code = ?'
       )
         .bind(sessionCode)
         .first();
@@ -66,32 +66,70 @@ export async function onRequest(context) {
         return Response.json({ error: 'Session introuvable' }, { status: 404, headers: corsHeaders });
       }
 
+      const parsedState = JSON.parse(row.state_json || '{}');
+      const isClosed = Boolean(row.closed || parsedState.closed);
+      parsedState.closed = isClosed;
+
       return Response.json(
         {
           success: true,
           sessionCode: row.session_code,
           hostName: row.host_name,
-          state: JSON.parse(row.state_json),
+          closed: isClosed,
+          state: parsedState,
           updatedAt: row.updated_at,
         },
         { headers: corsHeaders }
       );
     }
 
-    // 3. POST : Mettre à jour l'état de la session
+    // 3. POST : Mettre à jour ou clôturer la session
     if (request.method === 'POST') {
       const body = await request.json();
-      const stateJson = typeof body.state === 'string' ? body.state : JSON.stringify(body.state);
+
+      if (body.action === 'close') {
+        const existing = await env.DB.prepare(
+          'SELECT state_json FROM live_sessions WHERE session_code = ?'
+        )
+          .bind(sessionCode)
+          .first();
+
+        let currentState = {};
+        if (existing && existing.state_json) {
+          try {
+            currentState = JSON.parse(existing.state_json);
+          } catch {}
+        }
+        if (body.state && typeof body.state === 'object') {
+          currentState = { ...currentState, ...body.state };
+        }
+        currentState.closed = true;
+        currentState.closedAt = new Date().toISOString();
+
+        await env.DB.prepare(
+          `UPDATE live_sessions
+           SET closed = 1, state_json = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE session_code = ?`
+        )
+          .bind(JSON.stringify(currentState), sessionCode)
+          .run();
+
+        return Response.json({ success: true, sessionCode, closed: true, state: currentState }, { headers: corsHeaders });
+      }
+
+      const stateObj = typeof body.state === 'string' ? JSON.parse(body.state) : (body.state || {});
+      const isClosed = Boolean(stateObj.closed);
+      const stateJson = JSON.stringify(stateObj);
 
       await env.DB.prepare(
         `UPDATE live_sessions
-         SET state_json = ?, updated_at = CURRENT_TIMESTAMP
+         SET state_json = ?, closed = CASE WHEN ? THEN 1 ELSE closed END, updated_at = CURRENT_TIMESTAMP
          WHERE session_code = ?`
       )
-        .bind(stateJson, sessionCode)
+        .bind(stateJson, isClosed ? 1 : 0, sessionCode)
         .run();
 
-      return Response.json({ success: true, sessionCode }, { headers: corsHeaders });
+      return Response.json({ success: true, sessionCode, closed: isClosed }, { headers: corsHeaders });
     }
 
     return Response.json({ error: 'Méthode non autorisée' }, { status: 405, headers: corsHeaders });

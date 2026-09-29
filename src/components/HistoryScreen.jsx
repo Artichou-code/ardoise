@@ -1,17 +1,19 @@
 import { useState } from 'react'
-import { ArrowLeft, Trash2, Play, History, FileText, ChevronRight, BarChart3 } from 'lucide-react'
+import { ArrowLeft, Trash2, Play, History, FileText, ChevronRight, BarChart3, Share2 } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { Avatar } from './ui/Avatar'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { ConfirmDialog } from './ui/Dialog'
 import { GameDetailSheet } from './GameDetailSheet'
+import { ShareGamesModal } from './ShareGamesModal'
 import { getRanking, formatDate, formatDuration } from '../utils/gameUtils'
 
 export function HistoryScreen() {
   const { games, setScreen, removeGame, resumeGame, createGame } = useGame()
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [detailGame, setDetailGame] = useState(null)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
 
   const sorted = [...games].sort((a, b) => (b.updatedAt || b.startedAt) - (a.updatedAt || a.startedAt))
 
@@ -26,9 +28,18 @@ export function HistoryScreen() {
         >
           <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
         </button>
-        <h1 className="flex-1 font-serif-title font-bold text-lg">
+        <h1 className="flex-1 font-serif-title font-bold text-lg truncate">
           Archives des parties
         </h1>
+        <button
+          type="button"
+          onClick={() => setIsShareModalOpen(true)}
+          className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:border-[#c83b3b] hover:text-[#c83b3b] text-xs font-bold text-stone-700 dark:text-slate-300 transition-colors cursor-pointer"
+          title="Partager ou importer des parties"
+        >
+          <Share2 size={15} className="text-[#c83b3b]" />
+          <span className="hidden sm:inline">Partager</span>
+        </button>
         <button
           type="button"
           onClick={() => setScreen('stats')}
@@ -202,6 +213,14 @@ export function HistoryScreen() {
         message="Cette action supprimera définitivement cette feuille de score."
         confirmLabel="Supprimer"
         danger
+      />
+
+      <ShareGamesModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        onOpenImportGames={(importedGames) => {
+          window.dispatchEvent(new CustomEvent('ardoise-open-import-games', { detail: importedGames }))
+        }}
       />
     </div>
   )

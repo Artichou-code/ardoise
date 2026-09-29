@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Cloud, Radio, Menu } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Cloud, Radio, Menu, Share2, CheckCircle2, X } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
@@ -10,6 +10,7 @@ import { GameDetailSheet } from './GameDetailSheet'
 import { LegalModal } from './LegalModal'
 import { SyncModal } from './SyncModal'
 import { LiveSessionModal } from './LiveSessionModal'
+import { ShareGamesModal } from './ShareGamesModal'
 import { BurgerMenu } from './BurgerMenu'
 import { ArtCreaLogo } from './ui/ArtCreaLogo'
 import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
@@ -19,7 +20,7 @@ import { formatTypography } from '../utils/typography'
 import { getActiveSession } from '../store/liveSession'
 
 export function HomeScreen() {
-  const { games, setScreen, resumeGame, customPresets, deletePreset, createGame, reloadStorage } = useGame()
+  const { games, setScreen, resumeGame, customPresets, deletePreset, createGame, reloadStorage, liveSessionNotice, setLiveSessionNotice } = useGame()
   const [setupGame, setSetupGame] = useState(null)
   const [setupPreset, setSetupPreset] = useState(null)
   const [rulesGame, setRulesGame] = useState(null)
@@ -28,8 +29,17 @@ export function HomeScreen() {
   const [isArtCreaModalOpen, setIsArtCreaModalOpen] = useState(false)
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
+  const [isShareGamesModalOpen, setIsShareGamesModalOpen] = useState(false)
   const [isBurgerMenuOpen, setIsBurgerMenuOpen] = useState(false)
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
+
+  useEffect(() => {
+    const handleSessionChanged = (e) => {
+      setLiveSession(e.detail)
+    }
+    window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
+    return () => window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
+  }, [])
 
   const activeGames = games.filter(g => g.status === 'active')
   const finishedGames = games.filter(g => g.status === 'finished').slice(0, 3)
@@ -109,6 +119,25 @@ export function HomeScreen() {
 
       {/* Corps scrollable */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">
+        {/* Notification de clôture de Table en direct */}
+        {liveSessionNotice && (
+          <div className="mb-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-start justify-between gap-2 text-xs">
+            <div className="flex items-start gap-2">
+              <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <span className="text-stone-800 dark:text-slate-200 font-medium leading-snug">
+                {liveSessionNotice}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setLiveSessionNotice(null)}
+              className="p-1 text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 shrink-0 cursor-pointer"
+            >
+              <X size={13} />
+            </button>
+          </div>
+        )}
+
         {/* Bannière Session Journée Active */}
         {liveSession && (
           <div
@@ -345,13 +374,23 @@ export function HomeScreen() {
                   Dernières parties
                 </h2>
               </div>
-              <button
-                type="button"
-                onClick={() => setScreen('history')}
-                className="text-xs font-semibold text-[#c83b3b] flex items-center gap-0.5"
-              >
-                Tout voir <ChevronRight size={14} />
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsShareGamesModalOpen(true)}
+                  className="text-xs font-semibold text-stone-600 dark:text-slate-300 hover:text-[#c83b3b] flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <Share2 size={12} className="text-[#c83b3b]" />
+                  <span>Partager</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setScreen('history')}
+                  className="text-xs font-semibold text-[#c83b3b] flex items-center gap-0.5 cursor-pointer"
+                >
+                  Tout voir <ChevronRight size={14} />
+                </button>
+              </div>
             </div>
             <div className="space-y-2">
               {finishedGames.map(game => {
@@ -496,12 +535,22 @@ export function HomeScreen() {
         onSessionChanged={(s) => setLiveSession(s)}
       />
 
+      {/* Modale de partage et d'import de lots de parties */}
+      <ShareGamesModal
+        isOpen={isShareGamesModalOpen}
+        onClose={() => setIsShareGamesModalOpen(false)}
+        onOpenImportGames={(importedGames) => {
+          window.dispatchEvent(new CustomEvent('ardoise-open-import-games', { detail: importedGames }))
+        }}
+      />
+
       {/* Menu Burger latéral complet (Statistiques, Historique, Joueurs, Synchro, Direct, Règles) */}
       <BurgerMenu
         isOpen={isBurgerMenuOpen}
         onClose={() => setIsBurgerMenuOpen(false)}
         onNavigate={(screen) => setScreen(screen)}
         onOpenLiveSession={() => setIsLiveModalOpen(true)}
+        onOpenShareGames={() => setIsShareGamesModalOpen(true)}
         onOpenSync={() => setIsSyncModalOpen(true)}
         onOpenRules={() => setRulesGame(sortedGames[0]?.id || 'belote')}
         onOpenLegal={(tab) => setLegalTab(tab || 'mentions')}

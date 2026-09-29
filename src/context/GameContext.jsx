@@ -14,6 +14,9 @@ import {
 } from '../store/syncStorage'
 import {
   getActiveSession,
+  fetchLiveSession,
+  syncSessionGamesToLocal,
+  clearActiveSession,
   pushGameToLiveSession
 } from '../store/liveSession'
 import { GAME_META } from '../constants/games'
@@ -35,7 +38,9 @@ export function GameProvider({ children }) {
   const [customPresets, setCustomPresets] = useState(() => loadCustomPresets())
   const [activeGameId, setActiveGameId] = useState(() => loadActiveGameId())
   const [screen, setScreen] = useState('home') // home | game | history | victory | stats | players
+  const [liveSessionNotice, setLiveSessionNotice] = useState(null)
   const historyRef = useRef([]) // undo stack
+  const lastSessionSignatureRef = useRef('')
 
   const activeGame = (Array.isArray(games) ? games : []).find(g => g && g.id === activeGameId) || null
 
@@ -61,6 +66,43 @@ export function GameProvider({ children }) {
         .then(() => reloadStorage())
         .catch(() => {})
     }
+  }, [reloadStorage])
+
+  // Synchronisation automatique en arrière-plan si une Table en direct est active
+  useEffect(() => {
+    const checkLiveSession = async () => {
+      const current = getActiveSession()
+      if (!current || !current.code) return
+
+      try {
+        const data = await fetchLiveSession(current.code)
+        const remoteGames = Array.isArray(data?.state?.games) ? data.state.games : []
+        const isClosed = Boolean(data?.closed || data?.state?.closed)
+
+        const sig = `${isClosed}-${remoteGames.map(g => `${g.id}:${g.rounds?.length || 0}:${g.status}`).join(',')}`
+        if (sig !== lastSessionSignatureRef.current) {
+          lastSessionSignatureRef.current = sig
+          const stats = syncSessionGamesToLocal(data)
+          reloadStorage()
+
+          if (isClosed) {
+            clearActiveSession()
+            const count = stats.syncedCount || remoteGames.length
+            setLiveSessionNotice(
+              count > 0
+                ? `La table «\u00A0${current.name}\u00A0» a été clôturée. ${count} partie${count > 1 ? 's ont été enregistrées' : ' a été enregistrée'} dans votre carnet\u00A0!`
+                : `La table «\u00A0${current.name}\u00A0» a été clôturée par l'hôte.`
+            )
+          }
+        }
+      } catch {
+        // Ignorer les erreurs réseau temporaires
+      }
+    }
+
+    checkLiveSession()
+    const interval = setInterval(checkLiveSession, 4500)
+    return () => clearInterval(interval)
   }, [reloadStorage])
 
   // Save game helper
@@ -99,6 +141,12 @@ export function GameProvider({ children }) {
     persistGame(game)
     setActiveGameId(game.id)
     setScreen('game')
+
+    const liveSession = getActiveSession()
+    if (liveSession && liveSession.code) {
+      pushGameToLiveSession(liveSession.code, game).catch(() => {})
+    }
+
     return game
   }, [persistGame])
 
@@ -114,6 +162,11 @@ export function GameProvider({ children }) {
       updatedAt: Date.now(),
     }
     persistGame(updated)
+
+    const liveSession = getActiveSession()
+    if (liveSession && liveSession.code) {
+      pushGameToLiveSession(liveSession.code, updated).catch(() => {})
+    }
   }, [activeGame, persistGame])
 
   // Undo
@@ -219,6 +272,7 @@ export function GameProvider({ children }) {
       createGame, updateScores, undoLastRound, canUndo,
       finishGame, rematch, exitGame, removeGame, resumeGame,
       reloadStorage,
+      liveSessionNotice, setLiveSessionNotice,
     }}>
       {children}
     </GameContext.Provider>

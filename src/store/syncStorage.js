@@ -143,22 +143,50 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
     }
   }
 
-  // 2. Fusion des joueurs par ID ou nom normalisé
+  // 2. Fusion des joueurs par nom normalisé (inclut les joueurs présents dans les parties importées)
   const playersMap = new Map()
   for (const p of localPlayers) {
     if (p && p.name) playersMap.set(p.name.trim().toLowerCase(), p)
   }
 
-  for (const p of incomingPlayers) {
+  const allIncomingPlayers = [...incomingPlayers]
+  for (const g of incomingGames) {
+    if (g && Array.isArray(g.players)) {
+      for (const gp of g.players) {
+        if (gp && gp.name) {
+          const norm = gp.name.trim().toLowerCase()
+          if (norm !== 'nous' && norm !== 'eux') {
+            allIncomingPlayers.push(gp)
+          }
+        }
+      }
+    }
+  }
+
+  for (const p of allIncomingPlayers) {
     if (!p || !p.name) continue
     const key = p.name.trim().toLowerCase()
+    if (key === 'nous' || key === 'eux') continue
     if (!playersMap.has(key)) {
-      playersMap.set(key, p)
+      playersMap.set(key, {
+        id: p.id || `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        name: p.name.trim(),
+        color: p.color || '#c83b3b',
+        avatar: p.avatar !== undefined ? p.avatar : null,
+        createdAt: p.createdAt || Date.now(),
+      })
       playersAdded++
     } else {
-      // Conserver les détails enrichis (avatar, couleur)
+      // Conserver la couleur et l'avatar du joueur importé
       const existing = playersMap.get(key)
-      playersMap.set(key, { ...p, ...existing })
+      playersMap.set(key, {
+        ...existing,
+        ...p,
+        id: existing.id,
+        name: existing.name,
+        color: p.color || existing.color,
+        avatar: p.avatar !== undefined ? p.avatar : existing.avatar,
+      })
     }
   }
 
@@ -176,8 +204,8 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
   }
 
   const mergedGames = Array.from(gamesMap.values()).sort((a, b) => {
-    const timeA = new Date(a.endedAt || a.startedAt || 0).getTime()
-    const timeB = new Date(b.endedAt || b.startedAt || 0).getTime()
+    const timeA = new Date(a.finishedAt || a.endedAt || a.startedAt || 0).getTime()
+    const timeB = new Date(b.finishedAt || b.endedAt || b.startedAt || 0).getTime()
     return timeB - timeA
   })
 
@@ -198,6 +226,123 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
       totalGames: mergedGames.length,
       totalPlayers: mergedPlayers.length,
     },
+  }
+}
+
+/**
+ * Détecte les joueurs des parties entrantes qui portent le même prénom qu'un joueur local
+ */
+export function detectPlayerConflicts(incomingGames = []) {
+  const localPlayers = loadPlayers()
+  const localByName = new Map()
+  for (const lp of localPlayers) {
+    if (lp && lp.name) {
+      localByName.set(lp.name.trim().toLowerCase(), lp)
+    }
+  }
+
+  const conflictsMap = new Map()
+  const newPlayersMap = new Map()
+
+  for (const g of incomingGames) {
+    if (!g || !Array.isArray(g.players)) continue
+    for (const gp of g.players) {
+      if (!gp || !gp.name) continue
+      const key = gp.name.trim().toLowerCase()
+      if (key === 'nous' || key === 'eux') continue
+
+      if (localByName.has(key)) {
+        const localPlayer = localByName.get(key)
+        if (!conflictsMap.has(key)) {
+          conflictsMap.set(key, {
+            key,
+            name: gp.name.trim(),
+            incomingPlayer: gp,
+            localPlayer,
+          })
+        }
+      } else if (!newPlayersMap.has(key)) {
+        newPlayersMap.set(key, gp)
+      }
+    }
+  }
+
+  return {
+    conflicts: Array.from(conflictsMap.values()),
+    newPlayers: Array.from(newPlayersMap.values()),
+  }
+}
+
+/**
+ * Importe une liste de parties en appliquant les choix de résolution de doublons de joueurs
+ * @param {Array} incomingGames - Parties à importer
+ * @param {Object} resolutions - Map { [normalizedName]: 'merge' | 'separate' }
+ */
+export function importGamesWithResolution(incomingGames = [], resolutions = {}) {
+  const local = exportNotebookPayload()
+  const localPlayers = Array.isArray(local.players) ? [...local.players] : []
+  const existingNames = new Set(localPlayers.map(p => p.name?.trim().toLowerCase()).filter(Boolean))
+
+  // Préparer la table de renommage si l'utilisateur a choisi 'separate' pour certains doublons
+  const renameMap = new Map() // key -> nouveau nom distinct
+  const extraPlayersToCreate = []
+
+  for (const [key, choice] of Object.entries(resolutions)) {
+    if (choice === 'separate') {
+      // Trouver le joueur entrant correspondant
+      let samplePlayer = null
+      for (const g of incomingGames) {
+        const found = (g?.players || []).find(p => p?.name?.trim().toLowerCase() === key)
+        if (found) {
+          samplePlayer = found
+          break
+        }
+      }
+      if (samplePlayer) {
+        const baseName = samplePlayer.name.trim()
+        let suffix = 2
+        let candidateName = `${baseName} (${suffix})`
+        while (existingNames.has(candidateName.toLowerCase())) {
+          suffix++
+          candidateName = `${baseName} (${suffix})`
+        }
+        existingNames.add(candidateName.toLowerCase())
+        renameMap.set(key, candidateName)
+        extraPlayersToCreate.push({
+          ...samplePlayer,
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          name: candidateName,
+        })
+      }
+    }
+  }
+
+  // Adapter les parties entrantes si certains joueurs ont été séparés
+  const processedGames = incomingGames.map(g => {
+    if (!g || !Array.isArray(g.players)) return g
+    const updatedPlayers = g.players.map(p => {
+      if (!p || !p.name) return p
+      const key = p.name.trim().toLowerCase()
+      if (renameMap.has(key)) {
+        return { ...p, name: renameMap.get(key) }
+      }
+      return p
+    })
+    return { ...g, players: updatedPlayers }
+  })
+
+  const { mergedNotebook, stats } = mergeNotebooks(local, {
+    games: processedGames,
+    players: extraPlayersToCreate,
+  })
+
+  savePlayers(mergedNotebook.players)
+  localStorage.setItem('ardoise_games', JSON.stringify(mergedNotebook.games))
+  saveCustomPresets(mergedNotebook.customPresets)
+
+  return {
+    success: true,
+    stats,
   }
 }
 
@@ -298,11 +443,17 @@ export async function synchronizeNotebook(syncKey) {
   if (!remote.found || !remote.payload) {
     // Si c'est un nouveau carnet, on pousse notre carnet local pour l'initialiser
     const pushResult = await pushNotebookToCloud(key)
+    const local = exportNotebookPayload()
     return {
       status: 'created',
-      message: 'Carnet initialisé et synchronisé sur le Cloud !',
+      message: 'Carnet initialisé et synchronisé sur le Cloud\u00A0!',
       version: pushResult.version,
-      stats: { gamesAdded: 0, playersAdded: 0 },
+      stats: {
+        gamesAdded: 0,
+        playersAdded: 0,
+        totalGames: local.games?.length || 0,
+        totalPlayers: local.players?.length || 0,
+      },
     }
   }
 
@@ -314,7 +465,7 @@ export async function synchronizeNotebook(syncKey) {
 
   return {
     status: 'synced',
-    message: 'Carnet synchronisé avec succès !',
+    message: 'Carnet synchronisé avec succès\u00A0!',
     stats: applyResult.stats,
   }
 }
@@ -324,11 +475,33 @@ export async function synchronizeNotebook(syncKey) {
  */
 export async function shareGame(game) {
   if (!game || !game.id) throw new Error('Partie invalide')
+  return await shareGamesBatch([game])
+}
+
+/**
+ * Partage un lot d'une ou plusieurs parties et retourne un code unique
+ */
+export async function shareGamesBatch(games = []) {
+  const validGames = (Array.isArray(games) ? games : []).filter(g => g && g.id)
+  if (validGames.length === 0) throw new Error('Aucune partie sélectionnée')
+
+  const playersMap = new Map()
+  for (const g of validGames) {
+    for (const p of g.players || []) {
+      if (p && p.name) {
+        playersMap.set(p.name.trim().toLowerCase(), p)
+      }
+    }
+  }
 
   const res = await fetch(`${API_BASE}/games/share`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ game }),
+    body: JSON.stringify({
+      games: validGames,
+      game: validGames[0],
+      players: Array.from(playersMap.values()),
+    }),
   })
 
   if (!res.ok) {
@@ -336,11 +509,11 @@ export async function shareGame(game) {
     throw new Error(errData.error || `Erreur de partage (${res.status})`)
   }
 
-  return await res.json() // { success: true, gameId, gameCode }
+  return await res.json() // { success: true, gameId, gameCode, count }
 }
 
 /**
- * Récupère une feuille de match partagée par code ou ID
+ * Récupère une ou plusieurs feuilles de match partagées par code ou ID
  */
 export async function fetchSharedGame(codeOrId) {
   const clean = (codeOrId || '').trim()
@@ -349,9 +522,21 @@ export async function fetchSharedGame(codeOrId) {
   const res = await fetch(`${API_BASE}/games/share/${encodeURIComponent(clean)}`)
   if (!res.ok) {
     const errData = await res.json().catch(() => ({}))
-    throw new Error(errData.error || `Partie non trouvée (${res.status})`)
+    throw new Error(errData.error || `Partage introuvable (${res.status})`)
   }
 
-  return await res.json() // { success: true, game, createdAt }
+  const data = await res.json()
+  const games = Array.isArray(data.games)
+    ? data.games
+    : data.game
+    ? [data.game]
+    : []
+
+  return {
+    ...data,
+    games,
+    game: games[0] || null,
+  }
 }
+
 

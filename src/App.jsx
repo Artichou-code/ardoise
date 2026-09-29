@@ -7,23 +7,25 @@ import { HistoryScreen } from './components/HistoryScreen'
 import { StatsScreen } from './components/StatsScreen'
 import { PlayersScreen } from './components/PlayersScreen'
 import { PullToRefreshIndicator } from './components/ui/PullToRefresh'
-import { SharedGamePreviewModal } from './components/SharedGamePreviewModal'
+import { ImportGamesModal } from './components/ImportGamesModal'
 import { LiveSessionModal } from './components/LiveSessionModal'
 import { fetchSharedGame } from './store/syncStorage'
 
 export default function App() {
   const { screen, reloadStorage } = useGame()
-  const [sharedGame, setSharedGame] = useState(null)
+  const [sharedGames, setSharedGames] = useState(null)
   const [incomingSessionCode, setIncomingSessionCode] = useState(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const shareCode = params.get('partie')
+    const shareCode = params.get('share') || params.get('partie')
     if (shareCode) {
       fetchSharedGame(shareCode)
         .then((data) => {
-          if (data && data.game) {
-            setSharedGame(data.game)
+          if (data && Array.isArray(data.games) && data.games.length > 0) {
+            setSharedGames(data.games)
+          } else if (data && data.game) {
+            setSharedGames([data.game])
           }
         })
         .catch(() => {})
@@ -33,14 +35,22 @@ export default function App() {
     if (sessionCode) {
       setIncomingSessionCode(sessionCode)
     }
+
+    const handleOpenImport = (e) => {
+      if (Array.isArray(e.detail) && e.detail.length > 0) {
+        setSharedGames(e.detail)
+      }
+    }
+    window.addEventListener('ardoise-open-import-games', handleOpenImport)
+    return () => window.removeEventListener('ardoise-open-import-games', handleOpenImport)
   }, [])
 
   const handleCloseSharedModal = () => {
-    setSharedGame(null)
+    setSharedGames(null)
     window.history.replaceState({}, '', window.location.pathname)
   }
 
-  const handleImportSharedGame = () => {
+  const handleImportSharedGames = () => {
     reloadStorage()
     window.history.replaceState({}, '', window.location.pathname)
   }
@@ -67,15 +77,15 @@ export default function App() {
         <HomeScreen />
       )}
 
-      {/* Aperçu d'une partie partagée reçue par QR code ou lien */}
-      <SharedGamePreviewModal
-        isOpen={Boolean(sharedGame)}
-        game={sharedGame}
+      {/* Aperçu et import d'une ou plusieurs parties partagées reçues par QR code, lien ou code */}
+      <ImportGamesModal
+        isOpen={Boolean(sharedGames && sharedGames.length > 0)}
+        games={sharedGames}
         onClose={handleCloseSharedModal}
-        onImported={handleImportSharedGame}
+        onImported={handleImportSharedGames}
       />
 
-      {/* Rejoint automatique d'un salon journée via QR code ou lien (?session=...) */}
+      {/* Rejoint automatique d'une Table en direct via QR code ou lien (?session=...) */}
       <LiveSessionModal
         isOpen={Boolean(incomingSessionCode)}
         initialJoinCode={incomingSessionCode}
@@ -84,3 +94,4 @@ export default function App() {
     </>
   )
 }
+
