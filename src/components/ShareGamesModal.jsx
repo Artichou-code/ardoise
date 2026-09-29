@@ -20,7 +20,7 @@ import { useScrollLock } from '../hooks/useScrollLock'
 import { useGame } from '../context/GameContext'
 import { shareGamesBatch, fetchSharedGame } from '../store/syncStorage'
 import { Avatar } from './ui/Avatar'
-import { formatDate } from '../utils/gameUtils'
+import { formatShortDate } from '../utils/gameUtils'
 
 export function ShareGamesModal({
   isOpen,
@@ -282,7 +282,7 @@ export function ShareGamesModal({
         )}
 
         {/* Corps scrollable */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1">
+        <div className="p-3.5 sm:p-4 overflow-y-auto space-y-3 flex-1">
           {activeTab === 'send' ? (
             shareResult ? (
               /* VUE QR CODE GÉNÉRÉ */
@@ -351,17 +351,17 @@ export function ShareGamesModal({
               </div>
             ) : (
               /* SÉLECTION MULTI-PARTIES */
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-                    Choisissez les parties ({selectedIds.length}/{sortedGames.length})
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between gap-2 px-0.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 whitespace-nowrap">
+                    Parties ({selectedIds.length}/{sortedGames.length})
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     {todayIds.length > 0 && todayIds.length < sortedGames.length && (
                       <button
                         type="button"
                         onClick={handleSelectToday}
-                        className="text-[11px] font-bold text-stone-600 dark:text-slate-300 hover:text-[#c83b3b] cursor-pointer"
+                        className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-stone-200/70 dark:bg-slate-800 text-stone-700 dark:text-slate-300 hover:text-[#c83b3b] transition-colors cursor-pointer whitespace-nowrap"
                       >
                         Aujourd'hui ({todayIds.length})
                       </button>
@@ -369,14 +369,14 @@ export function ShareGamesModal({
                     <button
                       type="button"
                       onClick={handleSelectAll}
-                      className="text-[11px] font-bold text-[#c83b3b] hover:underline cursor-pointer"
+                      className="text-[11px] font-bold text-[#c83b3b] hover:underline cursor-pointer whitespace-nowrap"
                     >
-                      {selectedIds.length === sortedGames.length ? 'Tout désélectionner' : 'Tout cocher'}
+                      {selectedIds.length === sortedGames.length ? 'Tout décocher' : 'Tout cocher'}
                     </button>
                   </div>
                 </div>
 
-                <div className="max-h-[46vh] overflow-y-auto space-y-1.5 pr-0.5">
+                <div className="max-h-[48vh] overflow-y-auto space-y-1.5 pr-0.5">
                   {sortedGames.map((g) => {
                     const isSelected = selectedIds.includes(g.id)
                     const winner = (g.players || []).find(
@@ -394,7 +394,7 @@ export function ShareGamesModal({
                             toggleGame(g.id)
                           }
                         }}
-                        className={`p-2.5 rounded-xl border flex items-center gap-3 transition-all cursor-pointer select-none ${
+                        className={`px-2.5 py-2 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer select-none ${
                           isSelected
                             ? 'border-[#c83b3b] bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10 shadow-2xs'
                             : 'school-card border-stone-200 dark:border-slate-800 hover:border-stone-300'
@@ -402,38 +402,42 @@ export function ShareGamesModal({
                       >
                         <div className="text-[#c83b3b] shrink-0">
                           {isSelected ? (
-                            <CheckSquare size={17} />
+                            <CheckSquare size={16} />
                           ) : (
-                            <Square size={17} className="text-stone-400 dark:text-slate-600" />
+                            <Square size={16} className="text-stone-400 dark:text-slate-600" />
                           )}
                         </div>
 
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
-                              {g.name}
-                            </span>
-                            <span className="text-[10px] font-medium text-stone-400 shrink-0">
-                              · {g.rounds?.length || 0} m.
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                            {(g.players || []).map((p) => p.name).join(' · ')}
-                          </p>
-                          <p className="text-[10px] text-stone-400 dark:text-slate-500 flex items-center gap-1 mt-0.5">
-                            <Calendar size={10} />
-                            <span>{formatDate(g.finishedAt || g.startedAt)}</span>
-                          </p>
-                        </div>
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="font-serif-title font-bold text-xs sm:text-[13px] text-stone-900 dark:text-slate-100 truncate">
+                                {g.name}
+                              </span>
+                              <span className="text-[10px] font-medium text-stone-400 shrink-0 whitespace-nowrap">
+                                · {g.rounds?.length || 0} m.
+                              </span>
+                            </div>
 
-                        {winner && (
-                          <div className="flex items-center gap-1.5 shrink-0 bg-stone-100/80 dark:bg-slate-800/80 px-2 py-1 rounded-lg">
-                            <Avatar player={winner} size="xs" />
-                            <span className="text-[10px] font-bold text-stone-700 dark:text-slate-300 max-w-[56px] truncate">
-                              {winner.name}
+                            {winner && (
+                              <div className="flex items-center gap-1 shrink-0 bg-stone-100/90 dark:bg-slate-800/90 pl-1 pr-2 py-0.5 rounded-full">
+                                <Avatar player={winner} size="2xs" />
+                                <span className="text-[10px] font-bold text-stone-700 dark:text-slate-300 max-w-[76px] truncate">
+                                  {winner.name}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-baseline justify-between gap-2">
+                            <p className="text-[11px] text-stone-600 dark:text-slate-300 leading-snug">
+                              {(g.players || []).map((p) => p.name).join(' · ')}
+                            </p>
+                            <span className="text-[10px] text-stone-400 dark:text-slate-500 shrink-0 whitespace-nowrap">
+                              {formatShortDate(g.finishedAt || g.startedAt)}
                             </span>
                           </div>
-                        )}
+                        </div>
                       </div>
                     )
                   })}

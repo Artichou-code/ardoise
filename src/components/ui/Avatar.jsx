@@ -4,7 +4,8 @@ import { Check } from 'lucide-react'
 
 export function Avatar({ player, size = 'md', leader = false, leaderColor, ringColor: customRingColor }) {
   const sizeClass = {
-    xs: 'w-7 h-7 text-xs',
+    '2xs': 'w-5 h-5 text-[10px] m-[2.5px]',
+    xs: 'w-6 h-6 text-[11px] m-[3px]',
     sm: 'w-9 h-9 text-sm',
     md: 'w-11 h-11 text-base',
     lg: 'w-13 h-13 text-xl',
@@ -15,9 +16,12 @@ export function Avatar({ player, size = 'md', leader = false, leaderColor, ringC
   const initial = getPlayerInitial(player)
   const ringColor = customRingColor || (leader ? (leaderColor || '#c83b3b') : (player?.color || '#c83b3b'))
 
-  // Espace (gap) de 2px entre l'avatar et l'anneau coloré
+  // Espace (gap) et anneau proportionnels à la taille de l'avatar
+  const isCompact = size === '2xs' || size === 'xs'
   const floatingRingStyle = {
-    boxShadow: `0 0 0 2px var(--bg-card, #ffffff), 0 0 0 4px ${ringColor}`,
+    boxShadow: isCompact
+      ? `0 0 0 1.5px var(--bg-card, #ffffff), 0 0 0 2.75px ${ringColor}`
+      : `0 0 0 2px var(--bg-card, #ffffff), 0 0 0 4px ${ringColor}`,
   }
 
   if (avatarUrl) {

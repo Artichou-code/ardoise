@@ -67,6 +67,19 @@ export function formatDate(ts) {
   }).format(new Date(ts))
 }
 
+export function formatShortDate(ts) {
+  if (!ts) return ''
+  const date = new Date(ts)
+  const isSameYear = date.getFullYear() === new Date().getFullYear()
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: 'short',
+    ...(isSameYear ? {} : { year: '2-digit' }),
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
+}
+
 export function formatGameStart(ts) {
   if (!ts) return ''
   const date = new Date(ts)

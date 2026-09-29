@@ -17,7 +17,7 @@ import {
 import { useScrollLock } from '../hooks/useScrollLock'
 import { detectPlayerConflicts, importGamesWithResolution } from '../store/syncStorage'
 import { Avatar } from './ui/Avatar'
-import { formatDate } from '../utils/gameUtils'
+import { formatDate, formatShortDate } from '../utils/gameUtils'
 
 export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singleGame, onImported }) {
   const [importedResult, setImportedResult] = useState(null)
@@ -242,7 +242,7 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
                           toggleGameSelection(g.id)
                         }
                       }}
-                      className={`p-2.5 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer select-none ${
+                      className={`px-2.5 py-2 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer select-none ${
                         isSelected
                           ? 'border-[#c83b3b] bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
                           : 'school-card border-stone-200 dark:border-slate-800 opacity-60'
@@ -251,18 +251,17 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
                       <div className="text-[#c83b3b] shrink-0">
                         {isSelected ? <CheckSquare size={16} /> : <Square size={16} />}
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 space-y-0.5">
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-serif-title font-bold text-xs text-stone-900 dark:text-slate-100 truncate">
                             {g.name}
                           </span>
-                          <span className="text-[10px] font-mono text-stone-400 shrink-0">
-                            {g.rounds?.length || 0} manches
+                          <span className="text-[10px] font-mono text-stone-400 shrink-0 whitespace-nowrap">
+                            {g.rounds?.length || 0} m. · {formatShortDate(g.finishedAt || g.endedAt || g.startedAt)}
                           </span>
                         </div>
-                        <p className="text-[10px] text-stone-500 dark:text-slate-400 truncate">
-                          {(g.players || []).map((p) => p.name).join(' · ')} ·{' '}
-                          {formatDate(g.finishedAt || g.endedAt || g.startedAt)}
+                        <p className="text-[11px] text-stone-600 dark:text-slate-300 leading-snug">
+                          {(g.players || []).map((p) => p.name).join(' · ')}
                         </p>
                       </div>
                     </div>
@@ -286,9 +285,9 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
                 {newPlayers.map((np, i) => (
                   <span
                     key={np.id || i}
-                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-xs font-semibold text-stone-800 dark:text-slate-200"
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-xs font-semibold text-stone-800 dark:text-slate-200"
                   >
-                    <Avatar player={np} size="xs" />
+                    <Avatar player={np} size="2xs" />
                     <span>{np.name}</span>
                   </span>
                 ))}
