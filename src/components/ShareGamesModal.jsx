@@ -222,7 +222,7 @@ export function ShareGamesModal({
                 Partager des parties
               </h2>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                Envoyer ou recevoir un lot de parties par QR code
+                Par QR code, lien ou code de partage
               </p>
             </div>
           </div>
