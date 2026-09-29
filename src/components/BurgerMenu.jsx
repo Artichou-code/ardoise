@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
   X,
@@ -28,7 +28,35 @@ export function BurgerMenu({
   liveSession,
 }) {
   const { theme, toggleTheme } = useTheme()
-  useScrollLock(isOpen)
+  const [isRendered, setIsRendered] = useState(isOpen)
+  const [isVisible, setIsVisible] = useState(false)
+  const drawerRef = useRef(null)
+  const startX = useRef(null)
+  const startY = useRef(null)
+  const currentDx = useRef(0)
+  const isSwiping = useRef(false)
+
+  useScrollLock(isRendered)
+
+  // Gestion du cycle de transition fluide à l'ouverture et à la fermeture
+  useEffect(() => {
+    let timer
+    if (isOpen) {
+      setIsRendered(true)
+      const raf = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsVisible(true)
+        })
+      })
+      return () => cancelAnimationFrame(raf)
+    } else {
+      setIsVisible(false)
+      timer = setTimeout(() => {
+        setIsRendered(false)
+      }, 260)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
 
   // Fermeture par touche Echap
   useEffect(() => {
@@ -40,11 +68,56 @@ export function BurgerMenu({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
-  if (!isOpen || typeof document === 'undefined') return null
+  // Geste tactile de balayage vers la droite pour refermer
+  const handleTouchStart = (e) => {
+    startX.current = e.touches[0].clientX
+    startY.current = e.touches[0].clientY
+    currentDx.current = 0
+    isSwiping.current = false
+  }
+
+  const handleTouchMove = (e) => {
+    if (startX.current === null || startY.current === null) return
+    const dx = e.touches[0].clientX - startX.current
+    const dy = e.touches[0].clientY - startY.current
+
+    if (!isSwiping.current && Math.abs(dy) > Math.abs(dx)) {
+      return
+    }
+
+    if (dx > 5) {
+      isSwiping.current = true
+      currentDx.current = dx
+      if (drawerRef.current) {
+        drawerRef.current.style.transform = `translate3d(${dx}px, 0, 0)`
+        drawerRef.current.style.transition = 'none'
+      }
+    }
+  }
+
+  const handleTouchEnd = () => {
+    if (startX.current === null) return
+    const dx = currentDx.current
+    startX.current = null
+    startY.current = null
+    currentDx.current = 0
+    isSwiping.current = false
+    if (drawerRef.current) {
+      drawerRef.current.style.transform = ''
+      drawerRef.current.style.transition = ''
+    }
+    if (dx > 70) {
+      onClose()
+    }
+  }
+
+  if (!isRendered || typeof document === 'undefined') return null
 
   const handleAction = (callback) => {
     onClose()
-    if (callback) callback()
+    if (callback) {
+      setTimeout(() => callback(), 120)
+    }
   }
 
   return createPortal(
@@ -54,15 +127,25 @@ export function BurgerMenu({
       aria-modal="true"
       aria-labelledby="burger-menu-title"
     >
-      {/* Backdrop sombre avec fondu fluide */}
+      {/* Backdrop sombre avec fondu fluide à l'ouverture et fermeture */}
       <div
-        className="absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-xs transition-opacity duration-300 animate-fade-in"
+        className={`absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-xs drawer-backdrop ${
+          isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Tiroir coulissant depuis la droite fluide */}
-      <div className="relative w-full max-w-xs sm:max-w-sm h-full school-surface text-stone-900 dark:text-slate-100 border-l border-stone-200/90 dark:border-slate-800/90 shadow-2xl flex flex-col z-10 animate-slide-in-right">
+      {/* Tiroir coulissant fluide à l'ouverture et à la fermeture */}
+      <div
+        ref={drawerRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className={`relative w-full max-w-xs sm:max-w-sm h-full school-surface text-stone-900 dark:text-slate-100 border-l border-stone-200/90 dark:border-slate-800/90 shadow-2xl flex flex-col z-10 drawer-panel ${
+          isVisible ? 'drawer-panel-open' : 'drawer-panel-closed'
+        }`}
+      >
         {/* Liseré supérieur rouge signature */}
         <div className="h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent shrink-0" />
 
