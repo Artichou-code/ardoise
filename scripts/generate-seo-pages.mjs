@@ -84,6 +84,31 @@ function escapeHtml(str = '') {
     .replace(/"/g, '&quot;')
 }
 
+/**
+ * Génère la carte visuelle d'un jeu exactement identique au rendu de HomeScreen.jsx
+ * pour que le navigateur dessine le FCP et le LCP dès la réception du HTML + CSS (~0,9 s)
+ * sans aucun décalage (CLS = 0) lors de l'hydratation par React.
+ */
+function renderVisualGameCard(meta) {
+  return `
+            <div class="relative flex flex-col justify-between p-4 rounded-xl school-card border-l-4 border-l-[#c83b3b]/80 shadow-2xs">
+              <div>
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="font-serif-title font-bold text-lg leading-snug">${escapeHtml(meta.name)}</h3>
+                  <span class="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800/80 text-[11px] font-semibold text-stone-700 dark:text-slate-300 flex-shrink-0">
+                    <span>Règles</span>
+                  </span>
+                </div>
+                <p class="text-xs text-stone-500 dark:text-slate-400 mt-1 leading-relaxed">${escapeHtml(meta.description)}</p>
+              </div>
+              <div class="flex items-center gap-1.5 mt-3 pt-2.5 border-t border-stone-100 dark:border-slate-800/70">
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300">${escapeHtml(meta.playersBadge)}</span>
+                <span class="text-[11px] font-medium px-2 py-0.5 rounded border border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400">${escapeHtml(meta.categoryBadge)}</span>
+                <span class="ml-auto text-xs font-bold text-[#c83b3b] flex items-center gap-0.5">Jouer ›</span>
+              </div>
+            </div>`
+}
+
 function renderGameArticleHtml(meta, slug) {
   const { rules } = meta
   let sectionsHtml = ''
@@ -147,30 +172,80 @@ function renderGameArticleHtml(meta, slug) {
     </article>`
 }
 
+function renderAppShellHtml(seoHiddenArticlesHtml) {
+  const gameCardsHtml = Object.values(GAME_META).map(renderVisualGameCard).join('\n')
+
+  return `<div id="root">
+      <div class="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
+        <header class="flex items-center justify-between px-4 header-safe pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
+          <div class="flex items-center gap-2.5">
+            <button type="button" class="rounded-xl shrink-0" aria-label="Partager l'application Ardoise par QR code ou lien">
+              <img src="/Ardoise_v2-white.svg" alt="Logo Ardoise" width="32" height="32" class="w-8 h-8 shadow-2xs flex-shrink-0 select-none block" />
+            </button>
+            <div>
+              <h1 class="font-serif-title text-xl font-bold tracking-tight leading-none">Ardoise</h1>
+              <p class="text-[11px] text-stone-500 dark:text-slate-400 leading-none mt-0.5">Carnet de scores &amp; règles</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-stone-700 dark:text-slate-300 w-[36px] h-[36px] inline-block" aria-hidden="true"></span>
+            <span class="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-stone-700 dark:text-slate-300 w-[36px] h-[36px] inline-block" aria-hidden="true"></span>
+          </div>
+        </header>
+        <main class="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">
+          <section class="mt-4">
+            <div class="flex items-center justify-between mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-3.5 rounded-full bg-[#c83b3b]"></span>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">Choisir un jeu</h2>
+              </div>
+              <span class="text-[11px] text-stone-400 dark:text-slate-500">8 jeux disponibles</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              ${gameCardsHtml}
+            </div>
+          </section>
+          <footer class="mt-4 pt-3 pb-1 border-t border-stone-200/50 dark:border-slate-800/50 flex items-center justify-center gap-2 text-center select-none">
+            <div class="flex items-center gap-1.5 text-stone-600 dark:text-slate-400">
+              <span class="font-serif-title font-bold text-stone-800 dark:text-slate-200 text-sm leading-none">Ardoise</span>
+              <span class="font-serif italic text-stone-400 dark:text-slate-500 text-xs leading-none">by</span>
+              <img src="/ART-crea.svg" alt="Logo ART-créa" width="35" height="20" class="h-[17px] w-auto object-contain inline-block align-middle select-none" />
+            </div>
+          </footer>
+          <div class="sr-only">
+            ${seoHiddenArticlesHtml}
+          </div>
+        </main>
+      </div>
+    </div>`
+}
+
 function generateSeoFiles() {
   if (!fs.existsSync(baseHtmlPath)) {
     console.error('dist/index.html introuvable. Lancez vite build avant ce script.')
     process.exit(1)
   }
 
-  const baseHtml = fs.readFileSync(baseHtmlPath, 'utf-8')
+  let baseHtml = fs.readFileSync(baseHtmlPath, 'utf-8')
 
-  // 1. Enrichir dist/index.html avec le catalogue complet pré-rendu des 8 jeux
+  // Inliner le CSS principal dans <head> pour éliminer 100 % des requêtes bloquantes au rendu (FCP/LCP immédiat en 1 aller-retour)
+  const cssMatch = baseHtml.match(/<link rel="stylesheet"[^>]*href="\/assets\/(index-[^"]+\.css)"[^>]*>/)
+  if (cssMatch) {
+    const cssFilePath = path.join(distDir, 'assets', cssMatch[1])
+    if (fs.existsSync(cssFilePath)) {
+      const cssContent = fs.readFileSync(cssFilePath, 'utf-8')
+      baseHtml = baseHtml.replace(cssMatch[0], `<style>${cssContent}</style>`)
+    }
+  }
+
+  // 1. Enrichir dist/index.html avec l'App Shell visuel + le catalogue complet des 8 jeux
   const allGamesArticles = SEO_PAGES.map((p) =>
     renderGameArticleHtml(GAME_META[p.gameId], p.slug)
   ).join('\n')
 
-  const homeSemanticBlock = `<div id="root">
-      <main style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
-        <h1>Ardoise — Compteur de Scores et Règles Officielles de Jeux de Cartes et de Société</h1>
-        <p>Application web gratuite, sans publicité et 100 % hors-ligne créée par ART-créa pour compter les points, consulter les règles officielles et partager vos feuilles de scores en direct entre amis.</p>
-        ${allGamesArticles}
-      </main>
-    </div>`
-
   const enrichedHomeHtml = baseHtml.replace(
     /<div id="root">[\s\S]*?<\/div>/,
-    homeSemanticBlock
+    renderAppShellHtml(allGamesArticles)
   )
   fs.writeFileSync(baseHtmlPath, enrichedHomeHtml, 'utf-8')
 
@@ -186,19 +261,15 @@ function generateSeoFiles() {
       )
       .join('\n')
 
-    const pageSemanticBlock = `<div id="root">
-      <main style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
-        <h1>${escapeHtml(page.h1)}</h1>
-        ${gameArticle}
-        <nav aria-label="Autres jeux disponibles sur Ardoise">
-          <h2>Autres compteurs de scores et règles sur Ardoise</h2>
-          <ul>
-            <li><a href="/">Accueil Ardoise — Tous les jeux</a></li>
-            ${otherLinks}
-          </ul>
-        </nav>
-      </main>
-    </div>`
+    const seoSection = `
+      <h2>${escapeHtml(page.h1)}</h2>
+      ${gameArticle}
+      <nav aria-label="Autres jeux disponibles sur Ardoise">
+        <ul>
+          <li><a href="/">Accueil Ardoise — Tous les jeux</a></li>
+          ${otherLinks}
+        </ul>
+      </nav>`
 
     let pageHtml = baseHtml
       .replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(page.title)}</title>`)
@@ -234,14 +305,14 @@ function generateSeoFiles() {
         /<meta name="twitter:description" content="[^"]*" \/>/,
         `<meta name="twitter:description" content="${escapeHtml(page.description)}" />`
       )
-      .replace(/<div id="root">[\s\S]*?<\/div>/, pageSemanticBlock)
+      .replace(/<div id="root">[\s\S]*?<\/div>/, renderAppShellHtml(seoSection))
 
     const targetDir = path.join(distDir, 'jeux', page.slug)
     fs.mkdirSync(targetDir, { recursive: true })
     fs.writeFileSync(path.join(targetDir, 'index.html'), pageHtml, 'utf-8')
   }
 
-  console.log(`✓ SEO/GEO : dist/index.html enrichi + ${SEO_PAGES.length} pages /jeux/<slug> pré-rendues.`)
+  console.log(`✓ SEO/GEO + App Shell : dist/index.html enrichi + ${SEO_PAGES.length} pages /jeux/<slug> pré-rendues.`)
 }
 
 generateSeoFiles()
