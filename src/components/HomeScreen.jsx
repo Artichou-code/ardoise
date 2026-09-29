@@ -12,15 +12,17 @@ import { SyncModal } from './SyncModal'
 import { LiveSessionModal } from './LiveSessionModal'
 import { ShareGamesModal } from './ShareGamesModal'
 import { BurgerMenu } from './BurgerMenu'
+import { TrophiesSheet } from './TrophiesSheet'
 import { ArtCreaLogo } from './ui/ArtCreaLogo'
 import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
 import { formatDate, formatGameStart } from '../utils/gameUtils'
+import { computeStats } from '../utils/statsUtils'
 import { Avatar } from './ui/Avatar'
 import { formatTypography } from '../utils/typography'
 import { getActiveSession } from '../store/liveSession'
 
 export function HomeScreen() {
-  const { games, setScreen, resumeGame, customPresets, deletePreset, createGame, reloadStorage, liveSessionNotice, setLiveSessionNotice } = useGame()
+  const { games, players: registeredPlayers, setScreen, resumeGame, customPresets, deletePreset, createGame, reloadStorage, liveSessionNotice, setLiveSessionNotice } = useGame()
   const [setupGame, setSetupGame] = useState(null)
   const [setupPreset, setSetupPreset] = useState(null)
   const [rulesGame, setRulesGame] = useState(null)
@@ -30,8 +32,13 @@ export function HomeScreen() {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
   const [isShareGamesModalOpen, setIsShareGamesModalOpen] = useState(false)
+  const [isTrophiesOpen, setIsTrophiesOpen] = useState(false)
   const [isBurgerMenuOpen, setIsBurgerMenuOpen] = useState(false)
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
+
+  const allPlayersStats = useMemo(() => {
+    return computeStats(games, 'all', registeredPlayers).playersStats
+  }, [games, registeredPlayers])
 
   useEffect(() => {
     const handleSessionChanged = (e) => {
@@ -544,11 +551,19 @@ export function HomeScreen() {
         }}
       />
 
-      {/* Menu Burger latéral complet (Statistiques, Historique, Joueurs, Synchro, Direct, Règles) */}
+      {/* Guide des trophées et distinctions */}
+      <TrophiesSheet
+        open={isTrophiesOpen}
+        onClose={() => setIsTrophiesOpen(false)}
+        playersStats={allPlayersStats}
+      />
+
+      {/* Menu Burger latéral complet (Statistiques, Historique, Joueurs, Trophées, Partage & Sauvegarde) */}
       <BurgerMenu
         isOpen={isBurgerMenuOpen}
         onClose={() => setIsBurgerMenuOpen(false)}
         onNavigate={(screen) => setScreen(screen)}
+        onOpenTrophies={() => setIsTrophiesOpen(true)}
         onOpenLiveSession={() => setIsLiveModalOpen(true)}
         onOpenShareGames={() => setIsShareGamesModalOpen(true)}
         onOpenSync={() => setIsSyncModalOpen(true)}

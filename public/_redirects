@@ -1,1 +1,1 @@
-/* /index.html 200
+# Cloudflare Pages gère nativement le routage SPA sans réécrire /assets/* en text/html

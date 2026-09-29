@@ -11,6 +11,7 @@ import {
   Sun,
   Moon,
   Share2,
+  Trophy,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useTheme } from '../context/ThemeContext'
@@ -21,6 +22,7 @@ export function BurgerMenu({
   isOpen,
   onClose,
   onNavigate,
+  onOpenTrophies,
   onOpenLiveSession,
   onOpenShareGames,
   onOpenSync,
@@ -141,7 +143,7 @@ export function BurgerMenu({
         <div className="h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent shrink-0" />
 
         {/* En-tête du menu */}
-        <div className="p-4 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
+        <div className="p-3.5 sm:p-4 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
             <AppLogo className="w-8 h-8 rounded-xl shadow-2xs shrink-0" />
             <div className="min-w-0">
@@ -166,26 +168,26 @@ export function BurgerMenu({
 
         {/* Liste des sections de navigation */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 text-xs">
-          {/* Section 1 : Jeu & Statistiques */}
+          {/* Section 1 : Carnet & Suivi */}
           <div>
-            <span className="px-2.5 pb-1 block text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
-              Parties & Joueurs
+            <span className="px-2 pb-1 block text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
+              Carnet & Suivi
             </span>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <button
                 type="button"
                 onClick={() => handleAction(() => onNavigate('players'))}
-                className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
+                className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-transform">
                   <Users size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
-                    Joueurs de la table
+                    Joueurs
                   </p>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Gérer les profils et avatars
+                    Profils et avatars
                   </p>
                 </div>
               </button>
@@ -193,17 +195,17 @@ export function BurgerMenu({
               <button
                 type="button"
                 onClick={() => handleAction(() => onNavigate('history'))}
-                className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
+                className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
                   <History size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
-                    Historique des parties
+                    Historique
                   </p>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Consulter les feuilles passées
+                    Parties archivées
                   </p>
                 </div>
               </button>
@@ -211,7 +213,7 @@ export function BurgerMenu({
               <button
                 type="button"
                 onClick={() => handleAction(() => onNavigate('stats'))}
-                className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
+                className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
                   <BarChart3 size={16} />
@@ -221,28 +223,49 @@ export function BurgerMenu({
                     Statistiques
                   </p>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Podiums, records et distinctions
+                    Podiums et records
+                  </p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleAction(onOpenTrophies)}
+                className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
+              >
+                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-transform">
+                  <Trophy size={16} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
+                    Trophées
+                  </p>
+                  <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
+                    Guide des distinctions
                   </p>
                 </div>
               </button>
             </div>
           </div>
 
-          {/* Section 2 : Synchronisation & Direct */}
+          {/* Section 2 : Partage & Sauvegarde (3 actions sur la même ligne) */}
           <div>
-            <span className="px-2.5 pb-1 block text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
-              Synchronisation & En direct
+            <span className="px-2 pb-1.5 block text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
+              Partage & Sauvegarde
             </span>
-            <div className="space-y-1">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => handleAction(onOpenLiveSession)}
-                className={`w-full p-2.5 rounded-xl flex items-center gap-3 text-left transition-colors group cursor-pointer ${
+                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer relative ${
                   liveSession
-                    ? 'bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/30'
-                    : 'hover:bg-stone-100 dark:hover:bg-slate-800/70'
+                    ? 'bg-emerald-500/10 hover:bg-emerald-500/15 border-emerald-500/40'
+                    : 'school-card border-stone-200/80 dark:border-slate-800 hover:border-emerald-500/40'
                 }`}
               >
+                {liveSession && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                )}
                 <span className={`p-2 rounded-lg shrink-0 group-hover:scale-105 transition-transform ${
                   liveSession
                     ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
@@ -250,19 +273,12 @@ export function BurgerMenu({
                 }`}>
                   <Radio size={16} className={liveSession ? 'animate-pulse' : ''} />
                 </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
-                      Table en direct
-                    </p>
-                    {liveSession && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
-                        Active
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    {liveSession ? `Salon : ${liveSession.name}` : 'Synchroniser les parties en temps réel'}
+                <div className="min-w-0 w-full">
+                  <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight truncate">
+                    En direct
+                  </p>
+                  <p className="text-[10px] text-stone-400 dark:text-slate-500 truncate mt-0.5">
+                    {liveSession ? 'Actif' : 'Table live'}
                   </p>
                 </div>
               </button>
@@ -270,17 +286,17 @@ export function BurgerMenu({
               <button
                 type="button"
                 onClick={() => handleAction(onOpenShareGames)}
-                className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
+                className="p-2.5 rounded-xl border school-card border-stone-200/80 dark:border-slate-800 hover:border-[#c83b3b]/50 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-transform">
                   <Share2 size={16} />
                 </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
-                    Partager des parties
+                <div className="min-w-0 w-full">
+                  <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight truncate">
+                    Partager
                   </p>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Envoyer ou importer un lot par QR code
+                  <p className="text-[10px] text-stone-400 dark:text-slate-500 truncate mt-0.5">
+                    QR & code
                   </p>
                 </div>
               </button>
@@ -288,17 +304,17 @@ export function BurgerMenu({
               <button
                 type="button"
                 onClick={() => handleAction(onOpenSync)}
-                className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
+                className="p-2.5 rounded-xl border school-card border-stone-200/80 dark:border-slate-800 hover:border-stone-400 dark:hover:border-slate-600 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
                   <Cloud size={16} />
                 </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
-                    Sauvegarde & Sync
+                <div className="min-w-0 w-full">
+                  <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight truncate">
+                    Sauvegarde
                   </p>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Multi-appareils ou fichier de secours
+                  <p className="text-[10px] text-stone-400 dark:text-slate-500 truncate mt-0.5">
+                    Cloud & fichier
                   </p>
                 </div>
               </button>
@@ -307,24 +323,24 @@ export function BurgerMenu({
 
           {/* Section 3 : Ressources & Légal */}
           <div>
-            <span className="px-2.5 pb-1 block text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
+            <span className="px-2 pb-1 block text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
               Ressources
             </span>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <button
                 type="button"
                 onClick={() => handleAction(onOpenArtCrea)}
-                className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
+                className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
                 <div className="w-8 h-8 flex items-center justify-center shrink-0">
                   <ArtCreaLogo className="h-4.5 w-auto group-hover:scale-105 transition-transform" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
-                    Univers ART-créa
+                    ART-créa
                   </p>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Webdesign & Photographie
+                    Webdesign & Photo
                   </p>
                 </div>
               </button>
@@ -332,17 +348,17 @@ export function BurgerMenu({
               <button
                 type="button"
                 onClick={() => handleAction(() => onOpenLegal('mentions'))}
-                className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
+                className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
                   <Scale size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
-                    Hub juridique
+                    Infos légales
                   </p>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Mentions, CGU & Confidentialité
+                    Mentions, CGU & RGPD
                   </p>
                 </div>
               </button>

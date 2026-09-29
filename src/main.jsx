@@ -6,6 +6,10 @@ import { GameProvider } from './context/GameContext.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import { ErrorBoundary } from './components/ui/ErrorBoundary.jsx'
 
+window.addEventListener('vite:preloadError', () => {
+  window.location.reload()
+})
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
