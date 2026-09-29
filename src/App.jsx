@@ -6,13 +6,15 @@ import { BurgerMenu } from './components/BurgerMenu'
 import { fetchSharedGame } from './store/syncStorage'
 import { getActiveSession } from './store/liveSession'
 
-const GameScreen = lazy(() => import('./components/GameScreen').then((m) => ({ default: m.GameScreen })))
-const VictoryScreen = lazy(() => import('./components/VictoryScreen').then((m) => ({ default: m.VictoryScreen })))
-const HistoryScreen = lazy(() => import('./components/HistoryScreen').then((m) => ({ default: m.HistoryScreen })))
-const StatsScreen = lazy(() => import('./components/StatsScreen').then((m) => ({ default: m.StatsScreen })))
-const PlayersScreen = lazy(() => import('./components/PlayersScreen').then((m) => ({ default: m.PlayersScreen })))
-const TrophiesScreen = lazy(() => import('./components/TrophiesScreen').then((m) => ({ default: m.TrophiesScreen })))
+// Écrans principaux : chargement immédiat pour une navigation instantanée
+import { GameScreen } from './components/GameScreen'
+import { VictoryScreen } from './components/VictoryScreen'
+import { HistoryScreen } from './components/HistoryScreen'
+import { StatsScreen } from './components/StatsScreen'
+import { PlayersScreen } from './components/PlayersScreen'
+import { TrophiesScreen } from './components/TrophiesScreen'
 
+// Modales lourdes : chargement différé (jamais visibles au 1er rendu)
 const ImportGamesModal = lazy(() => import('./components/ImportGamesModal').then((m) => ({ default: m.ImportGamesModal })))
 const LiveSessionModal = lazy(() => import('./components/LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
 const ShareGamesModal = lazy(() => import('./components/ShareGamesModal').then((m) => ({ default: m.ShareGamesModal })))
@@ -66,30 +68,18 @@ export default function App() {
     const handleOpenShareApp = () => setIsShareAppModalOpen(true)
     const handleSessionChanged = (e) => setLiveSession(e.detail)
 
-    // Pré-chargement silencieux au premier contact tactile/clic (invisible pour PageSpeed au chargement initial)
-    const prefetchOnInteraction = () => {
-      import('./components/GameSetupSheet')
-      import('./components/RulesSheet')
-      import('./components/GameScreen')
-      import('./components/HistoryScreen')
-      import('./components/StatsScreen')
-      import('./components/PlayersScreen')
-      import('./components/TrophiesScreen')
-    }
-
-    window.addEventListener('pointerdown', prefetchOnInteraction, { once: true, passive: true })
     window.addEventListener('ardoise-open-import-games', handleOpenImport)
     window.addEventListener('ardoise-open-burger-menu', handleOpenBurger)
     window.addEventListener('ardoise-open-share-app', handleOpenShareApp)
     window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
     return () => {
-      window.removeEventListener('pointerdown', prefetchOnInteraction)
       window.removeEventListener('ardoise-open-import-games', handleOpenImport)
       window.removeEventListener('ardoise-open-burger-menu', handleOpenBurger)
       window.removeEventListener('ardoise-open-share-app', handleOpenShareApp)
       window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
     }
   }, [])
+
 
   const handleCloseSharedModal = () => {
     setSharedGames(null)
@@ -112,8 +102,7 @@ export default function App() {
   return (
     <>
       <PullToRefreshIndicator />
-      <Suspense fallback={<div className="h-full w-full school-surface" />}>
-        {screen === 'game' ? (
+      {screen === 'game' ? (
           <GameScreen />
         ) : screen === 'victory' ? (
           <VictoryScreen />
@@ -128,7 +117,6 @@ export default function App() {
         ) : (
           <HomeScreen />
         )}
-      </Suspense>
 
       {/* Menu Burger global accessible depuis toutes les pages */}
       <BurgerMenu
