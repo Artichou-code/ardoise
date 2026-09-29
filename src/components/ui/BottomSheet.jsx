@@ -132,7 +132,7 @@ export function BottomSheet({
           </div>
           {/* Header */}
           {title && (
-            <div className="flex items-start justify-between px-5 pt-1 pb-3 border-b border-stone-200/80 dark:border-slate-800/80">
+            <div className="flex items-start justify-between px-5 pt-1 pb-2 border-b border-stone-200/80 dark:border-slate-800/80">
               <div>
                 <h2 className="font-serif-title text-xl font-bold leading-snug">{title}</h2>
                 {subtitle && (
@@ -154,7 +154,7 @@ export function BottomSheet({
           )}
         </div>
         {/* Contenu scrollable */}
-        <div className="overflow-y-auto flex-1 scrollbar-hide overscroll-contain pt-1">
+        <div className="overflow-y-auto flex-1 scrollbar-hide overscroll-contain">
           {children}
         </div>
         {/* Safe area iOS */}

@@ -207,15 +207,15 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
           ) : null
         }
       >
-        <div className="px-5 py-4 space-y-4">
-          <div className="min-h-[40px] flex items-center">
+        <div className="px-4 sm:px-5 pt-2 pb-4 space-y-2.5">
+          <div className="flex items-center">
             {selectedPlayers.length === 0 ? (
               <p className="text-xs text-stone-600 dark:text-slate-400 leading-relaxed">
                 {meta.description}
               </p>
             ) : (
-              <div className="w-full overflow-x-auto scrollbar-hide py-1 -mx-1 px-1">
-                <div className="flex items-center gap-3 px-2 py-0.5">
+              <div className="w-full overflow-x-auto scrollbar-hide -mx-1 px-1">
+                <div className="flex items-center gap-3 px-1 py-0.5">
                   {selectedPlayers.map(p => (
                     <div key={p.id} className="shrink-0 flex flex-col items-center gap-0.5">
                       <div className="relative p-1">
