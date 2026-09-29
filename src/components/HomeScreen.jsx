@@ -132,14 +132,14 @@ export function HomeScreen() {
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200 truncate">
-                  Session en direct : {liveSession.name}
+                  Table en direct&nbsp;: {liveSession.name}
                 </p>
-                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 truncate">
-                  Code salon : <strong className="font-mono tracking-wider">{liveSession.code}</strong> · Table connectée
+                <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                  Code&nbsp;: <strong className="font-mono tracking-wider">{liveSession.code}</strong>
                 </p>
               </div>
             </div>
-            <span className="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-bold text-[11px] group-hover:scale-105 transition-transform flex-shrink-0">
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-bold text-[11px] group-hover:scale-105 transition-transform shrink-0">
               Voir la table ›
             </span>
           </div>
