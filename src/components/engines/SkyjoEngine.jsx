@@ -49,7 +49,14 @@ export function SkyjoEngine({ game, onFinish }) {
         <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-3">
           Joueur ayant retourné sa dernière carte
         </p>
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+        <div className={`grid gap-2 ${
+          game.players.length === 2 ? 'grid-cols-2' :
+          game.players.length === 3 ? 'grid-cols-3' :
+          game.players.length === 4 ? 'grid-cols-4' :
+          game.players.length === 5 ? 'grid-cols-5' :
+          game.players.length === 6 ? 'grid-cols-3 sm:grid-cols-6' :
+          'grid-cols-4 sm:grid-cols-8'
+        }`}>
           {game.players.map(p => {
             const isSelected = closerId === p.id
             return (
@@ -57,14 +64,14 @@ export function SkyjoEngine({ game, onFinish }) {
                 key={p.id}
                 type="button"
                 onClick={() => setCloserId(p.id)}
-                className={`flex-shrink-0 flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all active:scale-95 ${
+                className={`flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-xl border transition-all active:scale-[0.98] w-full text-center cursor-pointer ${
                   isSelected
-                    ? 'border-[#c83b3b] bg-[#c83b3b]/10'
-                    : 'school-subtle'
+                    ? 'border-[#c83b3b] bg-[#c83b3b]/10 ring-1 ring-[#c83b3b]/30'
+                    : 'school-subtle hover:border-[#c83b3b]/60'
                 }`}
               >
-                <Avatar player={p} size="xs" leader={isSelected} />
-                <span className="text-[11px] font-semibold max-w-[56px] truncate">
+                <Avatar player={p} size={game.players.length >= 5 ? 'xs' : 'sm'} leader={isSelected} />
+                <span className="text-xs font-semibold truncate max-w-full">
                   {p.name}
                 </span>
               </button>
