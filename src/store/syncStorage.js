@@ -6,6 +6,7 @@ import {
   saveCustomPresets,
   loadTheme,
   saveTheme,
+  loadDeletedGameIds,
 } from './storage'
 
 const SYNC_KEYS = {
@@ -163,13 +164,14 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
   let presetsAdded = 0
 
   // 1. Fusion des parties par ID (avec mise à jour si la partie distante a plus de manches)
+  const deletedIds = new Set(loadDeletedGameIds())
   const gamesMap = new Map()
   for (const g of localGames) {
-    if (g && g.id) gamesMap.set(g.id, g)
+    if (g && g.id && !deletedIds.has(g.id)) gamesMap.set(g.id, g)
   }
 
   for (const g of incomingGames) {
-    if (!g || !g.id) continue
+    if (!g || !g.id || deletedIds.has(g.id)) continue
     if (!gamesMap.has(g.id)) {
       gamesMap.set(g.id, g)
       gamesAdded++
@@ -372,6 +374,16 @@ export function importGamesWithResolution(incomingGames = [], resolutions = {}) 
     return { ...g, players: updatedPlayers }
   })
 
+  // Dé-tombstoner les parties explicitement importées par l'utilisateur
+  try {
+    const deleted = loadDeletedGameIds()
+    const importedIds = new Set(processedGames.map(g => g && g.id).filter(Boolean))
+    const filteredDeleted = deleted.filter(id => !importedIds.has(id))
+    if (filteredDeleted.length !== deleted.length) {
+      localStorage.setItem('ardoise_deleted_games', JSON.stringify(filteredDeleted))
+    }
+  } catch {}
+
   const { mergedNotebook, stats } = mergeNotebooks(local, {
     games: processedGames,
     players: extraPlayersToCreate,
@@ -394,10 +406,16 @@ export function applyNotebook(incoming, mode = 'merge') {
   const local = exportNotebookPayload()
 
   if (mode === 'replace') {
+    const incomingGames = Array.isArray(incoming.games) ? incoming.games : []
+    // Dé-tombstoner les parties restaurées si remplacement explicite
+    try {
+      const incomingIds = new Set(incomingGames.map(g => g && g.id).filter(Boolean))
+      const filteredDeleted = loadDeletedGameIds().filter(id => !incomingIds.has(id))
+      localStorage.setItem('ardoise_deleted_games', JSON.stringify(filteredDeleted))
+    } catch {}
+
     if (Array.isArray(incoming.players)) savePlayers(incoming.players)
-    if (Array.isArray(incoming.games)) {
-      localStorage.setItem('ardoise_games', JSON.stringify(incoming.games))
-    }
+    localStorage.setItem('ardoise_games', JSON.stringify(incomingGames))
     if (Array.isArray(incoming.customPresets)) saveCustomPresets(incoming.customPresets)
     if (incoming.theme) saveTheme(incoming.theme)
 
@@ -405,7 +423,7 @@ export function applyNotebook(incoming, mode = 'merge') {
       success: true,
       mode: 'replace',
       stats: {
-        totalGames: incoming.games?.length || 0,
+        totalGames: incomingGames.length,
         totalPlayers: incoming.players?.length || 0,
       },
     }

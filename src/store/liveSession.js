@@ -1,4 +1,5 @@
 import { applyNotebook, extractCodeFromInput } from './syncStorage'
+import { loadDeletedGameIds } from './storage'
 
 const SESSION_KEY = 'ardoise_active_live_session'
 const API_BASE = '/api'
@@ -34,7 +35,9 @@ export function clearActiveSession() {
  * Synchronise les parties d'une session live dans le carnet local (localStorage)
  */
 export function syncSessionGamesToLocal(sessionData) {
-  const games = Array.isArray(sessionData?.state?.games) ? sessionData.state.games : []
+  const rawGames = Array.isArray(sessionData?.state?.games) ? sessionData.state.games : []
+  const deletedIds = new Set(loadDeletedGameIds())
+  const games = rawGames.filter(g => g && g.id && !deletedIds.has(g.id))
   if (games.length === 0) {
     return { syncedCount: 0, gamesAdded: 0, playersAdded: 0 }
   }
@@ -235,6 +238,29 @@ export async function pushGameToLiveSession(code, game) {
     })
   } catch (err) {
     console.error('Erreur pushGameToLiveSession:', err)
+  }
+}
+
+/**
+ * Supprime une partie d'une session en direct active
+ */
+export async function removeGameFromLiveSession(code, gameId) {
+  if (!code || !gameId) return
+  try {
+    const sessionData = await fetchLiveSession(code)
+    if (sessionData.closed || sessionData.state?.closed) return
+
+    const state = sessionData.state || {}
+    const games = Array.isArray(state.games) ? state.games.filter((g) => g && g.id !== gameId) : []
+    state.games = games
+
+    await fetch(`${API_BASE}/sessions/${encodeURIComponent(code)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ state }),
+    })
+  } catch (err) {
+    console.error('Erreur removeGameFromLiveSession:', err)
   }
 }
 

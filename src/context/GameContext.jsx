@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import {
-  saveGame, loadGames, deleteGame,
+  saveGame, loadGames, deleteGame, loadDeletedGameIds,
   savePlayers, loadPlayers,
   saveActiveGameId, loadActiveGameId,
   saveCustomPreset, deleteCustomPreset, loadCustomPresets,
@@ -17,7 +17,8 @@ import {
   fetchLiveSession,
   syncSessionGamesToLocal,
   clearActiveSession,
-  pushGameToLiveSession
+  pushGameToLiveSession,
+  removeGameFromLiveSession
 } from '../store/liveSession'
 import { GAME_META } from '../constants/games'
 
@@ -76,7 +77,9 @@ export function GameProvider({ children }) {
 
       try {
         const data = await fetchLiveSession(current.code)
-        const remoteGames = Array.isArray(data?.state?.games) ? data.state.games : []
+        const deletedIds = new Set(loadDeletedGameIds())
+        const remoteGames = (Array.isArray(data?.state?.games) ? data.state.games : [])
+          .filter(g => g && g.id && !deletedIds.has(g.id))
         const isClosed = Boolean(data?.closed || data?.state?.closed)
 
         const sig = `${isClosed}-${remoteGames.map(g => `${g.id}:${g.rounds?.length || 0}:${g.status}`).join(',')}`
@@ -219,7 +222,18 @@ export function GameProvider({ children }) {
     setGames(prev => prev.filter(g => g.id !== id))
     if (activeGameId === id) {
       setActiveGameId(null)
-      setScreen('home')
+      setScreen(prev => (prev === 'game' ? 'home' : prev))
+    }
+
+    // 1. Pousser immédiatement vers le Cloud si auto-sync activé
+    if (isAutoSyncEnabled() && getSyncKey()) {
+      pushNotebookToCloud().catch(() => {})
+    }
+
+    // 2. Retirer de la session en direct si active
+    const liveSession = getActiveSession()
+    if (liveSession && liveSession.code) {
+      removeGameFromLiveSession(liveSession.code, id).catch(() => {})
     }
   }, [activeGameId])
 
