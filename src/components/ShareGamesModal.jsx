@@ -22,7 +22,13 @@ import { shareGamesBatch, fetchSharedGame } from '../store/syncStorage'
 import { Avatar } from './ui/Avatar'
 import { formatDate } from '../utils/gameUtils'
 
-export function ShareGamesModal({ isOpen, onClose, onOpenImportGames }) {
+export function ShareGamesModal({
+  isOpen,
+  onClose,
+  onOpenImportGames,
+  initialSelectedIds = null,
+  autoGenerate = false,
+}) {
   const { games } = useGame()
   const [activeTab, setActiveTab] = useState('send') // 'send' | 'receive'
   const [selectedIds, setSelectedIds] = useState([])
@@ -56,21 +62,45 @@ export function ShareGamesModal({ isOpen, onClose, onOpenImportGames }) {
       .map((g) => g.id)
   }, [sortedGames])
 
-  // Initialiser la sélection à l'ouverture (pré-sélectionner les parties du jour ou la dernière partie)
+  // Initialiser la sélection à l'ouverture
   useEffect(() => {
     if (!isOpen) return
     setError(null)
     setCopied(false)
     setShareResult(null)
     setReceiveCode('')
-    if (todayIds.length > 0) {
-      setSelectedIds(todayIds)
+    setActiveTab('send')
+
+    let startIds = []
+    if (Array.isArray(initialSelectedIds) && initialSelectedIds.length > 0) {
+      startIds = initialSelectedIds
+    } else if (todayIds.length > 0) {
+      startIds = todayIds
     } else if (sortedGames.length > 0) {
-      setSelectedIds([sortedGames[0].id])
-    } else {
-      setSelectedIds([])
+      startIds = [sortedGames[0].id]
     }
-  }, [isOpen])
+    setSelectedIds(startIds)
+
+    if (autoGenerate && startIds.length > 0) {
+      const chosenGames = sortedGames.filter((g) => startIds.includes(g.id))
+      if (chosenGames.length > 0) {
+        setIsLoading(true)
+        shareGamesBatch(chosenGames)
+          .then((data) => {
+            setShareResult({
+              gameCode: data.gameCode,
+              count: chosenGames.length,
+            })
+          })
+          .catch((err) => {
+            setError(err.message || 'Impossible de générer le lien de partage')
+          })
+          .finally(() => {
+            setIsLoading(false)
+          })
+      }
+    }
+  }, [isOpen, initialSelectedIds, autoGenerate])
 
   const toggleGame = (id) => {
     setSelectedIds((prev) =>
