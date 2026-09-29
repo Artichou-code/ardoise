@@ -59,7 +59,8 @@ export function StatsScreen() {
   useEffect(() => {
     const buttonEl = tabButtonRefs.current[selectedGameType]
     if (buttonEl) {
-      scrollToTab(buttonEl)
+      const timer = setTimeout(() => scrollToTab(buttonEl), 60)
+      return () => clearTimeout(timer)
     }
   }, [selectedGameType])
 
@@ -179,7 +180,7 @@ export function StatsScreen() {
         ref={tabsContainerRef}
         className="flex-shrink-0 px-4 py-2.5 border-b border-stone-200/60 dark:border-slate-800/60 overflow-x-auto scrollbar-hide scroll-smooth"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pr-[50vw]">
           {tabs.map(tab => {
             const isActive = selectedGameType === tab.id
             return (
@@ -233,7 +234,7 @@ export function StatsScreen() {
             {/* Grille des 4 KPIs clés */}
             <div className="grid grid-cols-2 gap-2.5">
               {/* Carte 1 : Parties */}
-              <div className="p-3 rounded-2xl school-card flex flex-col justify-between">
+              <div className="p-3 rounded-2xl school-card flex flex-col justify-between min-h-[102px]">
                 <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 mb-1">
                   <span className="text-[11px] font-semibold uppercase tracking-wider">
                     Parties
@@ -252,7 +253,7 @@ export function StatsScreen() {
               </div>
 
               {/* Carte 2 : Temps de jeu */}
-              <div className="p-3 rounded-2xl school-card flex flex-col justify-between">
+              <div className="p-3 rounded-2xl school-card flex flex-col justify-between min-h-[102px]">
                 <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 mb-1">
                   <span className="text-[11px] font-semibold uppercase tracking-wider">
                     Temps de jeu
@@ -270,7 +271,7 @@ export function StatsScreen() {
               </div>
 
               {/* Carte 3 : Manches */}
-              <div className="p-3 rounded-2xl school-card flex flex-col justify-between">
+              <div className="p-3 rounded-2xl school-card flex flex-col justify-between min-h-[102px]">
                 <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 mb-1">
                   <span className="text-[11px] font-semibold uppercase tracking-wider">
                     Manches
@@ -287,21 +288,21 @@ export function StatsScreen() {
                 </div>
               </div>
 
-              {/* Carte 4 : Jeu favori */}
-              <div className="p-3 rounded-2xl school-card flex flex-col justify-between">
+              {/* Carte 4 : Jeu favori / Discipline */}
+              <div className="p-3 rounded-2xl school-card flex flex-col justify-between min-h-[102px]">
                 <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 mb-1">
                   <span className="text-[11px] font-semibold uppercase tracking-wider">
                     {selectedGameType === 'all' ? 'Jeu favori' : 'Discipline'}
                   </span>
                   <Sparkles size={16} className="text-[#c83b3b]" />
                 </div>
-                <div>
-                  <p className="font-serif-title font-bold text-lg text-stone-900 dark:text-slate-100 truncate">
+                <div className="min-w-0">
+                  <p className="font-serif-title font-bold text-sm sm:text-base leading-tight text-stone-900 dark:text-slate-100 line-clamp-2">
                     {selectedGameType === 'all'
                       ? kpis.favoriteGame?.name || '—'
-                      : GAME_META[selectedGameType]?.name || '—'}
+                      : GAME_META[selectedGameType]?.name.split(' (')[0] || '—'}
                   </p>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5 truncate">
+                  <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-1 truncate">
                     {selectedGameType === 'all'
                       ? kpis.favoriteGame
                         ? `${kpis.favoriteGame.percent}% du volume total`
