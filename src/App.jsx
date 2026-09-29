@@ -6,6 +6,7 @@ import { VictoryScreen } from './components/VictoryScreen'
 import { HistoryScreen } from './components/HistoryScreen'
 import { StatsScreen } from './components/StatsScreen'
 import { PlayersScreen } from './components/PlayersScreen'
+import { TrophiesScreen } from './components/TrophiesScreen'
 import { PullToRefreshIndicator } from './components/ui/PullToRefresh'
 import { ImportGamesModal } from './components/ImportGamesModal'
 import { LiveSessionModal } from './components/LiveSessionModal'
@@ -73,6 +74,8 @@ export default function App() {
         <StatsScreen />
       ) : screen === 'players' ? (
         <PlayersScreen />
+      ) : screen === 'trophies' ? (
+        <TrophiesScreen />
       ) : (
         <HomeScreen />
       )}

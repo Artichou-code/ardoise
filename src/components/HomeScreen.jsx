@@ -551,19 +551,11 @@ export function HomeScreen() {
         }}
       />
 
-      {/* Guide des trophées et distinctions */}
-      <TrophiesSheet
-        open={isTrophiesOpen}
-        onClose={() => setIsTrophiesOpen(false)}
-        playersStats={allPlayersStats}
-      />
-
       {/* Menu Burger latéral complet (Statistiques, Historique, Joueurs, Trophées, Partage & Sauvegarde) */}
       <BurgerMenu
         isOpen={isBurgerMenuOpen}
         onClose={() => setIsBurgerMenuOpen(false)}
         onNavigate={(screen) => setScreen(screen)}
-        onOpenTrophies={() => setIsTrophiesOpen(true)}
         onOpenLiveSession={() => setIsLiveModalOpen(true)}
         onOpenShareGames={() => setIsShareGamesModalOpen(true)}
         onOpenSync={() => setIsSyncModalOpen(true)}

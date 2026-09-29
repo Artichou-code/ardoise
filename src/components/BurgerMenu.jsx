@@ -230,7 +230,7 @@ export function BurgerMenu({
 
               <button
                 type="button"
-                onClick={() => handleAction(onOpenTrophies)}
+                onClick={() => handleAction(() => onNavigate('trophies'))}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-white/85 dark:bg-slate-800/85 border border-stone-200/90 dark:border-slate-700/70 text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">

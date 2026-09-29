@@ -165,14 +165,13 @@ export function StatsScreen() {
         </button>
         <button
           type="button"
-          onClick={() => setShowTrophies(true)}
-          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+          onClick={() => setScreen('trophies')}
+          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           title="Guide des trophées & distinctions"
           aria-label="Guide des trophées"
         >
           <Award size={18} className="text-stone-700 dark:text-slate-300" />
         </button>
-        <ThemeToggle />
       </header>
 
       {/* Onglets horizontaux de filtre par jeu avec centrage fluide au clic */}
