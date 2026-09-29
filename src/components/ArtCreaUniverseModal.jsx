@@ -96,11 +96,11 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
 
       {/* Conteneur principal adapté à la DA Ardoise (cahier d'écolier avec petits carreaux) */}
       <div className="relative w-full max-w-sm sm:max-w-md md:max-w-4xl school-surface text-stone-900 dark:text-slate-100 border border-stone-200/90 dark:border-slate-800/90 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
-        {/* Liseré supérieur rouge signature Ardoise / or en dark */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] dark:via-[#FFC107] to-transparent z-10" />
+        {/* Liseré supérieur rouge signature Ardoise */}
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent z-10" />
 
         {/* Halo d'ambiance en arrière-plan */}
-        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 rounded-full blur-3xl pointer-events-none" />
 
         {/* Header de la modale */}
         <div className="relative z-10 p-4 sm:p-5 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-start justify-between gap-4">
@@ -109,7 +109,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
               id="artcrea-universe-title"
               className="text-lg sm:text-xl font-bold tracking-tight leading-tight font-serif-title text-stone-900 dark:text-slate-100"
             >
-              L'Univers <span className="text-[#c83b3b] dark:text-[#FFC107]">ART-créa</span>
+              L'Univers <span className="text-[#c83b3b]">ART-créa</span>
             </h2>
             <p className="text-xs text-stone-500 dark:text-slate-400 font-medium mt-0.5">
               Webdesign & Photographie • Toulouse
@@ -145,7 +145,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                   aria-label={`Projet ${card.title}`}
                   className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                     activeCardIndex === i
-                      ? 'w-6 bg-[#c83b3b] dark:bg-[#FFC107]'
+                      ? 'w-6 bg-[#c83b3b]'
                       : 'w-1.5 bg-stone-300 dark:bg-slate-700 hover:bg-stone-400'
                   }`}
                 />
@@ -196,12 +196,12 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                     {/* Badge et Titre */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="text-[8px] font-bold uppercase tracking-wider text-[#c83b3b] dark:text-[#FFC107] px-1.5 py-0.5 rounded-full bg-[#c83b3b]/10 dark:bg-amber-950/40 border border-[#c83b3b]/25 dark:border-amber-800/60 whitespace-nowrap">
+                        <span className="text-[8px] font-bold uppercase tracking-wider text-[#c83b3b] px-1.5 py-0.5 rounded-full bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/25 whitespace-nowrap">
                           {card.badge}
                         </span>
-                        <ExternalLink size={12} className="text-stone-400 group-hover:text-[#c83b3b] dark:group-hover:text-[#FFC107] transition-all flex-shrink-0" />
+                        <ExternalLink size={12} className="text-stone-400 group-hover:text-[#c83b3b] transition-all flex-shrink-0" />
                       </div>
-                      <h3 className="text-sm font-bold tracking-tight group-hover:text-[#c83b3b] dark:group-hover:text-[#FFC107] transition-colors leading-snug font-serif-title text-stone-900 dark:text-slate-100">
+                      <h3 className="text-sm font-bold tracking-tight group-hover:text-[#c83b3b] transition-colors leading-snug font-serif-title text-stone-900 dark:text-slate-100">
                         {card.title}
                       </h3>
                     </div>
@@ -214,7 +214,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                 </div>
 
                 {/* CTA en bas */}
-                <div className="relative z-10 pt-2 border-t border-stone-100 dark:border-slate-800/80 flex items-center justify-between text-xs font-bold text-[#c83b3b] dark:text-[#FFC107]">
+                <div className="relative z-10 pt-2 border-t border-stone-100 dark:border-slate-800/80 flex items-center justify-between text-xs font-bold text-[#c83b3b]">
                   <span className="text-[11px]">{card.ctaText}</span>
                   <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
                 </div>

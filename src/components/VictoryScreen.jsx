@@ -210,7 +210,7 @@ export function VictoryScreen() {
           onClick={() => setIsShareModalOpen(true)}
           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 font-bold text-xs hover:bg-stone-50 dark:hover:bg-slate-800 text-stone-800 dark:text-slate-200 transition-colors cursor-pointer shadow-2xs mt-3"
         >
-          <QrCode size={15} className="text-[#c83b3b] dark:text-[#FFC107]" />
+          <QrCode size={15} className="text-[#c83b3b]" />
           <span>Partager la feuille de match (QR Code)</span>
         </button>
 

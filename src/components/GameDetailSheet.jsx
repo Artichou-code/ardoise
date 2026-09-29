@@ -301,7 +301,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
               onClick={() => setIsShareModalOpen(true)}
               className="w-full py-2.5 px-3 rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-stone-800 dark:text-slate-200 font-bold text-xs hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
             >
-              <QrCode size={14} className="text-[#c83b3b] dark:text-[#FFC107]" />
+              <QrCode size={14} className="text-[#c83b3b]" />
               <span>Partager la partie (QR Code)</span>
             </button>
           )}

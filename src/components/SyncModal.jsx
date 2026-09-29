@@ -169,12 +169,12 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
       {/* Conteneur principal */}
       <div className="relative w-full max-w-md school-surface text-stone-900 dark:text-slate-100 border border-stone-200/90 dark:border-slate-800/90 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
         {/* Liseré supérieur rouge Ardoise */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] dark:via-[#FFC107] to-transparent z-10" />
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent z-10" />
 
         {/* En-tête responsive */}
         <div className="relative z-10 p-3.5 sm:p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 text-[#c83b3b] dark:text-[#FFC107] shrink-0">
+            <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0">
               <Cloud size={18} />
             </span>
             <div className="min-w-0 flex-1">
@@ -204,7 +204,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
             onClick={() => setActiveTab('cloud')}
             className={`pb-2 px-3 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === 'cloud'
-                ? 'border-[#c83b3b] text-[#c83b3b] dark:border-[#FFC107] dark:text-[#FFC107]'
+                ? 'border-[#c83b3b] text-[#c83b3b]'
                 : 'border-transparent text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
@@ -216,7 +216,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
             onClick={() => setActiveTab('file')}
             className={`pb-2 px-3 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === 'file'
-                ? 'border-[#c83b3b] text-[#c83b3b] dark:border-[#FFC107] dark:text-[#FFC107]'
+                ? 'border-[#c83b3b] text-[#c83b3b]'
                 : 'border-transparent text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
@@ -262,7 +262,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 font-mono font-bold text-base tracking-widest px-3 py-2 rounded-lg bg-stone-100 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 text-[#c83b3b] dark:text-[#FFC107] select-all text-center">
+                  <div className="flex-1 font-mono font-bold text-base tracking-widest px-3 py-2 rounded-lg bg-stone-100 dark:bg-slate-900 border border-stone-200 dark:border-slate-800 text-[#c83b3b] select-all text-center">
                     {currentSyncKey}
                   </div>
                   <button
@@ -290,7 +290,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                     type="button"
                     onClick={handleSyncNow}
                     disabled={isLoading}
-                    className="px-3 py-1.5 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs disabled:opacity-50 cursor-pointer shrink-0"
+                    className="px-3 py-1.5 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs disabled:opacity-50 cursor-pointer shrink-0"
                   >
                     <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
                     <span>{isLoading ? 'Synchronisation…' : 'Synchroniser'}</span>
@@ -313,12 +313,12 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                     onChange={(e) => setInputKey(e.target.value.toUpperCase())}
                     placeholder="Ex&nbsp;: ARD-7B92"
                     maxLength={10}
-                    className="flex-1 font-mono uppercase px-3 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-stone-800 dark:text-slate-200 focus:outline-none focus:border-[#c83b3b] dark:focus:border-[#FFC107]"
+                    className="flex-1 font-mono uppercase px-3 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-stone-800 dark:text-slate-200 focus:outline-none focus:border-[#c83b3b]"
                   />
                   <button
                     type="submit"
                     disabled={isLoading || !inputKey.trim()}
-                    className="px-3.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] dark:hover:border-[#FFC107] hover:text-[#c83b3b] dark:hover:text-[#FFC107] font-semibold text-xs text-stone-800 dark:text-slate-200 disabled:opacity-40 cursor-pointer flex items-center gap-1 shrink-0"
+                    className="px-3.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-semibold text-xs text-stone-800 dark:text-slate-200 disabled:opacity-40 cursor-pointer flex items-center gap-1 shrink-0"
                   >
                     <span>Lier</span>
                     <ArrowRight size={13} />
@@ -337,7 +337,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                     handleToggleAutoSync()
                   }
                 }}
-                className="flex items-center justify-between p-3.5 rounded-xl border border-stone-200/80 dark:border-slate-800/80 hover:border-[#c83b3b]/30 dark:hover:border-[#FFC107]/30 bg-stone-50/50 dark:bg-slate-900/30 cursor-pointer transition-all select-none"
+                className="flex items-center justify-between p-3.5 rounded-xl border border-stone-200/80 dark:border-slate-800/80 hover:border-[#c83b3b]/30 bg-stone-50/50 dark:bg-slate-900/30 cursor-pointer transition-all select-none"
               >
                 <div className="pr-3 min-w-0 flex-1">
                   <span className="font-bold text-stone-800 dark:text-slate-200 block text-xs">
@@ -348,11 +348,11 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                   </span>
                 </div>
 
-                {/* Switch aux couleurs de la DA : Rouge en light, Ambre en dark */}
+                {/* Switch aux couleurs de la DA : Rouge en light et en dark */}
                 <div
                   className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
                     autoSync
-                      ? 'bg-[#c83b3b] dark:bg-[#FFC107]'
+                      ? 'bg-[#c83b3b]'
                       : 'bg-stone-300 dark:bg-slate-700'
                   }`}
                 >
@@ -381,7 +381,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                 <button
                   type="button"
                   onClick={downloadNotebookBackup}
-                  className="px-3.5 py-2 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs shrink-0"
+                  className="px-3.5 py-2 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs shrink-0"
                 >
                   <Download size={14} />
                   <span>Télécharger</span>
@@ -435,7 +435,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                     <button
                       type="button"
                       onClick={() => handleConfirmImport('merge')}
-                      className="flex-1 py-2 px-3 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs transition-colors cursor-pointer text-center"
+                      className="flex-1 py-2 px-3 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs transition-colors cursor-pointer text-center"
                     >
                       Fusionner (Recommandé)
                     </button>

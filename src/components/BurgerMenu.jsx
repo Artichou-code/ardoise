@@ -64,8 +64,8 @@ export function BurgerMenu({
 
       {/* Tiroir coulissant depuis la droite */}
       <div className="relative w-full max-w-xs sm:max-w-sm h-full school-surface text-stone-900 dark:text-slate-100 border-l border-stone-200/90 dark:border-slate-800/90 shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-250 ease-out">
-        {/* Liseré supérieur rouge/or */}
-        <div className="h-1 bg-gradient-to-r from-transparent via-[#c83b3b] dark:via-[#FFC107] to-transparent shrink-0" />
+        {/* Liseré supérieur rouge signature */}
+        <div className="h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent shrink-0" />
 
         {/* En-tête du menu */}
         <div className="p-4 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
@@ -104,7 +104,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(() => onNavigate('players'))}
                 className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 text-[#c83b3b] dark:text-[#FFC107] shrink-0 group-hover:scale-105 transition-transform">
+                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-transform">
                   <Users size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -246,7 +246,7 @@ export function BurgerMenu({
 
               <button
                 type="button"
-                onClick={() => handleAction(() => onOpenLegal('legal'))}
+                onClick={() => handleAction(() => onOpenLegal('mentions'))}
                 className="w-full p-2.5 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
@@ -276,7 +276,7 @@ export function BurgerMenu({
           >
             <div className="flex items-center gap-2">
               {theme === 'dark' ? (
-                <Sun size={15} className="text-amber-400" />
+                <Sun size={15} className="text-[#c83b3b]" />
               ) : (
                 <Moon size={15} className="text-stone-700" />
               )}
@@ -285,10 +285,10 @@ export function BurgerMenu({
               </span>
             </div>
 
-            {/* Switch miniature DA Ardoise */}
+            {/* Switch miniature DA Ardoise (toujours rouge identitaire) */}
             <div
               className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                theme === 'dark' ? 'bg-[#FFC107]' : 'bg-[#c83b3b]'
+                theme === 'dark' ? 'bg-[#c83b3b]' : 'bg-stone-300 dark:bg-slate-700'
               }`}
             >
               <span

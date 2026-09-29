@@ -78,12 +78,12 @@ export function ShareGameModal({ isOpen, onClose, game }) {
       {/* Conteneur principal */}
       <div className="relative w-full max-w-sm school-surface text-stone-900 dark:text-slate-100 border border-stone-200/90 dark:border-slate-800/90 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
         {/* Liseré supérieur */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] dark:via-[#FFC107] to-transparent z-10" />
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent z-10" />
 
         {/* En-tête responsive */}
         <div className="relative z-10 p-3.5 sm:p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 text-[#c83b3b] dark:text-[#FFC107] shrink-0">
+            <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0">
               <QrCode size={18} />
             </span>
             <div className="min-w-0 flex-1">
@@ -110,7 +110,7 @@ export function ShareGameModal({ isOpen, onClose, game }) {
         <div className="p-5 flex flex-col items-center text-center space-y-4">
           {isLoading ? (
             <div className="py-12 flex flex-col items-center justify-center space-y-2 text-stone-500 dark:text-slate-400">
-              <Loader2 size={28} className="animate-spin text-[#c83b3b] dark:text-[#FFC107]" />
+              <Loader2 size={28} className="animate-spin text-[#c83b3b]" />
               <p className="text-xs">Génération du QR code…</p>
             </div>
           ) : error ? (
@@ -134,7 +134,7 @@ export function ShareGameModal({ isOpen, onClose, game }) {
                 <span className="text-[10px] text-stone-400 dark:text-slate-500 uppercase tracking-widest font-semibold block">
                   Code de match
                 </span>
-                <span className="font-mono font-bold text-lg tracking-widest text-[#c83b3b] dark:text-[#FFC107]">
+                <span className="font-mono font-bold text-lg tracking-widest text-[#c83b3b]">
                   {gameCode}
                 </span>
               </div>
@@ -157,7 +157,7 @@ export function ShareGameModal({ isOpen, onClose, game }) {
                 <button
                   type="button"
                   onClick={handleNativeShare}
-                  className="py-2 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="py-2 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   <Share2 size={14} />
                   <span>Partager</span>

@@ -279,7 +279,7 @@ export function StatsScreen() {
             {/* Bannière de Synchronisation & Sauvegarde des Statistiques */}
             <div className="p-3 rounded-2xl border border-stone-200/90 dark:border-slate-800/90 bg-white/70 dark:bg-slate-900/60 flex items-center justify-between gap-3 shadow-2xs">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 flex items-center justify-center flex-shrink-0 text-[#c83b3b] dark:text-[#FFC107]">
+                <div className="w-8 h-8 rounded-xl bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 flex items-center justify-center flex-shrink-0 text-[#c83b3b]">
                   <Cloud size={16} />
                 </div>
                 <div className="min-w-0">
@@ -294,7 +294,7 @@ export function StatsScreen() {
               <button
                 type="button"
                 onClick={() => setShowSyncModal(true)}
-                className="px-3 py-1.5 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs flex-shrink-0 transition-colors cursor-pointer shadow-2xs"
+                className="px-3 py-1.5 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex-shrink-0 transition-colors cursor-pointer shadow-2xs"
               >
                 Gérer
               </button>

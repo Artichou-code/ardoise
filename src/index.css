@@ -31,7 +31,7 @@ html.dark {
   --accent-red-hover: #b91c1c;
   --grid-color: rgba(241, 245, 249, 0.04);
   --margin-line: rgba(200, 59, 59, 0.22);
-  accent-color: #FFC107;
+  accent-color: #c83b3b;
 }
 
 input, button, select, textarea {
@@ -39,7 +39,7 @@ input, button, select, textarea {
 }
 
 html.dark input, html.dark button, html.dark select, html.dark textarea {
-  accent-color: #FFC107;
+  accent-color: #c83b3b;
 }
 
 @layer base {

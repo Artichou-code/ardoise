@@ -167,7 +167,7 @@ export function HomeScreen() {
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white dark:bg-[#FFC107] dark:text-stone-900 shrink-0">
+                  <div className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white shrink-0">
                     <Play size={12} fill="currentColor" /> Reprendre
                   </div>
                 </button>
@@ -427,7 +427,7 @@ export function HomeScreen() {
             className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
             title="Ouvrir le Hub juridique (Mentions légales, Confidentialité, CGU)"
           >
-            <Scale size={12} className="text-[#c83b3b] dark:text-[#FFC107] group-hover:scale-110 transition-transform" />
+            <Scale size={12} className="text-[#c83b3b] group-hover:scale-110 transition-transform" />
             <span className="underline underline-offset-2 decoration-stone-300 dark:decoration-slate-700 group-hover:decoration-current">
               Hub juridique
             </span>
@@ -504,7 +504,7 @@ export function HomeScreen() {
         onOpenLiveSession={() => setIsLiveModalOpen(true)}
         onOpenSync={() => setIsSyncModalOpen(true)}
         onOpenRules={() => setRulesGame(sortedGames[0]?.id || 'belote')}
-        onOpenLegal={(tab) => setLegalTab(tab || 'legal')}
+        onOpenLegal={(tab) => setLegalTab(tab || 'mentions')}
         onOpenArtCrea={() => setIsArtCreaModalOpen(true)}
         liveSession={liveSession}
       />

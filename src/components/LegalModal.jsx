@@ -22,7 +22,8 @@ export function LegalModal({ open, onClose, activeTab = 'mentions', onSelectTab 
 
   if (!open) return null
 
-  const currentTab = activeTab || 'mentions'
+  const validTabs = ['mentions', 'confidentialite', 'cgu']
+  const currentTab = validTabs.includes(activeTab) ? activeTab : 'mentions'
 
   return (
     <div

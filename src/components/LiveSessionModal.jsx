@@ -279,7 +279,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   onClick={() => setActiveTab('create')}
                   className={`flex-1 pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
                     activeTab === 'create'
-                      ? 'border-[#c83b3b] text-[#c83b3b] dark:border-[#FFC107] dark:text-[#FFC107]'
+                      ? 'border-[#c83b3b] text-[#c83b3b]'
                       : 'border-transparent text-stone-500'
                   }`}
                 >
@@ -290,7 +290,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   onClick={() => setActiveTab('join')}
                   className={`flex-1 pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
                     activeTab === 'join'
-                      ? 'border-[#c83b3b] text-[#c83b3b] dark:border-[#FFC107] dark:text-[#FFC107]'
+                      ? 'border-[#c83b3b] text-[#c83b3b]'
                       : 'border-transparent text-stone-500'
                   }`}
                 >
@@ -324,14 +324,14 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                       onChange={(e) => setHostName(e.target.value)}
                       placeholder="Ex&nbsp;: Alex"
                       required
-                      className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none focus:border-[#c83b3b] dark:focus:border-[#FFC107]"
+                      className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none focus:border-[#c83b3b]"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={isLoading || !sessionName.trim() || !hostName.trim()}
-                    className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
                   >
                     <span>Lancer la table en direct</span>
                     <ArrowRight size={14} />
@@ -349,7 +349,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                       onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                       placeholder="Ex&nbsp;: ARD-7B92"
                       required
-                      className="w-full font-mono uppercase px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none focus:border-[#c83b3b] dark:focus:border-[#FFC107]"
+                      className="w-full font-mono uppercase px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none focus:border-[#c83b3b]"
                     />
                   </div>
 
@@ -363,14 +363,14 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                       onChange={(e) => setJoinPlayerName(e.target.value)}
                       placeholder="Ex&nbsp;: Julien"
                       required
-                      className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none focus:border-[#c83b3b] dark:focus:border-[#FFC107]"
+                      className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none focus:border-[#c83b3b]"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={isLoading || !joinCode.trim() || !joinPlayerName.trim()}
-                    className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
                   >
                     <span>Rejoindre la table</span>
                     <ArrowRight size={14} />
