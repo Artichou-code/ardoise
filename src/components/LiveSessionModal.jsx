@@ -8,12 +8,9 @@ import {
   Check,
   LogOut,
   ArrowRight,
-  Crown,
   Info,
   Share2,
   CheckCircle2,
-  Users,
-  Layers,
   PowerOff,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
@@ -27,22 +24,16 @@ import {
   importSessionGames,
   syncSessionGamesToLocal,
 } from '../store/liveSession'
-import { Avatar } from './ui/Avatar'
 import { formatDate } from '../utils/gameUtils'
 
 export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoinCode }) {
-  const { players, games, reloadStorage } = useGame()
+  const { games, reloadStorage } = useGame()
   const [activeSession, setActiveSession] = useState(null)
   const [sessionDetails, setSessionDetails] = useState(null)
   const [activeTab, setActiveTab] = useState(initialJoinCode ? 'join' : 'create') // 'create' | 'join'
   const [sessionName, setSessionName] = useState('')
-  const [selectedHostPlayer, setSelectedHostPlayer] = useState('') // nom du joueur ou '__custom__'
-  const [customHostName, setCustomHostName] = useState('')
   const [includeTodayGames, setIncludeTodayGames] = useState(true)
-
   const [joinCode, setJoinCode] = useState(initialJoinCode || '')
-  const [selectedJoinPlayer, setSelectedJoinPlayer] = useState('')
-  const [customJoinName, setCustomJoinName] = useState('')
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -69,11 +60,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     setError(null)
     setStatusBanner(null)
     setCopied(false)
-
-    // Pré-sélectionner le premier joueur enregistré s'il existe
-    if (players.length > 0 && !selectedHostPlayer) {
-      setSelectedHostPlayer(players[0].name)
-    }
 
     if (initialJoinCode) {
       setActiveTab('join')
@@ -165,20 +151,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     }
   }
 
-  const resolvedHostName = useMemo(() => {
-    if (selectedHostPlayer === '__custom__') {
-      return customHostName.trim() || 'Hôte'
-    }
-    return selectedHostPlayer || customHostName.trim() || (players[0]?.name || 'Hôte')
-  }, [selectedHostPlayer, customHostName, players])
-
-  const resolvedJoinName = useMemo(() => {
-    if (selectedJoinPlayer === '__custom__') {
-      return customJoinName.trim()
-    }
-    return selectedJoinPlayer || customJoinName.trim()
-  }, [selectedJoinPlayer, customJoinName])
-
   const handleCreate = async (e) => {
     e.preventDefault()
     setIsLoading(true)
@@ -192,7 +164,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
       const finalTitle = sessionName.trim() || defaultTitle
       const initialGames = includeTodayGames && todayGames.length > 0 ? todayGames : []
 
-      const code = await createLiveSession(finalTitle, resolvedHostName, [], initialGames)
+      const code = await createLiveSession(finalTitle, 'Hôte', [], initialGames)
       const current = getActiveSession()
       setActiveSession(current)
       const data = await fetchLiveSession(code)
@@ -212,7 +184,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     setError(null)
     setStatusBanner(null)
     try {
-      const data = await joinLiveSession(joinCode, resolvedJoinName)
+      const data = await joinLiveSession(joinCode, '')
       reloadStorage()
 
       if (data.closed) {
@@ -304,8 +276,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   if (!isOpen || typeof document === 'undefined') return null
 
   const sessionGames = sessionDetails?.state?.games || []
-  const participantsList = sessionDetails?.state?.participants || []
-  const hostDisplay = sessionDetails?.hostName || sessionDetails?.state?.host || activeSession?.host || 'Hôte'
   const isHost = Boolean(activeSession?.isHost)
 
   return createPortal(
@@ -394,7 +364,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   </span>
                 </div>
 
-                {/* QR Code uniquement si utile pour inviter d'autres joueurs */}
+                {/* QR Code d'invitation */}
                 <div className="flex flex-col items-center py-1.5 space-y-2">
                   <div className="p-2.5 bg-white rounded-xl shadow-xs border border-stone-200 inline-block">
                     <QRCodeSVG value={shareUrl} size={145} level="M" />
@@ -432,7 +402,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   <strong className="font-bold text-emerald-800 dark:text-emerald-300 block">
                     Synchronisation automatique activée
                   </strong>
-                  Chaque partie jouée est enregistrée directement dans le carnet et les statistiques de tous les participants connectés.
+                  Chaque partie jouée est enregistrée directement dans votre carnet et vos statistiques.
                 </div>
               </div>
 
@@ -479,27 +449,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                     </p>
                   </div>
                 )}
-              </div>
-
-              {/* Participants connectés */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 block px-1">
-                  Appareils reliés ({participantsList.length + 1})
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  <span className="px-2.5 py-1 rounded-lg bg-[#c83b3b]/10 text-[#c83b3b] text-xs font-bold flex items-center gap-1.5">
-                    <Crown size={12} className="shrink-0" />
-                    <span>{hostDisplay} (Hôte)</span>
-                  </span>
-                  {participantsList.map((p, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-slate-800 text-xs font-semibold text-stone-700 dark:text-slate-300"
-                    >
-                      {p.name}
-                    </span>
-                  ))}
-                </div>
               </div>
 
               {/* Bouton d'action de fin (Clôturer pour l'Hôte / Quitter en gardant les parties pour l'Invité) */}
@@ -567,66 +516,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
 
               {activeTab === 'create' ? (
                 <form onSubmit={handleCreate} className="space-y-3.5">
-                  {/* Sélection de l'hôte parmi les joueurs pré-enregistrés */}
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1.5">
-                      Qui tient l'ardoise&nbsp;?
-                    </label>
-                    {players.length > 0 ? (
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-0.5">
-                          {players.map((p) => {
-                            const isSelected = selectedHostPlayer === p.name
-                            return (
-                              <button
-                                key={p.id}
-                                type="button"
-                                onClick={() => setSelectedHostPlayer(p.name)}
-                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                                  isSelected
-                                    ? 'border-[#c83b3b] bg-[#c83b3b]/10 text-[#c83b3b] font-bold shadow-2xs'
-                                    : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-stone-700 dark:text-slate-300 hover:border-stone-300'
-                                }`}
-                              >
-                                <Avatar player={p} size="xs" />
-                                <span className="truncate max-w-[100px]">{p.name}</span>
-                              </button>
-                            )
-                          })}
-                          <button
-                            type="button"
-                            onClick={() => setSelectedHostPlayer('__custom__')}
-                            className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                              selectedHostPlayer === '__custom__'
-                                ? 'border-[#c83b3b] bg-[#c83b3b]/10 text-[#c83b3b] font-bold'
-                                : 'border-dashed border-stone-300 dark:border-slate-700 text-stone-500 dark:text-slate-400 hover:border-stone-400'
-                            }`}
-                          >
-                            Autre prénom…
-                          </button>
-                        </div>
-
-                        {selectedHostPlayer === '__custom__' && (
-                          <input
-                            type="text"
-                            value={customHostName}
-                            onChange={(e) => setCustomHostName(e.target.value)}
-                            placeholder="Votre prénom"
-                            className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none focus:border-[#c83b3b]"
-                          />
-                        )}
-                      </div>
-                    ) : (
-                      <input
-                        type="text"
-                        value={customHostName}
-                        onChange={(e) => setCustomHostName(e.target.value)}
-                        placeholder="Votre prénom (optionnel)"
-                        className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none focus:border-[#c83b3b]"
-                      />
-                    )}
-                  </div>
-
                   {/* Nom de la soirée (optionnel) */}
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1">
@@ -690,68 +579,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                       required
                       className="w-full font-mono uppercase px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none focus:border-[#c83b3b]"
                     />
-                  </div>
-
-                  {/* Choix du joueur local (optionnel) */}
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1.5">
-                      Votre profil joueur <span className="font-normal lowercase opacity-75">(optionnel)</span>
-                    </label>
-                    {players.length > 0 ? (
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-0.5">
-                          {players.map((p) => {
-                            const isSelected = selectedJoinPlayer === p.name
-                            return (
-                              <button
-                                key={p.id}
-                                type="button"
-                                onClick={() => setSelectedJoinPlayer(isSelected ? '' : p.name)}
-                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                                  isSelected
-                                    ? 'border-[#c83b3b] bg-[#c83b3b]/10 text-[#c83b3b] font-bold'
-                                    : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-stone-700 dark:text-slate-300'
-                                }`}
-                              >
-                                <Avatar player={p} size="xs" />
-                                <span className="truncate max-w-[100px]">{p.name}</span>
-                              </button>
-                            )
-                          })}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setSelectedJoinPlayer(selectedJoinPlayer === '__custom__' ? '' : '__custom__')
-                            }
-                            className={`px-2.5 py-1 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                              selectedJoinPlayer === '__custom__'
-                                ? 'border-[#c83b3b] bg-[#c83b3b]/10 text-[#c83b3b] font-bold'
-                                : 'border-dashed border-stone-300 dark:border-slate-700 text-stone-500 dark:text-slate-400'
-                            }`}
-                          >
-                            Autre…
-                          </button>
-                        </div>
-
-                        {selectedJoinPlayer === '__custom__' && (
-                          <input
-                            type="text"
-                            value={customJoinName}
-                            onChange={(e) => setCustomJoinName(e.target.value)}
-                            placeholder="Votre prénom"
-                            className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none focus:border-[#c83b3b]"
-                          />
-                        )}
-                      </div>
-                    ) : (
-                      <input
-                        type="text"
-                        value={customJoinName}
-                        onChange={(e) => setCustomJoinName(e.target.value)}
-                        placeholder="Votre prénom (optionnel)"
-                        className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none focus:border-[#c83b3b]"
-                      />
-                    )}
                   </div>
 
                   <button
