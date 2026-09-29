@@ -6,6 +6,7 @@ export function Avatar({ player, size = 'md', leader = false, leaderColor, ringC
   const sizeClass = {
     '2xs': 'w-5 h-5 text-[10px] m-[2.5px]',
     xs: 'w-6 h-6 text-[11px] m-[3px]',
+    'sm-compact': 'w-7.5 h-7.5 text-xs m-[3px]',
     sm: 'w-9 h-9 text-sm',
     md: 'w-11 h-11 text-base',
     lg: 'w-13 h-13 text-xl',
@@ -18,9 +19,12 @@ export function Avatar({ player, size = 'md', leader = false, leaderColor, ringC
 
   // Espace (gap) et anneau proportionnels à la taille de l'avatar
   const isCompact = size === '2xs' || size === 'xs'
+  const isSemiCompact = size === 'sm-compact'
   const floatingRingStyle = {
     boxShadow: isCompact
       ? `0 0 0 1.5px var(--bg-card, #ffffff), 0 0 0 2.75px ${ringColor}`
+      : isSemiCompact
+      ? `0 0 0 1.5px var(--bg-card, #ffffff), 0 0 0 3px ${ringColor}`
       : `0 0 0 2px var(--bg-card, #ffffff), 0 0 0 4px ${ringColor}`,
   }
 

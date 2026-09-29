@@ -208,34 +208,32 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
         }
       >
         <div className="px-4 sm:px-5 pt-2 pb-4 space-y-2.5">
-          <div className="flex items-center">
+          <div className="min-w-0 w-full">
             {selectedPlayers.length === 0 ? (
               <p className="text-xs text-stone-600 dark:text-slate-400 leading-relaxed">
                 {meta.description}
               </p>
             ) : (
-              <div className="w-full overflow-x-auto scrollbar-hide -mx-1 px-1">
-                <div className="flex items-center gap-3 px-1 py-0.5">
-                  {selectedPlayers.map(p => (
-                    <div key={p.id} className="shrink-0 flex flex-col items-center gap-0.5">
-                      <div className="relative p-1">
-                        <Avatar player={p} size="sm" />
-                        <button
-                          type="button"
-                          onClick={() => setSelectedPlayers(prev => prev.filter(sp => sp.id !== p.id))}
-                          className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-stone-800 dark:bg-slate-200 text-white dark:text-slate-900 flex items-center justify-center shadow-xs hover:bg-[#c83b3b] dark:hover:bg-[#c83b3b] hover:text-white transition-colors"
-                          title={`Retirer ${p.name}`}
-                          aria-label={`Retirer ${p.name}`}
-                        >
-                          <X size={10} strokeWidth={2.5} />
-                        </button>
-                      </div>
-                      <span className="text-[10px] font-semibold text-stone-700 dark:text-slate-300 max-w-[54px] truncate text-center">
-                        {p.name}
-                      </span>
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 py-0.5">
+                {selectedPlayers.map(p => (
+                  <div key={p.id} className="shrink-0 flex flex-col items-center gap-0.5">
+                    <div className="relative p-0.5">
+                      <Avatar player={p} size="sm-compact" />
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPlayers(prev => prev.filter(sp => sp.id !== p.id))}
+                        className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-stone-800 dark:bg-slate-200 text-white dark:text-slate-900 flex items-center justify-center shadow-xs hover:bg-[#c83b3b] dark:hover:bg-[#c83b3b] hover:text-white transition-colors cursor-pointer"
+                        title={`Retirer ${p.name}`}
+                        aria-label={`Retirer ${p.name}`}
+                      >
+                        <X size={9} strokeWidth={2.5} />
+                      </button>
                     </div>
-                  ))}
-                </div>
+                    <span className="text-[10px] font-semibold text-stone-700 dark:text-slate-300 max-w-[48px] truncate text-center">
+                      {p.name}
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
           </div>
