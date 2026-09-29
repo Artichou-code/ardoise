@@ -171,22 +171,35 @@ export function BurgerMenu({
 
         {/* En-tête du menu */}
         <div className="p-3.5 sm:p-4 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={() => handleAction(() => onNavigate('home'))}
-            className="flex items-center gap-2.5 min-w-0 text-left cursor-pointer group focus:outline-none"
-            title="Retour à l'accueil"
-          >
-            <AppLogo className="w-8 h-8 rounded-xl shadow-2xs shrink-0 group-hover:scale-105 transition-transform" />
-            <div className="min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={() =>
+                handleAction(() =>
+                  window.dispatchEvent(new CustomEvent('ardoise-open-share-app'))
+                )
+              }
+              className="rounded-xl shrink-0 cursor-pointer hover:scale-105 active:scale-95 transition-transform focus:outline-none"
+              title="QR code & lien de l'application Ardoise"
+              aria-label="Partager l'application Ardoise par QR code ou lien"
+            >
+              <AppLogo className="w-8 h-8 rounded-xl shadow-2xs" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleAction(() => onNavigate('home'))}
+              className="min-w-0 text-left cursor-pointer group focus:outline-none"
+              title="Retour à l'accueil"
+            >
               <h2 id="burger-menu-title" className="text-base font-bold font-serif-title leading-tight truncate group-hover:text-[#c83b3b] transition-colors">
                 Menu
               </h2>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
                 Ardoise · Accueil
               </p>
-            </div>
-          </button>
+            </button>
+          </div>
 
           <button
             type="button"

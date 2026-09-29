@@ -102,7 +102,15 @@ export function HomeScreen() {
       {/* Header style cahier d'écolier / ardoise */}
       <header className="flex items-center justify-between px-4 header-safe pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <div className="flex items-center gap-2.5">
-          <AppLogo className="w-8 h-8 shadow-2xs" />
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('ardoise-open-share-app'))}
+            className="rounded-xl shrink-0 cursor-pointer hover:scale-105 active:scale-95 transition-transform focus:outline-none"
+            title="QR code & lien de l'application Ardoise"
+            aria-label="Partager l'application Ardoise par QR code ou lien"
+          >
+            <AppLogo className="w-8 h-8 shadow-2xs" />
+          </button>
           <div>
             <h1 className="font-serif-title text-xl font-bold tracking-tight leading-none">
               Ardoise

@@ -14,6 +14,7 @@ import { ShareGamesModal } from './components/ShareGamesModal'
 import { SyncModal } from './components/SyncModal'
 import { LegalModal } from './components/LegalModal'
 import { ArtCreaUniverseModal } from './components/ArtCreaUniverseModal'
+import { ShareAppModal } from './components/ShareAppModal'
 import { BurgerMenu } from './components/BurgerMenu'
 import { fetchSharedGame } from './store/syncStorage'
 import { getActiveSession } from './store/liveSession'
@@ -30,6 +31,7 @@ export default function App() {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
   const [legalTab, setLegalTab] = useState(null)
   const [isArtCreaModalOpen, setIsArtCreaModalOpen] = useState(false)
+  const [isShareAppModalOpen, setIsShareAppModalOpen] = useState(false)
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
 
   useEffect(() => {
@@ -59,14 +61,17 @@ export default function App() {
       }
     }
     const handleOpenBurger = () => setIsBurgerMenuOpen(true)
+    const handleOpenShareApp = () => setIsShareAppModalOpen(true)
     const handleSessionChanged = (e) => setLiveSession(e.detail)
 
     window.addEventListener('ardoise-open-import-games', handleOpenImport)
     window.addEventListener('ardoise-open-burger-menu', handleOpenBurger)
+    window.addEventListener('ardoise-open-share-app', handleOpenShareApp)
     window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
     return () => {
       window.removeEventListener('ardoise-open-import-games', handleOpenImport)
       window.removeEventListener('ardoise-open-burger-menu', handleOpenBurger)
+      window.removeEventListener('ardoise-open-share-app', handleOpenShareApp)
       window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
     }
   }, [])
@@ -157,6 +162,12 @@ export default function App() {
       <ArtCreaUniverseModal
         isOpen={isArtCreaModalOpen}
         onClose={() => setIsArtCreaModalOpen(false)}
+      />
+
+      {/* Modale QR Code & Lien de partage de l'application Ardoise */}
+      <ShareAppModal
+        isOpen={isShareAppModalOpen}
+        onClose={() => setIsShareAppModalOpen(false)}
       />
 
       {/* Aperçu et import d'une ou plusieurs parties partagées reçues par QR code, lien ou code */}
