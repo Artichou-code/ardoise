@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Cloud } from 'lucide-react'
+import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Cloud, Radio } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
@@ -9,11 +9,13 @@ import { RulesSheet } from './RulesSheet'
 import { GameDetailSheet } from './GameDetailSheet'
 import { LegalModal } from './LegalModal'
 import { SyncModal } from './SyncModal'
+import { LiveSessionModal } from './LiveSessionModal'
 import { ArtCreaLogo } from './ui/ArtCreaLogo'
 import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
 import { formatDate, formatGameStart } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
 import { formatTypography } from '../utils/typography'
+import { getActiveSession } from '../store/liveSession'
 
 export function HomeScreen() {
   const { games, setScreen, resumeGame, customPresets, deletePreset, createGame, reloadStorage } = useGame()
@@ -24,6 +26,8 @@ export function HomeScreen() {
   const [legalTab, setLegalTab] = useState(null)
   const [isArtCreaModalOpen, setIsArtCreaModalOpen] = useState(false)
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
+  const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
+  const [liveSession, setLiveSession] = useState(() => getActiveSession())
 
   const activeGames = games.filter(g => g.status === 'active')
   const finishedGames = games.filter(g => g.status === 'finished').slice(0, 3)
@@ -71,6 +75,22 @@ export function HomeScreen() {
         <div className="flex items-center gap-1.5">
           <button
             type="button"
+            onClick={() => setIsLiveModalOpen(true)}
+            className={`p-2 rounded-xl border transition-colors relative ${
+              liveSession
+                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                : 'border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300'
+            }`}
+            aria-label="Session journée et table en direct"
+            title={liveSession ? `Session active : ${liveSession.name}` : "Session Journée / Table en direct"}
+          >
+            <Radio size={18} className={liveSession ? 'animate-pulse' : ''} />
+            {liveSession && (
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+            )}
+          </button>
+          <button
+            type="button"
             onClick={() => setIsSyncModalOpen(true)}
             className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
             aria-label="Sauvegarde et synchronisation multi-appareils"
@@ -102,6 +122,28 @@ export function HomeScreen() {
 
       {/* Corps scrollable */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">
+        {/* Bannière Session Journée Active */}
+        {liveSession && (
+          <div
+            onClick={() => setIsLiveModalOpen(true)}
+            className="mb-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between cursor-pointer hover:bg-emerald-500/15 transition-all shadow-2xs group"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200 truncate">
+                  Session en direct : {liveSession.name}
+                </p>
+                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 truncate">
+                  Code salon : <strong className="font-mono tracking-wider">{liveSession.code}</strong> · Table connectée
+                </p>
+              </div>
+            </div>
+            <span className="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-bold text-[11px] group-hover:scale-105 transition-transform flex-shrink-0">
+              Voir la table ›
+            </span>
+          </div>
+        )}
         {/* Parties en cours */}
         {activeGames.length > 0 && (
           <section className="mt-4">
@@ -417,6 +459,20 @@ export function HomeScreen() {
               Sauvegarde & Sync
             </span>
           </button>
+
+          <span className="text-stone-300 dark:text-slate-700 select-none">·</span>
+
+          <button
+            type="button"
+            onClick={() => setIsLiveModalOpen(true)}
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
+            title="Session Journée & Table en direct"
+          >
+            <Radio size={12} className={liveSession ? "text-emerald-500 animate-pulse" : "text-[#c83b3b] group-hover:scale-110 transition-transform"} />
+            <span className="underline underline-offset-2 decoration-stone-300 dark:decoration-slate-700 group-hover:decoration-current">
+              Session Journée
+            </span>
+          </button>
         </footer>
       </div>
 
@@ -472,6 +528,13 @@ export function HomeScreen() {
         isOpen={isSyncModalOpen}
         onClose={() => setIsSyncModalOpen(false)}
         onDataUpdated={reloadStorage}
+      />
+
+      {/* Modale Session Journée & Table en direct */}
+      <LiveSessionModal
+        isOpen={isLiveModalOpen}
+        onClose={() => setIsLiveModalOpen(false)}
+        onSessionChanged={(s) => setLiveSession(s)}
       />
     </div>
   )

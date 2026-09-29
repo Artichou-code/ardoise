@@ -12,6 +12,10 @@ import {
   pushNotebookToCloud,
   synchronizeNotebook
 } from '../store/syncStorage'
+import {
+  getActiveSession,
+  pushGameToLiveSession
+} from '../store/liveSession'
 import { GAME_META } from '../constants/games'
 
 const GameContext = createContext(null)
@@ -135,6 +139,12 @@ export function GameProvider({ children }) {
     // Push cloud en arrière-plan si activé
     if (isAutoSyncEnabled() && getSyncKey()) {
       pushNotebookToCloud().catch(() => {})
+    }
+
+    // Push vers la session journée en cours si active
+    const liveSession = getActiveSession()
+    if (liveSession && liveSession.code) {
+      pushGameToLiveSession(liveSession.code, updated).catch(() => {})
     }
   }, [activeGame, persistGame])
 

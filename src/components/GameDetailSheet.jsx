@@ -1,9 +1,10 @@
-import { useMemo } from 'react'
-import { Play, RotateCcw, FileText } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Play, RotateCcw, FileText, QrCode } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
 import { Avatar } from './ui/Avatar'
 import { GAME_META, GAMES } from '../constants/games'
 import { getRanking, formatDate, formatDuration } from '../utils/gameUtils'
+import { ShareGameModal } from './ShareGameModal'
 
 /**
  * Feuille détaillée affichant le déroulement complet d'une partie :
@@ -12,6 +13,7 @@ import { getRanking, formatDate, formatDuration } from '../utils/gameUtils'
  * - Actions (Revanche ou Reprendre)
  */
 export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const meta = game ? GAME_META[game.type] : null
   const isDourak = game?.type === GAMES.DOURAK
   const isDourakCards = isDourak && game?.config?.mode === 'cards'
@@ -292,42 +294,62 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
         </div>
 
         {/* Actions en bas de fiche */}
-        <div className="flex gap-2.5 pt-2">
-          {game.status === 'active' && onResume && (
+        <div className="space-y-2 pt-2">
+          {game.status === 'finished' && (
             <button
               type="button"
-              onClick={() => {
-                onClose()
-                onResume(game.id)
-              }}
-              className="flex-1 py-3 px-4 rounded-xl font-bold text-xs btn-margin-red flex items-center justify-center gap-1.5 shadow-sm"
+              onClick={() => setIsShareModalOpen(true)}
+              className="w-full py-2.5 px-3 rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-stone-800 dark:text-slate-200 font-bold text-xs hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
             >
-              <Play size={14} fill="currentColor" /> Reprendre la partie
+              <QrCode size={14} className="text-[#c83b3b] dark:text-[#FFC107]" />
+              <span>Partager la feuille de match (QR Code)</span>
             </button>
           )}
 
-          {game.status === 'finished' && onRematch && (
+          <div className="flex gap-2.5">
+            {game.status === 'active' && onResume && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  onResume(game.id)
+                }}
+                className="flex-1 py-3 px-4 rounded-xl font-bold text-xs btn-margin-red flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <Play size={14} fill="currentColor" /> Reprendre la partie
+              </button>
+            )}
+
+            {game.status === 'finished' && onRematch && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  onRematch(game)
+                }}
+                className="flex-1 py-3 px-4 rounded-xl font-bold text-xs btn-margin-red flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <RotateCcw size={14} /> Revanche avec ces joueurs
+              </button>
+            )}
+
             <button
               type="button"
-              onClick={() => {
-                onClose()
-                onRematch(game)
-              }}
-              className="flex-1 py-3 px-4 rounded-xl font-bold text-xs btn-margin-red flex items-center justify-center gap-1.5 shadow-sm"
+              onClick={onClose}
+              className="flex-1 py-3 px-4 rounded-xl border border-stone-300 dark:border-slate-700 text-stone-700 dark:text-slate-300 font-bold text-xs hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
             >
-              <RotateCcw size={14} /> Revanche avec ces joueurs
+              Fermer
             </button>
-          )}
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 py-3 px-4 rounded-xl border border-stone-300 dark:border-slate-700 text-stone-700 dark:text-slate-300 font-bold text-xs hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-          >
-            Fermer
-          </button>
+          </div>
         </div>
       </div>
+
+      {/* Modale de partage de match */}
+      <ShareGameModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        game={game}
+      />
     </BottomSheet>
   )
 }

@@ -1,14 +1,16 @@
-import { useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import confetti from 'canvas-confetti'
-import { RotateCcw, Home, Award, AlertCircle } from 'lucide-react'
+import { RotateCcw, Home, Award, AlertCircle, QrCode } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META, GAMES } from '../constants/games'
 import { Avatar } from './ui/Avatar'
 import { getRanking, formatDuration } from '../utils/gameUtils'
 import { ThemeToggle } from './ui/ThemeToggle'
+import { ShareGameModal } from './ShareGameModal'
 
 export function VictoryScreen() {
   const { activeGame, rematch, exitGame } = useGame()
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const fired = useRef(false)
 
   useEffect(() => {
@@ -202,8 +204,18 @@ export function VictoryScreen() {
           })}
         </div>
 
+        {/* Bouton Partager la feuille de match */}
+        <button
+          type="button"
+          onClick={() => setIsShareModalOpen(true)}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 font-bold text-xs hover:bg-stone-50 dark:hover:bg-slate-800 text-stone-800 dark:text-slate-200 transition-colors cursor-pointer shadow-2xs mt-3"
+        >
+          <QrCode size={15} className="text-[#c83b3b] dark:text-[#FFC107]" />
+          <span>Partager la feuille de match (QR Code)</span>
+        </button>
+
         {/* Actions */}
-        <div className="flex gap-2.5 mt-3">
+        <div className="flex gap-2.5 mt-2.5">
           <button
             type="button"
             onClick={exitGame}
@@ -220,6 +232,13 @@ export function VictoryScreen() {
           </button>
         </div>
       </div>
+
+      {/* Modale de partage de match */}
+      <ShareGameModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        game={activeGame}
+      />
     </div>
   )
 }

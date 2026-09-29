@@ -318,3 +318,40 @@ export async function synchronizeNotebook(syncKey) {
     stats: applyResult.stats,
   }
 }
+
+/**
+ * Partage une feuille de match terminée et retourne un code unique
+ */
+export async function shareGame(game) {
+  if (!game || !game.id) throw new Error('Partie invalide')
+
+  const res = await fetch(`${API_BASE}/games/share`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ game }),
+  })
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}))
+    throw new Error(errData.error || `Erreur de partage (${res.status})`)
+  }
+
+  return await res.json() // { success: true, gameId, gameCode }
+}
+
+/**
+ * Récupère une feuille de match partagée par code ou ID
+ */
+export async function fetchSharedGame(codeOrId) {
+  const clean = (codeOrId || '').trim()
+  if (!clean) throw new Error('Code de match manquant')
+
+  const res = await fetch(`${API_BASE}/games/share/${encodeURIComponent(clean)}`)
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}))
+    throw new Error(errData.error || `Partie non trouvée (${res.status})`)
+  }
+
+  return await res.json() // { success: true, game, createdAt }
+}
+
