@@ -17,7 +17,8 @@ export const GAME_META = {
     name: "Dourak (l'idiot)",
     playersBadge: '2 à 6 j.',
     categoryBadge: '36 cartes',
-    description: 'Pas de vainqueur, le dernier joueur en main est le Dourak.',
+    description:
+      "Défendez-vous des attaques et débarrassez-vous vite de vos cartes. Il n'y a aucun gagnant : le dernier joueur avec des cartes en main devient le Dourak !",
     minPlayers: 2,
     maxPlayers: 6,
     scoreDir: 'low',
@@ -73,7 +74,8 @@ export const GAME_META = {
     name: 'Caracole',
     playersBadge: '2–8 j.',
     categoryBadge: '54 cartes',
-    description: 'Objectif score minimal, cartes cachées et règle du sursis.',
+    description:
+      "Mémorisez vos 4 cartes cachées, échangez-les pour réduire votre total et annoncez « Caracole » si vous pensez avoir le plus petit score. Gare aux pénalités !",
     minPlayers: 2,
     maxPlayers: 8,
     scoreDir: 'low',
@@ -121,7 +123,8 @@ export const GAME_META = {
     name: 'Trou du cul (Président)',
     playersBadge: '3–8 j.',
     categoryBadge: '54 cartes',
-    description: 'Hiérarchie des rôles et échanges de cartes.',
+    description:
+      'Débarrassez-vous de vos cartes en montant dans les valeurs pour finir premier (Président) et dominer le perdant, qui devra vous donner ses meilleurs atouts.',
     minPlayers: 3,
     maxPlayers: 8,
     scoreDir: 'high',
@@ -146,7 +149,8 @@ export const GAME_META = {
     name: 'Skyjo',
     playersBadge: '2–8 j.',
     categoryBadge: 'Jeu Skyjo',
-    description: 'Cumul minimal sur 12 cartes, arrêt à 100 points.',
+    description:
+      "Révélez, échangez et alignez vos 12 cartes numérotées pour obtenir le total le plus bas possible. La partie s'arrête dès qu'un joueur franchit les 100 points.",
     minPlayers: 2,
     maxPlayers: 8,
     scoreDir: 'low',
@@ -171,7 +175,8 @@ export const GAME_META = {
     name: 'Belote / Coinche',
     playersBadge: '2 éq. (4 j.)',
     categoryBadge: '32 cartes',
-    description: 'Duel Nous contre Eux sur 162 points et contrats.',
+    description:
+      "Le grand classique en 2 contre 2 : prenez l'atout, réalisez vos plis et atteignez votre contrat pour marquer les 162 points (ou réussir un Capot).",
     minPlayers: 2,
     maxPlayers: 4,
     scoreDir: 'high',
@@ -196,7 +201,8 @@ export const GAME_META = {
     name: 'Tarot',
     playersBadge: '3–5 j.',
     categoryBadge: '78 cartes',
-    description: 'Attaque contre défense, bouts et multiplicateurs.',
+    description:
+      "Le Preneur défie la table : capturez les Bouts (le Petit, le 21, l'Excuse) et remportez un maximum de plis pour faire passer votre Garde face à la Défense.",
     minPlayers: 3,
     maxPlayers: 5,
     scoreDir: 'high',
@@ -220,7 +226,8 @@ export const GAME_META = {
     name: '6 qui prend !',
     playersBadge: '2–10 j.',
     categoryBadge: 'Jeu 6 qui prend',
-    description: 'Décompte des têtes de bœuf, arrêt à 66 têtes.',
+    description:
+      "Placez vos numéros sur les rangées dans l'ordre croissant sans jamais poser la 6ᵉ carte, sous peine de ramasser toute la ligne et ses têtes de bœuf !",
     minPlayers: 2,
     maxPlayers: 10,
     scoreDir: 'low',
