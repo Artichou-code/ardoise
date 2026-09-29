@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import {
   ArrowLeft,
   BarChart3,
@@ -32,6 +32,36 @@ export function StatsScreen() {
   const [selectedPlayer, setSelectedPlayer] = useState(null)
   const [showTrophies, setShowTrophies] = useState(false)
   const [showSyncModal, setShowSyncModal] = useState(false)
+
+  const tabsContainerRef = useRef(null)
+  const tabButtonRefs = useRef({})
+
+  // Centrage fluide de l'onglet actif dans la barre horizontale
+  const scrollToTab = (buttonEl) => {
+    if (!buttonEl || !tabsContainerRef.current) return
+    const container = tabsContainerRef.current
+    const containerRect = container.getBoundingClientRect()
+    const elRect = buttonEl.getBoundingClientRect()
+    const elOffsetLeft = elRect.left - containerRect.left + container.scrollLeft
+    const targetScrollLeft = elOffsetLeft - (container.clientWidth / 2) + (elRect.width / 2)
+    container.scrollTo({
+      left: Math.max(0, targetScrollLeft),
+      behavior: 'smooth',
+    })
+  }
+
+  const handleSelectTab = (tabId, buttonEl) => {
+    setSelectedGameType(tabId)
+    scrollToTab(buttonEl)
+  }
+
+  // Centrage automatique lors de la sélection
+  useEffect(() => {
+    const buttonEl = tabButtonRefs.current[selectedGameType]
+    if (buttonEl) {
+      scrollToTab(buttonEl)
+    }
+  }, [selectedGameType])
 
   // Calcul des statistiques
   const stats = useMemo(() => {
@@ -144,17 +174,23 @@ export function StatsScreen() {
         <ThemeToggle />
       </header>
 
-      {/* Onglets horizontaux de filtre par jeu */}
-      <div className="flex-shrink-0 px-4 py-2.5 border-b border-stone-200/60 dark:border-slate-800/60 overflow-x-auto scrollbar-hide">
+      {/* Onglets horizontaux de filtre par jeu avec centrage fluide au clic */}
+      <div
+        ref={tabsContainerRef}
+        className="flex-shrink-0 px-4 py-2.5 border-b border-stone-200/60 dark:border-slate-800/60 overflow-x-auto scrollbar-hide scroll-smooth"
+      >
         <div className="flex items-center gap-2">
           {tabs.map(tab => {
             const isActive = selectedGameType === tab.id
             return (
               <button
                 key={tab.id}
+                ref={el => {
+                  if (el) tabButtonRefs.current[tab.id] = el
+                }}
                 type="button"
-                onClick={() => setSelectedGameType(tab.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 ${
+                onClick={(e) => handleSelectTab(tab.id, e.currentTarget)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${
                   isActive
                     ? 'bg-[#1e3a5f] dark:bg-slate-100 text-white dark:text-slate-900 shadow-xs'
                     : 'bg-white/80 dark:bg-slate-900/80 text-stone-600 dark:text-slate-300 border border-stone-200 dark:border-slate-800 hover:bg-stone-100 dark:hover:bg-slate-800'
