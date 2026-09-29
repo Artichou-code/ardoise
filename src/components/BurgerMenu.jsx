@@ -135,7 +135,7 @@ export function BurgerMenu({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className={`relative w-full max-w-xs sm:max-w-sm h-full school-surface text-stone-900 dark:text-slate-100 border-l border-stone-200/90 dark:border-slate-800/90 shadow-2xl flex flex-col z-10 drawer-panel ${
+        className={`relative w-[78vw] max-w-[268px] sm:max-w-[280px] h-full school-surface text-stone-900 dark:text-slate-100 border-l border-stone-200/90 dark:border-slate-800/90 shadow-2xl flex flex-col z-10 drawer-panel ${
           isOpen ? 'drawer-panel-open pointer-events-auto' : 'drawer-panel-closed pointer-events-none'
         }`}
       >
@@ -179,7 +179,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(() => onNavigate('players'))}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
+                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/20 dark:border-[#c83b3b]/30 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
                   <Users size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -197,7 +197,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(() => onNavigate('history'))}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
+                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/20 dark:border-[#c83b3b]/30 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
                   <History size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -215,7 +215,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(() => onNavigate('stats'))}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
+                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/20 dark:border-[#c83b3b]/30 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
                   <BarChart3 size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -233,7 +233,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(onOpenTrophies)}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
+                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/20 dark:border-[#c83b3b]/30 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
                   <Trophy size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -269,7 +269,7 @@ export function BurgerMenu({
                 <span className={`p-2 rounded-lg shrink-0 group-hover:scale-105 transition-all border ${
                   liveSession
                     ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
-                    : 'bg-white/80 dark:bg-slate-800/80 border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35'
+                    : 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/25 dark:border-emerald-500/35 text-emerald-600 dark:text-emerald-400'
                 }`}>
                   <Radio size={16} className={liveSession ? 'animate-pulse' : ''} />
                 </span>
@@ -288,7 +288,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(onOpenShareGames)}
                 className="p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
+                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/25 dark:border-[#c83b3b]/35 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
                   <Share2 size={16} />
                 </span>
                 <div className="min-w-0 w-full">
@@ -306,7 +306,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(onOpenSync)}
                 className="p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
+                <span className="p-2 rounded-lg bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/25 dark:border-sky-500/35 text-sky-600 dark:text-sky-400 shrink-0 group-hover:scale-105 transition-all">
                   <Cloud size={16} />
                 </span>
                 <div className="min-w-0 w-full">
@@ -332,7 +332,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(onOpenArtCrea)}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 group-hover:border-[#c83b3b]/35 flex items-center justify-center shrink-0 transition-all">
+                <div className="w-8 h-8 rounded-lg bg-white/85 dark:bg-slate-800/85 border border-stone-200/90 dark:border-slate-700/70 group-hover:border-[#c83b3b]/40 flex items-center justify-center shrink-0 transition-all">
                   <ArtCreaLogo className="h-4 w-auto group-hover:scale-105 transition-transform" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -350,7 +350,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(() => onOpenLegal('mentions'))}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
+                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/20 dark:border-[#c83b3b]/30 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
                   <Scale size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
