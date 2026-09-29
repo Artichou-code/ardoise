@@ -28,35 +28,13 @@ export function BurgerMenu({
   liveSession,
 }) {
   const { theme, toggleTheme } = useTheme()
-  const [isRendered, setIsRendered] = useState(isOpen)
-  const [isVisible, setIsVisible] = useState(false)
   const drawerRef = useRef(null)
   const startX = useRef(null)
   const startY = useRef(null)
   const currentDx = useRef(0)
   const isSwiping = useRef(false)
 
-  useScrollLock(isRendered)
-
-  // Gestion du cycle de transition fluide à l'ouverture et à la fermeture
-  useEffect(() => {
-    let timer
-    if (isOpen) {
-      setIsRendered(true)
-      const raf = requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsVisible(true)
-        })
-      })
-      return () => cancelAnimationFrame(raf)
-    } else {
-      setIsVisible(false)
-      timer = setTimeout(() => {
-        setIsRendered(false)
-      }, 260)
-      return () => clearTimeout(timer)
-    }
-  }, [isOpen])
+  useScrollLock(isOpen)
 
   // Fermeture par touche Echap
   useEffect(() => {
@@ -68,8 +46,11 @@ export function BurgerMenu({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
+  if (typeof document === 'undefined') return null
+
   // Geste tactile de balayage vers la droite pour refermer
   const handleTouchStart = (e) => {
+    if (!isOpen) return
     startX.current = e.touches[0].clientX
     startY.current = e.touches[0].clientY
     currentDx.current = 0
@@ -77,7 +58,7 @@ export function BurgerMenu({
   }
 
   const handleTouchMove = (e) => {
-    if (startX.current === null || startY.current === null) return
+    if (!isOpen || startX.current === null || startY.current === null) return
     const dx = e.touches[0].clientX - startX.current
     const dy = e.touches[0].clientY - startY.current
 
@@ -96,7 +77,7 @@ export function BurgerMenu({
   }
 
   const handleTouchEnd = () => {
-    if (startX.current === null) return
+    if (!isOpen || startX.current === null) return
     const dx = currentDx.current
     startX.current = null
     startY.current = null
@@ -111,26 +92,27 @@ export function BurgerMenu({
     }
   }
 
-  if (!isRendered || typeof document === 'undefined') return null
-
   const handleAction = (callback) => {
     onClose()
     if (callback) {
-      setTimeout(() => callback(), 120)
+      setTimeout(() => callback(), 150)
     }
   }
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[1000] flex justify-end"
+      className={`fixed inset-0 z-[1000] flex justify-end drawer-overlay ${
+        isOpen ? 'drawer-overlay-open' : 'drawer-overlay-closed'
+      }`}
       role="dialog"
       aria-modal="true"
+      aria-hidden={!isOpen}
       aria-labelledby="burger-menu-title"
     >
-      {/* Backdrop sombre avec fondu fluide à l'ouverture et fermeture */}
+      {/* Backdrop sombre avec fondu fluide */}
       <div
         className={`absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-xs drawer-backdrop ${
-          isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
         aria-hidden="true"
@@ -143,7 +125,7 @@ export function BurgerMenu({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         className={`relative w-full max-w-xs sm:max-w-sm h-full school-surface text-stone-900 dark:text-slate-100 border-l border-stone-200/90 dark:border-slate-800/90 shadow-2xl flex flex-col z-10 drawer-panel ${
-          isVisible ? 'drawer-panel-open' : 'drawer-panel-closed'
+          isOpen ? 'drawer-panel-open pointer-events-auto' : 'drawer-panel-closed pointer-events-none'
         }`}
       >
         {/* Liseré supérieur rouge signature */}
