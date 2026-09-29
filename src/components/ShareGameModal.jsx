@@ -167,6 +167,7 @@ export function ShareGameModal({ isOpen, onClose, game }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

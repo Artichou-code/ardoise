@@ -390,6 +390,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

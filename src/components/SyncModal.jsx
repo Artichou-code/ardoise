@@ -444,6 +444,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

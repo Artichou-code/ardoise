@@ -173,6 +173,7 @@ export function SharedGamePreviewModal({ isOpen, onClose, game, onImported }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
