@@ -3,10 +3,10 @@ import {
   ArrowLeft,
   BarChart3,
   Trophy,
-  History,
+  Dices,
   Clock,
   Layers,
-  Sparkles,
+  Heart,
   Award,
   ChevronRight,
   TrendingUp,
@@ -156,6 +156,15 @@ export function StatsScreen() {
         </div>
         <button
           type="button"
+          onClick={() => setShowSyncModal(true)}
+          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          title="Sauvegarde & Synchronisation"
+          aria-label="Sauvegarde & Synchronisation"
+        >
+          <Cloud size={18} className="text-stone-700 dark:text-slate-300" />
+        </button>
+        <button
+          type="button"
           onClick={() => setScreen('trophies')}
           className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           title="Guide des trophées & distinctions"
@@ -229,7 +238,7 @@ export function StatsScreen() {
                   <span className="text-[11px] font-semibold uppercase tracking-wider">
                     Parties
                   </span>
-                  <History size={16} className="text-[#c83b3b]" />
+                  <Dices size={16} className="text-[#c83b3b]" />
                 </div>
                 <div>
                   <p className="font-serif-title font-bold text-2xl text-stone-900 dark:text-slate-100">
@@ -284,7 +293,7 @@ export function StatsScreen() {
                   <span className="text-[11px] font-semibold uppercase tracking-wider">
                     {selectedGameType === 'all' ? 'Jeu favori' : 'Discipline'}
                   </span>
-                  <Sparkles size={16} className="text-[#c83b3b]" />
+                  <Heart size={16} className="text-[#c83b3b]" />
                 </div>
                 <div className="min-w-0">
                   <p className="font-serif-title font-bold text-sm sm:text-base leading-tight text-stone-900 dark:text-slate-100 line-clamp-2">
