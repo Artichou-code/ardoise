@@ -59,17 +59,17 @@ export function SharedGamePreviewModal({ isOpen, onClose, game, onImported }) {
         {/* Liseré supérieur */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] dark:via-[#FFC107] to-transparent z-10" />
 
-        {/* En-tête */}
-        <div className="relative z-10 p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 text-[#c83b3b] dark:text-[#FFC107]">
+        {/* En-tête responsive */}
+        <div className="relative z-10 p-3.5 sm:p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 text-[#c83b3b] dark:text-[#FFC107] shrink-0">
               <Trophy size={18} />
             </span>
-            <div>
-              <h2 id="preview-game-title" className="text-base font-bold font-serif-title leading-tight">
-                Feuille de match partagée
+            <div className="min-w-0 flex-1">
+              <h2 id="preview-game-title" className="text-base font-bold font-serif-title leading-snug truncate">
+                Partie partagée
               </h2>
-              <p className="text-[11px] text-stone-500 dark:text-slate-400">
+              <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
                 {game.name} · {formatDate(game.endedAt || game.startedAt)}
               </p>
             </div>
@@ -78,7 +78,7 @@ export function SharedGamePreviewModal({ isOpen, onClose, game, onImported }) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-200/60 dark:hover:bg-slate-800 transition-colors flex-shrink-0 cursor-pointer"
+            className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-200/60 dark:hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
             title="Fermer"
           >
             <X size={18} />

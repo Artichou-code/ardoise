@@ -81,8 +81,8 @@ export function HomeScreen() {
                 ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                 : 'border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300'
             }`}
-            aria-label="Session journée et table en direct"
-            title={liveSession ? `Session active : ${liveSession.name}` : "Session Journée / Table en direct"}
+            aria-label="Table en direct"
+            title={liveSession ? `Session active : ${liveSession.name}` : "Table en direct"}
           >
             <Radio size={18} className={liveSession ? 'animate-pulse' : ''} />
             {liveSession && (
@@ -466,11 +466,11 @@ export function HomeScreen() {
             type="button"
             onClick={() => setIsLiveModalOpen(true)}
             className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
-            title="Session Journée & Table en direct"
+            title="Table en direct"
           >
             <Radio size={12} className={liveSession ? "text-emerald-500 animate-pulse" : "text-[#c83b3b] group-hover:scale-110 transition-transform"} />
             <span className="underline underline-offset-2 decoration-stone-300 dark:decoration-slate-700 group-hover:decoration-current">
-              Session Journée
+              Table en direct
             </span>
           </button>
         </footer>

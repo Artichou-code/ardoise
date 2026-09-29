@@ -8,6 +8,7 @@ import {
   Check,
   LogOut,
   ArrowRight,
+  Crown,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import {
@@ -139,18 +140,18 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         {/* Liseré supérieur */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent z-10" />
 
-        {/* En-tête */}
-        <div className="relative z-10 p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+        {/* En-tête responsive */}
+        <div className="relative z-10 p-3.5 sm:p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
               <Radio size={18} />
             </span>
-            <div>
-              <h2 id="live-session-title" className="text-base font-bold font-serif-title leading-tight">
-                Session Journée & Table en Direct
+            <div className="min-w-0 flex-1">
+              <h2 id="live-session-title" className="text-base font-bold font-serif-title leading-snug truncate">
+                Table en direct
               </h2>
-              <p className="text-[11px] text-stone-500 dark:text-slate-400">
-                Partagez l'avancement des parties avec tous les joueurs de la table
+              <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
+                Session partagée entre tous les joueurs
               </p>
             </div>
           </div>
@@ -158,7 +159,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-200/60 dark:hover:bg-slate-800 transition-colors flex-shrink-0 cursor-pointer"
+            className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-200/60 dark:hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
             title="Fermer"
           >
             <X size={18} />
@@ -228,8 +229,9 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   Joueurs autour de la table ({sessionDetails?.state?.participants?.length || 1})
                 </span>
                 <div className="flex flex-wrap gap-1.5">
-                  <span className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-slate-800 text-xs font-semibold text-stone-700 dark:text-slate-300 flex items-center gap-1">
-                    <span>👑 {sessionDetails?.hostName || activeSession.host}</span>
+                  <span className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-slate-800 text-xs font-semibold text-stone-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <Crown size={12} className="text-amber-500 shrink-0" />
+                    <span>{sessionDetails?.hostName || activeSession.host}</span>
                   </span>
                   {sessionDetails?.state?.participants?.map((p, idx) => (
                     <span
@@ -331,7 +333,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                     disabled={isLoading || !sessionName.trim() || !hostName.trim()}
                     className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
                   >
-                    <span>Lancer la session journée</span>
+                    <span>Lancer la table en direct</span>
                     <ArrowRight size={14} />
                   </button>
                 </form>

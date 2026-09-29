@@ -47,8 +47,8 @@ export function ShareGameModal({ isOpen, onClose, game }) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Feuille de match Ardoise : ${game?.name || 'Partie'}`,
-          text: `Découvre le résultat et la feuille de score de notre partie de ${game?.name || 'cartes'} sur Ardoise :`,
+          title: `Feuille de match Ardoise\u00A0: ${game?.name || 'Partie'}`,
+          text: `Découvre le résultat et la feuille de score de notre partie de ${game?.name || 'cartes'} sur Ardoise\u00A0:`,
           url: shareUrl,
         })
       } catch {
@@ -80,17 +80,17 @@ export function ShareGameModal({ isOpen, onClose, game }) {
         {/* Liseré supérieur */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] dark:via-[#FFC107] to-transparent z-10" />
 
-        {/* En-tête */}
-        <div className="relative z-10 p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 text-[#c83b3b] dark:text-[#FFC107]">
+        {/* En-tête responsive */}
+        <div className="relative z-10 p-3.5 sm:p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 text-[#c83b3b] dark:text-[#FFC107] shrink-0">
               <QrCode size={18} />
             </span>
-            <div>
-              <h2 id="share-game-title" className="text-base font-bold font-serif-title leading-tight">
-                Partager la feuille de match
+            <div className="min-w-0 flex-1">
+              <h2 id="share-game-title" className="text-base font-bold font-serif-title leading-snug truncate">
+                Partager la partie
               </h2>
-              <p className="text-[11px] text-stone-500 dark:text-slate-400">
+              <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
                 {game.name} · {game.players?.length || 0} joueurs
               </p>
             </div>
@@ -99,7 +99,7 @@ export function ShareGameModal({ isOpen, onClose, game }) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-200/60 dark:hover:bg-slate-800 transition-colors flex-shrink-0 cursor-pointer"
+            className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-200/60 dark:hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
             title="Fermer"
           >
             <X size={18} />
@@ -151,7 +151,7 @@ export function ShareGameModal({ isOpen, onClose, game }) {
                   className="flex-1 py-2 px-3 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 font-bold text-xs text-stone-800 dark:text-slate-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                  <span>{copied ? 'Lien copié !' : 'Copier le lien'}</span>
+                  <span>{copied ? 'Lien copié\u00A0!' : 'Copier le lien'}</span>
                 </button>
 
                 <button
