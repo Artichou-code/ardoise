@@ -17,7 +17,7 @@
 
 ## Pages et Règles par Jeu
 - [Accueil — Ardoise](https://ardoise.art-crea.fr/) : Application principale de comptage de scores et règles.
-- [Caracole — Règles officielles & Compteur de points](https://ardoise.art-crea.fr/jeux/caracole) : Règles de la Caracole (4 cartes cachées, annonce Caracole, règle du sursis pile à 100 ou 50 points).
+- [Caracole — Règles officielles & Compteur de points](https://ardoise.art-crea.fr/jeux/caracole) : Règles de la Caracole (52 cartes, poser/piocher, 8 = 0 pt, annonce Caracole ≤10 pts, pénalité 30 pts, sursis pile à 100 pts).
 - [Dourak (L'Idiot) — Règles officielles & Compteur](https://ardoise.art-crea.fr/jeux/dourak) : Règles du Dourak à 36 cartes (Attaque, Défense, Atout Kozyr, Défausse Otboy).
 - [Skyjo — Règles officielles & Compteur de points](https://ardoise.art-crea.fr/jeux/skyjo) : Grille 4×3, colonnes identiques défaussées, règle du score doublé pour le clôtureur et seuil de 100 points.
 - [Belote & Coinche — Feuille de score & Règles](https://ardoise.art-crea.fr/jeux/belote) : Valeur des cartes à l'atout et hors atout, total de 162 points, dix de der, Belote-Rebelote, Capot (252 pts) et Générale (500 pts).

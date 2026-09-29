@@ -72,49 +72,99 @@ export const GAME_META = {
   [GAMES.CARACOLE]: {
     id: GAMES.CARACOLE,
     name: 'Caracole',
-    playersBadge: '2–8 j.',
-    categoryBadge: '54 cartes',
+    playersBadge: '2 à 6 j.',
+    categoryBadge: '52 cartes',
     description:
-      "Mémorisez vos 4 cartes cachées, échangez-les pour réduire votre total et annoncez « Caracole » si vous pensez avoir le plus petit score. Gare aux pénalités !",
+      "Posez cartes ou combinaisons, piochez et annoncez « Caracole » (≤ 10 pts) pour marquer 0 pt. Le 8 vaut 0 pt, attention aux 30 pts de pénalité et au sursis pile à 100 pts !",
     minPlayers: 2,
-    maxPlayers: 8,
+    maxPlayers: 6,
     scoreDir: 'low',
     rules: {
       sections: [
         {
-          title: 'Objectif & Seuil',
+          title: '1. Informations générales',
+          items: [
+            'Nombre de joueurs : 2 à 6 joueurs (à partir de 6 ans).',
+            'Matériel : Un jeu standard de 54 cartes dont on retire les 2 jokers (soit 52 cartes).',
+            'Objectif : Avoir le plus petit nombre de points cumulés en fin de partie.',
+          ],
+        },
+        {
+          title: '2. Distribution & Mise en place',
+          items: [
+            '2 à 4 joueurs : 7 cartes distribuées par joueur.',
+            '5 à 6 joueurs : 5 cartes distribuées par joueur.',
+            'Poser le reste des cartes face cachée au centre pour former la pioche.',
+            'Retourner la première carte de la pioche face visible pour entamer la défausse.',
+          ],
+        },
+        {
+          title: "3. Déroulement d'un tour",
           content:
-            "Avoir le total de points le plus bas possible. La partie se joue habituellement jusqu'à 100 points (ou 50 points en partie rapide/courte). Dès qu'un joueur dépasse le seuil éliminatoire, la partie s'arrête et le joueur au score le plus bas l'emporte.",
-        },
-        {
-          title: "Déroulement d'une manche",
+            "À son tour, un joueur effectue deux actions obligatoires dans l'ordre :",
           items: [
-            "Chaque joueur dispose de 4 cartes face cachée devant lui disposées en carré. Au début de la manche, chacun mémorise secrètement 2 de ses 4 cartes.",
-            "À son tour, on pioche une carte (depuis la pioche ou la défausse) : on peut l'échanger avec l'une de ses cartes cachées, ou la défausser directement pour activer son effet (regarder une de ses cartes, espionner une carte adverse, échanger deux cartes).",
-            "Dès qu'un joueur estime avoir la plus petite valeur totale en main, il crie « Caracole ! ». Les autres joueurs jouent alors un dernier tour.",
+            '1. Poser : Le joueur pose sur la pile visible (la défausse) soit une carte isolée, soit une combinaison valide de son choix.',
+            "2. Piocher : Le joueur reprend une carte : soit la première carte de la pioche face cachée, soit la dernière carte visible de la défausse.",
+            "Précision défausse : Si le joueur précédent a posé une combinaison de plusieurs cartes, le joueur actuel a le droit de choisir l'une des cartes situées aux extrémités de cette combinaison.",
+            'Remarque (pioche vide) : Si la pioche est épuisée, mélanger toutes les cartes de la défausse sauf la dernière posée pour former une nouvelle pioche face cachée.',
           ],
         },
         {
-          title: 'Comptage des pénalités',
+          title: '4. Combinaisons possibles à poser',
           items: [
-            "Toutes les cartes de la table sont révélées. Chaque joueur additionne la valeur faciale de ses cartes restantes (As = 1 pt, 2 à 10 = valeur faciale, Valet/Dame = 10 pts, Rois rouges = 0 ou -1 pt selon variantes).",
-            "Si l'annonceur a effectivement le score strictement le plus faible, il marque 0 point. S'il est battu ou égalé, il encaisse la valeur de ses cartes plus une pénalité (+10 ou +20 pts selon la table).",
+            'Paire : 2 cartes de même valeur (ex. : deux 7).',
+            'Triple : 3 cartes de même valeur (ex. : trois Dames).',
+            'Carré : 4 cartes de même valeur (ex. : quatre 5).',
+            "Suite : 3 cartes ou plus qui se suivent et de même enseigne (Cœur, Carreau, Trèfle ou Pique ; la simple couleur rouge/noir ne suffit pas). L'As peut valoir 1 ou se placer après le Roi (ex. : Dame-Roi-As).",
           ],
         },
         {
-          title: 'Règle spéciale du Sursis (pile à 100 ou 50 pts)',
+          title: '5. Valeur des cartes (décompte)',
           items: [
-            "Si à la fin d'une manche un joueur atteint EXACTEMENT 100 points, son score est automatiquement divisé par deux et retombe à 50 points ! Il gagne un sursis inespéré et reste en course au lieu d'être éliminé.",
-            "En partie courte à 50 points : si un joueur atteint pile 50 points, son score retombe à 25 points (ou est remis à zéro selon la variante locale choisie).",
-            "Tout score qui dépasse strictement le seuil (ex: 101 pts à 100, ou 51 pts à 50) élimine le joueur et déclenche la fin de la partie.",
+            'Le 8 : 0 point (carte clé pour réduire son score !).',
+            "As (1) : 1 point (peut aussi se placer après le Roi dans une suite).",
+            'Cartes 2 à 10 : Valeur faciale (2 = 2 pts, 3 = 3 pts... 10 = 10 pts).',
+            'Valet : 11 points.',
+            'Dame : 12 points.',
+            'Roi : 13 points.',
+          ],
+        },
+        {
+          title: "6. L'annonce « Caracole » & Fin de manche",
+          items: [
+            "Lorsqu'un joueur estime n'avoir plus que 10 points ou moins en main, il peut décider de « caracoler » en annonçant distinctement « Caracole ».",
+            "Dès l'annonce : le joueur passe immédiatement son tour. Tous les autres joueurs bénéficient d'un dernier tour complet pour améliorer leur main (poser/piocher) ou choisir de passer sans jouer.",
+            "Annonce réussie : Si l'annonceur a STRICTEMENT le moins de points en main, il remporte la manche et marque 0 point.",
+            "Annonce échouée : Si un autre joueur a autant ou moins de points que lui, l'annonceur reçoit une pénalité et marque 30 points.",
+            'Tous les autres joueurs marquent la valeur totale des cartes restantes dans leur main.',
+          ],
+        },
+        {
+          title: '7. Règle spéciale des 100 points (Sursis)',
+          items: [
+            "Si à la fin d'une manche le score cumulé d'un joueur atteint EXACTEMENT 100 points, son score redescend immédiatement à 50 points ! Il gagne un sursis inespéré et reste en course.",
+            "En partie courte à 50 points : si un joueur atteint pile 50 points, son score retombe à 25 points (ou zéro selon option).",
+          ],
+        },
+        {
+          title: '8. Fin de partie & Désignation du vainqueur',
+          items: [
+            "Le premier joueur qui dépasse les 100 points perd la partie.",
+            "Le vainqueur est alors le joueur qui possède le plus petit nombre de points cumulés.",
+            "Variante par élimination : La partie peut continuer par élimination jusqu'à ce qu'il ne reste plus qu'un seul joueur sous la barre des 100 points.",
           ],
         },
       ],
       summaryTable: [
-        { item: 'Score pile à 100 pts', value: 'Divisé par 2 (→ 50 pts)' },
-        { item: 'Score pile à 50 pts (partie courte)', value: 'Divisé par 2 (→ 25 pts)' },
-        { item: 'Dépassement du seuil (> seuil)', value: 'Fin de partie / Élimination' },
-        { item: 'Vainqueur final', value: 'Score le plus bas' },
+        { item: 'Joueurs / Cartes', value: '2 à 6 j. · 52 cartes (sans Jokers)' },
+        { item: 'Distribution', value: '7 cartes (2-4 j.) · 5 cartes (5-6 j.)' },
+        { item: 'Valeur du 8', value: '0 pt (clé du jeu)' },
+        { item: 'As / Figures', value: 'As = 1 pt · V = 11 · D = 12 · R = 13' },
+        { item: 'Annonce Caracole', value: '≤ 10 pts en main (passe son tour)' },
+        { item: 'Caracole réussie', value: '0 pt (strictement le plus bas)' },
+        { item: 'Caracole échouée', value: '30 pts de pénalité (égalé ou battu)' },
+        { item: 'Score pile à 100 pts', value: 'Sursis divisé par 2 (→ 50 pts)' },
+        { item: 'Fin de partie', value: 'Dépassement de 100 pts (min gagne)' },
       ],
     },
   },

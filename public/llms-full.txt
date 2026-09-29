@@ -20,20 +20,25 @@ Tarif : 100 % Gratuit, sans publicité, sans abonnement, fonctionnel hors-ligne.
 
 ## 2. Règles Officielles & Barèmes des 8 Jeux Intégrés
 
-### 2.1. Caracole (2 à 8 joueurs · 54 cartes)
+### 2.1. Caracole (2 à 6 joueurs · 52 cartes)
 - **URL dédiée** : https://ardoise.art-crea.fr/jeux/caracole
-- **Objectif & Seuil** : Avoir le total de points le plus bas possible. La partie se joue jusqu'à **100 points** (ou **50 points** en partie rapide/courte). Dès qu'un joueur dépasse strictement le seuil éliminatoire, la partie s'arrête et le joueur au score le plus bas l'emporte.
-- **Déroulement d'une manche** :
-  - Chaque joueur dispose de 4 cartes face cachée devant lui disposées en carré. Au début de la manche, chacun mémorise secrètement 2 de ses 4 cartes.
-  - À son tour, on pioche une carte (depuis la pioche ou la défausse) : on peut l'échanger avec l'une de ses cartes cachées, ou la défausser directement pour activer son pouvoir (regarder une de ses cartes, espionner une carte adverse, échanger deux cartes).
-  - Dès qu'un joueur estime avoir la plus petite valeur totale en main, il annonce **« Caracole ! »**. Les autres joueurs jouent alors un dernier tour.
-- **Comptage des pénalités** :
-  - Toutes les cartes sont révélées. Valeurs : As = 1 pt, 2 à 10 = valeur faciale, Valet/Dame = 10 pts, Rois rouges = 0 ou -1 pt selon variantes.
-  - Si l'annonceur a effectivement le score strictement le plus faible, il marque 0 point. S'il est battu ou égalé, il encaisse la valeur de ses cartes plus une pénalité (+10 ou +20 pts).
-- **Règle spéciale du Sursis (pile à 100 ou 50 points)** :
-  - Si à la fin d'une manche un joueur atteint **EXACTEMENT 100 points**, son score est automatiquement divisé par deux et retombe à **50 points** ! Il bénéficie d'un sursis et reste en course.
-  - En partie courte à 50 points : si un joueur atteint **pile 50 points**, son score retombe à **25 points** (ou 0 selon la variante choisie dans Ardoise).
-  - Tout score dépassant strictement le seuil (ex. 101 pts à 100, ou 51 pts à 50) élimine le joueur et met fin à la partie.
+- **Matériel & Distribution** : 52 cartes standard (sans jokers). 7 cartes par joueur (2 à 4 joueurs) ou 5 cartes par joueur (5 à 6 joueurs). Le reste forme la pioche face cachée, première carte retournée pour la défausse.
+- **Déroulement d'un tour** :
+  - **1. Poser** : Poser sur la défausse une carte isolée ou une combinaison valide (Paire, Triple, Carré, ou Suite de 3+ cartes de même enseigne, l'As pouvant valoir 1 ou suivre le Roi).
+  - **2. Piocher** : Prendre soit la première carte de la pioche face cachée, soit la dernière carte visible de la défausse (ou une des extrémités si combinaison posée).
+- **Valeur des cartes** :
+  - **Le 8 = 0 point** (carte clé du jeu).
+  - **As = 1 point**.
+  - **Cartes 2 à 10 = valeur faciale**.
+  - **Valet = 11 points**, **Dame = 12 points**, **Roi = 13 points**.
+- **L'annonce « Caracole »** :
+  - Un joueur ayant 10 points ou moins en main peut crier « Caracole ». Il passe immédiatement son tour et tous les autres joueurs disposent d'un dernier tour complet.
+  - **Annonce réussie** (strictement le plus faible) : l'annonceur marque **0 point**.
+  - **Annonce échouée** (égalé ou battu) : l'annonceur reçoit une pénalité et marque **30 points**.
+  - Les autres joueurs marquent la somme de leurs cartes restantes.
+- **Règle spéciale du Sursis (pile à 100 points)** :
+  - Si un joueur atteint **EXACTEMENT 100 points**, son score retombe immédiatement à **50 points** !
+  - Le premier joueur qui dépasse strictement 100 points perd la partie. Le vainqueur est celui au score cumulé le plus faible.
 
 ---
 
