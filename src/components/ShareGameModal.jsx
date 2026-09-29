@@ -47,8 +47,6 @@ export function ShareGameModal({ isOpen, onClose, game }) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Feuille de match Ardoise\u00A0: ${game?.name || 'Partie'}`,
-          text: `Découvre le résultat et la feuille de score de notre partie de ${game?.name || 'cartes'} sur Ardoise\u00A0:`,
           url: shareUrl,
         })
       } catch {

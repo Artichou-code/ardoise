@@ -180,8 +180,6 @@ export function ShareGamesModal({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Parties Ardoise (${shareResult.count})`,
-          text: `Importe nos ${shareResult.count} partie${shareResult.count > 1 ? 's' : ''} et les scores directement dans ton application Ardoise\u00A0:`,
           url: shareUrl,
         })
       } catch {}

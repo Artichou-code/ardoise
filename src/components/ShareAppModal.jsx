@@ -5,7 +5,7 @@ import { X, Share2, Copy, Check } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { AppLogo } from './ui/AppLogo'
 
-const APP_SHARE_URL = 'https://ardoise.art-crea.fr'
+const APP_SHARE_URL = 'https://ardoise.art-crea.fr/'
 
 export function ShareAppModal({ isOpen, onClose }) {
   const [copied, setCopied] = useState(false)
@@ -31,9 +31,9 @@ export function ShareAppModal({ isOpen, onClose }) {
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
+        // Partager uniquement l'URL permet à WhatsApp, iMessage, Telegram et Discord
+        // de générer automatiquement la carte d'aperçu Open Graph (image + titre + description).
         await navigator.share({
-          title: 'Ardoise — Carnet de scores & règles',
-          text: 'Découvre Ardoise, le carnet de scores et règles de jeux gratuit, sans pub et 100\u00A0% hors-ligne\u00A0:',
           url: APP_SHARE_URL,
         })
       } catch {

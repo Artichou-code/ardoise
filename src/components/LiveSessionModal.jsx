@@ -141,8 +141,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Table en direct Ardoise\u00A0: ${activeSession?.name || 'Session'}`,
-          text: `Rejoins notre table Ardoise (${activeSession?.code}) pour récupérer automatiquement toutes les parties jouées\u00A0:`,
           url: shareUrl,
         })
       } catch {}
