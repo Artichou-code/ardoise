@@ -112,9 +112,9 @@ export function StatsScreen() {
       <header className="flex items-center gap-2 px-4 header-safe pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <button
           type="button"
-          onClick={() => setScreen('history')}
+          onClick={() => setScreen('home')}
           className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-          aria-label="Retour aux archives"
+          aria-label="Retour à l'accueil"
         >
           <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
         </button>

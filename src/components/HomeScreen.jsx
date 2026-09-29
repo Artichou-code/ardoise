@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Cloud, Radio } from 'lucide-react'
+import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Cloud, Radio, Menu } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
@@ -10,6 +10,7 @@ import { GameDetailSheet } from './GameDetailSheet'
 import { LegalModal } from './LegalModal'
 import { SyncModal } from './SyncModal'
 import { LiveSessionModal } from './LiveSessionModal'
+import { BurgerMenu } from './BurgerMenu'
 import { ArtCreaLogo } from './ui/ArtCreaLogo'
 import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
 import { formatDate, formatGameStart } from '../utils/gameUtils'
@@ -27,6 +28,7 @@ export function HomeScreen() {
   const [isArtCreaModalOpen, setIsArtCreaModalOpen] = useState(false)
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
+  const [isBurgerMenuOpen, setIsBurgerMenuOpen] = useState(false)
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
 
   const activeGames = games.filter(g => g.status === 'active')
@@ -73,50 +75,35 @@ export function HomeScreen() {
           </div>
         </div>
         <div className="flex items-center gap-1.5">
+          {/* Si une table en direct est active, pilule discrète cliquable */}
+          {liveSession && (
+            <button
+              type="button"
+              onClick={() => setIsLiveModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-500/15 transition-colors cursor-pointer"
+              title={`Table en direct\u00A0: ${liveSession.name}`}
+            >
+              <Radio size={13} className="animate-pulse" />
+              <span className="hidden sm:inline">En direct</span>
+            </button>
+          )}
+
+          {/* Bascule de thème rapide */}
+          <ThemeToggle />
+
+          {/* Bouton Menu Burger */}
           <button
             type="button"
-            onClick={() => setIsLiveModalOpen(true)}
-            className={`p-2 rounded-xl border transition-colors relative ${
-              liveSession
-                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                : 'border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300'
-            }`}
-            aria-label="Table en direct"
-            title={liveSession ? `Session active : ${liveSession.name}` : "Table en direct"}
+            onClick={() => setIsBurgerMenuOpen(true)}
+            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300 transition-colors relative cursor-pointer"
+            aria-label="Ouvrir le menu principal"
+            title="Menu principal"
           >
-            <Radio size={18} className={liveSession ? 'animate-pulse' : ''} />
+            <Menu size={18} />
             {liveSession && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 animate-pulse" />
             )}
           </button>
-          <button
-            type="button"
-            onClick={() => setIsSyncModalOpen(true)}
-            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="Sauvegarde et synchronisation multi-appareils"
-            title="Sauvegarde & Sync"
-          >
-            <Cloud size={18} className="text-stone-700 dark:text-slate-300" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setScreen('history')}
-            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="Historique des parties"
-            title="Historique"
-          >
-            <History size={18} className="text-stone-700 dark:text-slate-300" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setScreen('players')}
-            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="Bibliothèque de joueurs"
-            title="Joueurs"
-          >
-            <Users size={18} className="text-stone-700 dark:text-slate-300" />
-          </button>
-          <ThemeToggle />
         </div>
       </header>
 
@@ -440,37 +427,9 @@ export function HomeScreen() {
             className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
             title="Ouvrir le Hub juridique (Mentions légales, Confidentialité, CGU)"
           >
-            <Scale size={12} className="text-[#c83b3b] group-hover:scale-110 transition-transform" />
+            <Scale size={12} className="text-[#c83b3b] dark:text-[#FFC107] group-hover:scale-110 transition-transform" />
             <span className="underline underline-offset-2 decoration-stone-300 dark:decoration-slate-700 group-hover:decoration-current">
               Hub juridique
-            </span>
-          </button>
-
-          <span className="text-stone-300 dark:text-slate-700 select-none">·</span>
-
-          <button
-            type="button"
-            onClick={() => setIsSyncModalOpen(true)}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
-            title="Sauvegarde et synchronisation multi-appareils"
-          >
-            <Cloud size={12} className="text-[#c83b3b] group-hover:scale-110 transition-transform" />
-            <span className="underline underline-offset-2 decoration-stone-300 dark:decoration-slate-700 group-hover:decoration-current">
-              Sauvegarde & Sync
-            </span>
-          </button>
-
-          <span className="text-stone-300 dark:text-slate-700 select-none">·</span>
-
-          <button
-            type="button"
-            onClick={() => setIsLiveModalOpen(true)}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
-            title="Table en direct"
-          >
-            <Radio size={12} className={liveSession ? "text-emerald-500 animate-pulse" : "text-[#c83b3b] group-hover:scale-110 transition-transform"} />
-            <span className="underline underline-offset-2 decoration-stone-300 dark:decoration-slate-700 group-hover:decoration-current">
-              Table en direct
             </span>
           </button>
         </footer>
@@ -535,6 +494,19 @@ export function HomeScreen() {
         isOpen={isLiveModalOpen}
         onClose={() => setIsLiveModalOpen(false)}
         onSessionChanged={(s) => setLiveSession(s)}
+      />
+
+      {/* Menu Burger latéral complet (Statistiques, Historique, Joueurs, Synchro, Direct, Règles) */}
+      <BurgerMenu
+        isOpen={isBurgerMenuOpen}
+        onClose={() => setIsBurgerMenuOpen(false)}
+        onNavigate={(screen) => setScreen(screen)}
+        onOpenLiveSession={() => setIsLiveModalOpen(true)}
+        onOpenSync={() => setIsSyncModalOpen(true)}
+        onOpenRules={() => setRulesGame(sortedGames[0]?.id || 'belote')}
+        onOpenLegal={(tab) => setLegalTab(tab || 'legal')}
+        onOpenArtCrea={() => setIsArtCreaModalOpen(true)}
+        liveSession={liveSession}
       />
     </div>
   )
