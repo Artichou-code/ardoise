@@ -4,7 +4,6 @@ import { useGame } from '../context/GameContext'
 import { Avatar, AvatarPicker } from './ui/Avatar'
 import { BottomSheet } from './ui/BottomSheet'
 import { ConfirmDialog } from './ui/Dialog'
-import { ThemeToggle } from './ui/ThemeToggle'
 import { PlayerDetailSheet } from './PlayerDetailSheet'
 import { createPlayer, getPlayerAvatarUrl } from '../utils/gameUtils'
 import { computeStats, normalizePlayerName } from '../utils/statsUtils'
@@ -115,7 +114,6 @@ export function PlayersScreen() {
         <h1 className="flex-1 font-serif-title font-bold text-lg">
           Carnet de joueurs
         </h1>
-        <ThemeToggle />
         <button
           type="button"
           onClick={() => setShowCreate(true)}
