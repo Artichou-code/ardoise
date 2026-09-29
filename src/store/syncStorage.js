@@ -17,6 +17,46 @@ const SYNC_KEYS = {
 const API_BASE = '/api'
 
 /**
+ * Extrait un code (ex: ARD-R4RT) à partir d'une saisie brute qui peut être
+ * un code seul, une URL complète (https://.../?share=ARD-R4RT) ou un texte partagé.
+ */
+export function extractCodeFromInput(rawInput) {
+  const str = (rawInput || '').trim()
+  if (!str) return ''
+
+  // 1. Paramètre d'URL ?share=..., ?game=..., ?session=..., ?sync=...
+  const paramMatch = str.match(/[?&](?:share|game|session|sync)=([A-Za-z0-9_-]+)/i)
+  if (paramMatch && paramMatch[1]) {
+    return decodeURIComponent(paramMatch[1]).trim().toUpperCase()
+  }
+
+  // 2. Motif explicite ARD-XXXX n'importe où dans le texte ou l'URL
+  const ardMatch = str.match(/\b(ARD-[A-Za-z0-9]{3,12})\b/i)
+  if (ardMatch && ardMatch[1]) {
+    return ardMatch[1].toUpperCase()
+  }
+
+  // 3. Si c'est une URL de type .../share/CODE ou .../sessions/CODE
+  if (/^https?:\/\//i.test(str)) {
+    try {
+      const url = new URL(str)
+      const segments = url.pathname.split('/').filter(Boolean)
+      if (segments.length > 0) {
+        return decodeURIComponent(segments[segments.length - 1]).trim().toUpperCase()
+      }
+    } catch {}
+  }
+
+  // 4. Si l'utilisateur a tapé uniquement les 4 caractères sans "ARD-" (ex: "R4RT")
+  const upper = str.toUpperCase()
+  if (/^[A-Z0-9]{4}$/.test(upper)) {
+    return `ARD-${upper}`
+  }
+
+  return upper
+}
+
+/**
  * Génère un identifiant de synchronisation mémorisable (ex: ARD-7B92)
  */
 export function generateMemorableSyncKey() {
@@ -33,8 +73,9 @@ export function getSyncKey() {
 }
 
 export function setSyncKey(key) {
-  if (key) {
-    localStorage.setItem(SYNC_KEYS.SYNC_KEY, key.trim().toUpperCase())
+  const clean = extractCodeFromInput(key)
+  if (clean) {
+    localStorage.setItem(SYNC_KEYS.SYNC_KEY, clean)
   } else {
     localStorage.removeItem(SYNC_KEYS.SYNC_KEY)
   }
@@ -388,7 +429,7 @@ export function applyNotebook(incoming, mode = 'merge') {
  */
 
 export async function fetchRemoteNotebook(syncKey) {
-  const cleanKey = (syncKey || getSyncKey()).trim().toUpperCase()
+  const cleanKey = extractCodeFromInput(syncKey || getSyncKey())
   if (!cleanKey) throw new Error('Aucune clé de synchronisation renseignée.')
 
   const res = await fetch(`${API_BASE}/sync/${encodeURIComponent(cleanKey)}`, {
@@ -408,7 +449,7 @@ export async function fetchRemoteNotebook(syncKey) {
 }
 
 export async function pushNotebookToCloud(syncKey) {
-  const cleanKey = (syncKey || getSyncKey()).trim().toUpperCase()
+  const cleanKey = extractCodeFromInput(syncKey || getSyncKey())
   if (!cleanKey) throw new Error('Aucune clé de synchronisation renseignée.')
 
   const payload = exportNotebookPayload()
@@ -432,7 +473,7 @@ export async function pushNotebookToCloud(syncKey) {
  * Synchronisation bidirectionnelle automatique complète avec le Cloud
  */
 export async function synchronizeNotebook(syncKey) {
-  const key = (syncKey || getSyncKey()).trim().toUpperCase()
+  const key = extractCodeFromInput(syncKey || getSyncKey())
   if (!key) throw new Error('Clé manquante')
 
   setSyncKey(key)
@@ -513,10 +554,10 @@ export async function shareGamesBatch(games = []) {
 }
 
 /**
- * Récupère une ou plusieurs feuilles de match partagées par code ou ID
+ * Récupère une ou plusieurs feuilles de match partagées par code, lien ou ID
  */
 export async function fetchSharedGame(codeOrId) {
-  const clean = (codeOrId || '').trim()
+  const clean = extractCodeFromInput(codeOrId)
   if (!clean) throw new Error('Code de match manquant')
 
   const res = await fetch(`${API_BASE}/games/share/${encodeURIComponent(clean)}`)

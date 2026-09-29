@@ -1,4 +1,4 @@
-import { applyNotebook } from './syncStorage'
+import { applyNotebook, extractCodeFromInput } from './syncStorage'
 
 const SESSION_KEY = 'ardoise_active_live_session'
 const API_BASE = '/api'
@@ -91,7 +91,7 @@ export async function createLiveSession(name, hostName, participants = [], initi
  * Récupère l'état actuel d'une session
  */
 export async function fetchLiveSession(code) {
-  const cleanCode = (code || '').trim().toUpperCase()
+  const cleanCode = extractCodeFromInput(code)
   if (!cleanCode) throw new Error('Code de session manquant')
 
   const res = await fetch(`${API_BASE}/sessions/${encodeURIComponent(cleanCode)}`, {
@@ -110,7 +110,7 @@ export async function fetchLiveSession(code) {
  * Rejoindre une session existante et importer immédiatement les parties déjà jouées
  */
 export async function joinLiveSession(code, playerName = '') {
-  const cleanCode = (code || '').trim().toUpperCase()
+  const cleanCode = extractCodeFromInput(code)
   const sessionData = await fetchLiveSession(cleanCode)
   const state = sessionData.state || {}
   const isClosed = Boolean(sessionData.closed || state.closed)

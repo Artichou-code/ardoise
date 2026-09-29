@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useGame } from '../context/GameContext'
-import { shareGamesBatch, fetchSharedGame } from '../store/syncStorage'
+import { shareGamesBatch, fetchSharedGame, extractCodeFromInput } from '../store/syncStorage'
 import { Avatar } from './ui/Avatar'
 import { formatShortDate } from '../utils/gameUtils'
 
@@ -142,7 +142,7 @@ export function ShareGamesModal({
 
   const handleFetchByCode = async (e) => {
     e.preventDefault()
-    const clean = receiveCode.trim().toUpperCase()
+    const clean = extractCodeFromInput(receiveCode)
     if (!clean || isLoading) return
 
     setIsLoading(true)
@@ -466,19 +466,19 @@ export function ShareGamesModal({
               </div>
             )
           ) : (
-            /* ONGLET RECEVOIR UN CODE */
+            /* ONGLET RECEVOIR UN CODE OU LIEN */
             <form onSubmit={handleFetchByCode} className="space-y-3.5">
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1">
-                  Code de partage reçu
+                  Code ou lien de partage reçu
                 </label>
                 <input
                   type="text"
                   value={receiveCode}
-                  onChange={(e) => setReceiveCode(e.target.value.toUpperCase())}
-                  placeholder="Ex : ARD-4F8K"
+                  onChange={(e) => setReceiveCode(e.target.value)}
+                  placeholder="Ex : ARD-4F8K ou lien https://..."
                   required
-                  className="w-full font-mono uppercase px-3 py-2.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none focus:border-[#c83b3b]"
+                  className="w-full font-mono px-3 py-2.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none focus:border-[#c83b3b]"
                 />
               </div>
 
@@ -501,7 +501,7 @@ export function ShareGamesModal({
               </button>
 
               <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-relaxed">
-                Entrez le code affiché sur le téléphone de votre ami pour récupérer ses parties sélectionnées et fusionner les statistiques des joueurs.
+                Collez le lien reçu ou entrez le code affiché sur le téléphone de votre ami (ex. ARD-4F8K) pour récupérer ses parties et fusionner les statistiques.
               </p>
             </form>
           )}
