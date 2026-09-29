@@ -58,42 +58,28 @@ export function HistoryScreen() {
     setSelectedIds((prev) => (prev.includes(gameId) ? prev : [...prev, gameId]))
   }
 
-  const handleTouchStart = (gameId, e) => {
-    if (isSelectionMode) return
+  const handlePointerDown = (gameId, e) => {
+    // Toujours réinitialiser au début d'un nouvel appui (corrige le bug du double clic après un appui long)
     longPressTriggeredRef.current = false
-    const touch = e.touches?.[0]
-    touchStartPosRef.current = touch ? { x: touch.clientX, y: touch.clientY } : null
+    if (isSelectionMode) return
+    if (e.pointerType === 'mouse' && e.button !== 0) return
+    touchStartPosRef.current = { x: e.clientX, y: e.clientY }
     clearLongPressTimer()
     longPressTimerRef.current = setTimeout(() => {
       triggerLongPress(gameId)
     }, 420)
   }
 
-  const handleTouchMove = (e) => {
+  const handlePointerMove = (e) => {
     if (!touchStartPosRef.current || !longPressTimerRef.current) return
-    const touch = e.touches?.[0]
-    if (!touch) return
-    const dx = Math.abs(touch.clientX - touchStartPosRef.current.x)
-    const dy = Math.abs(touch.clientY - touchStartPosRef.current.y)
+    const dx = Math.abs(e.clientX - touchStartPosRef.current.x)
+    const dy = Math.abs(e.clientY - touchStartPosRef.current.y)
     if (dx > 10 || dy > 10) {
       clearLongPressTimer()
     }
   }
 
-  const handleTouchEnd = () => {
-    clearLongPressTimer()
-  }
-
-  const handleMouseDown = (gameId, e) => {
-    if (isSelectionMode || e.button !== 0) return
-    longPressTriggeredRef.current = false
-    clearLongPressTimer()
-    longPressTimerRef.current = setTimeout(() => {
-      triggerLongPress(gameId)
-    }, 450)
-  }
-
-  const handleMouseUp = () => {
+  const handlePointerEnd = () => {
     clearLongPressTimer()
   }
 
@@ -222,8 +208,8 @@ export function HistoryScreen() {
           <div className="space-y-3 pb-16">
             {/* Indication discrète pour l'appui long */}
             {!isSelectionMode && sorted.length > 1 && (
-              <p className="text-[11px] text-stone-400 dark:text-slate-500 text-center">
-                Maintenez appuyé sur une carte pour sélectionner plusieurs parties à partager
+              <p className="text-[11px] text-stone-400 dark:text-slate-500 text-center whitespace-nowrap">
+                Appui long pour sélectionner plusieurs parties
               </p>
             )}
 
@@ -244,15 +230,16 @@ export function HistoryScreen() {
               return (
                 <div
                   key={game.id}
-                  onTouchStart={(e) => handleTouchStart(game.id, e)}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                  onMouseDown={(e) => handleMouseDown(game.id, e)}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
+                  onPointerDown={(e) => handlePointerDown(game.id, e)}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerEnd}
+                  onPointerCancel={handlePointerEnd}
+                  onPointerLeave={handlePointerEnd}
                   onContextMenu={(e) => {
                     e.preventDefault()
-                    triggerLongPress(game.id)
+                    if (!isSelectionMode) {
+                      triggerLongPress(game.id)
+                    }
                   }}
                   onClick={() => handleCardClick(game)}
                   role="button"
