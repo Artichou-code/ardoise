@@ -36,15 +36,22 @@ export function BurgerMenu({
 
   useScrollLock(isOpen)
 
+  const handleClose = () => {
+    if (drawerRef.current && drawerRef.current.contains(document.activeElement)) {
+      document.activeElement.blur()
+    }
+    onClose()
+  }
+
   // Fermeture par touche Echap
   useEffect(() => {
     if (!isOpen) return
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') handleClose()
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+  }, [isOpen])
 
   if (typeof document === 'undefined') return null
 
@@ -88,12 +95,12 @@ export function BurgerMenu({
       drawerRef.current.style.transition = ''
     }
     if (dx > 70) {
-      onClose()
+      handleClose()
     }
   }
 
   const handleAction = (callback) => {
-    onClose()
+    handleClose()
     if (callback) {
       setTimeout(() => callback(), 150)
     }
@@ -105,8 +112,8 @@ export function BurgerMenu({
         isOpen ? 'drawer-overlay-open' : 'drawer-overlay-closed'
       }`}
       role="dialog"
-      aria-modal="true"
-      aria-hidden={!isOpen}
+      aria-modal={isOpen ? "true" : undefined}
+      inert={!isOpen ? true : undefined}
       aria-labelledby="burger-menu-title"
     >
       {/* Backdrop sombre avec fondu fluide */}
@@ -114,7 +121,7 @@ export function BurgerMenu({
         className={`absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-xs drawer-backdrop ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
-        onClick={onClose}
+        onClick={handleClose}
         aria-hidden="true"
       />
 
@@ -147,7 +154,7 @@ export function BurgerMenu({
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-200/60 dark:hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
             title="Fermer le menu"
           >
