@@ -238,6 +238,24 @@ function generateSeoFiles() {
     }
   }
 
+  // Action 2 : <link rel="modulepreload"> sur le chunk JS principal pour que le navigateur
+  // le télécharge en parallèle du HTML (élimine la chaîne critique HTML → JS de ~240 ms).
+  // Action 3 : fetchpriority="high" sur la balise <script> principale pour signaler sa priorité.
+  const jsMatch = baseHtml.match(/<script type="module" crossorigin src="(\/assets\/index-[^"]+\.js)"><\/script>/)
+  if (jsMatch) {
+    const jsPath = jsMatch[1]
+    // Inject modulepreload juste avant </head>
+    baseHtml = baseHtml.replace(
+      '</head>',
+      `  <link rel="modulepreload" href="${jsPath}" />\n  </head>`
+    )
+    // Ajouter fetchpriority="high" sur la balise script
+    baseHtml = baseHtml.replace(
+      jsMatch[0],
+      `<script type="module" crossorigin fetchpriority="high" src="${jsPath}"></script>`
+    )
+  }
+
   // 1. Enrichir dist/index.html avec l'App Shell visuel + le catalogue complet des 8 jeux
   const allGamesArticles = SEO_PAGES.map((p) =>
     renderGameArticleHtml(GAME_META[p.gameId], p.slug)
