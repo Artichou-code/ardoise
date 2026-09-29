@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale } from 'lucide-react'
+import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Cloud } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
@@ -8,6 +8,7 @@ import { GameSetupSheet } from './GameSetupSheet'
 import { RulesSheet } from './RulesSheet'
 import { GameDetailSheet } from './GameDetailSheet'
 import { LegalModal } from './LegalModal'
+import { SyncModal } from './SyncModal'
 import { ArtCreaLogo } from './ui/ArtCreaLogo'
 import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
 import { formatDate, formatGameStart } from '../utils/gameUtils'
@@ -15,13 +16,14 @@ import { Avatar } from './ui/Avatar'
 import { formatTypography } from '../utils/typography'
 
 export function HomeScreen() {
-  const { games, setScreen, resumeGame, customPresets, deletePreset, createGame } = useGame()
+  const { games, setScreen, resumeGame, customPresets, deletePreset, createGame, reloadStorage } = useGame()
   const [setupGame, setSetupGame] = useState(null)
   const [setupPreset, setSetupPreset] = useState(null)
   const [rulesGame, setRulesGame] = useState(null)
   const [detailGame, setDetailGame] = useState(null)
   const [legalTab, setLegalTab] = useState(null)
   const [isArtCreaModalOpen, setIsArtCreaModalOpen] = useState(false)
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
 
   const activeGames = games.filter(g => g.status === 'active')
   const finishedGames = games.filter(g => g.status === 'finished').slice(0, 3)
@@ -67,6 +69,15 @@ export function HomeScreen() {
           </div>
         </div>
         <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setIsSyncModalOpen(true)}
+            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label="Sauvegarde et synchronisation multi-appareils"
+            title="Sauvegarde & Sync"
+          >
+            <Cloud size={18} className="text-stone-700 dark:text-slate-300" />
+          </button>
           <button
             type="button"
             onClick={() => setScreen('history')}
@@ -392,6 +403,20 @@ export function HomeScreen() {
               Hub juridique
             </span>
           </button>
+
+          <span className="text-stone-300 dark:text-slate-700 select-none">·</span>
+
+          <button
+            type="button"
+            onClick={() => setIsSyncModalOpen(true)}
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer group"
+            title="Sauvegarde et synchronisation multi-appareils"
+          >
+            <Cloud size={12} className="text-[#c83b3b] group-hover:scale-110 transition-transform" />
+            <span className="underline underline-offset-2 decoration-stone-300 dark:decoration-slate-700 group-hover:decoration-current">
+              Sauvegarde & Sync
+            </span>
+          </button>
         </footer>
       </div>
 
@@ -440,6 +465,13 @@ export function HomeScreen() {
       <ArtCreaUniverseModal
         isOpen={isArtCreaModalOpen}
         onClose={() => setIsArtCreaModalOpen(false)}
+      />
+
+      {/* Modale Sauvegarde & Synchronisation (Multi-appareils / Fichier) */}
+      <SyncModal
+        isOpen={isSyncModalOpen}
+        onClose={() => setIsSyncModalOpen(false)}
+        onDataUpdated={reloadStorage}
       />
     </div>
   )

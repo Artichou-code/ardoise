@@ -10,6 +10,7 @@ import {
   Award,
   ChevronRight,
   TrendingUp,
+  Cloud,
 } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
@@ -17,6 +18,7 @@ import { Avatar } from './ui/Avatar'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { PlayerDetailSheet } from './PlayerDetailSheet'
 import { TrophiesSheet } from './TrophiesSheet'
+import { SyncModal } from './SyncModal'
 import {
   computeStats,
   sortPlayers,
@@ -24,11 +26,12 @@ import {
 } from '../utils/statsUtils'
 
 export function StatsScreen() {
-  const { games, players: registeredPlayers, setScreen } = useGame()
+  const { games, players: registeredPlayers, setScreen, reloadStorage } = useGame()
   const [selectedGameType, setSelectedGameType] = useState('all') // 'all' | gameId
   const [sortBy, setSortBy] = useState('winRate') // 'winRate' (défaut) | 'wins' | 'games'
   const [selectedPlayer, setSelectedPlayer] = useState(null)
   const [showTrophies, setShowTrophies] = useState(false)
+  const [showSyncModal, setShowSyncModal] = useState(false)
 
   // Calcul des statistiques
   const stats = useMemo(() => {
@@ -120,6 +123,15 @@ export function StatsScreen() {
             Statistiques
           </h1>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowSyncModal(true)}
+          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+          title="Sauvegarder & Partager mes statistiques"
+          aria-label="Sauvegarde et synchronisation"
+        >
+          <Cloud size={18} className="text-stone-700 dark:text-slate-300" />
+        </button>
         <button
           type="button"
           onClick={() => setShowTrophies(true)}
@@ -262,6 +274,30 @@ export function StatsScreen() {
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Bannière de Synchronisation & Sauvegarde des Statistiques */}
+            <div className="p-3 rounded-2xl border border-stone-200/90 dark:border-slate-800/90 bg-white/70 dark:bg-slate-900/60 flex items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-[#c83b3b]/10 dark:bg-[#FFC107]/10 flex items-center justify-center flex-shrink-0 text-[#c83b3b] dark:text-[#FFC107]">
+                  <Cloud size={16} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-xs text-stone-800 dark:text-slate-200 truncate">
+                    Sauvegarder & Partager mes stats
+                  </p>
+                  <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
+                    Synchronisez vos données sur votre PC ou un autre téléphone
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSyncModal(true)}
+                className="px-3 py-1.5 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex-shrink-0 transition-colors cursor-pointer shadow-2xs"
+              >
+                Gérer
+              </button>
             </div>
 
             {/* Distinctions / Panthéon (si des titres sont attribués) */}
@@ -499,6 +535,13 @@ export function StatsScreen() {
         open={showTrophies}
         onClose={() => setShowTrophies(false)}
         playersStats={stats.playersStats}
+      />
+
+      {/* Modale Sauvegarde & Synchronisation */}
+      <SyncModal
+        isOpen={showSyncModal}
+        onClose={() => setShowSyncModal(false)}
+        onDataUpdated={reloadStorage}
       />
     </div>
   )

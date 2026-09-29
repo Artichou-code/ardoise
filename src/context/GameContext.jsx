@@ -6,6 +6,12 @@ import {
   saveCustomPreset, deleteCustomPreset, loadCustomPresets,
   generateId
 } from '../store/storage'
+import {
+  getSyncKey,
+  isAutoSyncEnabled,
+  pushNotebookToCloud,
+  synchronizeNotebook
+} from '../store/syncStorage'
 import { GAME_META } from '../constants/games'
 
 const GameContext = createContext(null)
@@ -34,6 +40,24 @@ export function GameProvider({ children }) {
 
   // Sync activeGameId to storage
   useEffect(() => { saveActiveGameId(activeGameId) }, [activeGameId])
+
+  // Recharger le state React depuis le storage après une synchronisation
+  const reloadStorage = useCallback(() => {
+    setPlayers(sortPlayersAlpha(loadPlayers()))
+    setGames(loadGames())
+    setCustomPresets(loadCustomPresets())
+    setActiveGameId(loadActiveGameId())
+  }, [])
+
+  // Auto-synchronisation au démarrage
+  useEffect(() => {
+    const key = getSyncKey()
+    if (key && isAutoSyncEnabled()) {
+      synchronizeNotebook(key)
+        .then(() => reloadStorage())
+        .catch(() => {})
+    }
+  }, [reloadStorage])
 
   // Save game helper
   const persistGame = useCallback((game) => {
@@ -107,6 +131,11 @@ export function GameProvider({ children }) {
     }
     persistGame(updated)
     setScreen('victory')
+
+    // Push cloud en arrière-plan si activé
+    if (isAutoSyncEnabled() && getSyncKey()) {
+      pushNotebookToCloud().catch(() => {})
+    }
   }, [activeGame, persistGame])
 
   // Revanche
@@ -179,6 +208,7 @@ export function GameProvider({ children }) {
       screen, setScreen,
       createGame, updateScores, undoLastRound, canUndo,
       finishGame, rematch, exitGame, removeGame, resumeGame,
+      reloadStorage,
     }}>
       {children}
     </GameContext.Provider>
