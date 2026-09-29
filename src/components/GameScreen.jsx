@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ArrowLeft, RotateCcw, ChevronDown, ChevronUp, Flag, BookOpen } from 'lucide-react'
 import { useGame } from '../context/GameContext'
-import { ThemeToggle } from './ui/ThemeToggle'
+import { BurgerMenuButton } from './BurgerMenu'
 import { Avatar } from './ui/Avatar'
 import { ConfirmDialog } from './ui/Dialog'
 import { RulesSheet } from './RulesSheet'
@@ -89,13 +89,13 @@ export function GameScreen() {
           <button
             type="button"
             onClick={() => setShowFinishConfirm(true)}
-            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title="Finir la partie plus tôt"
             aria-label="Finir la partie plus tôt"
           >
             <Flag size={16} className="text-stone-600 dark:text-slate-400" />
           </button>
-          <ThemeToggle />
+          <BurgerMenuButton />
         </div>
       </header>
 

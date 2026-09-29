@@ -19,6 +19,7 @@ import { ThemeToggle } from './ui/ThemeToggle'
 import { PlayerDetailSheet } from './PlayerDetailSheet'
 import { TrophiesSheet } from './TrophiesSheet'
 import { SyncModal } from './SyncModal'
+import { BurgerMenuButton } from './BurgerMenu'
 import {
   computeStats,
   sortPlayers,
@@ -172,6 +173,7 @@ export function StatsScreen() {
         >
           <Award size={18} className="text-stone-700 dark:text-slate-300" />
         </button>
+        <BurgerMenuButton />
       </header>
 
       {/* Onglets horizontaux de filtre par jeu avec centrage fluide au clic */}

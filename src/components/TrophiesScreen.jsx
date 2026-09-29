@@ -3,6 +3,7 @@ import { ArrowLeft, Award, Lock, BarChart3, Trophy } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { Avatar } from './ui/Avatar'
 import { PlayerDetailSheet } from './PlayerDetailSheet'
+import { BurgerMenuButton } from './BurgerMenu'
 import { computeStats, TROPHIES_CATALOG } from '../utils/statsUtils'
 
 export function TrophiesScreen() {
@@ -81,6 +82,7 @@ export function TrophiesScreen() {
         >
           <BarChart3 size={18} className="text-stone-700 dark:text-slate-300" />
         </button>
+        <BurgerMenuButton />
       </header>
 
       {/* Barre d'onglets de filtrage */}

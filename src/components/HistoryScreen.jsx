@@ -19,6 +19,7 @@ import { Avatar } from './ui/Avatar'
 import { ConfirmDialog } from './ui/Dialog'
 import { GameDetailSheet } from './GameDetailSheet'
 import { ShareGamesModal } from './ShareGamesModal'
+import { BurgerMenuButton } from './BurgerMenu'
 import { getRanking, formatDate, formatDuration } from '../utils/gameUtils'
 
 export function HistoryScreen() {
@@ -187,6 +188,7 @@ export function HistoryScreen() {
             >
               <BarChart3 size={18} className="text-stone-700 dark:text-slate-300" />
             </button>
+            <BurgerMenuButton />
           </>
         )}
       </header>

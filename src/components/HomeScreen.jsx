@@ -11,7 +11,7 @@ import { LegalModal } from './LegalModal'
 import { SyncModal } from './SyncModal'
 import { LiveSessionModal } from './LiveSessionModal'
 import { ShareGamesModal } from './ShareGamesModal'
-import { BurgerMenu } from './BurgerMenu'
+import { BurgerMenuButton } from './BurgerMenu'
 import { TrophiesSheet } from './TrophiesSheet'
 import { ArtCreaLogo } from './ui/ArtCreaLogo'
 import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
@@ -109,18 +109,7 @@ export function HomeScreen() {
           <ThemeToggle />
 
           {/* Bouton Menu Burger */}
-          <button
-            type="button"
-            onClick={() => setIsBurgerMenuOpen(true)}
-            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300 transition-colors relative cursor-pointer"
-            aria-label="Ouvrir le menu principal"
-            title="Menu principal"
-          >
-            <Menu size={18} />
-            {liveSession && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 animate-pulse" />
-            )}
-          </button>
+          <BurgerMenuButton />
         </div>
       </header>
 
@@ -547,20 +536,6 @@ export function HomeScreen() {
         onOpenImportGames={(importedGames) => {
           window.dispatchEvent(new CustomEvent('ardoise-open-import-games', { detail: importedGames }))
         }}
-      />
-
-      {/* Menu Burger latéral complet (Statistiques, Historique, Joueurs, Trophées, Partage & Sauvegarde) */}
-      <BurgerMenu
-        isOpen={isBurgerMenuOpen}
-        onClose={() => setIsBurgerMenuOpen(false)}
-        onNavigate={(screen) => setScreen(screen)}
-        onOpenLiveSession={() => setIsLiveModalOpen(true)}
-        onOpenShareGames={() => setIsShareGamesModalOpen(true)}
-        onOpenSync={() => setIsSyncModalOpen(true)}
-        onOpenRules={() => setRulesGame(sortedGames[0]?.id || 'belote')}
-        onOpenLegal={(tab) => setLegalTab(tab || 'mentions')}
-        onOpenArtCrea={() => setIsArtCreaModalOpen(true)}
-        liveSession={liveSession}
       />
     </div>
   )

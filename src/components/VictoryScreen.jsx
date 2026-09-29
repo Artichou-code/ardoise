@@ -5,7 +5,7 @@ import { useGame } from '../context/GameContext'
 import { GAME_META, GAMES } from '../constants/games'
 import { Avatar } from './ui/Avatar'
 import { getRanking, formatDuration } from '../utils/gameUtils'
-import { ThemeToggle } from './ui/ThemeToggle'
+import { BurgerMenuButton } from './BurgerMenu'
 import { ShareGameModal } from './ShareGameModal'
 
 export function VictoryScreen() {
@@ -17,7 +17,7 @@ export function VictoryScreen() {
     if (fired.current || !activeGame) return
     fired.current = true
 
-    const colors = ['#c83b3b', '#1e3a5f', '#b47b18', '#1f5c43']
+    const colors = ['#c83b3b', '#b47b18', '#1f5c43']
     confetti({
       particleCount: 65,
       spread: 80,
@@ -64,11 +64,11 @@ export function VictoryScreen() {
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
-      <header className="flex items-center justify-between px-4 header-safe pb-2.5 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90">
+      <header className="flex items-center justify-between px-4 header-safe pb-2.5 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <span className="font-serif-title text-base sm:text-lg font-bold">
           {isDourak ? "Verdict du Dourak (l'idiot)" : 'Palmarès de la partie'}
         </span>
-        <ThemeToggle />
+        <BurgerMenuButton />
       </header>
 
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-2.5 pb-4 pb-safe">

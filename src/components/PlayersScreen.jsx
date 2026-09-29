@@ -5,6 +5,7 @@ import { Avatar, AvatarPicker } from './ui/Avatar'
 import { BottomSheet } from './ui/BottomSheet'
 import { ConfirmDialog } from './ui/Dialog'
 import { PlayerDetailSheet } from './PlayerDetailSheet'
+import { BurgerMenuButton } from './BurgerMenu'
 import { createPlayer, getPlayerAvatarUrl } from '../utils/gameUtils'
 import { computeStats, normalizePlayerName } from '../utils/statsUtils'
 import { AVATAR_COLORS, PRESET_AVATARS } from '../constants/games'
@@ -117,10 +118,11 @@ export function PlayersScreen() {
         <button
           type="button"
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs btn-margin-red"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs btn-margin-red cursor-pointer"
         >
           <Plus size={15} /> Ajouter
         </button>
+        <BurgerMenuButton />
       </header>
 
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">

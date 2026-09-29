@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
   X,
+  Menu,
   BarChart3,
   History,
   Users,
@@ -17,6 +18,32 @@ import { useScrollLock } from '../hooks/useScrollLock'
 import { useTheme } from '../context/ThemeContext'
 import { AppLogo } from './ui/AppLogo'
 import { ArtCreaLogo } from './ui/ArtCreaLogo'
+import { getActiveSession } from '../store/liveSession'
+
+export function BurgerMenuButton() {
+  const [liveSession, setLiveSession] = useState(() => getActiveSession())
+
+  useEffect(() => {
+    const handleSessionChanged = (e) => setLiveSession(e.detail)
+    window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
+    return () => window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
+  }, [])
+
+  return (
+    <button
+      type="button"
+      onClick={() => window.dispatchEvent(new CustomEvent('ardoise-open-burger-menu'))}
+      className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300 transition-colors relative cursor-pointer shrink-0"
+      aria-label="Ouvrir le menu principal"
+      title="Menu principal"
+    >
+      <Menu size={18} />
+      {liveSession && (
+        <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 animate-pulse" />
+      )}
+    </button>
+  )
+}
 
 export function BurgerMenu({
   isOpen,
@@ -144,17 +171,22 @@ export function BurgerMenu({
 
         {/* En-tête du menu */}
         <div className="p-3.5 sm:p-4 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <AppLogo className="w-8 h-8 rounded-xl shadow-2xs shrink-0" />
+          <button
+            type="button"
+            onClick={() => handleAction(() => onNavigate('home'))}
+            className="flex items-center gap-2.5 min-w-0 text-left cursor-pointer group focus:outline-none"
+            title="Retour à l'accueil"
+          >
+            <AppLogo className="w-8 h-8 rounded-xl shadow-2xs shrink-0 group-hover:scale-105 transition-transform" />
             <div className="min-w-0">
-              <h2 id="burger-menu-title" className="text-base font-bold font-serif-title leading-tight truncate">
+              <h2 id="burger-menu-title" className="text-base font-bold font-serif-title leading-tight truncate group-hover:text-[#c83b3b] transition-colors">
                 Menu
               </h2>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                Ardoise · Carnet de scores
+                Ardoise · Accueil
               </p>
             </div>
-          </div>
+          </button>
 
           <button
             type="button"
