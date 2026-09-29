@@ -10,7 +10,7 @@ import {
   RefreshCw,
   Smartphone,
   ShieldCheck,
-  FileJson,
+  FolderDown,
   ArrowRight,
   Sparkles,
 } from 'lucide-react'
@@ -125,7 +125,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
         }
         setImportPreview(payload)
       } catch {
-        setStatusMessage({ type: 'error', text: 'Fichier JSON invalide ou corrompu' })
+        setStatusMessage({ type: 'error', text: 'Fichier invalide ou corrompu' })
       }
     }
     reader.readAsText(file)
@@ -198,30 +198,30 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
         </div>
 
         {/* Onglets navigation responsive */}
-        <div className="px-3 sm:px-5 pt-2.5 flex border-b border-stone-200/60 dark:border-slate-800/60 bg-[#faf9f5]/50 dark:bg-[#151719]/50">
+        <div className="px-3 sm:px-5 pt-2 flex border-b border-stone-200/60 dark:border-slate-800/60 bg-[#faf9f5]/50 dark:bg-[#151719]/50">
           <button
             type="button"
             onClick={() => setActiveTab('cloud')}
-            className={`pb-2 px-2.5 sm:px-3 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`pb-2 px-3 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === 'cloud'
                 ? 'border-[#c83b3b] text-[#c83b3b] dark:border-[#FFC107] dark:text-[#FFC107]'
                 : 'border-transparent text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            <Smartphone size={13} />
-            <span>Cloud (Multi-appareils)</span>
+            <Smartphone size={14} />
+            <span>En ligne</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('file')}
-            className={`pb-2 px-2.5 sm:px-3 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
+            className={`pb-2 px-3 text-xs font-bold border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === 'file'
                 ? 'border-[#c83b3b] text-[#c83b3b] dark:border-[#FFC107] dark:text-[#FFC107]'
                 : 'border-transparent text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            <FileJson size={13} />
-            <span>Fichier (.json)</span>
+            <FolderDown size={14} />
+            <span>Fichier</span>
           </button>
         </div>
 
@@ -248,16 +248,16 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
         {/* Corps défilant */}
         <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs leading-relaxed">
           {activeTab === 'cloud' && (
-            <div className="space-y-4">
-              {/* Carte Clé de Carnet */}
+            <div className="space-y-3.5">
+              {/* Carte Code Unique */}
               <div className="p-3.5 rounded-xl school-card border border-stone-200 dark:border-slate-800 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-stone-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
-                    Votre Clé de Carnet
+                    Votre code Ardoise
                   </span>
                   <span className="text-[10px] text-stone-400 dark:text-slate-500 flex items-center gap-1">
                     <ShieldCheck size={12} className="text-emerald-500" />
-                    Zéro compte requis
+                    Sans inscription
                   </span>
                 </div>
 
@@ -268,29 +268,29 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                   <button
                     type="button"
                     onClick={handleCopyKey}
-                    className="p-2.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 text-stone-700 dark:text-slate-200 font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                    title="Copier la clé"
+                    className="px-3 py-2 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 text-stone-700 dark:text-slate-200 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+                    title="Copier le code"
                   >
-                    {copied ? <Check size={15} className="text-emerald-500" /> : <Copy size={15} />}
-                    <span>{copied ? 'Copié' : 'Copier'}</span>
+                    {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                    <span>{copied ? 'Copié\u00A0!' : 'Copier'}</span>
                   </button>
                 </div>
 
                 <p className="text-[11px] text-stone-500 dark:text-slate-400">
-                  Renseignez cette clé sur votre deuxième téléphone ou ordinateur pour retrouver automatiquement toutes vos parties.
+                  Entrez ce code sur vos autres appareils pour synchroniser vos parties.
                 </p>
 
                 <div className="pt-1 flex items-center justify-between border-t border-stone-100 dark:border-slate-800/80">
                   <span className="text-[11px] text-stone-400 dark:text-slate-500">
                     {lastSynced
                       ? `Synchro\u00A0: ${new Date(lastSynced).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                      : 'Jamais synchronisé'}
+                      : 'Pas encore synchronisé'}
                   </span>
                   <button
                     type="button"
                     onClick={handleSyncNow}
                     disabled={isLoading}
-                    className="px-3 py-1.5 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs disabled:opacity-50 cursor-pointer shrink-0"
+                    className="px-3 py-1.5 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs disabled:opacity-50 cursor-pointer shrink-0"
                   >
                     <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
                     <span>{isLoading ? 'Synchronisation…' : 'Synchroniser'}</span>
@@ -301,24 +301,24 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
               {/* Lier un autre carnet */}
               <div className="p-3.5 rounded-xl border border-stone-200/80 dark:border-slate-800/80 bg-stone-50/70 dark:bg-slate-900/40 space-y-2">
                 <span className="font-bold text-stone-700 dark:text-slate-300 block text-[11px] uppercase tracking-wider">
-                  Lier un carnet existant
+                  Rejoindre un autre appareil
                 </span>
                 <p className="text-[11px] text-stone-500 dark:text-slate-400">
-                  Vous avez déjà une clé sur votre autre appareil&nbsp;? Saisissez-la ici pour fusionner vos données&nbsp;:
+                  Vous avez déjà un code sur un autre appareil&nbsp;? Entrez-le pour regrouper vos scores&nbsp;:
                 </p>
                 <form onSubmit={handleLinkExistingKey} className="flex gap-2">
                   <input
                     type="text"
                     value={inputKey}
                     onChange={(e) => setInputKey(e.target.value.toUpperCase())}
-                    placeholder="Ex: ARD-7B92"
+                    placeholder="Ex&nbsp;: ARD-7B92"
                     maxLength={10}
-                    className="flex-1 font-mono uppercase px-3 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-stone-800 dark:text-slate-200 focus:outline-none focus:border-[#c83b3b]"
+                    className="flex-1 font-mono uppercase px-3 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-stone-800 dark:text-slate-200 focus:outline-none focus:border-[#c83b3b] dark:focus:border-[#FFC107]"
                   />
                   <button
                     type="submit"
                     disabled={isLoading || !inputKey.trim()}
-                    className="px-3 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-100 font-semibold text-xs text-stone-800 dark:text-slate-200 disabled:opacity-40 cursor-pointer flex items-center gap-1"
+                    className="px-3.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] dark:hover:border-[#FFC107] hover:text-[#c83b3b] dark:hover:text-[#FFC107] font-semibold text-xs text-stone-800 dark:text-slate-200 disabled:opacity-40 cursor-pointer flex items-center gap-1 shrink-0"
                   >
                     <span>Lier</span>
                     <ArrowRight size={13} />
@@ -326,45 +326,65 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                 </form>
               </div>
 
-              {/* Option Auto-Sync */}
-              <label className="flex items-center justify-between p-3 rounded-xl border border-stone-200/70 dark:border-slate-800/70 cursor-pointer hover:bg-stone-50 dark:hover:bg-slate-900/50 transition-colors">
-                <div className="pr-3">
-                  <span className="font-semibold text-stone-800 dark:text-slate-200 block text-xs">
-                    Synchronisation automatique
+              {/* Option Synchro automatique - Interrupteur DA Ardoise (Zéro bleu natif) */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={handleToggleAutoSync}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault()
+                    handleToggleAutoSync()
+                  }
+                }}
+                className="flex items-center justify-between p-3.5 rounded-xl border border-stone-200/80 dark:border-slate-800/80 hover:border-[#c83b3b]/30 dark:hover:border-[#FFC107]/30 bg-stone-50/50 dark:bg-slate-900/30 cursor-pointer transition-all select-none"
+              >
+                <div className="pr-3 min-w-0 flex-1">
+                  <span className="font-bold text-stone-800 dark:text-slate-200 block text-xs">
+                    Synchro automatique
                   </span>
-                  <span className="text-[10px] text-stone-500 dark:text-slate-400">
-                    Met à jour le carnet Cloudflare après chaque partie terminée
+                  <span className="text-[11px] text-stone-500 dark:text-slate-400 block mt-0.5">
+                    Sauvegarde vos scores à chaque fin de partie
                   </span>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={autoSync}
-                  onChange={handleToggleAutoSync}
-                  className="w-4 h-4 rounded text-[#c83b3b] focus:ring-[#c83b3b] cursor-pointer"
-                />
-              </label>
+
+                {/* Switch aux couleurs de la DA : Rouge en light, Ambre en dark */}
+                <div
+                  className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                    autoSync
+                      ? 'bg-[#c83b3b] dark:bg-[#FFC107]'
+                      : 'bg-stone-300 dark:bg-slate-700'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-900 shadow-sm ring-0 transition-transform duration-200 ease-in-out ${
+                      autoSync ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </div>
+              </div>
             </div>
           )}
 
           {activeTab === 'file' && (
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               {/* Résumé actuel */}
-              <div className="p-3.5 rounded-xl school-card border border-stone-200 dark:border-slate-800 flex flex-col sm:flex-row gap-2.5 sm:items-center justify-between">
-                <div className="min-w-0">
+              <div className="p-3.5 rounded-xl school-card border border-stone-200 dark:border-slate-800 flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
                   <span className="font-bold text-stone-800 dark:text-slate-200 block text-xs">
-                    Votre carnet local actuel
+                    Votre carnet actuel
                   </span>
-                  <span className="text-stone-500 dark:text-slate-400 text-[11px] block">
-                    {gamesCount} parties archivées · {playersCount} joueurs enregistrés
+                  <span className="text-stone-500 dark:text-slate-400 text-[11px] block mt-0.5 truncate">
+                    {gamesCount} partie{gamesCount > 1 ? 's' : ''} · {playersCount} joueur{playersCount > 1 ? 's' : ''}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={downloadNotebookBackup}
-                  className="px-3 py-2 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs shrink-0 self-start sm:self-auto"
+                  className="px-3.5 py-2 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs shrink-0"
                 >
                   <Download size={14} />
-                  <span>Télécharger (.json)</span>
+                  <span>Télécharger</span>
                 </button>
               </div>
 
@@ -378,7 +398,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                     Restaurer une sauvegarde
                   </span>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5">
-                    Sélectionnez un fichier <code>ardoise-sauvegarde-*.json</code> préalablement exporté.
+                    Sélectionnez un fichier pour réimporter vos parties.
                   </p>
                 </div>
 
@@ -393,9 +413,9 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 font-semibold text-xs text-stone-800 dark:text-slate-200 transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 font-semibold text-xs text-stone-800 dark:text-slate-200 transition-colors cursor-pointer"
                 >
-                  Parcourir mes fichiers…
+                  Choisir un fichier…
                 </button>
               </div>
 
@@ -404,18 +424,18 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                 <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 space-y-2.5 animate-in fade-in">
                   <div className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300 font-bold">
                     <Sparkles size={14} />
-                    <span>Sauvegarde prête à être importée</span>
+                    <span>Sauvegarde prête</span>
                   </div>
                   <p className="text-[11px] text-amber-700 dark:text-amber-400">
-                    Ce fichier contient <strong>{importPreview.games?.length || 0} parties</strong> et{' '}
-                    <strong>{importPreview.players?.length || 0} joueurs</strong>. Comment souhaitez-vous l'appliquer ?
+                    Ce fichier contient <strong>{importPreview.games?.length || 0} partie(s)</strong> et{' '}
+                    <strong>{importPreview.players?.length || 0} joueur(s)</strong>. Comment appliquer ces données&nbsp;?
                   </p>
 
                   <div className="flex gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => handleConfirmImport('merge')}
-                      className="flex-1 py-2 px-3 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs transition-colors cursor-pointer text-center"
+                      className="flex-1 py-2 px-3 rounded-lg bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs transition-colors cursor-pointer text-center"
                     >
                       Fusionner (Recommandé)
                     </button>

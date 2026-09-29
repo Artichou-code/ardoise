@@ -151,13 +151,13 @@ export function SharedGamePreviewModal({ isOpen, onClose, game, onImported }) {
           {imported ? (
             <div className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold text-xs flex items-center justify-center gap-1.5">
               <Check size={16} />
-              <span>Partie ajoutée à votre carnet !</span>
+              <span>Partie ajoutée à votre carnet&nbsp;!</span>
             </div>
           ) : (
             <button
               type="button"
               onClick={handleImport}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+              className="flex-1 py-2.5 px-3 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
             >
               <Download size={15} />
               <span>Ajouter à mon carnet</span>

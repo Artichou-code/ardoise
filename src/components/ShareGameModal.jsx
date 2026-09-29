@@ -157,7 +157,7 @@ export function ShareGameModal({ isOpen, onClose, game }) {
                 <button
                   type="button"
                   onClick={handleNativeShare}
-                  className="py-2 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="py-2 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   <Share2 size={14} />
                   <span>Partager</span>

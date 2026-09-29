@@ -180,7 +180,7 @@ export function HomeScreen() {
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white shrink-0">
+                  <div className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white dark:bg-[#FFC107] dark:text-stone-900 shrink-0">
                     <Play size={12} fill="currentColor" /> Reprendre
                   </div>
                 </button>

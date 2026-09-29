@@ -294,7 +294,7 @@ export function StatsScreen() {
               <button
                 type="button"
                 onClick={() => setShowSyncModal(true)}
-                className="px-3 py-1.5 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex-shrink-0 transition-colors cursor-pointer shadow-2xs"
+                className="px-3 py-1.5 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white dark:bg-[#FFC107] dark:hover:bg-[#ffcd38] dark:text-stone-900 font-bold text-xs flex-shrink-0 transition-colors cursor-pointer shadow-2xs"
               >
                 Gérer
               </button>
