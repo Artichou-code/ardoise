@@ -179,7 +179,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(() => onNavigate('players'))}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-transform">
+                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
                   <Users size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -197,7 +197,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(() => onNavigate('history'))}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
+                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
                   <History size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -215,7 +215,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(() => onNavigate('stats'))}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
+                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
                   <BarChart3 size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -233,7 +233,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(onOpenTrophies)}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-transform">
+                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
                   <Trophy size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -266,10 +266,10 @@ export function BurgerMenu({
                 {liveSession && (
                   <span className="absolute top-1.5 right-2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 )}
-                <span className={`p-2 rounded-lg shrink-0 group-hover:scale-105 transition-transform ${
+                <span className={`p-2 rounded-lg shrink-0 group-hover:scale-105 transition-all border ${
                   liveSession
-                    ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+                    : 'bg-white/80 dark:bg-slate-800/80 border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35'
                 }`}>
                   <Radio size={16} className={liveSession ? 'animate-pulse' : ''} />
                 </span>
@@ -288,7 +288,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(onOpenShareGames)}
                 className="p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-transform">
+                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
                   <Share2 size={16} />
                 </span>
                 <div className="min-w-0 w-full">
@@ -306,7 +306,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(onOpenSync)}
                 className="p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
+                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
                   <Cloud size={16} />
                 </span>
                 <div className="min-w-0 w-full">
@@ -332,8 +332,8 @@ export function BurgerMenu({
                 onClick={() => handleAction(onOpenArtCrea)}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                  <ArtCreaLogo className="h-4.5 w-auto group-hover:scale-105 transition-transform" />
+                <div className="w-8 h-8 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 group-hover:border-[#c83b3b]/35 flex items-center justify-center shrink-0 transition-all">
+                  <ArtCreaLogo className="h-4 w-auto group-hover:scale-105 transition-transform" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
@@ -350,7 +350,7 @@ export function BurgerMenu({
                 onClick={() => handleAction(() => onOpenLegal('mentions'))}
                 className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
+                <span className="p-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/70 text-stone-700 dark:text-slate-300 group-hover:text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
                   <Scale size={16} />
                 </span>
                 <div className="min-w-0 flex-1">
