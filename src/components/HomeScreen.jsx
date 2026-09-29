@@ -375,13 +375,11 @@ export function HomeScreen() {
         {finishedGames.length > 0 && (
           <section className="mt-6">
             <div className="flex items-center justify-between mb-2.5">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <span className="w-1.5 h-3.5 rounded-full bg-stone-400 dark:bg-slate-600" />
                 <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
                   Dernières parties
                 </h2>
-              </div>
-              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => setIsShareGamesModalOpen(true)}
@@ -390,14 +388,14 @@ export function HomeScreen() {
                   <Share2 size={12} className="text-[#c83b3b]" />
                   <span>Partager</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setScreen('history')}
-                  className="text-xs font-semibold text-[#c83b3b] flex items-center gap-0.5 cursor-pointer"
-                >
-                  Tout voir <ChevronRight size={14} />
-                </button>
               </div>
+              <button
+                type="button"
+                onClick={() => setScreen('history')}
+                className="text-xs font-semibold text-[#c83b3b] flex items-center gap-0.5 cursor-pointer"
+              >
+                Tout voir <ChevronRight size={14} />
+              </button>
             </div>
             <div className="space-y-2">
               {finishedGames.map(game => {
