@@ -193,14 +193,14 @@ export function HomeScreen() {
                   key={game.id}
                   type="button"
                   onClick={() => resumeGame(game.id)}
-                  className="w-full flex items-center gap-3 p-3.5 rounded-xl school-card hover:border-[#c83b3b] transition-all active:scale-[0.99] text-left shadow-2xs"
+                  className="w-full flex items-center justify-between gap-3 p-3.5 rounded-xl school-card hover:border-[#c83b3b] transition-all active:scale-[0.99] text-left shadow-2xs group"
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-serif-title font-bold text-base leading-tight">
                         {game.name}
                       </p>
-                      <span className="text-[11px] font-medium px-1.5 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-400">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300 whitespace-nowrap shrink-0">
                         Manche {game.rounds.length + 1}
                       </span>
                     </div>
@@ -214,7 +214,7 @@ export function HomeScreen() {
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white shrink-0">
+                  <div className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white shrink-0 group-hover:bg-[#b03030] transition-colors shadow-2xs">
                     <Play size={12} fill="currentColor" /> Reprendre
                   </div>
                 </button>

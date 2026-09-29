@@ -271,7 +271,7 @@ export function HistoryScreen() {
                             {game.name}
                           </p>
                           <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${
                               game.status === 'active'
                                 ? 'bg-[#c83b3b]/15 text-[#c83b3b]'
                                 : 'bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-400'
