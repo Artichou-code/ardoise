@@ -45,6 +45,27 @@ export function HomeScreen() {
       setLiveSession(e.detail)
     }
     window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
+
+    // Deep-linking SEO : si le visiteur arrive depuis Google/IA sur /jeux/<slug>, ouvre la fiche du jeu
+    const pathMatch = window.location.pathname.match(/^\/jeux\/([a-z0-9-]+)\/?$/i)
+    if (pathMatch) {
+      const slug = pathMatch[1].toLowerCase()
+      const slugToGameId = {
+        caracole: 'caracole',
+        dourak: 'dourak',
+        skyjo: 'skyjo',
+        belote: 'belote',
+        tarot: 'tarot',
+        president: 'president',
+        '6-qui-prend': 'six_qui_prend',
+        'compteur-universel': 'universel',
+      }
+      const targetGameId = slugToGameId[slug]
+      if (targetGameId && GAME_META[targetGameId]) {
+        setRulesGame(targetGameId)
+      }
+    }
+
     return () => window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
   }, [])
 
@@ -497,8 +518,18 @@ export function HomeScreen() {
       {/* Bottom Sheet de consultation des Règles Officielles */}
       <RulesSheet
         gameType={rulesGame}
-        onClose={() => setRulesGame(null)}
-        onStartSetup={(type) => setSetupGame(type)}
+        onClose={() => {
+          setRulesGame(null)
+          if (window.location.pathname.startsWith('/jeux/')) {
+            window.history.replaceState({}, '', '/')
+          }
+        }}
+        onStartSetup={(type) => {
+          if (window.location.pathname.startsWith('/jeux/')) {
+            window.history.replaceState({}, '', '/')
+          }
+          setSetupGame(type)
+        }}
       />
 
       {/* Hub Juridique (Mentions Légales, Confidentialité RGPD, CGU) */}

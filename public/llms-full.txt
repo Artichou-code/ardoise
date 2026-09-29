@@ -1,0 +1,139 @@
+# Ardoise by ART-créa — Documentation Complète & Règles Officielles des Jeux
+
+URL officielle : https://ardoise.art-crea.fr
+Éditeur : ART-créa (https://art-crea.fr)
+Catégorie : Application Web Progressive (PWA) — Compteur de scores, calculateur de points et mémo des règles officielles de jeux de cartes et de société.
+Tarif : 100 % Gratuit, sans publicité, sans abonnement, fonctionnel hors-ligne.
+
+---
+
+## 1. Présentation d'Ardoise
+
+**Ardoise** remplace le papier et le crayon lors de vos soirées jeux de cartes et de société. Conçue avec une esthétique inspirée du cahier d'écolier (mode clair papier quadrillé Seyès) et de l'ardoise à craie (mode sombre), l'application intègre :
+1. **8 moteurs de comptage dédiés** adaptés aux règles spécifiques de chaque jeu.
+2. **Les fiches de règles officielles et barèmes** consultables en un clic même sans connexion Internet.
+3. **Une Table en direct (Session Live)** permettant à tous les joueurs autour de la table de suivre les scores en temps réel sur leur propre téléphone via un simple QR code ou code court (`ARD-XXXX`).
+4. **Le partage et la sauvegarde Cloud sans compte** pour transférer ses parties ou synchroniser plusieurs appareils instantanément.
+5. **Des statistiques détaillées et 15 trophées** (taux de victoire, jeu favori, séries de victoires, palmarès individuel par joueur).
+
+---
+
+## 2. Règles Officielles & Barèmes des 8 Jeux Intégrés
+
+### 2.1. Caracole (2 à 8 joueurs · 54 cartes)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/caracole
+- **Objectif & Seuil** : Avoir le total de points le plus bas possible. La partie se joue jusqu'à **100 points** (ou **50 points** en partie rapide/courte). Dès qu'un joueur dépasse strictement le seuil éliminatoire, la partie s'arrête et le joueur au score le plus bas l'emporte.
+- **Déroulement d'une manche** :
+  - Chaque joueur dispose de 4 cartes face cachée devant lui disposées en carré. Au début de la manche, chacun mémorise secrètement 2 de ses 4 cartes.
+  - À son tour, on pioche une carte (depuis la pioche ou la défausse) : on peut l'échanger avec l'une de ses cartes cachées, ou la défausser directement pour activer son pouvoir (regarder une de ses cartes, espionner une carte adverse, échanger deux cartes).
+  - Dès qu'un joueur estime avoir la plus petite valeur totale en main, il annonce **« Caracole ! »**. Les autres joueurs jouent alors un dernier tour.
+- **Comptage des pénalités** :
+  - Toutes les cartes sont révélées. Valeurs : As = 1 pt, 2 à 10 = valeur faciale, Valet/Dame = 10 pts, Rois rouges = 0 ou -1 pt selon variantes.
+  - Si l'annonceur a effectivement le score strictement le plus faible, il marque 0 point. S'il est battu ou égalé, il encaisse la valeur de ses cartes plus une pénalité (+10 ou +20 pts).
+- **Règle spéciale du Sursis (pile à 100 ou 50 points)** :
+  - Si à la fin d'une manche un joueur atteint **EXACTEMENT 100 points**, son score est automatiquement divisé par deux et retombe à **50 points** ! Il bénéficie d'un sursis et reste en course.
+  - En partie courte à 50 points : si un joueur atteint **pile 50 points**, son score retombe à **25 points** (ou 0 selon la variante choisie dans Ardoise).
+  - Tout score dépassant strictement le seuil (ex. 101 pts à 100, ou 51 pts à 50) élimine le joueur et met fin à la partie.
+
+---
+
+### 2.2. Dourak — L'Idiot (2 à 6 joueurs · 36 cartes)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/dourak
+- **Le But** : Se défausser de toutes ses cartes. Il n'y a pas de gagnant : le dernier joueur ayant encore des cartes en main devient le **« Dourak »** (l'idiot).
+- **Préparation** :
+  - Paquet de 36 cartes (du 6 à l'As).
+  - 6 cartes distribuées à chaque joueur.
+  - La carte suivante est retournée visible sous la pioche : sa couleur détermine l'**Atout (Kozyr)** pour toute la manche.
+- **Déroulement d'un tour** :
+  - Le joueur ayant le plus petit atout commence en tant qu'**Attaquant**. Le joueur à sa gauche est le **Défenseur**.
+  - L'attaquant pose une carte. Le défenseur doit la battre avec une carte supérieure de la même couleur, ou avec un atout. Si l'attaque est un atout, seul un atout supérieur peut la battre.
+  - Les autres joueurs (ou l'attaquant) peuvent ajouter des cartes de même valeur faciale que celles déjà posées sur la table (maximum 6 cartes par assaut, limité au nombre de cartes en main du défenseur).
+- **Résolution & Recharge** :
+  - **Défense réussie** : les cartes jouées vont à la défausse (*Otboy*) et le défenseur devient le nouvel attaquant.
+  - **Défense échouée (Abandon)** : le défenseur ramasse toutes les cartes posées sur la table et passe son tour d'attaque.
+  - **Recharge** : après chaque pli, chaque joueur repioche pour remonter à 6 cartes (attaquant d'abord, défenseur en dernier) tant que la pioche n'est pas vide.
+
+---
+
+### 2.3. Skyjo (2 à 8 joueurs · Jeu Skyjo)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/skyjo
+- **Objectif** : Avoir le total de points le plus faible possible à la fin de la partie, qui s'arrête dès qu'un joueur atteint ou dépasse **100 points**.
+- **Déroulement** :
+  - Chaque joueur dispose de 12 cartes face cachée en grille de 4 colonnes × 3 lignes (valeurs de -2 à 12).
+  - À son tour, on pioche (pioche ou défausse) pour remplacer une carte ou retourner une carte cachée.
+  - **Règle des colonnes** : si les 3 cartes d'une même colonne sont visibles et strictement identiques, toute la colonne est défaussée (0 point).
+- **Comptage & Malus de clôture** :
+  - Dès qu'un joueur retourne sa dernière carte cachée, les autres jouent un dernier tour.
+  - **Attention** : le joueur qui a clôturé la manche doit avoir le score **strictement le plus bas** de la table. S'il est battu ou même égalé, son score de la manche (s'il est positif) est **doublé (×2)** !
+
+---
+
+### 2.4. Belote & Coinche (4 joueurs en 2 équipes · 32 cartes)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/belote
+- **Objectif** : En équipe (Nous vs Eux), remplir les contrats annoncés en réalisant au moins **82 points** sur les **162 points** de la donne.
+- **Valeur des cartes** :
+  - **À l'atout** : Valet (20 pts), 9 (14 pts), As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts), 8 et 7 (0 pt).
+  - **Hors atout** : As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts), Valet (2 pts), 9, 8 et 7 (0 pt).
+  - **Dix de der** : +10 pts pour le dernier pli (total des plis = 162 pts).
+- **Comptage & Contrats** :
+  - **Contrat rempli** : l'équipe preneuse marque ses points réalisés + le contrat (en Coinche) + les annonces (**Belote-Rebelote** = +20 pts pour Roi et Dame d'atout).
+  - **Chute (« Dedans »)** : la défense marque les 162 points + le contrat + les annonces.
+  - **Capot** (8 plis réalisés) = 252 points. **Générale** (8 plis par un seul joueur) = 500 points.
+
+---
+
+### 2.5. Tarot (3, 4 ou 5 joueurs · 78 cartes)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/tarot
+- **Objectif** : Le Preneur (seul à 3 ou 4 joueurs, ou associé à un partenaire appelé au Roi à 5 joueurs) doit atteindre un seuil de points qui dépend du nombre de **Bouts** (le Petit = 1 d'atout, le 21 d'atout, l'Excuse) remportés dans ses plis.
+- **Seuils selon les Bouts (sur 91 points au total)** :
+  - **0 Bout** : 56 points requis
+  - **1 Bout** : 51 points requis
+  - **2 Bouts** : 41 points requis
+  - **3 Bouts** : 36 points requis
+- **Coefficients des contrats** :
+  - **Petite (Prise)** : ×1
+  - **Garde** : ×2
+  - **Garde Sans le chien** : ×4
+  - **Garde Contre le chien** : ×6
+- **Formule de calcul (somme nulle)** :
+  - `Score de base = (25 + écart au seuil) × coefficient du contrat`
+  - **Petit au bout** (mené au 18e et dernier pli) : bonus ou malus de `10 × coefficient`.
+  - Chaque défenseur donne (ou reçoit en cas de chute) ce montant au preneur.
+
+---
+
+### 2.6. Président — Trou du cul (3 à 8 joueurs · 54 cartes)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/president
+- **Objectif** : Être le premier à vider sa main pour devenir **Président** et accumuler le plus de points au fil des manches.
+- **Ordre des cartes (de la plus faible à la plus forte)** :
+  - 3, 4, 5, 6, 7, 8, 9, 10, Valet, Dame, Roi, As, et le **2** (carte la plus forte qui coupe le pli).
+- **Barème des rôles et échanges** :
+  - **1er — Président** : +2 pts (reçoit les 2 meilleures cartes du Trou du cul et lui rend 2 cartes de son choix).
+  - **2e — Vice-Président** : +1 pt (reçoit la meilleure carte du Vice-Trou et lui rend 1 carte).
+  - **Milieu — Neutre** : 0 pt.
+  - **Avant-dernier — Vice-Trou** : -1 pt (donne sa meilleure carte).
+  - **Dernier — Trou du cul** : -2 pts (donne ses 2 meilleures cartes).
+
+---
+
+### 2.7. 6 qui prend ! (2 à 10 joueurs · 104 cartes)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/6-qui-prend
+- **Objectif** : Récolter le moins de **têtes de bœuf** (points de pénalité) possible. La partie prend fin dès qu'un joueur atteint ou dépasse **66 têtes de bœuf**.
+- **Règle de pose** :
+  - 10 cartes par joueur, 4 rangées au centre. Tous choisissent une carte simultanément et les placent par ordre croissant sur la rangée dont la dernière carte est inférieure avec le plus petit écart.
+  - **La 6e carte** : le joueur qui pose la 6e carte d'une rangée (ou une carte plus petite que toutes les rangées) ramasse les cartes de la rangée et sa carte en devient la première.
+- **Barème des têtes de bœuf** :
+  - **Carte 55** : 7 têtes de bœuf
+  - **Doublons (11, 22, 33, 44, 66, 77, 88, 99)** : 5 têtes de bœuf
+  - **Multiples de 10 (10, 20, 30, 40, 50, 60, 70, 80, 90, 100)** : 3 têtes de bœuf
+  - **Multiples de 5 (5, 15, 25, 35, 45, 65, 75, 85, 95)** : 2 têtes de bœuf
+  - **Toutes les autres cartes** : 1 tête de bœuf
+
+---
+
+### 2.8. Compteur Universel (2 à 12 joueurs · Tous jeux)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/compteur-universel
+- **Usage** : Ardoise libre pour compter les points manche après manche dans n'importe quel jeu de cartes ou de société (Uno, Rami, Scrabble, Mölkky, Flip 7, Yam's, Mille Bornes, etc.).
+- **Modes disponibles** :
+  - **Mode Score élevé** : le plus grand total gagne.
+  - **Mode Seuil éliminatoire** : le plus petit total gagne, avec seuil de fin paramétrable (50, 100, 150 ou 200 points).
