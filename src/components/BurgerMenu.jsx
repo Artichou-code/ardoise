@@ -253,18 +253,18 @@ export function BurgerMenu({
             <span className="px-2 pb-1.5 block text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
               Partage & Sauvegarde
             </span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1">
               <button
                 type="button"
                 onClick={() => handleAction(onOpenLiveSession)}
-                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer relative ${
+                className={`p-2 rounded-xl flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer relative ${
                   liveSession
-                    ? 'bg-emerald-500/10 hover:bg-emerald-500/15 border-emerald-500/40'
-                    : 'school-card border-stone-200/80 dark:border-slate-800 hover:border-emerald-500/40'
+                    ? 'bg-emerald-500/10 hover:bg-emerald-500/15'
+                    : 'hover:bg-stone-100 dark:hover:bg-slate-800/70'
                 }`}
               >
                 {liveSession && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="absolute top-1.5 right-2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 )}
                 <span className={`p-2 rounded-lg shrink-0 group-hover:scale-105 transition-transform ${
                   liveSession
@@ -274,10 +274,10 @@ export function BurgerMenu({
                   <Radio size={16} className={liveSession ? 'animate-pulse' : ''} />
                 </span>
                 <div className="min-w-0 w-full">
-                  <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight truncate">
+                  <p className="font-bold text-stone-800 dark:text-slate-200 text-xs leading-tight truncate">
                     En direct
                   </p>
-                  <p className="text-[10px] text-stone-400 dark:text-slate-500 truncate mt-0.5">
+                  <p className="text-[10px] text-stone-500 dark:text-slate-400 truncate mt-0.5">
                     {liveSession ? 'Actif' : 'Table live'}
                   </p>
                 </div>
@@ -286,16 +286,16 @@ export function BurgerMenu({
               <button
                 type="button"
                 onClick={() => handleAction(onOpenShareGames)}
-                className="p-2.5 rounded-xl border school-card border-stone-200/80 dark:border-slate-800 hover:border-[#c83b3b]/50 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                className="p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-transform">
                   <Share2 size={16} />
                 </span>
                 <div className="min-w-0 w-full">
-                  <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight truncate">
+                  <p className="font-bold text-stone-800 dark:text-slate-200 text-xs leading-tight truncate">
                     Partager
                   </p>
-                  <p className="text-[10px] text-stone-400 dark:text-slate-500 truncate mt-0.5">
+                  <p className="text-[10px] text-stone-500 dark:text-slate-400 truncate mt-0.5">
                     QR & code
                   </p>
                 </div>
@@ -304,16 +304,16 @@ export function BurgerMenu({
               <button
                 type="button"
                 onClick={() => handleAction(onOpenSync)}
-                className="p-2.5 rounded-xl border school-card border-stone-200/80 dark:border-slate-800 hover:border-stone-400 dark:hover:border-slate-600 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                className="p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer"
               >
                 <span className="p-2 rounded-lg bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 shrink-0 group-hover:scale-105 transition-transform">
                   <Cloud size={16} />
                 </span>
                 <div className="min-w-0 w-full">
-                  <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight truncate">
+                  <p className="font-bold text-stone-800 dark:text-slate-200 text-xs leading-tight truncate">
                     Sauvegarde
                   </p>
-                  <p className="text-[10px] text-stone-400 dark:text-slate-500 truncate mt-0.5">
+                  <p className="text-[10px] text-stone-500 dark:text-slate-400 truncate mt-0.5">
                     Cloud & fichier
                   </p>
                 </div>
