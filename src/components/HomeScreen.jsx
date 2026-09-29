@@ -1,28 +1,27 @@
-import { useState, useMemo, useEffect } from 'react'
-import { History, Users, ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Cloud, Radio, Menu, Share2, CheckCircle2, X } from 'lucide-react'
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
+import { ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Radio, Share2, CheckCircle2, X } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { AppLogo } from './ui/AppLogo'
-import { GameSetupSheet } from './GameSetupSheet'
-import { RulesSheet } from './RulesSheet'
-import { GameDetailSheet } from './GameDetailSheet'
-import { LegalModal } from './LegalModal'
-import { SyncModal } from './SyncModal'
-import { LiveSessionModal } from './LiveSessionModal'
-import { ShareGamesModal } from './ShareGamesModal'
 import { BurgerMenuButton } from './BurgerMenu'
-import { TrophiesSheet } from './TrophiesSheet'
 import { ArtCreaLogo } from './ui/ArtCreaLogo'
-import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
 import { formatDate, formatGameStart } from '../utils/gameUtils'
-import { computeStats } from '../utils/statsUtils'
 import { Avatar } from './ui/Avatar'
 import { formatTypography } from '../utils/typography'
 import { getActiveSession } from '../store/liveSession'
 
+const GameSetupSheet = lazy(() => import('./GameSetupSheet').then((m) => ({ default: m.GameSetupSheet })))
+const RulesSheet = lazy(() => import('./RulesSheet').then((m) => ({ default: m.RulesSheet })))
+const GameDetailSheet = lazy(() => import('./GameDetailSheet').then((m) => ({ default: m.GameDetailSheet })))
+const LegalModal = lazy(() => import('./LegalModal').then((m) => ({ default: m.LegalModal })))
+const SyncModal = lazy(() => import('./SyncModal').then((m) => ({ default: m.SyncModal })))
+const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
+const ShareGamesModal = lazy(() => import('./ShareGamesModal').then((m) => ({ default: m.ShareGamesModal })))
+const ArtCreaUniverseModal = lazy(() => import('./ArtCreaUniverseModal').then((m) => ({ default: m.ArtCreaUniverseModal })))
+
 export function HomeScreen() {
-  const { games, players: registeredPlayers, setScreen, resumeGame, customPresets, deletePreset, createGame, reloadStorage, liveSessionNotice, setLiveSessionNotice } = useGame()
+  const { games, setScreen, resumeGame, customPresets, deletePreset, createGame, reloadStorage, liveSessionNotice, setLiveSessionNotice } = useGame()
   const [setupGame, setSetupGame] = useState(null)
   const [setupPreset, setSetupPreset] = useState(null)
   const [rulesGame, setRulesGame] = useState(null)
@@ -32,13 +31,7 @@ export function HomeScreen() {
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
   const [isShareGamesModalOpen, setIsShareGamesModalOpen] = useState(false)
-  const [isTrophiesOpen, setIsTrophiesOpen] = useState(false)
-  const [isBurgerMenuOpen, setIsBurgerMenuOpen] = useState(false)
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
-
-  const allPlayersStats = useMemo(() => {
-    return computeStats(games, 'all', registeredPlayers).playersStats
-  }, [games, registeredPlayers])
 
   useEffect(() => {
     const handleSessionChanged = (e) => {
@@ -143,7 +136,7 @@ export function HomeScreen() {
       </header>
 
       {/* Corps scrollable */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">
+      <main className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">
         {/* Notification de clôture de Table en direct */}
         {liveSessionNotice && (
           <div className="mb-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-start justify-between gap-2 text-xs">
@@ -495,87 +488,105 @@ export function HomeScreen() {
             </span>
           </button>
         </footer>
-      </div>
+      </main>
 
-      {/* Feuille de détails et déroulement complet */}
-      <GameDetailSheet
-        game={detailGame}
-        open={!!detailGame}
-        onClose={() => setDetailGame(null)}
-        onResume={(id) => {
-          setDetailGame(null)
-          resumeGame(id)
-        }}
-        onRematch={(g) => {
-          setDetailGame(null)
-          createGame(g.type, g.players, g.config)
-        }}
-      />
+      <Suspense fallback={null}>
+        {/* Feuille de détails et déroulement complet */}
+        {detailGame && (
+          <GameDetailSheet
+            game={detailGame}
+            open={!!detailGame}
+            onClose={() => setDetailGame(null)}
+            onResume={(id) => {
+              setDetailGame(null)
+              resumeGame(id)
+            }}
+            onRematch={(g) => {
+              setDetailGame(null)
+              createGame(g.type, g.players, g.config)
+            }}
+          />
+        )}
 
-      {/* Modale de préparation de partie */}
-      <GameSetupSheet
-        gameType={setupGame}
-        initialPreset={setupPreset}
-        onClose={() => {
-          setSetupGame(null)
-          setSetupPreset(null)
-        }}
-        onOpenRules={(type) => setRulesGame(type)}
-      />
+        {/* Modale de préparation de partie */}
+        {setupGame && (
+          <GameSetupSheet
+            gameType={setupGame}
+            initialPreset={setupPreset}
+            onClose={() => {
+              setSetupGame(null)
+              setSetupPreset(null)
+            }}
+            onOpenRules={(type) => setRulesGame(type)}
+          />
+        )}
 
-      {/* Bottom Sheet de consultation des Règles Officielles */}
-      <RulesSheet
-        gameType={rulesGame}
-        onClose={() => {
-          setRulesGame(null)
-          if (window.location.pathname.startsWith('/jeux/')) {
-            window.history.replaceState({}, '', '/')
-          }
-        }}
-        onStartSetup={(type) => {
-          if (window.location.pathname.startsWith('/jeux/')) {
-            window.history.replaceState({}, '', '/')
-          }
-          setSetupGame(type)
-        }}
-      />
+        {/* Bottom Sheet de consultation des Règles Officielles */}
+        {rulesGame && (
+          <RulesSheet
+            gameType={rulesGame}
+            onClose={() => {
+              setRulesGame(null)
+              if (window.location.pathname.startsWith('/jeux/')) {
+                window.history.replaceState({}, '', '/')
+              }
+            }}
+            onStartSetup={(type) => {
+              if (window.location.pathname.startsWith('/jeux/')) {
+                window.history.replaceState({}, '', '/')
+              }
+              setSetupGame(type)
+            }}
+          />
+        )}
 
-      {/* Hub Juridique (Mentions Légales, Confidentialité RGPD, CGU) */}
-      <LegalModal
-        open={Boolean(legalTab)}
-        onClose={() => setLegalTab(null)}
-        activeTab={legalTab}
-        onSelectTab={setLegalTab}
-      />
+        {/* Hub Juridique (Mentions Légales, Confidentialité RGPD, CGU) */}
+        {legalTab && (
+          <LegalModal
+            open={Boolean(legalTab)}
+            onClose={() => setLegalTab(null)}
+            activeTab={legalTab}
+            onSelectTab={setLegalTab}
+          />
+        )}
 
-      {/* Modale interactive : Univers ART-créa */}
-      <ArtCreaUniverseModal
-        isOpen={isArtCreaModalOpen}
-        onClose={() => setIsArtCreaModalOpen(false)}
-      />
+        {/* Modale interactive : Univers ART-créa */}
+        {isArtCreaModalOpen && (
+          <ArtCreaUniverseModal
+            isOpen={isArtCreaModalOpen}
+            onClose={() => setIsArtCreaModalOpen(false)}
+          />
+        )}
 
-      {/* Modale Sauvegarde & Synchronisation (Multi-appareils / Fichier) */}
-      <SyncModal
-        isOpen={isSyncModalOpen}
-        onClose={() => setIsSyncModalOpen(false)}
-        onDataUpdated={reloadStorage}
-      />
+        {/* Modale Sauvegarde & Synchronisation (Multi-appareils / Fichier) */}
+        {isSyncModalOpen && (
+          <SyncModal
+            isOpen={isSyncModalOpen}
+            onClose={() => setIsSyncModalOpen(false)}
+            onDataUpdated={reloadStorage}
+          />
+        )}
 
-      {/* Modale Session Journée & Table en direct */}
-      <LiveSessionModal
-        isOpen={isLiveModalOpen}
-        onClose={() => setIsLiveModalOpen(false)}
-        onSessionChanged={(s) => setLiveSession(s)}
-      />
+        {/* Modale Session Journée & Table en direct */}
+        {isLiveModalOpen && (
+          <LiveSessionModal
+            isOpen={isLiveModalOpen}
+            onClose={() => setIsLiveModalOpen(false)}
+            onSessionChanged={(s) => setLiveSession(s)}
+          />
+        )}
 
-      {/* Modale de partage et d'import de lots de parties */}
-      <ShareGamesModal
-        isOpen={isShareGamesModalOpen}
-        onClose={() => setIsShareGamesModalOpen(false)}
-        onOpenImportGames={(importedGames) => {
-          window.dispatchEvent(new CustomEvent('ardoise-open-import-games', { detail: importedGames }))
-        }}
-      />
+        {/* Modale de partage et d'import de lots de parties */}
+        {isShareGamesModalOpen && (
+          <ShareGamesModal
+            isOpen={isShareGamesModalOpen}
+            onClose={() => setIsShareGamesModalOpen(false)}
+            onOpenImportGames={(importedGames) => {
+              window.dispatchEvent(new CustomEvent('ardoise-open-import-games', { detail: importedGames }))
+            }}
+          />
+        )}
+      </Suspense>
     </div>
   )
 }

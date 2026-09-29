@@ -1,0 +1,17 @@
+{
+  "specVersion": "1.0",
+  "entries": [
+    {
+      "identifier": "urn:air:ardoise.art-crea.fr:catalog:rules-and-scores",
+      "displayName": "Ardoise — Compteur de Scores et Règles Officielles de Jeux",
+      "type": "application/ai-catalog+json",
+      "url": "https://ardoise.art-crea.fr/llms-full.txt",
+      "representativeQueries": [
+        "règle officielle caracole sursis 100 points",
+        "compteur de points belote coinche tarot skyjo gratuit",
+        "règles du jeu dourak 36 cartes",
+        "calculer les points au tarot 3 4 5 joueurs"
+      ]
+    }
+  ]
+}

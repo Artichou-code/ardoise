@@ -13,6 +13,8 @@ export function AppLogo({ className = 'w-8 h-8' }) {
     <img
       src={src}
       alt="Logo Ardoise"
+      width="32"
+      height="32"
       className={`${className} flex-shrink-0 select-none block`}
       draggable={false}
     />

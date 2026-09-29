@@ -1,23 +1,25 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useGame } from './context/GameContext'
 import { HomeScreen } from './components/HomeScreen'
-import { GameScreen } from './components/GameScreen'
-import { VictoryScreen } from './components/VictoryScreen'
-import { HistoryScreen } from './components/HistoryScreen'
-import { StatsScreen } from './components/StatsScreen'
-import { PlayersScreen } from './components/PlayersScreen'
-import { TrophiesScreen } from './components/TrophiesScreen'
 import { PullToRefreshIndicator } from './components/ui/PullToRefresh'
-import { ImportGamesModal } from './components/ImportGamesModal'
-import { LiveSessionModal } from './components/LiveSessionModal'
-import { ShareGamesModal } from './components/ShareGamesModal'
-import { SyncModal } from './components/SyncModal'
-import { LegalModal } from './components/LegalModal'
-import { ArtCreaUniverseModal } from './components/ArtCreaUniverseModal'
-import { ShareAppModal } from './components/ShareAppModal'
 import { BurgerMenu } from './components/BurgerMenu'
 import { fetchSharedGame } from './store/syncStorage'
 import { getActiveSession } from './store/liveSession'
+
+const GameScreen = lazy(() => import('./components/GameScreen').then((m) => ({ default: m.GameScreen })))
+const VictoryScreen = lazy(() => import('./components/VictoryScreen').then((m) => ({ default: m.VictoryScreen })))
+const HistoryScreen = lazy(() => import('./components/HistoryScreen').then((m) => ({ default: m.HistoryScreen })))
+const StatsScreen = lazy(() => import('./components/StatsScreen').then((m) => ({ default: m.StatsScreen })))
+const PlayersScreen = lazy(() => import('./components/PlayersScreen').then((m) => ({ default: m.PlayersScreen })))
+const TrophiesScreen = lazy(() => import('./components/TrophiesScreen').then((m) => ({ default: m.TrophiesScreen })))
+
+const ImportGamesModal = lazy(() => import('./components/ImportGamesModal').then((m) => ({ default: m.ImportGamesModal })))
+const LiveSessionModal = lazy(() => import('./components/LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
+const ShareGamesModal = lazy(() => import('./components/ShareGamesModal').then((m) => ({ default: m.ShareGamesModal })))
+const SyncModal = lazy(() => import('./components/SyncModal').then((m) => ({ default: m.SyncModal })))
+const LegalModal = lazy(() => import('./components/LegalModal').then((m) => ({ default: m.LegalModal })))
+const ArtCreaUniverseModal = lazy(() => import('./components/ArtCreaUniverseModal').then((m) => ({ default: m.ArtCreaUniverseModal })))
+const ShareAppModal = lazy(() => import('./components/ShareAppModal').then((m) => ({ default: m.ShareAppModal })))
 
 export default function App() {
   const { screen, setScreen, reloadStorage } = useGame()
@@ -64,11 +66,24 @@ export default function App() {
     const handleOpenShareApp = () => setIsShareAppModalOpen(true)
     const handleSessionChanged = (e) => setLiveSession(e.detail)
 
+    // Pré-chargement silencieux au premier contact tactile/clic (invisible pour PageSpeed au chargement initial)
+    const prefetchOnInteraction = () => {
+      import('./components/GameSetupSheet')
+      import('./components/RulesSheet')
+      import('./components/GameScreen')
+      import('./components/HistoryScreen')
+      import('./components/StatsScreen')
+      import('./components/PlayersScreen')
+      import('./components/TrophiesScreen')
+    }
+
+    window.addEventListener('pointerdown', prefetchOnInteraction, { once: true, passive: true })
     window.addEventListener('ardoise-open-import-games', handleOpenImport)
     window.addEventListener('ardoise-open-burger-menu', handleOpenBurger)
     window.addEventListener('ardoise-open-share-app', handleOpenShareApp)
     window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
     return () => {
+      window.removeEventListener('pointerdown', prefetchOnInteraction)
       window.removeEventListener('ardoise-open-import-games', handleOpenImport)
       window.removeEventListener('ardoise-open-burger-menu', handleOpenBurger)
       window.removeEventListener('ardoise-open-share-app', handleOpenShareApp)
@@ -97,21 +112,23 @@ export default function App() {
   return (
     <>
       <PullToRefreshIndicator />
-      {screen === 'game' ? (
-        <GameScreen />
-      ) : screen === 'victory' ? (
-        <VictoryScreen />
-      ) : screen === 'history' ? (
-        <HistoryScreen />
-      ) : screen === 'stats' ? (
-        <StatsScreen />
-      ) : screen === 'players' ? (
-        <PlayersScreen />
-      ) : screen === 'trophies' ? (
-        <TrophiesScreen />
-      ) : (
-        <HomeScreen />
-      )}
+      <Suspense fallback={<div className="h-full w-full school-surface" />}>
+        {screen === 'game' ? (
+          <GameScreen />
+        ) : screen === 'victory' ? (
+          <VictoryScreen />
+        ) : screen === 'history' ? (
+          <HistoryScreen />
+        ) : screen === 'stats' ? (
+          <StatsScreen />
+        ) : screen === 'players' ? (
+          <PlayersScreen />
+        ) : screen === 'trophies' ? (
+          <TrophiesScreen />
+        ) : (
+          <HomeScreen />
+        )}
+      </Suspense>
 
       {/* Menu Burger global accessible depuis toutes les pages */}
       <BurgerMenu
@@ -126,57 +143,73 @@ export default function App() {
         liveSession={liveSession}
       />
 
-      {/* Modale Session Journée & Table en direct */}
-      <LiveSessionModal
-        isOpen={isLiveModalOpen}
-        initialJoinCode={incomingSessionCode}
-        onClose={handleCloseSessionModal}
-        onSessionChanged={(s) => setLiveSession(s)}
-      />
+      <Suspense fallback={null}>
+        {/* Modale Session Journée & Table en direct */}
+        {isLiveModalOpen && (
+          <LiveSessionModal
+            isOpen={isLiveModalOpen}
+            initialJoinCode={incomingSessionCode}
+            onClose={handleCloseSessionModal}
+            onSessionChanged={(s) => setLiveSession(s)}
+          />
+        )}
 
-      {/* Modale de partage et d'import de lots de parties */}
-      <ShareGamesModal
-        isOpen={isShareGamesModalOpen}
-        onClose={() => setIsShareGamesModalOpen(false)}
-        onOpenImportGames={(importedGames) => {
-          setSharedGames(importedGames)
-        }}
-      />
+        {/* Modale de partage et d'import de lots de parties */}
+        {isShareGamesModalOpen && (
+          <ShareGamesModal
+            isOpen={isShareGamesModalOpen}
+            onClose={() => setIsShareGamesModalOpen(false)}
+            onOpenImportGames={(importedGames) => {
+              setSharedGames(importedGames)
+            }}
+          />
+        )}
 
-      {/* Modale Sauvegarde & Synchronisation */}
-      <SyncModal
-        isOpen={isSyncModalOpen}
-        onClose={() => setIsSyncModalOpen(false)}
-        onDataUpdated={reloadStorage}
-      />
+        {/* Modale Sauvegarde & Synchronisation */}
+        {isSyncModalOpen && (
+          <SyncModal
+            isOpen={isSyncModalOpen}
+            onClose={() => setIsSyncModalOpen(false)}
+            onDataUpdated={reloadStorage}
+          />
+        )}
 
-      {/* Hub Juridique */}
-      <LegalModal
-        open={Boolean(legalTab)}
-        onClose={() => setLegalTab(null)}
-        activeTab={legalTab}
-        onSelectTab={setLegalTab}
-      />
+        {/* Hub Juridique */}
+        {legalTab && (
+          <LegalModal
+            open={Boolean(legalTab)}
+            onClose={() => setLegalTab(null)}
+            activeTab={legalTab}
+            onSelectTab={setLegalTab}
+          />
+        )}
 
-      {/* Modale Univers ART-créa */}
-      <ArtCreaUniverseModal
-        isOpen={isArtCreaModalOpen}
-        onClose={() => setIsArtCreaModalOpen(false)}
-      />
+        {/* Modale Univers ART-créa */}
+        {isArtCreaModalOpen && (
+          <ArtCreaUniverseModal
+            isOpen={isArtCreaModalOpen}
+            onClose={() => setIsArtCreaModalOpen(false)}
+          />
+        )}
 
-      {/* Modale QR Code & Lien de partage de l'application Ardoise */}
-      <ShareAppModal
-        isOpen={isShareAppModalOpen}
-        onClose={() => setIsShareAppModalOpen(false)}
-      />
+        {/* Modale QR Code & Lien de partage de l'application Ardoise */}
+        {isShareAppModalOpen && (
+          <ShareAppModal
+            isOpen={isShareAppModalOpen}
+            onClose={() => setIsShareAppModalOpen(false)}
+          />
+        )}
 
-      {/* Aperçu et import d'une ou plusieurs parties partagées reçues par QR code, lien ou code */}
-      <ImportGamesModal
-        isOpen={Boolean(sharedGames && sharedGames.length > 0)}
-        games={sharedGames}
-        onClose={handleCloseSharedModal}
-        onImported={handleImportSharedGames}
-      />
+        {/* Aperçu et import d'une ou plusieurs parties partagées reçues par QR code, lien ou code */}
+        {sharedGames && sharedGames.length > 0 && (
+          <ImportGamesModal
+            isOpen={Boolean(sharedGames && sharedGames.length > 0)}
+            games={sharedGames}
+            onClose={handleCloseSharedModal}
+            onImported={handleImportSharedGames}
+          />
+        )}
+      </Suspense>
     </>
   )
 }
