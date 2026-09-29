@@ -15,6 +15,7 @@
   --accent-red-hover: #b91c1c;
   --grid-color: rgba(28, 25, 23, 0.055);
   --margin-line: rgba(200, 59, 59, 0.18);
+  accent-color: #c83b3b;
 }
 
 html.dark {
@@ -30,6 +31,15 @@ html.dark {
   --accent-red-hover: #b91c1c;
   --grid-color: rgba(241, 245, 249, 0.04);
   --margin-line: rgba(200, 59, 59, 0.22);
+  accent-color: #FFC107;
+}
+
+input, button, select, textarea {
+  accent-color: #c83b3b;
+}
+
+html.dark input, html.dark button, html.dark select, html.dark textarea {
+  accent-color: #FFC107;
 }
 
 @layer base {
