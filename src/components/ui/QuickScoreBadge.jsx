@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react'
 
 /**
  * Badge de score compact avec roulette tactile intégrée (scroll tactile / glissement vertical).
  * - Glissement vers le haut = augmentation du score.
  * - Glissement vers le bas = diminution du score.
  * - Retour haptique vibrant à chaque cran.
- * - Bulle flottante au-dessus du doigt pour ne pas masquer le chiffre lors du glissement tactile.
+ * - Support d'une variante haute (tall) couvrant 2 lignes pour équilibrer les choix manuels.
  * - Un simple clic/tap sans glisser ouvre la feuille complète (ScorePad).
  * - Prise en charge de la molette de la souris sur ordinateur.
  */
@@ -18,6 +18,7 @@ export function QuickScoreBadge({
   max,
   step = 1,
   showPlus = true,
+  tall = false,
   formatBubble,
   className = '',
 }) {
@@ -139,9 +140,9 @@ export function QuickScoreBadge({
   const isNonZero = cur !== 0
 
   return (
-    <div className="relative inline-flex items-center select-none flex-shrink-0">
+    <div className={`relative inline-flex items-center select-none flex-shrink-0 ${tall ? 'self-stretch' : ''}`}>
 
-      {/* Zone interactive compacte */}
+      {/* Zone interactive compacte ou haute */}
       <div
         ref={badgeRef}
         role="button"
@@ -153,20 +154,36 @@ export function QuickScoreBadge({
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
         style={{ touchAction: 'none' }}
-        className={`group relative flex items-center justify-between gap-1.5 min-w-[4.2rem] h-10 px-2.5 py-1 rounded-xl border transition-all cursor-ns-resize ${
+        className={`group relative border transition-all cursor-ns-resize select-none ${
+          tall
+            ? 'flex flex-col items-center justify-between min-w-[4.8rem] w-20 sm:w-24 h-full self-stretch py-2 px-2 rounded-2xl'
+            : 'flex items-center justify-between gap-1.5 min-w-[4.2rem] h-10 px-2.5 py-1 rounded-xl'
+        } ${
           isDragging
-            ? 'scale-108 border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b] ring-2 ring-[#c83b3b]/40 shadow-md z-30'
+            ? `${tall ? 'scale-103' : 'scale-108'} border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b] ring-2 ring-[#c83b3b]/40 shadow-md z-30`
             : isNonZero
             ? 'bg-[#c83b3b]/8 dark:bg-[#c83b3b]/15 border-[#c83b3b]/35 text-[#c83b3b] dark:text-red-300 hover:border-[#c83b3b] shadow-2xs'
             : 'bg-white/80 dark:bg-slate-900/80 border-stone-200 dark:border-slate-800 text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/60 hover:text-[#c83b3b] shadow-2xs'
         } ${className}`}
       >
-        <span className="text-base sm:text-lg font-black tabular-nums leading-none tracking-tight flex-1 text-center">
-          {displaySign}{cur}
-        </span>
-        <div className="flex flex-col items-center justify-center -mr-0.5 opacity-40 group-hover:opacity-100 transition-opacity">
-          <ArrowUpDown size={11} strokeWidth={2.5} />
-        </div>
+        {tall ? (
+          <>
+            <ChevronUp size={15} className="opacity-40 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />
+            <span className="text-2xl sm:text-3xl font-black tabular-nums leading-none tracking-tight text-center my-auto">
+              {displaySign}{cur}
+            </span>
+            <ChevronDown size={15} className="opacity-40 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />
+          </>
+        ) : (
+          <>
+            <span className="text-base sm:text-lg font-black tabular-nums leading-none tracking-tight flex-1 text-center">
+              {displaySign}{cur}
+            </span>
+            <div className="flex flex-col items-center justify-center -mr-0.5 opacity-40 group-hover:opacity-100 transition-opacity">
+              <ArrowUpDown size={11} strokeWidth={2.5} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

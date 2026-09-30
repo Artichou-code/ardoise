@@ -129,12 +129,13 @@ export function BeloteEngine({ game, onFinish }) {
       </div>
 
       {/* Points réalisés par le preneur */}
-      <div className="school-card rounded-xl p-3.5 space-y-2.5">
-        <div className="flex items-center justify-between gap-3">
+      <div className="school-card rounded-xl p-3.5 flex items-stretch gap-3">
+        {/* Colonne gauche : Titre, sous-titre et choix manuels */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
           <button
             type="button"
             onClick={() => setOpenTakerSheet(true)}
-            className="flex-1 text-left cursor-pointer focus:outline-none"
+            className="text-left cursor-pointer focus:outline-none"
           >
             <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 leading-tight">
               Points du preneur (/ 162)
@@ -143,50 +144,54 @@ export function BeloteEngine({ game, onFinish }) {
               Défense : <span className="font-bold text-stone-700 dark:text-slate-300">{162 - pointsTaker} pts</span>
             </p>
           </button>
-          <QuickScoreBadge
-            value={pointsTaker}
-            onChange={setPointsTaker}
-            onOpenPad={() => setOpenTakerSheet(true)}
-            min={0}
-            max={162}
-            step={1}
-            showPlus={false}
-          />
+
+          {/* Raccourcis manuels équilibrés sur la gauche */}
+          <div className="flex flex-wrap gap-1.5 pt-0.5">
+            {[
+              { val: 82, label: '82 (fait 80)' },
+              { val: 90, label: '90' },
+              { val: 100, label: '100' },
+              { val: 110, label: '110' },
+              { val: 120, label: '120' },
+              { val: 162, label: '162 (Capot)' },
+            ].map(shortcut => (
+              <button
+                key={shortcut.val}
+                type="button"
+                onClick={() => setPointsTaker(shortcut.val)}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
+                  pointsTaker === shortcut.val
+                    ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
+                }`}
+              >
+                {shortcut.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Raccourcis fréquents */}
-        <div className="flex flex-wrap gap-1.5 pt-1 border-t border-stone-100 dark:border-slate-800/80">
-          {[
-            { val: 82, label: '82 (fait 80)' },
-            { val: 90, label: '90' },
-            { val: 100, label: '100' },
-            { val: 110, label: '110' },
-            { val: 120, label: '120' },
-            { val: 162, label: '162 (Capot)' },
-          ].map(shortcut => (
-            <button
-              key={shortcut.val}
-              type="button"
-              onClick={() => setPointsTaker(shortcut.val)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
-                pointsTaker === shortcut.val
-                  ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
-                  : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
-              }`}
-            >
-              {shortcut.label}
-            </button>
-          ))}
-        </div>
+        {/* Colonne droite : Zone tactile sur toute la hauteur */}
+        <QuickScoreBadge
+          value={pointsTaker}
+          onChange={setPointsTaker}
+          onOpenPad={() => setOpenTakerSheet(true)}
+          min={0}
+          max={162}
+          step={1}
+          showPlus={false}
+          tall={true}
+        />
       </div>
 
       {/* Annonces & Belote */}
-      <div className="school-card rounded-xl p-3.5 space-y-2.5">
-        <div className="flex items-center justify-between gap-3">
+      <div className="school-card rounded-xl p-3.5 flex items-stretch gap-3">
+        {/* Colonne gauche : Titre, sous-titre et choix manuels */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
           <button
             type="button"
             onClick={() => setOpenAnnoncesSheet(true)}
-            className="flex-1 text-left cursor-pointer focus:outline-none"
+            className="text-left cursor-pointer focus:outline-none"
           >
             <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 leading-tight">
               Annonces & Belote
@@ -195,41 +200,44 @@ export function BeloteEngine({ game, onFinish }) {
               {announcements > 0 ? `+${announcements} pts d'annonces` : 'Aucune annonce'}
             </p>
           </button>
-          <QuickScoreBadge
-            value={announcements}
-            onChange={setAnnouncements}
-            onOpenPad={() => setOpenAnnoncesSheet(true)}
-            min={0}
-            max={500}
-            step={10}
-            showPlus={true}
-          />
+
+          {/* Raccourcis manuels annonces */}
+          <div className="flex flex-wrap gap-1.5 pt-0.5">
+            {[
+              { val: 0, label: '0' },
+              { val: 20, label: '+20 (Belote)' },
+              { val: 40, label: '+40' },
+              { val: 50, label: '+50' },
+              { val: 90, label: '+90' },
+              { val: 100, label: '+100' },
+            ].map(shortcut => (
+              <button
+                key={shortcut.val}
+                type="button"
+                onClick={() => setAnnouncements(shortcut.val)}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
+                  announcements === shortcut.val
+                    ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
+                }`}
+              >
+                {shortcut.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Raccourcis fréquents annonces */}
-        <div className="flex flex-wrap gap-1.5 pt-1 border-t border-stone-100 dark:border-slate-800/80">
-          {[
-            { val: 0, label: '0' },
-            { val: 20, label: '+20 (Belote)' },
-            { val: 40, label: '+40' },
-            { val: 50, label: '+50' },
-            { val: 90, label: '+90' },
-            { val: 100, label: '+100' },
-          ].map(shortcut => (
-            <button
-              key={shortcut.val}
-              type="button"
-              onClick={() => setAnnouncements(shortcut.val)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
-                announcements === shortcut.val
-                  ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
-                  : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
-              }`}
-            >
-              {shortcut.label}
-            </button>
-          ))}
-        </div>
+        {/* Colonne droite : Zone tactile sur toute la hauteur */}
+        <QuickScoreBadge
+          value={announcements}
+          onChange={setAnnouncements}
+          onOpenPad={() => setOpenAnnoncesSheet(true)}
+          min={0}
+          max={500}
+          step={10}
+          showPlus={true}
+          tall={true}
+        />
       </div>
 
       {/* Aperçu répartition avec statut du contrat */}
