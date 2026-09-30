@@ -25,7 +25,7 @@ export const GAME_META = {
     rules: {
       sections: [
         {
-          title: '1. Informations générales & But',
+          title: 'Informations générales & But',
           items: [
             'Nombre de joueurs : 2 à 6 joueurs.',
             'Matériel : Paquet de 36 cartes (du 6 à l’As).',
@@ -33,7 +33,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '2. Préparation & Atout (Kozyr)',
+          title: 'Préparation & Atout (Kozyr)',
           items: [
             'Distribuer 6 cartes à chaque joueur.',
             "La carte suivante est retournée face visible sous la pioche : sa couleur détermine l'Atout (Kozyr) pour toute la manche.",
@@ -41,7 +41,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: "3. Déroulement de l'Attaque & Défense",
+          title: "Déroulement de l'Attaque & Défense",
           items: [
             "Le joueur situé à gauche de l'attaquant est le Défenseur.",
             "L'attaquant pose une ou plusieurs cartes de même valeur faciale.",
@@ -50,14 +50,14 @@ export const GAME_META = {
           ],
         },
         {
-          title: "4. Variante d'attaque : Simple vs Transfert (Perevodnoy)",
+          title: "Variante d'attaque : Simple vs Transfert (Perevodnoy)",
           items: [
             "Dourak simple (Podkidnoy) : Le défenseur doit impérativement contrer toutes les cartes ou abandonner.",
             "Dourak avec transfert (Perevodnoy) : Avant de poser la moindre carte de défense, si le défenseur possède une carte de même valeur que l'attaque, il peut la poser pour transférer l'attaque complète au joueur à sa gauche, qui devient le nouveau défenseur.",
           ],
         },
         {
-          title: '5. Résolution du pli & Recharge',
+          title: 'Résolution du pli & Recharge',
           items: [
             "Défense réussie : Toutes les cartes jouées sont écartées définitivement à la défausse (Otboy). Le défenseur devient le nouvel attaquant.",
             "Défense échouée (Abandon) : Le défenseur ramasse toutes les cartes posées sur la table et passe son tour d'attaque (le joueur à sa gauche attaque).",
@@ -65,7 +65,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '6. Les 2 Modes de Comptage dans Ardoise',
+          title: 'Les 2 Modes de Comptage dans Ardoise',
           items: [
             "Mode Classique (+1 défaite) : Le Dourak de la manche reçoit 1 défaite (symbolisée par les bâtons de craie d'écolier). Le premier joueur à atteindre la limite fixée (ex: 5 défaites) perd la partie.",
             "Mode Pénalité aux cartes : À la fin de la manche, le Dourak encaisse autant de points de pénalité qu'il lui reste de cartes en main (1 à 6 cartes). Le premier à atteindre le seuil éliminatoire (ex: 30 cartes) est le perdant.",
@@ -95,7 +95,7 @@ export const GAME_META = {
     rules: {
       sections: [
         {
-          title: '1. Informations générales',
+          title: 'Informations générales',
           items: [
             'Nombre de joueurs : 2 à 6 joueurs (à partir de 6 ans).',
             'Matériel : Un jeu standard de 54 cartes dont on retire les 2 jokers (soit 52 cartes).',
@@ -103,7 +103,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '2. Distribution & Mise en place',
+          title: 'Distribution & Mise en place',
           items: [
             '2 à 4 joueurs : 7 cartes distribuées par joueur.',
             '5 à 6 joueurs : 5 cartes distribuées par joueur.',
@@ -112,7 +112,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: "3. Déroulement d'un tour",
+          title: "Déroulement d'un tour",
           content:
             "À son tour, un joueur effectue deux actions obligatoires dans l'ordre :",
           items: [
@@ -123,7 +123,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '4. Combinaisons possibles à poser',
+          title: 'Combinaisons possibles à poser',
           items: [
             'Paire : 2 cartes de même valeur (ex. : deux 7).',
             'Triple : 3 cartes de même valeur (ex. : trois Dames).',
@@ -132,7 +132,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '5. Valeur des cartes (décompte)',
+          title: 'Valeur des cartes (décompte)',
           items: [
             'Le 8 : 0 point (carte clé pour réduire son score !).',
             "As (1) : 1 point (peut aussi se placer après le Roi dans une suite).",
@@ -143,7 +143,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: "6. L'annonce « Caracole » & Fin de manche",
+          title: "L'annonce « Caracole » & Fin de manche",
           items: [
             "Lorsqu'un joueur estime n'avoir plus que 10 points ou moins en main, il peut décider de « caracoler » en annonçant distinctement « Caracole ».",
             "Dès l'annonce : le joueur passe immédiatement son tour. Tous les autres joueurs bénéficient d'un dernier tour complet pour améliorer leur main (poser/piocher) ou choisir de passer sans jouer.",
@@ -153,14 +153,14 @@ export const GAME_META = {
           ],
         },
         {
-          title: '7. Règle spéciale des 100 points (Sursis)',
+          title: 'Règle spéciale des 100 points (Sursis)',
           items: [
             "Si à la fin d'une manche le score cumulé d'un joueur atteint EXACTEMENT 100 points, son score redescend immédiatement à 50 points ! Il gagne un sursis inespéré et reste en course.",
             "En partie courte à 50 points : si un joueur atteint pile 50 points, son score retombe à 25 points (ou zéro selon option).",
           ],
         },
         {
-          title: '8. Fin de partie & Désignation du vainqueur',
+          title: 'Fin de partie & Désignation du vainqueur',
           items: [
             "Le premier joueur qui dépasse les 100 points perd la partie.",
             "Le vainqueur est alors le joueur qui possède le plus petit nombre de points cumulés.",
@@ -194,7 +194,7 @@ export const GAME_META = {
     rules: {
       sections: [
         {
-          title: '1. Informations générales & But',
+          title: 'Informations générales & But',
           items: [
             'Nombre de joueurs : 3 à 8 joueurs (idéal à 4-6 joueurs).',
             'Matériel : Un jeu de 54 cartes standard (avec ou sans Jokers).',
@@ -202,14 +202,14 @@ export const GAME_META = {
           ],
         },
         {
-          title: '2. Hiérarchie des cartes',
+          title: 'Hiérarchie des cartes',
           items: [
             'Ordre croissant : 3 (plus faible), 4, 5, 6, 7, 8, 9, 10, Valet, Dame, Roi, As.',
             "Le 2 : Carte maîtresse absolue qui bat n'importe quelle carte et coupe immédiatement le pli.",
           ],
         },
         {
-          title: "3. Déroulement d'un tour",
+          title: "Déroulement d'un tour",
           items: [
             'Le joueur qui a la main pose une carte simple, une paire, un brelan ou un carré.',
             'Les joueurs suivants doivent poser le même nombre de cartes, avec une valeur égale ou supérieure (ex. : une paire supérieure sur une paire).',
@@ -217,14 +217,14 @@ export const GAME_META = {
           ],
         },
         {
-          title: '4. Règles spéciales : Le 2 et la Révolution',
+          title: 'Règles spéciales : Le 2 et la Révolution',
           items: [
             "Le 2 : Poser un 2 (ou une paire de 2) coupe immédiatement le tour. Les cartes vont à la défausse et le joueur rejoue aussitôt ce qu'il souhaite.",
             "Révolution (Carré de 4 cartes identiques) : Inverse la hiérarchie pour le reste de la manche ! Le 3 devient la carte la plus forte et l'As la plus faible (le 2 conserve généralement son pouvoir de coupe). Une seconde révolution remet l'ordre à l'endroit.",
           ],
         },
         {
-          title: '5. Rôles et Échanges de début de manche',
+          title: 'Rôles et Échanges de début de manche',
           items: [
             'Les joueurs reçoivent leur rôle selon leur ordre de sortie lors de la manche précédente :',
             '1er — Président : Reçoit les 2 meilleures cartes du Trou du cul et lui donne 2 cartes de son choix.',
@@ -235,7 +235,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '6. Comptage des points dans Ardoise',
+          title: 'Comptage des points dans Ardoise',
           items: [
             'Président : +2 points par manche.',
             'Vice-Président : +1 point par manche.',
@@ -269,7 +269,7 @@ export const GAME_META = {
     rules: {
       sections: [
         {
-          title: '1. Informations générales & Objectif',
+          title: 'Informations générales & Objectif',
           items: [
             'Nombre de joueurs : 2 à 8 joueurs.',
             'Matériel : 150 cartes Skyjo numérotées de -2 à 12.',
@@ -277,7 +277,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '2. Mise en place & Révélation initiale',
+          title: 'Mise en place & Révélation initiale',
           items: [
             'Chaque joueur reçoit 12 cartes face cachée qu’il dispose devant lui en une grille de 4 colonnes × 3 lignes.',
             'Le reste des cartes forme la pioche face cachée au centre, avec une première carte retournée pour ouvrir la défausse.',
@@ -285,7 +285,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: "3. Déroulement d'un tour",
+          title: "Déroulement d'un tour",
           content:
             "À son tour, le joueur choisit obligatoirement entre piocher dans la pioche cachée ou dans la défausse visible :",
           items: [
@@ -294,14 +294,14 @@ export const GAME_META = {
           ],
         },
         {
-          title: '4. Règle des colonnes identiques (Défausse complète)',
+          title: 'Règle des colonnes identiques (Défausse complète)',
           items: [
             'Dès qu’une colonne verticale de 3 cartes comporte 3 cartes face visible strictement identiques (ex. : trois cartes 8), cette colonne est immédiatement retirée du jeu et envoyée à la défausse.',
             'Avantage clé : Cela élimine 3 cartes de sa grille et retire tous leurs points de son décompte final !',
           ],
         },
         {
-          title: '5. Fin de manche & Règle clé du clôtureur',
+          title: 'Fin de manche & Règle clé du clôtureur',
           items: [
             'Dès qu’un joueur a révélé toutes ses 12 cartes (le Clôtureur), les autres joueurs disposent d’un ultime tour de jeu.',
             'Chacun dévoile ensuite ses cartes cachées restantes et additionne tous les points de sa grille.',
@@ -309,7 +309,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '6. Fin de partie & Vainqueur',
+          title: 'Fin de partie & Vainqueur',
           items: [
             'Les points de chaque manche sont cumulés manche après manche.',
             'Dès qu’un joueur atteint ou dépasse 100 points, la partie prend fin.',
@@ -340,7 +340,7 @@ export const GAME_META = {
     rules: {
       sections: [
         {
-          title: '1. Informations générales & Équipes',
+          title: 'Informations générales & Équipes',
           items: [
             'Nombre de joueurs : 4 joueurs répartis en 2 équipes de 2 partenaires assis face à face (Nous vs Eux).',
             'Matériel : Un jeu de 32 cartes (du 7 à l’As).',
@@ -348,7 +348,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '2. Ordre et Valeur des cartes (162 pts)',
+          title: 'Ordre et Valeur des cartes (162 pts)',
           items: [
             'À l’Atout : Valet (20 pts), 9 (14 pts), As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts), 8 et 7 (0 pt).',
             'Hors Atout : As (11 pts), 10 (10 pts), Roi (4 pts), Dame (3 pts), Valet (2 pts), 9, 8 et 7 (0 pt).',
@@ -357,7 +357,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '3. Prise et Contrats (Belote vs Coinche)',
+          title: 'Prise et Contrats (Belote vs Coinche)',
           items: [
             'Belote classique : Une carte est retournée au centre. Les joueurs choisissent tour à tour de la prendre (la couleur devient l’atout) ou de passer. Contrat minimal : réaliser au moins 82 points.',
             'Coinche : Les joueurs enchérissent par paliers de 10 points (de 80 à 160) en annonçant la couleur d’atout. Possibilité de Contrer (« Coincher ») pour doubler les points, ou « Surcoincher » pour quadrupler.',
@@ -366,14 +366,14 @@ export const GAME_META = {
           ],
         },
         {
-          title: '4. Annonces spéciales (Belote-Rebelote)',
+          title: 'Annonces spéciales (Belote-Rebelote)',
           items: [
             'Belote et Rebelote (+20 pts) : Accordé au joueur possédant le Roi et la Dame d’atout. Il annonce « Belote » en posant la première carte, puis « Rebelote » en posant la seconde.',
             'Ces 20 points sont inviolables : ils restent acquis même si l’équipe preneuse chute son contrat.',
           ],
         },
         {
-          title: '5. Décompte des points & Chute (Dedans)',
+          title: 'Décompte des points & Chute (Dedans)',
           items: [
             'Contrat réussi : L’équipe preneuse marque ses points réalisés + le montant de son contrat + annonces. La défense marque ses points faits.',
             'Chute (« Dedans ») : Si les preneurs font moins de 82 points (ou moins que leur enchère), ils ne marquent rien (sauf Belote éventuelle). La défense empoche les 162 points + le contrat + annonces.',
@@ -403,7 +403,7 @@ export const GAME_META = {
     rules: {
       sections: [
         {
-          title: '1. Matériel & Total des points',
+          title: 'Matériel & Total des points',
           items: [
             'Nombre de joueurs : 3, 4 ou 5 joueurs (seul contre tous à 3 ou 4 j. ; preneur avec partenaire appelé au Roi à 5 j.).',
             'Matériel : Un jeu de 78 cartes comprenant 21 atouts numérotés, l’Excuse, et 4 couleurs de 14 cartes (Roi, Dame, Cavalier, Valet, 10 à As).',
@@ -411,7 +411,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '2. Les 3 Bouts (Oudlers) et Seuils à atteindre',
+          title: 'Les 3 Bouts (Oudlers) et Seuils à atteindre',
           items: [
             'Les Bouts : Le 21 d’atout, le Petit (1 d’atout) et l’Excuse valent 4,5 points chacun.',
             'Le seuil minimal à atteindre par l’Attaque dépend du nombre de Bouts dans ses levées :',
@@ -422,7 +422,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '3. Les Enchères et Coefficients',
+          title: 'Les Enchères et Coefficients',
           items: [
             'Petite : Coefficient ×1 (avec Chien incorporé).',
             'Garde : Coefficient ×2 (avec Chien incorporé).',
@@ -431,7 +431,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '4. Primes : Petit au bout, Poignées & Chelem',
+          title: 'Primes : Petit au bout, Poignées & Chelem',
           items: [
             'Petit au bout (±10 pts × coef) : Accordé au camp qui remporte le 18e et dernier pli de la donne avec le Petit (1 d’atout).',
             'Poignées : Annoncées au 1er tour par un joueur détenant 10 atouts (Simple = 20 pts), 13 atouts (Double = 30 pts) ou 15 atouts (Triple = 40 pts).',
@@ -439,7 +439,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '5. Calcul officiel des scores (Somme nulle)',
+          title: 'Calcul officiel des scores (Somme nulle)',
           items: [
             'Formule : Score = (25 + |Points faits - Seuil|) × Coeff + Prime Petit au bout.',
             'À 3 ou 4 joueurs : Le Preneur gagne (ou perd) ce score multiplié par le nombre de défenseurs, chaque défenseur recevant (ou donnant) le score de base.',
@@ -470,7 +470,7 @@ export const GAME_META = {
     rules: {
       sections: [
         {
-          title: '1. Informations générales & But',
+          title: 'Informations générales & But',
           items: [
             'Nombre de joueurs : 2 à 10 joueurs.',
             'Matériel : 104 cartes numérotées de 1 à 104 comportant des têtes de bœuf (points de pénalité).',
@@ -478,7 +478,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '2. Mise en place & Choix simultané',
+          title: 'Mise en place & Choix simultané',
           items: [
             'Chaque joueur reçoit 10 cartes en main.',
             '4 cartes sont tirées de la pioche et disposées face visible au centre de la table pour démarrer 4 rangées distinctes.',
@@ -487,21 +487,21 @@ export const GAME_META = {
           ],
         },
         {
-          title: '3. Ordre de pose sur les rangées',
+          title: 'Ordre de pose sur les rangées',
           items: [
             'Les cartes révélées sont jouées dans l’ordre numérique croissant (de la plus petite à la plus grande valeur).',
             'Chaque carte doit être placée sur la rangée dont la dernière carte est inférieure avec la plus petite différence de valeur.',
           ],
         },
         {
-          title: '4. Règle de la 6e carte & Carte trop basse',
+          title: 'Règle de la 6e carte & Carte trop basse',
           items: [
             'La 6e carte (Ramassage) : Une rangée ne peut contenir que 5 cartes maximum. Si un joueur doit poser la 6e carte d’une rangée, il ramasse obligatoirement les 5 cartes de la rangée (qui forment son tas de pénalités) et sa carte devient la 1re de la nouvelle rangée !',
             'Carte inférieure à toutes les rangées : Si la carte d’un joueur est plus petite que la dernière carte de chacune des 4 rangées, il doit choisir librement l’une des 4 rangées, en ramasser toutes les cartes, et placer sa carte à la place.',
           ],
         },
         {
-          title: '5. Barème des têtes de bœuf',
+          title: 'Barème des têtes de bœuf',
           items: [
             'Carte 55 : 7 têtes de bœuf (la plus redoutable !).',
             'Doublons (11, 22, 33, 44, 66, 77, 88, 99) : 5 têtes de bœuf.',
@@ -511,7 +511,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '6. Fin de manche & Vainqueur',
+          title: 'Fin de manche & Vainqueur',
           items: [
             'Une manche dure 10 tours (jusqu’à épuisement des mains). Chacun compte ses têtes de bœuf ramassées.',
             'Dès qu’un joueur atteint ou dépasse le seuil éliminatoire de 66 têtes de bœuf, la partie prend fin.',
@@ -541,21 +541,21 @@ export const GAME_META = {
     rules: {
       sections: [
         {
-          title: '1. Présentation & Polyvalence',
+          title: 'Présentation & Polyvalence',
           items: [
             'Ardoise de score universelle tout-terrain pour tous vos jeux de société et de cartes : Uno, Rami, Scrabble, Mölkky, Flip 7, Qwirkle, Mille Bornes, 1000 Bornes, etc.',
             'Permet d’accueillir de 2 à 12 joueurs avec leurs avatars personnalisés.',
           ],
         },
         {
-          title: '2. Choix du mode de décompte',
+          title: 'Choix du mode de décompte',
           items: [
             'Mode Score Élevé (Course aux points) : Les points s’additionnent et le total le plus haut l’emporte (ex. : Scrabble, Rami, Belote libre).',
             'Mode Seuil Éliminatoire (Pénalités) : Chaque manche ajoute des pénalités. Le premier joueur à franchir le seuil paramétré (50, 100, 150 ou 200 pts) est éliminé ou met fin à la partie. Le score le plus bas l’emporte (ex. : Uno).',
           ],
         },
         {
-          title: '3. Option de Règle Spéciale (Sursis personnalisé)',
+          title: 'Option de Règle Spéciale (Sursis personnalisé)',
           items: [
             'Division par 2 au seuil : Si un joueur atteint EXACTEMENT le seuil fixé, son score est divisé par 2 (style Caracole).',
             'Remise à zéro : Si un joueur atteint pile le seuil, son score retombe à zéro.',
@@ -563,7 +563,7 @@ export const GAME_META = {
           ],
         },
         {
-          title: '4. Modèles de jeux enregistrés',
+          title: 'Modèles de jeux enregistrés',
           items: [
             'Vous pouvez nommer et enregistrer vos configurations de jeux favorites (nom du jeu, seuil, règles).',
             'Vos modèles sauvegardés apparaissent directement sur l’accueil pour relancer une partie en un seul tap.',

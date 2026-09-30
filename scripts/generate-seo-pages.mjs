@@ -115,10 +115,11 @@ function renderGameArticleHtml(meta, slug) {
 
   if (rules?.sections) {
     sectionsHtml = rules.sections
-      .map(
-        (sec) => `
+      .map((sec, idx) => {
+        const cleanTitle = (sec.title || '').replace(/^\d+[\.\)]\s*/, '')
+        return `
         <section>
-          <h3>${escapeHtml(sec.title)}</h3>
+          <h3>${idx + 1}. ${escapeHtml(cleanTitle)}</h3>
           ${sec.content ? `<p>${escapeHtml(sec.content)}</p>` : ''}
           ${
             sec.items
@@ -126,7 +127,7 @@ function renderGameArticleHtml(meta, slug) {
               : ''
           }
         </section>`
-      )
+      })
       .join('\n')
   } else if (rules) {
     sectionsHtml = `

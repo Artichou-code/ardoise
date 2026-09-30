@@ -19,36 +19,39 @@ export function RulesSheet({ gameType, onClose, onStartSetup }) {
       subtitle={formatTypography(`${meta.playersBadge} · ${meta.categoryBadge}`)}
     >
       <div className="px-5 py-4 space-y-5">
-        {/* Si le jeu définit des sections structurées (ex. Dourak) */}
+        {/* Si le jeu définit des sections structurées (ex. Dourak, Caracole, etc.) */}
         {rules.sections ? (
-          rules.sections.map((sec, idx) => (
-            <section key={idx}>
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="w-1.5 h-4 rounded-full bg-[#c83b3b]" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#c83b3b]">
-                  {idx + 1}. {formatTypography(sec.title)}
-                </h3>
-              </div>
-              {sec.content && (
-                <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
-                  {formatTypography(sec.content)}
-                </p>
-              )}
-              {sec.items && (
-                <ul className="space-y-1.5 mt-1">
-                  {sec.items.map((item, i) => (
-                    <li
-                      key={i}
-                      className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed flex items-start gap-2"
-                    >
-                      <span className="text-[#c83b3b] font-bold select-none">•</span>
-                      <span>{formatTypography(item)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          ))
+          rules.sections.map((sec, idx) => {
+            const cleanTitle = (sec.title || '').replace(/^\d+[\.\)]\s*/, '')
+            return (
+              <section key={idx}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="w-1.5 h-4 rounded-full bg-[#c83b3b]" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#c83b3b]">
+                    {idx + 1}. {formatTypography(cleanTitle)}
+                  </h3>
+                </div>
+                {sec.content && (
+                  <p className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed">
+                    {formatTypography(sec.content)}
+                  </p>
+                )}
+                {sec.items && (
+                  <ul className="space-y-1.5 mt-1">
+                    {sec.items.map((item, i) => (
+                      <li
+                        key={i}
+                        className="text-sm text-stone-700 dark:text-slate-300 leading-relaxed flex items-start gap-2"
+                      >
+                        <span className="text-[#c83b3b] font-bold select-none">•</span>
+                        <span>{formatTypography(item)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )
+          })
         ) : (
           <>
             {/* 1. Objectif */}
