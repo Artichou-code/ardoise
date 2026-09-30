@@ -211,12 +211,12 @@ export function QuickScoreBadge({
               )}
             </div>
 
-            {/* Repère tactile discret : icône blanche translucide agrandie, positionnée plus bas */}
+            {/* Repère tactile discret : même gris que les flèches (stone-500 / slate-400) */}
             <div className="flex flex-col items-center gap-0.5 pb-0.5">
               <div className="relative flex items-center justify-center w-6 h-6 pointer-events-none mb-0.5">
-                <span className="absolute w-4.5 h-4.5 rounded-full bg-white/50 dark:bg-white/25 anim-tap-ripple" />
+                <span className="absolute w-4 h-4 rounded-full bg-stone-500/15 dark:bg-slate-400/15 anim-tap-ripple" />
                 <svg
-                  className="w-4 h-4 text-white/85 dark:text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.28)] group-hover:text-white group-hover:opacity-100 anim-finger-tap transition-all"
+                  className="w-4 h-4 text-stone-500 dark:text-slate-400 opacity-55 group-hover:opacity-100 group-hover:text-[#c83b3b] anim-finger-tap transition-all"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -224,7 +224,7 @@ export function QuickScoreBadge({
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth="2.2"
+                    strokeWidth="2"
                     d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777"
                   />
                 </svg>
