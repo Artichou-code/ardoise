@@ -146,12 +146,10 @@ export function QuickScoreBadge({
       {/* Pastille d'information minimaliste (score total) à gauche du badge pendant le glissement */}
       {isDragging && bubbleInfo && (
         <div
-          className={`absolute right-full mr-2 top-1/2 -translate-y-1/2 z-40 w-max whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-semibold shadow-2xs pointer-events-none select-none animate-in fade-in zoom-in-95 duration-100 ${
+          className={`absolute right-full mr-2 top-1/2 -translate-y-1/2 z-40 w-max whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-bold shadow-xs pointer-events-none select-none animate-in fade-in zoom-in-95 duration-100 ${
             bubbleInfo.variant === 'sursis'
-              ? 'bg-amber-500/15 dark:bg-amber-500/25 text-amber-700 dark:text-amber-300 border border-amber-500/35'
-              : bubbleInfo.variant === 'danger'
-              ? 'bg-red-500/15 dark:bg-red-500/25 text-red-700 dark:text-red-300 border border-red-500/35'
-              : 'bg-white/95 dark:bg-slate-900/95 text-stone-800 dark:text-slate-100 border border-stone-200/90 dark:border-slate-700/90'
+              ? 'bg-amber-600 text-white'
+              : 'bg-[#c83b3b] text-white'
           }`}
         >
           <span>{bubbleInfo.text}</span>

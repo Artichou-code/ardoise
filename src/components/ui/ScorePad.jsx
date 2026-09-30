@@ -127,7 +127,7 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore
   const totalText = formatTotal
     ? formatTotal(cur)
     : totalScore !== null
-    ? `Total : ${totalScore}`
+    ? `= ${totalScore}`
     : null
 
   return (
@@ -156,7 +156,7 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore
             <div className="flex flex-col items-center justify-center overflow-hidden py-0.5 w-full pointer-events-none">
               {/* Pastille minimaliste du score total pendant le glissement */}
               {totalText && (
-                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-stone-100/90 dark:bg-slate-800/90 text-stone-700 dark:text-slate-300 border border-stone-200 dark:border-slate-700 text-[11px] font-semibold shadow-2xs mb-1">
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#c83b3b] text-white text-[11px] font-bold shadow-xs mb-1">
                   <span>{totalText}</span>
                 </div>
               )}
@@ -193,8 +193,8 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore
                 {value >= 0 ? '+' : ''}{value}
               </span>
               {totalScore !== null ? (
-                <span className="text-xs font-semibold text-stone-500 dark:text-slate-400">
-                  {formatTotal ? formatTotal(value) : `Total : ${baseScore + value}`}
+                <span className="text-xs font-bold text-stone-600 dark:text-slate-400">
+                  {formatTotal ? formatTotal(value) : `= ${baseScore + value}`}
                 </span>
               ) : (
                 <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 flex items-center gap-1">

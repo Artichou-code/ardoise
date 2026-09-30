@@ -89,9 +89,9 @@ export function SixQuiPrendEngine({ game, onFinish }) {
                     const current = game.scores[p.id] || 0
                     const proj = current + val
                     if (proj >= 66) {
-                      return { text: `Total : ${proj}/66 🐮 (Fin !)`, variant: 'danger' }
+                      return { text: `💥 ${proj}/66 🐮`, variant: 'danger' }
                     }
-                    return { text: `Total : ${proj}/66 🐮`, variant: 'default' }
+                    return { text: `= ${proj} 🐮`, variant: 'default' }
                   }}
                 />
               </div>
@@ -121,7 +121,7 @@ export function SixQuiPrendEngine({ game, onFinish }) {
               onConfirm={() => setOpen(false)}
               min={0}
               baseScore={game.scores[editingPlayer.id] || 0}
-              formatTotal={(val) => `Total : ${(game.scores[editingPlayer.id] || 0) + val}/66 🐮`}
+              formatTotal={(val) => `= ${(game.scores[editingPlayer.id] || 0) + val}/66 🐮`}
             />
           </div>
         </BottomSheet>

@@ -229,12 +229,12 @@ export function UniverselEngine({ game, onFinish }) {
                     const isSpec = isRuleActive && targetScore != null && proj === targetScore
                     const trans = isSpec ? getTransformedScore(proj) : proj
                     if (isSpec) {
-                      return { text: `${proj} → ${trans} (${getShortActionLabel()})`, variant: 'sursis' }
+                      return { text: `🎯 ${trans}`, variant: 'sursis' }
                     }
                     if (scoreDir === 'low_limit' && limit && trans >= limit) {
-                      return { text: `Total : ${trans}/${limit}`, variant: 'danger' }
+                      return { text: `💥 ${trans}/${limit}`, variant: 'danger' }
                     }
-                    return { text: `Total : ${trans}`, variant: 'default' }
+                    return { text: `= ${trans}`, variant: 'default' }
                   }}
                 />
               </div>
@@ -268,9 +268,9 @@ export function UniverselEngine({ game, onFinish }) {
                 const proj = curScore + val
                 const isSpec = isRuleActive && targetScore != null && proj === targetScore
                 const trans = isSpec ? getTransformedScore(proj) : proj
-                if (isSpec) return `${proj} → ${trans} (${getShortActionLabel()})`
-                if (scoreDir === 'low_limit' && limit && trans >= limit) return `Total : ${trans}/${limit}`
-                return `Total : ${trans}`
+                if (isSpec) return `🎯 ${trans}`
+                if (scoreDir === 'low_limit' && limit && trans >= limit) return `💥 ${trans}/${limit}`
+                return `= ${trans}`
               }}
             />
           </div>

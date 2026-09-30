@@ -177,12 +177,12 @@ export function CaracoleEngine({ game, onFinish }) {
                   formatBubble={(val) => {
                     const proj = current + val
                     if (sursisEnabled && proj === limit) {
-                      return { text: `Sursis : ${sursisTarget}`, variant: 'sursis' }
+                      return { text: `🎯 ${sursisTarget}`, variant: 'sursis' }
                     }
                     if (limit && proj >= limit) {
-                      return { text: `Total : ${proj} (Éliminé)`, variant: 'danger' }
+                      return { text: `💥 ${proj}`, variant: 'danger' }
                     }
-                    return { text: `Total : ${proj}`, variant: 'default' }
+                    return { text: `= ${proj}`, variant: 'default' }
                   }}
                 />
               </div>
@@ -215,9 +215,9 @@ export function CaracoleEngine({ game, onFinish }) {
               formatTotal={(val) => {
                 const curScore = game.scores[editingPlayer.id] || 0
                 const proj = curScore + val
-                if (sursisEnabled && proj === limit) return `Sursis : ${sursisTarget}`
-                if (limit && proj >= limit) return `Total : ${proj} (Éliminé)`
-                return `Total : ${proj}`
+                if (sursisEnabled && proj === limit) return `🎯 ${sursisTarget}`
+                if (limit && proj >= limit) return `💥 ${proj}`
+                return `= ${proj}`
               }}
             />
           </div>

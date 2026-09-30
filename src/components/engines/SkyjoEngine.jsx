@@ -142,9 +142,9 @@ export function SkyjoEngine({ game, onFinish }) {
                   formatBubble={(val) => {
                     const proj = current + val
                     if (proj >= 100) {
-                      return { text: `Total : ${proj} (Fin !)`, variant: 'danger' }
+                      return { text: `💥 ${proj}`, variant: 'danger' }
                     }
-                    return { text: `Total : ${proj}`, variant: 'default' }
+                    return { text: `= ${proj}`, variant: 'default' }
                   }}
                 />
               </div>
