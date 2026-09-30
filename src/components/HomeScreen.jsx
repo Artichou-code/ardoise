@@ -21,7 +21,7 @@ const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ 
 const ArtCreaUniverseModal = lazy(() => import('./ArtCreaUniverseModal').then((m) => ({ default: m.ArtCreaUniverseModal })))
 
 export function HomeScreen() {
-  const { games, setScreen, resumeGame, customPresets, deletePreset, createGame, reloadStorage, liveSessionNotice, setLiveSessionNotice } = useGame()
+  const { games, setScreen, resumeGame, removeGame, customPresets, deletePreset, createGame, reloadStorage, liveSessionNotice, setLiveSessionNotice } = useGame()
   const [setupGame, setSetupGame] = useState(null)
   const [setupPreset, setSetupPreset] = useState(null)
   const [rulesGame, setRulesGame] = useState(null)
@@ -32,6 +32,8 @@ export function HomeScreen() {
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
   const [isShareGamesModalOpen, setIsShareGamesModalOpen] = useState(false)
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
+  const [confirmDeleteGameId, setConfirmDeleteGameId] = useState(null)
+
 
   useEffect(() => {
     const handleSessionChanged = (e) => {
@@ -191,11 +193,13 @@ export function HomeScreen() {
             </div>
             <div className="space-y-2">
               {activeGames.map(game => (
-                <button
+                <div
                   key={game.id}
-                  type="button"
                   onClick={() => resumeGame(game.id)}
-                  className="w-full flex items-center justify-between gap-3 p-3.5 rounded-xl bg-[#c83b3b]/[0.04] dark:bg-[#c83b3b]/[0.08] border border-[#c83b3b]/35 dark:border-[#c83b3b]/45 hover:border-[#c83b3b] transition-all active:scale-[0.99] text-left shadow-2xs group"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && resumeGame(game.id)}
+                  className="w-full flex items-center justify-between gap-3 p-3.5 rounded-xl bg-[#c83b3b]/[0.04] dark:bg-[#c83b3b]/[0.08] border border-[#c83b3b]/35 dark:border-[#c83b3b]/45 hover:border-[#c83b3b] transition-all active:scale-[0.99] text-left shadow-2xs group cursor-pointer"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
@@ -216,14 +220,73 @@ export function HomeScreen() {
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white shrink-0 group-hover:bg-[#b03030] transition-colors shadow-2xs">
-                    <Play size={12} fill="currentColor" /> Reprendre
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setConfirmDeleteGameId(game.id)
+                      }}
+                      className="p-2 rounded-lg text-stone-400 dark:text-slate-500 hover:text-[#c83b3b] dark:hover:text-[#c83b3b] hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                      title="Abandonner et supprimer cette partie"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        resumeGame(game.id)
+                      }}
+                      className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white hover:bg-[#b03030] transition-colors shadow-2xs cursor-pointer"
+                    >
+                      <Play size={12} fill="currentColor" /> Reprendre
+                    </button>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </section>
         )}
+
+        {/* Modale de confirmation de suppression de partie en cours */}
+        {confirmDeleteGameId && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 max-w-xs w-full shadow-2xl border border-stone-200 dark:border-slate-800 space-y-4 animate-scale-in">
+              <div className="text-center">
+                <div className="w-11 h-11 rounded-full bg-red-100 dark:bg-red-950/60 text-[#c83b3b] flex items-center justify-center mx-auto mb-2.5">
+                  <Trash2 size={20} />
+                </div>
+                <h3 className="font-serif-title font-bold text-base leading-tight">
+                  Supprimer la partie en cours&nbsp;?
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                  Cette partie sera définitivement retirée de votre ardoise et synchronisée avec le Cloud.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmDeleteGameId(null)}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-semibold border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-300 hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    removeGame(confirmDeleteGameId)
+                    setConfirmDeleteGameId(null)
+                  }}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-[#c83b3b] text-white hover:bg-[#b03030] transition-colors cursor-pointer shadow-xs"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
 
         {/* Jeux personnalisés enregistrés */}
         {customPresets && customPresets.length > 0 && (

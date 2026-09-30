@@ -18,6 +18,14 @@ export const loadDeletedPlayerIds = () => {
   } catch { return [] }
 }
 
+export const saveDeletedPlayerIds = (ids) => {
+  try {
+    const list = Array.isArray(ids) ? Array.from(new Set(ids)).slice(-500) : []
+    localStorage.setItem(STORAGE_KEYS.DELETED_PLAYERS, JSON.stringify(list))
+  } catch {}
+}
+
+
 export const untombstonePlayer = (id, name) => {
   try {
     const deleted = loadDeletedPlayerIds()
@@ -107,6 +115,14 @@ export const loadDeletedGameIds = () => {
   } catch { return [] }
 }
 
+export const saveDeletedGameIds = (ids) => {
+  try {
+    const list = Array.isArray(ids) ? Array.from(new Set(ids)).slice(-500) : []
+    localStorage.setItem(STORAGE_KEYS.DELETED_GAMES, JSON.stringify(list))
+  } catch {}
+}
+
+
 export const deleteGame = (id) => {
   if (!id) return
   // 1. Ajouter l'ID à la liste des parties supprimées (tombstone)
@@ -160,8 +176,19 @@ export const saveActiveGameId = (id) =>
     ? localStorage.setItem(STORAGE_KEYS.ACTIVE_GAME, id)
     : localStorage.removeItem(STORAGE_KEYS.ACTIVE_GAME)
 
-export const loadActiveGameId = () =>
-  localStorage.getItem(STORAGE_KEYS.ACTIVE_GAME)
+export const loadActiveGameId = () => {
+  const id = localStorage.getItem(STORAGE_KEYS.ACTIVE_GAME)
+  if (!id) return null
+  try {
+    const deletedIds = new Set(loadDeletedGameIds())
+    if (deletedIds.has(id)) {
+      localStorage.removeItem(STORAGE_KEYS.ACTIVE_GAME)
+      return null
+    }
+  } catch {}
+  return id
+}
+
 
 // --- Thème ---
 export const saveTheme = (theme) =>

@@ -7,8 +7,13 @@ import {
   loadTheme,
   saveTheme,
   loadDeletedGameIds,
+  saveDeletedGameIds,
   loadDeletedPlayerIds,
+  saveDeletedPlayerIds,
+  loadActiveGameId,
+  saveActiveGameId,
 } from './storage'
+
 
 const SYNC_KEYS = {
   SYNC_KEY: 'ardoise_sync_key',
@@ -127,8 +132,11 @@ export function exportNotebookPayload() {
     players: loadPlayers(),
     games: loadGames(),
     customPresets: loadCustomPresets(),
+    deletedGameIds: loadDeletedGameIds(),
+    deletedPlayerIds: loadDeletedPlayerIds(),
   }
 }
+
 
 /**
  * Télécharge la sauvegarde sous forme de fichier JSON sur le terminal
@@ -171,19 +179,34 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
   const localPresets = Array.isArray(localNotebook.customPresets) ? localNotebook.customPresets : []
   const incomingPresets = Array.isArray(incomingNotebook.customPresets) ? incomingNotebook.customPresets : []
 
+  // 0. Consolidation et persistance des tombstones (parties et joueurs supprimés)
+  const allDeletedGameIds = new Set([
+    ...loadDeletedGameIds(),
+    ...(Array.isArray(localNotebook.deletedGameIds) ? localNotebook.deletedGameIds : []),
+    ...(Array.isArray(incomingNotebook.deletedGameIds) ? incomingNotebook.deletedGameIds : []),
+  ])
+
+  const allDeletedPlayerIds = new Set([
+    ...loadDeletedPlayerIds(),
+    ...(Array.isArray(localNotebook.deletedPlayerIds) ? localNotebook.deletedPlayerIds : []),
+    ...(Array.isArray(incomingNotebook.deletedPlayerIds) ? incomingNotebook.deletedPlayerIds : []),
+  ])
+
+  saveDeletedGameIds(Array.from(allDeletedGameIds))
+  saveDeletedPlayerIds(Array.from(allDeletedPlayerIds))
+
   let gamesAdded = 0
   let playersAdded = 0
   let presetsAdded = 0
 
   // 1. Fusion des parties par ID (avec mise à jour si la partie distante a plus de manches)
-  const deletedIds = new Set(loadDeletedGameIds())
   const gamesMap = new Map()
   for (const g of localGames) {
-    if (g && g.id && !deletedIds.has(g.id)) gamesMap.set(g.id, g)
+    if (g && g.id && !allDeletedGameIds.has(g.id)) gamesMap.set(g.id, g)
   }
 
   for (const g of incomingGames) {
-    if (!g || !g.id || deletedIds.has(g.id)) continue
+    if (!g || !g.id || allDeletedGameIds.has(g.id)) continue
     if (!gamesMap.has(g.id)) {
       gamesMap.set(g.id, g)
       gamesAdded++
@@ -199,12 +222,11 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
   }
 
   // 2. Fusion des joueurs par nom normalisé (inclut les joueurs présents dans les parties importées)
-  const deletedPlayersSet = new Set(loadDeletedPlayerIds())
   const playersMap = new Map()
   for (const p of localPlayers) {
     if (p && p.name) {
       const norm = p.name.trim().toLowerCase()
-      if (!deletedPlayersSet.has(p.id) && !deletedPlayersSet.has(norm)) {
+      if (!allDeletedPlayerIds.has(p.id) && !allDeletedPlayerIds.has(norm)) {
         playersMap.set(norm, p)
       }
     }
@@ -212,7 +234,7 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
 
   const allIncomingPlayers = [...incomingPlayers]
   for (const g of incomingGames) {
-    if (g && Array.isArray(g.players)) {
+    if (g && Array.isArray(g.players) && !allDeletedGameIds.has(g.id)) {
       for (const gp of g.players) {
         if (gp && gp.name) {
           const norm = gp.name.trim().toLowerCase()
@@ -228,7 +250,7 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
     if (!p || !p.name) continue
     const key = p.name.trim().toLowerCase()
     if (key === 'nous' || key === 'eux') continue
-    if (deletedPlayersSet.has(p.id) || deletedPlayersSet.has(key)) continue
+    if (allDeletedPlayerIds.has(p.id) || allDeletedPlayerIds.has(key)) continue
     if (!playersMap.has(key)) {
       playersMap.set(key, {
         id: p.id || `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -280,6 +302,8 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
       games: mergedGames,
       customPresets: mergedPresets,
       theme: incomingNotebook.theme || localNotebook.theme,
+      deletedGameIds: Array.from(allDeletedGameIds),
+      deletedPlayerIds: Array.from(allDeletedPlayerIds),
     },
     stats: {
       gamesAdded,
@@ -289,6 +313,7 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
       totalPlayers: mergedPlayers.length,
     },
   }
+
 }
 
 /**
@@ -426,29 +451,21 @@ export function applyNotebook(incoming, mode = 'merge') {
 
   if (mode === 'replace') {
     const incomingGames = Array.isArray(incoming.games) ? incoming.games : []
-    // Dé-tombstoner les parties restaurées si remplacement explicite
-    try {
-      const incomingIds = new Set(incomingGames.map(g => g && g.id).filter(Boolean))
-      const filteredDeleted = loadDeletedGameIds().filter(id => !incomingIds.has(id))
-      localStorage.setItem('ardoise_deleted_games', JSON.stringify(filteredDeleted))
-    } catch {}
-
     const incomingPlayers = Array.isArray(incoming.players) ? incoming.players : []
-    // Dé-tombstoner les joueurs restaurés si remplacement explicite
-    try {
-      const incomingPlayerKeys = new Set(
-        incomingPlayers.map(p => p && p.id).concat(
-          incomingPlayers.map(p => p && p.name && p.name.trim().toLowerCase())
-        ).filter(Boolean)
-      )
-      const filteredDeletedPlayers = loadDeletedPlayerIds().filter(k => !incomingPlayerKeys.has(k))
-      localStorage.setItem('ardoise_deleted_players', JSON.stringify(filteredDeletedPlayers))
-    } catch {}
 
-    if (Array.isArray(incoming.players)) savePlayers(incoming.players)
+    // Conserver les tombstones distants ou explicites
+    const incomingDeletedGames = Array.isArray(incoming.deletedGameIds) ? incoming.deletedGameIds : []
+    const incomingDeletedPlayers = Array.isArray(incoming.deletedPlayerIds) ? incoming.deletedPlayerIds : []
+
+    saveDeletedGameIds(incomingDeletedGames)
+    saveDeletedPlayerIds(incomingDeletedPlayers)
+
+    if (Array.isArray(incoming.players)) savePlayers(incomingPlayers)
     localStorage.setItem('ardoise_games', JSON.stringify(incomingGames))
     if (Array.isArray(incoming.customPresets)) saveCustomPresets(incoming.customPresets)
     if (incoming.theme) saveTheme(incoming.theme)
+
+    loadActiveGameId()
 
     return {
       success: true,
@@ -465,6 +482,9 @@ export function applyNotebook(incoming, mode = 'merge') {
   savePlayers(mergedNotebook.players)
   localStorage.setItem('ardoise_games', JSON.stringify(mergedNotebook.games))
   saveCustomPresets(mergedNotebook.customPresets)
+  if (mergedNotebook.theme) saveTheme(mergedNotebook.theme)
+
+  loadActiveGameId()
 
   return {
     success: true,
@@ -472,6 +492,7 @@ export function applyNotebook(incoming, mode = 'merge') {
     stats,
   }
 }
+
 
 /**
  * Appels réseau Cloudflare Sync API
