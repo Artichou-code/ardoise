@@ -142,18 +142,19 @@ export function CaracoleEngine({ game, onFinish }) {
                     <span className="font-semibold text-sm truncate block text-stone-900 dark:text-slate-100">
                       {p.name}
                     </span>
-                    {pen > 0 && (
-                      <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400 block mt-0.5">
-                        {current} + {pen} ={' '}
-                        {isReprieve ? (
+                    <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400 block mt-0.5">
+                      {pen > 0 ? (
+                        isReprieve ? (
                           <span className="text-[#c83b3b] font-bold">
                             {projected} → {sursisTarget} pts (sursis !)
                           </span>
                         ) : (
-                          `${projected} pts`
-                        )}
-                      </span>
-                    )}
+                          `${current} + ${pen} = ${projected} pts`
+                        )
+                      ) : (
+                        `${current} pts`
+                      )}
+                    </span>
                   </div>
                 </button>
 
@@ -167,6 +168,16 @@ export function CaracoleEngine({ game, onFinish }) {
                   }}
                   min={0}
                   showPlus={true}
+                  formatBubble={(val) => {
+                    const proj = current + val
+                    if (sursisEnabled && proj === limit) {
+                      return { text: `🎯 Sursis ${sursisTarget} pts !`, variant: 'sursis' }
+                    }
+                    if (limit && proj >= limit) {
+                      return { text: `Total : ${proj}/${limit} pts (Éliminé)`, variant: 'danger' }
+                    }
+                    return { text: `Total : ${proj} pts`, variant: 'default' }
+                  }}
                 />
               </div>
             )

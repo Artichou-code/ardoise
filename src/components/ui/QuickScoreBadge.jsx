@@ -18,6 +18,7 @@ export function QuickScoreBadge({
   max,
   step = 1,
   showPlus = true,
+  formatBubble,
   className = '',
 }) {
   const [isDragging, setIsDragging] = useState(false)
@@ -128,13 +129,42 @@ export function QuickScoreBadge({
   const displaySign = showPlus && cur > 0 ? '+' : ''
   const isNonZero = cur !== 0
 
+  let bubbleInfo = null
+  if (formatBubble) {
+    const res = formatBubble(cur)
+    if (res) {
+      if (typeof res === 'string') {
+        bubbleInfo = { text: res, variant: 'default' }
+      } else if (typeof res === 'object' && res.text) {
+        bubbleInfo = res
+      }
+    }
+  }
+
   return (
     <div className="relative inline-flex items-center select-none flex-shrink-0">
-      {/* Bulle flottante au-dessus du doigt pendant le glissement */}
-      {isDragging && (
-        <div className="absolute -top-11 left-1/2 -translate-x-1/2 z-40 px-3 py-1 rounded-full bg-[#c83b3b] text-white text-xs font-black shadow-xl whitespace-nowrap flex items-center gap-1 animate-in fade-in zoom-in-95 pointer-events-none">
-          <ArrowUpDown size={11} className="animate-pulse" />
-          <span>{displaySign}{cur}</span>
+      {/* Bulle d'information flottante (score final projeté) à gauche du badge pendant le glissement */}
+      {isDragging && bubbleInfo && (
+        <div
+          className={`absolute right-full mr-2.5 top-1/2 -translate-y-1/2 z-40 px-2.5 py-1 rounded-full text-xs font-black shadow-xl whitespace-nowrap flex items-center gap-1.5 animate-in fade-in zoom-in-95 pointer-events-none select-none ${
+            bubbleInfo.variant === 'sursis'
+              ? 'bg-amber-600 text-white border border-amber-500/50 ring-2 ring-amber-400/40'
+              : bubbleInfo.variant === 'danger'
+              ? 'bg-red-800 text-white border border-red-700/50 ring-2 ring-red-400/40'
+              : 'bg-[#c83b3b] text-white border border-red-700/30'
+          }`}
+        >
+          <span>{bubbleInfo.text}</span>
+          {/* Petit pointeur triangle vers le badge à droite */}
+          <div
+            className={`absolute left-full top-1/2 -translate-y-1/2 w-0 h-0 border-y-[5px] border-y-transparent border-l-[6px] ${
+              bubbleInfo.variant === 'sursis'
+                ? 'border-l-amber-600'
+                : bubbleInfo.variant === 'danger'
+                ? 'border-l-red-800'
+                : 'border-l-[#c83b3b]'
+            }`}
+          />
         </div>
       )}
 

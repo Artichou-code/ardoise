@@ -79,6 +79,14 @@ export function SixQuiPrendEngine({ game, onFinish }) {
                   onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
                   min={0}
                   showPlus={true}
+                  formatBubble={(val) => {
+                    const current = game.scores[p.id] || 0
+                    const proj = current + val
+                    if (proj >= 66) {
+                      return { text: `Total : ${proj}/66 🐮 (Fin !)`, variant: 'danger' }
+                    }
+                    return { text: `Total : ${proj}/66 🐮`, variant: 'default' }
+                  }}
                 />
               </div>
             )

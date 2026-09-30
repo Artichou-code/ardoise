@@ -218,6 +218,18 @@ export function UniverselEngine({ game, onFinish }) {
                     setOpen(true)
                   }}
                   showPlus={true}
+                  formatBubble={(val) => {
+                    const proj = current + val
+                    const isSpec = isRuleActive && targetScore != null && proj === targetScore
+                    const trans = isSpec ? getTransformedScore(proj) : proj
+                    if (isSpec) {
+                      return { text: `${proj} → ${trans} pts (${getShortActionLabel()})`, variant: 'sursis' }
+                    }
+                    if (scoreDir === 'low_limit' && limit && trans >= limit) {
+                      return { text: `Total : ${trans}/${limit} pts`, variant: 'danger' }
+                    }
+                    return { text: `Total : ${trans} pts`, variant: 'default' }
+                  }}
                 />
               </div>
             )

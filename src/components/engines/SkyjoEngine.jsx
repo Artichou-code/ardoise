@@ -95,34 +95,54 @@ export function SkyjoEngine({ game, onFinish }) {
           Scores de la manche
         </p>
         <div className="space-y-2">
-          {game.players.map(p => (
-            <div
-              key={p.id}
-              className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl school-subtle hover:border-[#c83b3b]/60 transition-all"
-            >
-              <button
-                type="button"
-                onClick={() => { setEditingPlayer(p); setOpen(true) }}
-                className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer focus:outline-none select-none active:opacity-80 transition-opacity"
+          {game.players.map(p => {
+            const current = game.scores[p.id] || 0
+            const pts = roundScores[p.id] || 0
+            const projected = current + pts
+
+            return (
+              <div
+                key={p.id}
+                className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl school-subtle hover:border-[#c83b3b]/60 transition-all"
               >
-                <Avatar player={p} size="xs" />
-                <span className="flex-1 font-semibold text-sm truncate">
-                  {p.name}
-                </span>
-                {closerId === p.id && closerDoubled && (
-                  <span className="text-xs text-[#c83b3b] font-bold shrink-0">
-                    ×2 ({roundScores[p.id] * 2})
-                  </span>
-                )}
-              </button>
-              <QuickScoreBadge
-                value={roundScores[p.id] || 0}
-                onChange={v => setRoundScores(prev => ({ ...prev, [p.id]: v }))}
-                onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
-                showPlus={true}
-              />
-            </div>
-          ))}
+                <button
+                  type="button"
+                  onClick={() => { setEditingPlayer(p); setOpen(true) }}
+                  className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer focus:outline-none select-none active:opacity-80 transition-opacity"
+                >
+                  <Avatar player={p} size="xs" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm truncate">
+                        {p.name}
+                      </span>
+                      {closerId === p.id && closerDoubled && (
+                        <span className="text-xs text-[#c83b3b] font-bold shrink-0">
+                          ×2 ({pts * 2})
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400 block mt-0.5">
+                      {pts !== 0 ? `${current} + ${pts} = ${projected} pts` : `${current} pts`}
+                    </span>
+                  </div>
+                </button>
+                <QuickScoreBadge
+                  value={roundScores[p.id] || 0}
+                  onChange={v => setRoundScores(prev => ({ ...prev, [p.id]: v }))}
+                  onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
+                  showPlus={true}
+                  formatBubble={(val) => {
+                    const proj = current + val
+                    if (proj >= 100) {
+                      return { text: `Total : ${proj} pts (Fin !)`, variant: 'danger' }
+                    }
+                    return { text: `Total : ${proj} pts`, variant: 'default' }
+                  }}
+                />
+              </div>
+            )
+          })}
         </div>
       </div>
 
