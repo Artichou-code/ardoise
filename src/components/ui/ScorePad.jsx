@@ -8,7 +8,7 @@ import { ArrowUpDown } from 'lucide-react'
  * - Le relâchement du doigt conserve le score choisi sans fermer la page.
  * - La validation finale et fermeture se fait par le bouton rouge « Valider ».
  */
-export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
+export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore, formatTotal }) {
   const [isDragging, setIsDragging] = useState(false)
 
   const dragStartYRef = useRef(0)
@@ -123,6 +123,12 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
   }
 
   const cur = currentValueRef.current
+  const totalScore = baseScore !== undefined ? baseScore + cur : null
+  const totalText = formatTotal
+    ? formatTotal(cur)
+    : totalScore !== null
+    ? `Total : ${totalScore}`
+    : null
 
   return (
     <div className="flex flex-col gap-3 pt-2">
@@ -148,11 +154,12 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
         >
           {isDragging ? (
             <div className="flex flex-col items-center justify-center overflow-hidden py-0.5 w-full pointer-events-none">
-              {/* Badge pendant le glissement */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#c83b3b]/20 text-[#c83b3b] dark:text-red-300 border border-[#c83b3b]/30 text-[11px] font-bold shadow-2xs mb-1 animate-pulse">
-                <ArrowUpDown size={12} strokeWidth={2.5} />
-                <span>Score : {cur >= 0 ? '+' : ''}{cur}</span>
-              </div>
+              {/* Pastille minimaliste du score total pendant le glissement */}
+              {totalText && (
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-stone-100/90 dark:bg-slate-800/90 text-stone-700 dark:text-slate-300 border border-stone-200 dark:border-slate-700 text-[11px] font-semibold shadow-2xs mb-1">
+                  <span>{totalText}</span>
+                </div>
+              )}
 
               {/* Cylindre de roulette */}
               <div className="flex flex-col items-center leading-none">
@@ -181,14 +188,20 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min }) {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-1 py-1">
+            <div className="flex flex-col items-center gap-0.5 py-1">
               <span className="text-4xl font-black tabular-nums tracking-tight text-stone-900 dark:text-slate-100">
                 {value >= 0 ? '+' : ''}{value}
               </span>
-              <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 flex items-center gap-1">
-                <ArrowUpDown size={11} className="text-[#c83b3b]" />
-                Maintenir & glisser pour faire tourner
-              </span>
+              {totalScore !== null ? (
+                <span className="text-xs font-semibold text-stone-500 dark:text-slate-400">
+                  {formatTotal ? formatTotal(value) : `Total : ${baseScore + value}`}
+                </span>
+              ) : (
+                <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 flex items-center gap-1">
+                  <ArrowUpDown size={11} className="text-[#c83b3b]" />
+                  Maintenir & glisser pour faire tourner
+                </span>
+              )}
             </div>
           )}
         </div>

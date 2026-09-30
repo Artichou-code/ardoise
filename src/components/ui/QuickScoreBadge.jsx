@@ -143,28 +143,18 @@ export function QuickScoreBadge({
 
   return (
     <div className="relative inline-flex items-center select-none flex-shrink-0">
-      {/* Bulle d'information flottante (score final projeté) à gauche du badge pendant le glissement */}
+      {/* Pastille d'information minimaliste (score total) à gauche du badge pendant le glissement */}
       {isDragging && bubbleInfo && (
         <div
-          className={`absolute right-full mr-2.5 top-1/2 -translate-y-1/2 z-40 px-2.5 py-1 rounded-full text-xs font-black shadow-xl whitespace-nowrap flex items-center gap-1.5 animate-in fade-in zoom-in-95 pointer-events-none select-none ${
+          className={`absolute right-full mr-2 top-1/2 -translate-y-1/2 z-40 w-max whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-semibold shadow-2xs pointer-events-none select-none animate-in fade-in zoom-in-95 duration-100 ${
             bubbleInfo.variant === 'sursis'
-              ? 'bg-amber-600 text-white border border-amber-500/50 ring-2 ring-amber-400/40'
+              ? 'bg-amber-500/15 dark:bg-amber-500/25 text-amber-700 dark:text-amber-300 border border-amber-500/35'
               : bubbleInfo.variant === 'danger'
-              ? 'bg-red-800 text-white border border-red-700/50 ring-2 ring-red-400/40'
-              : 'bg-[#c83b3b] text-white border border-red-700/30'
+              ? 'bg-red-500/15 dark:bg-red-500/25 text-red-700 dark:text-red-300 border border-red-500/35'
+              : 'bg-white/95 dark:bg-slate-900/95 text-stone-800 dark:text-slate-100 border border-stone-200/90 dark:border-slate-700/90'
           }`}
         >
           <span>{bubbleInfo.text}</span>
-          {/* Petit pointeur triangle vers le badge à droite */}
-          <div
-            className={`absolute left-full top-1/2 -translate-y-1/2 w-0 h-0 border-y-[5px] border-y-transparent border-l-[6px] ${
-              bubbleInfo.variant === 'sursis'
-                ? 'border-l-amber-600'
-                : bubbleInfo.variant === 'danger'
-                ? 'border-l-red-800'
-                : 'border-l-[#c83b3b]'
-            }`}
-          />
         </div>
       )}
 

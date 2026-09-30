@@ -227,6 +227,7 @@ export function DourakEngine({ game, onFinish }) {
               onChange={v => setCardsLeft(Math.max(1, v))}
               onConfirm={() => setSheetOpen(false)}
               min={1}
+              baseScore={loserId ? (game.scores[loserId] || 0) : 0}
             />
           </div>
         </BottomSheet>

@@ -114,6 +114,8 @@ export function SixQuiPrendEngine({ game, onFinish }) {
               onChange={v => setRoundScores(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, v) }))}
               onConfirm={() => setOpen(false)}
               min={0}
+              baseScore={game.scores[editingPlayer.id] || 0}
+              formatTotal={(val) => `Total : ${(game.scores[editingPlayer.id] || 0) + val}/66 🐮`}
             />
           </div>
         </BottomSheet>

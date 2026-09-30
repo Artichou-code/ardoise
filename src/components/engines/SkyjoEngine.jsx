@@ -135,9 +135,9 @@ export function SkyjoEngine({ game, onFinish }) {
                   formatBubble={(val) => {
                     const proj = current + val
                     if (proj >= 100) {
-                      return { text: `Total : ${proj} pts (Fin !)`, variant: 'danger' }
+                      return { text: `Total : ${proj} (Fin !)`, variant: 'danger' }
                     }
-                    return { text: `Total : ${proj} pts`, variant: 'default' }
+                    return { text: `Total : ${proj}`, variant: 'default' }
                   }}
                 />
               </div>
@@ -166,6 +166,7 @@ export function SkyjoEngine({ game, onFinish }) {
               value={roundScores[editingPlayer.id] || 0}
               onChange={v => setRoundScores(prev => ({ ...prev, [editingPlayer.id]: v }))}
               onConfirm={() => setOpen(false)}
+              baseScore={game.scores[editingPlayer.id] || 0}
             />
           </div>
         </BottomSheet>

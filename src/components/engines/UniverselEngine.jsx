@@ -223,12 +223,12 @@ export function UniverselEngine({ game, onFinish }) {
                     const isSpec = isRuleActive && targetScore != null && proj === targetScore
                     const trans = isSpec ? getTransformedScore(proj) : proj
                     if (isSpec) {
-                      return { text: `${proj} → ${trans} pts (${getShortActionLabel()})`, variant: 'sursis' }
+                      return { text: `${proj} → ${trans} (${getShortActionLabel()})`, variant: 'sursis' }
                     }
                     if (scoreDir === 'low_limit' && limit && trans >= limit) {
-                      return { text: `Total : ${trans}/${limit} pts`, variant: 'danger' }
+                      return { text: `Total : ${trans}/${limit}`, variant: 'danger' }
                     }
-                    return { text: `Total : ${trans} pts`, variant: 'default' }
+                    return { text: `Total : ${trans}`, variant: 'default' }
                   }}
                 />
               </div>
@@ -256,6 +256,16 @@ export function UniverselEngine({ game, onFinish }) {
               value={roundScores[editingPlayer.id] || 0}
               onChange={v => setRoundScores(prev => ({ ...prev, [editingPlayer.id]: v }))}
               onConfirm={() => setOpen(false)}
+              baseScore={game.scores[editingPlayer.id] || 0}
+              formatTotal={(val) => {
+                const curScore = game.scores[editingPlayer.id] || 0
+                const proj = curScore + val
+                const isSpec = isRuleActive && targetScore != null && proj === targetScore
+                const trans = isSpec ? getTransformedScore(proj) : proj
+                if (isSpec) return `${proj} → ${trans} (${getShortActionLabel()})`
+                if (scoreDir === 'low_limit' && limit && trans >= limit) return `Total : ${trans}/${limit}`
+                return `Total : ${trans}`
+              }}
             />
           </div>
         </BottomSheet>
