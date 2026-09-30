@@ -8,9 +8,15 @@ import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 
 export function SixQuiPrendEngine({ game, onFinish }) {
   const { updateScores } = useGame()
-  const [roundScores, setRoundScores] = useState(
-    Object.fromEntries(game.players.map(p => [p.id, 0]))
-  )
+  const [roundScores, setRoundScores] = useState(() => {
+    const initial = {}
+    for (const p of game.players) {
+      initial[p.id] = (game.restoredDelta && game.restoredDelta[p.id] != null)
+        ? game.restoredDelta[p.id]
+        : 0
+    }
+    return initial
+  })
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [open, setOpen] = useState(false)
 
@@ -99,7 +105,7 @@ export function SixQuiPrendEngine({ game, onFinish }) {
         onClick={submitRound}
         className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red"
       >
-        Valider la manche
+        {game.isCorrection ? 'Valider la correction' : 'Valider la manche'}
       </button>
 
       {editingPlayer && (

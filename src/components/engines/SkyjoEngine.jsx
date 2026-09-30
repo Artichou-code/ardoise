@@ -9,11 +9,18 @@ import { computeSkyjoRound, checkSkyjoEnd, isSkyjoScoreDoubled } from '../../eng
 import { Dialog } from '../ui/Dialog'
 
 export function SkyjoEngine({ game, onFinish }) {
-  const { updateScores } = useGame()
-  const [roundScores, setRoundScores] = useState(
-    Object.fromEntries(game.players.map(p => [p.id, 0]))
-  )
-  const [closerId, setCloserId] = useState(null)
+  const [roundScores, setRoundScores] = useState(() => {
+    const initial = {}
+    for (const p of game.players) {
+      initial[p.id] = (game.restoredDelta && game.restoredDelta[p.id] != null)
+        ? game.restoredDelta[p.id]
+        : 0
+    }
+    return initial
+  })
+  const [closerId, setCloserId] = useState(() => {
+    return game.restoredRound?.closerId || null
+  })
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [open, setOpen] = useState(false)
   const [alert, setAlert] = useState(null)
@@ -152,7 +159,7 @@ export function SkyjoEngine({ game, onFinish }) {
         disabled={!canSubmit}
         className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40"
       >
-        Valider la manche
+        {game.isCorrection ? 'Valider la correction' : 'Valider la manche'}
       </button>
 
       {editingPlayer && (

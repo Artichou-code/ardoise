@@ -41,7 +41,6 @@ export function GameProvider({ children }) {
   const [screen, setScreen] = useState('home') // home | game | history | victory | stats | players
   const [liveSessionNotice, setLiveSessionNotice] = useState(null)
   const historyRef = useRef([]) // undo stack
-  const redoRef = useRef([]) // redo stack (rétablir)
   const [, setHistoryTick] = useState(0)
   const lastSessionSignatureRef = useRef('')
 
@@ -143,7 +142,6 @@ export function GameProvider({ children }) {
       updatedAt: Date.now(),
     }
     historyRef.current = []
-    redoRef.current = []
     setHistoryTick(t => t + 1)
     persistGame(game)
     setActiveGameId(game.id)
@@ -157,17 +155,18 @@ export function GameProvider({ children }) {
     return game
   }, [persistGame])
 
-  // Mettre à jour les scores (avec undo et réinitialisation de redo)
+  // Mettre à jour les scores
   const updateScores = useCallback((roundData) => {
     if (!activeGame) return
-    // Snapshot pour undo
-    historyRef.current = [...historyRef.current, { ...activeGame }]
-    redoRef.current = [] // Réinitialiser le redo si une nouvelle manche est jouée
+    // Snapshot pour correction éventuelle de la manche
+    historyRef.current = [...historyRef.current, { ...activeGame, restoredDelta: null, isCorrection: false }]
     setHistoryTick(t => t + 1)
     const updated = {
       ...activeGame,
       scores: roundData.scores,
       rounds: [...activeGame.rounds, roundData],
+      restoredDelta: null,
+      isCorrection: false,
       updatedAt: Date.now(),
     }
     persistGame(updated)
@@ -178,32 +177,26 @@ export function GameProvider({ children }) {
     }
   }, [activeGame, persistGame])
 
-  // Undo (annuler la dernière manche)
+  // Revenir sur la dernière manche pour modification (correction avec pré-remplissage)
   const undoLastRound = useCallback(() => {
     if (!historyRef.current.length || !activeGame) return false
     const prev = historyRef.current.pop()
-    redoRef.current = [...redoRef.current, { ...activeGame }]
-    persistGame(prev)
-    setHistoryTick(t => t + 1)
+    const lastRound = activeGame.rounds[activeGame.rounds.length - 1]
+    const delta = lastRound?.delta || lastRound?.penalties || lastRound?.scores || null
 
-    const liveSession = getActiveSession()
-    if (liveSession && liveSession.code) {
-      pushGameToLiveSession(liveSession.code, prev).catch(() => {})
+    const restoredGame = {
+      ...prev,
+      restoredRound: lastRound || null,
+      restoredDelta: delta,
+      isCorrection: true,
+      updatedAt: Date.now(),
     }
-    return true
-  }, [activeGame, persistGame])
-
-  // Redo (rétablir la manche annulée)
-  const redoLastRound = useCallback(() => {
-    if (!redoRef.current.length || !activeGame) return false
-    const next = redoRef.current.pop()
-    historyRef.current = [...historyRef.current, { ...activeGame }]
-    persistGame(next)
+    persistGame(restoredGame)
     setHistoryTick(t => t + 1)
 
     const liveSession = getActiveSession()
     if (liveSession && liveSession.code) {
-      pushGameToLiveSession(liveSession.code, next).catch(() => {})
+      pushGameToLiveSession(liveSession.code, restoredGame).catch(() => {})
     }
     return true
   }, [activeGame, persistGame])
@@ -271,7 +264,6 @@ export function GameProvider({ children }) {
   // Reprendre une partie
   const resumeGame = useCallback((id) => {
     historyRef.current = []
-    redoRef.current = []
     setHistoryTick(t => t + 1)
     setActiveGameId(id)
     setScreen('game')
@@ -309,8 +301,12 @@ export function GameProvider({ children }) {
     return updated
   }, [])
 
-  const canUndo = historyRef.current.length > 0
-  const canRedo = redoRef.current.length > 0
+  const canUndo = Boolean(
+    activeGame &&
+    activeGame.rounds?.length > 0 &&
+    !activeGame.isCorrection &&
+    historyRef.current.length > 0
+  )
 
   return (
     <GameContext.Provider value={{
@@ -319,7 +315,6 @@ export function GameProvider({ children }) {
       customPresets, savePreset, deletePreset,
       screen, setScreen,
       createGame, updateScores, undoLastRound, canUndo,
-      redoLastRound, canRedo,
       finishGame, rematch, exitGame, removeGame, resumeGame,
       reloadStorage,
       liveSessionNotice, setLiveSessionNotice,
