@@ -25,6 +25,7 @@ import {
   syncSessionGamesToLocal,
 } from '../store/liveSession'
 import { formatDate } from '../utils/gameUtils'
+import { getGameDisplayName } from '../constants/games'
 
 export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoinCode }) {
   const { games, reloadStorage } = useGame()
@@ -418,7 +419,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                       <div key={g.id || idx} className="p-2.5 flex items-center justify-between gap-2 text-xs">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
-                            <p className="font-bold text-stone-800 dark:text-slate-200 truncate">{g.name}</p>
+                            <p className="font-bold text-stone-800 dark:text-slate-200 truncate">{getGameDisplayName(g)}</p>
                             <span
                               className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${
                                 g.status === 'finished'

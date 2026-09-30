@@ -4,6 +4,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { X, QrCode, Share2, Copy, Check, Loader2, Sparkles } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { shareGame } from '../store/syncStorage'
+import { getGameDisplayName } from '../constants/games'
 
 export function ShareGameModal({ isOpen, onClose, game }) {
   const [gameCode, setGameCode] = useState('')
@@ -89,7 +90,7 @@ export function ShareGameModal({ isOpen, onClose, game }) {
                 Partager la partie
               </h2>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                {game.name} · {game.players?.length || 0} joueurs
+                {getGameDisplayName(game)} · {game.players?.length || 0} joueurs
               </p>
             </div>
           </div>

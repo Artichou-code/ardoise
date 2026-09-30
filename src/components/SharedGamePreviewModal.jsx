@@ -6,6 +6,7 @@ import { useScrollLock } from '../hooks/useScrollLock'
 import { applyNotebook } from '../store/syncStorage'
 import { Avatar } from './ui/Avatar'
 import { formatDate } from '../utils/gameUtils'
+import { getGameDisplayName } from '../constants/games'
 
 export function SharedGamePreviewModal({ isOpen, onClose, game, onImported }) {
   const [imported, setImported] = useState(false)
@@ -70,7 +71,7 @@ export function SharedGamePreviewModal({ isOpen, onClose, game, onImported }) {
                 Partie partagée
               </h2>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                {game.name} · {formatDate(game.endedAt || game.startedAt)}
+                {getGameDisplayName(game)} · {formatDate(game.endedAt || game.startedAt)}
               </p>
             </div>
           </div>

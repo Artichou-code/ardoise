@@ -218,19 +218,17 @@ export function QuickScoreBadge({
                   isDragging ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
                 }`}
               >
+                {/* Vague au clic : onde concentrique douce sans agrandissement de l'icône */}
                 <span className="absolute w-4 h-4 rounded-full bg-stone-500/15 dark:bg-slate-400/15 anim-tap-ripple" />
                 <svg
-                  className="w-4 h-4 text-stone-500 dark:text-slate-400 opacity-55 group-hover:opacity-100 group-hover:text-[#c83b3b] anim-finger-tap transition-all"
+                  className="w-4 h-4 text-stone-500 dark:text-slate-400 opacity-55 group-hover:opacity-100 group-hover:text-[#c83b3b] transition-colors"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777"
-                  />
+                  <circle cx="12" cy="12" r="2.2" fill="currentColor" />
+                  <circle cx="12" cy="12" r="5.8" strokeWidth="1.8" opacity="0.8" />
+                  <circle cx="12" cy="12" r="9.5" strokeWidth="1.4" opacity="0.5" strokeDasharray="3 2" />
                 </svg>
               </div>
               <ChevronDown size={15} className="opacity-45 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />

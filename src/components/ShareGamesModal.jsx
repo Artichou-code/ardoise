@@ -21,6 +21,7 @@ import { useGame } from '../context/GameContext'
 import { shareGamesBatch, fetchSharedGame, extractCodeFromInput } from '../store/syncStorage'
 import { Avatar } from './ui/Avatar'
 import { formatShortDate } from '../utils/gameUtils'
+import { getGameDisplayName } from '../constants/games'
 
 export function ShareGamesModal({
   isOpen,
@@ -410,7 +411,7 @@ export function ShareGamesModal({
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-1.5 min-w-0">
                               <span className="font-serif-title font-bold text-xs sm:text-[13px] text-stone-900 dark:text-slate-100 truncate">
-                                {g.name}
+                                {getGameDisplayName(g)}
                               </span>
                               <span className="text-[10px] font-medium text-stone-400 shrink-0 whitespace-nowrap">
                                 · {g.rounds?.length || 0} m.

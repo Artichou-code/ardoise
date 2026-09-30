@@ -634,3 +634,15 @@ export const AVATAR_COLOR_NAMES = {
   '#334e68': 'Ardoise',
   '#475569': 'Graphite',
 }
+
+/**
+ * Renvoie le titre affiché d'une partie en nettoyant les variantes historiques (ex: Président -> Trou du cul)
+ */
+export function getGameDisplayName(game) {
+  if (!game) return ''
+  if (game.type === GAMES.PRESIDENT || game.name?.includes('Trou du cul') || game.name?.includes('Président')) {
+    return 'Trou du cul'
+  }
+  return game.name
+}
+

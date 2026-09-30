@@ -14,7 +14,7 @@ import {
   QrCode,
 } from 'lucide-react'
 import { useGame } from '../context/GameContext'
-import { GAME_META } from '../constants/games'
+import { GAME_META, getGameDisplayName } from '../constants/games'
 import { Avatar } from './ui/Avatar'
 import { ConfirmDialog } from './ui/Dialog'
 import { GameDetailSheet } from './GameDetailSheet'
@@ -268,7 +268,7 @@ export function HistoryScreen() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <p className="font-serif-title font-bold text-base truncate">
-                            {game.name}
+                            {getGameDisplayName(game)}
                           </p>
                           <span
                             className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${

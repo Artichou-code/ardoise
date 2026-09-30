@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
 import { ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Radio, Share2, CheckCircle2, X } from 'lucide-react'
 import { useGame } from '../context/GameContext'
-import { GAME_META } from '../constants/games'
+import { GAME_META, getGameDisplayName } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { AppLogo } from './ui/AppLogo'
 import { BurgerMenuButton } from './BurgerMenu'
@@ -200,7 +200,7 @@ export function HomeScreen() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-serif-title font-bold text-base leading-tight">
-                        {game.name}
+                        {getGameDisplayName(game)}
                       </p>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300 whitespace-nowrap shrink-0">
                         Manche {game.rounds.length + 1}
@@ -425,7 +425,7 @@ export function HomeScreen() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <p className="font-serif-title font-bold text-sm truncate">
-                          {game.name}
+                          {getGameDisplayName(game)}
                         </p>
                         <span className="text-[10px] font-semibold text-stone-400 group-hover:text-[#c83b3b] transition-colors">
                           · {game.rounds.length} m.

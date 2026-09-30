@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { Play, RotateCcw, FileText, QrCode } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
 import { Avatar } from './ui/Avatar'
-import { GAME_META, GAMES } from '../constants/games'
+import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
 import { getRanking, formatDate, formatDuration } from '../utils/gameUtils'
 import { ShareGameModal } from './ShareGameModal'
 
@@ -72,7 +72,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
     <BottomSheet
       open={open}
       onClose={onClose}
-      title={game.name}
+      title={getGameDisplayName(game)}
       subtitle={subtitle}
     >
       <div className="px-3 sm:px-4 py-3 space-y-4 max-h-[75vh] overflow-y-auto scrollbar-hide">

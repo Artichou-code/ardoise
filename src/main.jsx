@@ -6,8 +6,8 @@ import { GameProvider } from './context/GameContext.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import { ErrorBoundary } from './components/ui/ErrorBoundary.jsx'
 
-// Ardoise v2.4.7 - Production build
-window.__ARDOISE_VERSION__ = '2.4.7'
+// Ardoise v2.4.8 - Production build
+window.__ARDOISE_VERSION__ = '2.4.8'
 // Gestion transparente des rechargements lors de nouveaux déploiements (chunks obsolètes)
 window.addEventListener('vite:preloadError', (event) => {
   event?.preventDefault?.()
