@@ -183,7 +183,7 @@ export const GAME_META = {
   },
   [GAMES.PRESIDENT]: {
     id: GAMES.PRESIDENT,
-    name: 'Trou du cul (Président)',
+    name: 'Trou du cul',
     playersBadge: '3–8 j.',
     categoryBadge: '54 cartes',
     description:

@@ -60,7 +60,7 @@ export function GameScreen() {
         </button>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="font-serif-title font-bold text-base truncate">
-            {activeGame.name}
+            {activeGame.type === GAMES.PRESIDENT || activeGame.name?.startsWith('Trou du cul') ? 'Trou du cul' : activeGame.name}
           </span>
           <span className="text-xs font-semibold text-[#c83b3b] shrink-0 whitespace-nowrap">
             M.{activeGame.rounds.length + 1}
