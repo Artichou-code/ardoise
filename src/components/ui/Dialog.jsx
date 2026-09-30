@@ -32,7 +32,7 @@ export function Dialog({ open, onClose, title, children, className = '' }) {
 /**
  * Confirm dialog – remplace window.confirm.
  */
-export function ConfirmDialog({ open, onClose, onConfirm, title, message, confirmLabel = 'Confirmer', danger = false }) {
+export function ConfirmDialog({ open, onClose, onConfirm, title, message, confirmLabel = 'Confirmer', cancelLabel = 'Annuler', danger = false }) {
   return (
     <Dialog open={open} onClose={onClose} title={title}>
       <p className="text-sm text-stone-600 dark:text-slate-400 mb-6 leading-relaxed">{message}</p>
@@ -42,7 +42,7 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, message, confir
           onClick={onClose}
           className="flex-1 py-2.5 rounded-xl border border-stone-200 dark:border-slate-700 text-sm font-medium text-stone-700 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
         >
-          Annuler
+          {cancelLabel}
         </button>
         <button
           type="button"

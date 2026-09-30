@@ -41,6 +41,8 @@ export function GameProvider({ children }) {
   const [screen, setScreen] = useState('home') // home | game | history | victory | stats | players
   const [liveSessionNotice, setLiveSessionNotice] = useState(null)
   const historyRef = useRef([]) // undo stack
+  const redoRef = useRef([]) // redo stack (rétablir)
+  const [, setHistoryTick] = useState(0)
   const lastSessionSignatureRef = useRef('')
 
   const activeGame = (Array.isArray(games) ? games : []).find(g => g && g.id === activeGameId) || null
@@ -141,6 +143,8 @@ export function GameProvider({ children }) {
       updatedAt: Date.now(),
     }
     historyRef.current = []
+    redoRef.current = []
+    setHistoryTick(t => t + 1)
     persistGame(game)
     setActiveGameId(game.id)
     setScreen('game')
@@ -153,11 +157,13 @@ export function GameProvider({ children }) {
     return game
   }, [persistGame])
 
-  // Mettre à jour les scores (avec undo)
+  // Mettre à jour les scores (avec undo et réinitialisation de redo)
   const updateScores = useCallback((roundData) => {
     if (!activeGame) return
     // Snapshot pour undo
     historyRef.current = [...historyRef.current, { ...activeGame }]
+    redoRef.current = [] // Réinitialiser le redo si une nouvelle manche est jouée
+    setHistoryTick(t => t + 1)
     const updated = {
       ...activeGame,
       scores: roundData.scores,
@@ -172,13 +178,35 @@ export function GameProvider({ children }) {
     }
   }, [activeGame, persistGame])
 
-  // Undo
+  // Undo (annuler la dernière manche)
   const undoLastRound = useCallback(() => {
-    if (!historyRef.current.length) return false
+    if (!historyRef.current.length || !activeGame) return false
     const prev = historyRef.current.pop()
+    redoRef.current = [...redoRef.current, { ...activeGame }]
     persistGame(prev)
+    setHistoryTick(t => t + 1)
+
+    const liveSession = getActiveSession()
+    if (liveSession && liveSession.code) {
+      pushGameToLiveSession(liveSession.code, prev).catch(() => {})
+    }
     return true
-  }, [persistGame])
+  }, [activeGame, persistGame])
+
+  // Redo (rétablir la manche annulée)
+  const redoLastRound = useCallback(() => {
+    if (!redoRef.current.length || !activeGame) return false
+    const next = redoRef.current.pop()
+    historyRef.current = [...historyRef.current, { ...activeGame }]
+    persistGame(next)
+    setHistoryTick(t => t + 1)
+
+    const liveSession = getActiveSession()
+    if (liveSession && liveSession.code) {
+      pushGameToLiveSession(liveSession.code, next).catch(() => {})
+    }
+    return true
+  }, [activeGame, persistGame])
 
   // Terminer la partie
   const finishGame = useCallback((winnerId) => {
@@ -212,6 +240,9 @@ export function GameProvider({ children }) {
 
   // Quitter la partie
   const exitGame = useCallback(() => {
+    historyRef.current = []
+    redoRef.current = []
+    setHistoryTick(t => t + 1)
     setActiveGameId(null)
     setScreen('home')
   }, [])
@@ -239,6 +270,9 @@ export function GameProvider({ children }) {
 
   // Reprendre une partie
   const resumeGame = useCallback((id) => {
+    historyRef.current = []
+    redoRef.current = []
+    setHistoryTick(t => t + 1)
     setActiveGameId(id)
     setScreen('game')
   }, [])
@@ -276,6 +310,7 @@ export function GameProvider({ children }) {
   }, [])
 
   const canUndo = historyRef.current.length > 0
+  const canRedo = redoRef.current.length > 0
 
   return (
     <GameContext.Provider value={{
@@ -284,6 +319,7 @@ export function GameProvider({ children }) {
       customPresets, savePreset, deletePreset,
       screen, setScreen,
       createGame, updateScores, undoLastRound, canUndo,
+      redoLastRound, canRedo,
       finishGame, rematch, exitGame, removeGame, resumeGame,
       reloadStorage,
       liveSessionNotice, setLiveSessionNotice,

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ArrowLeft, RotateCcw, ChevronDown, ChevronUp, Flag, BookOpen } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen, X } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { BurgerMenuButton } from './BurgerMenu'
 import { Avatar } from './ui/Avatar'
@@ -28,11 +28,19 @@ const ENGINE_MAP = {
 }
 
 export function GameScreen() {
-  const { activeGame, exitGame, undoLastRound, canUndo, finishGame } = useGame()
+  const { activeGame, exitGame, undoLastRound, canUndo, redoLastRound, canRedo, finishGame } = useGame()
   const [showHistory, setShowHistory] = useState(false)
   const [showExitConfirm, setShowExitConfirm] = useState(false)
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
+  const [showUndoConfirm, setShowUndoConfirm] = useState(false)
   const [showRules, setShowRules] = useState(false)
+  const [undoToast, setUndoToast] = useState(null)
+
+  useEffect(() => {
+    if (!undoToast) return
+    const timer = setTimeout(() => setUndoToast(null), 6000)
+    return () => clearTimeout(timer)
+  }, [undoToast])
 
   if (!activeGame) {
     return null
@@ -78,12 +86,26 @@ export function GameScreen() {
           {canUndo && (
             <button
               type="button"
-              onClick={undoLastRound}
+              onClick={() => setShowUndoConfirm(true)}
               className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
               title="Annuler la dernière manche"
               aria-label="Annuler la dernière manche"
             >
               <RotateCcw size={16} className="text-stone-600 dark:text-slate-400" />
+            </button>
+          )}
+          {canRedo && (
+            <button
+              type="button"
+              onClick={() => {
+                redoLastRound()
+                setUndoToast(null)
+              }}
+              className="p-2 rounded-xl border border-[#c83b3b]/30 bg-[#c83b3b]/10 hover:bg-[#c83b3b]/20 text-[#c83b3b] transition-colors"
+              title="Rétablir la manche annulée (annuler l'annulation)"
+              aria-label="Rétablir la manche annulée"
+            >
+              <RotateCw size={16} />
             </button>
           )}
           <BurgerMenuButton />
@@ -237,6 +259,52 @@ export function GameScreen() {
         title="Finir la partie plus tôt ?"
         message="Voulez-vous clore la partie maintenant avec les scores actuels et voir le palmarès final ?"
         confirmLabel="Clôturer la partie"
+      />
+
+      {/* Toast d'annulation avec action Rétablir */}
+      {undoToast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-3.5 py-2 rounded-2xl bg-stone-900/95 dark:bg-stone-100/95 text-white dark:text-stone-900 shadow-2xl backdrop-blur-md border border-stone-800 dark:border-stone-200 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <span className="text-xs font-semibold whitespace-nowrap">
+            Manche {undoToast.roundNumber} annulée
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              redoLastRound()
+              setUndoToast(null)
+            }}
+            className="px-2.5 py-1 rounded-lg bg-[#c83b3b] text-white text-xs font-bold hover:bg-[#b03030] active:scale-95 transition-all flex items-center gap-1 shadow-xs cursor-pointer"
+          >
+            <RotateCw size={12} />
+            Rétablir
+          </button>
+          <button
+            type="button"
+            onClick={() => setUndoToast(null)}
+            className="p-1 rounded-md text-stone-400 hover:text-white dark:hover:text-stone-900 transition-colors cursor-pointer"
+            aria-label="Fermer"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      )}
+
+      {/* Confirmation annulation de manche */}
+      <ConfirmDialog
+        open={showUndoConfirm}
+        onClose={() => setShowUndoConfirm(false)}
+        onConfirm={() => {
+          const roundNum = activeGame.rounds?.length || 1
+          const success = undoLastRound()
+          if (success) {
+            setUndoToast({ roundNumber: roundNum })
+          }
+        }}
+        title="Annuler la dernière manche ?"
+        message={`Voulez-vous annuler la manche M.${activeGame.rounds?.length || 1} ? Les scores reviendront à l'état précédent. Vous pourrez également la rétablir à tout moment.`}
+        confirmLabel="Annuler la manche"
+        cancelLabel="Conserver"
+        danger={true}
       />
     </div>
   )
