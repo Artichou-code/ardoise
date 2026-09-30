@@ -1,1 +1,2 @@
-# Cloudflare Pages gère nativement le routage SPA sans réécrire /assets/* en text/html
+# Empêcher Cloudflare Pages de réécrire les assets JS/CSS manquants en index.html (text/html)
+/assets/* 404
