@@ -18,6 +18,14 @@ export function BeloteEngine({ game, onFinish }) {
 
   const [openTakerSheet, setOpenTakerSheet] = useState(false)
   const [openAnnoncesSheet, setOpenAnnoncesSheet] = useState(false)
+  const [openContractSheet, setOpenContractSheet] = useState(false)
+
+  const handleContractChange = (val) => {
+    setContract(val)
+    if (val === 252 || val === 500) {
+      setPointsTaker(162)
+    }
+  }
 
   const nousPlayers = game.players.filter((_, i) => i % 2 === 0)
   const euxPlayers = game.players.filter((_, i) => i % 2 !== 0)
@@ -98,34 +106,64 @@ export function BeloteEngine({ game, onFinish }) {
       </div>
 
       {/* Contrat */}
-      <div className="school-card rounded-xl p-3.5 space-y-2">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-            Contrat annoncé
-          </p>
-          <span className="text-xs font-black text-[#c83b3b] bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 px-2 py-0.5 rounded-full">
-            {BELOTE_CONTRACTS.find(c => c.value === contract)?.label || `${contract} pts`}
-          </span>
+      <div className="school-card rounded-xl p-3.5 flex items-stretch gap-3">
+        {/* Colonne gauche : Titre, sous-titre et choix manuels */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => setOpenContractSheet(true)}
+            className="text-left cursor-pointer focus:outline-none"
+          >
+            <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 leading-tight">
+              Contrat annoncé
+            </p>
+            <p className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 mt-0.5">
+              {contract === 252
+                ? 'Capot (252 pts)'
+                : contract === 500
+                ? 'Générale (500 pts)'
+                : `${contract} pts ${contract === 80 ? '(minimum)' : ''}`}
+            </p>
+          </button>
+
+          {/* Grille de 8 raccourcis manuels (2x4) parfaitement équilibrée */}
+          <div className="grid grid-cols-4 gap-1.5 pt-0.5">
+            {[
+              { val: 80, label: '80' },
+              { val: 90, label: '90' },
+              { val: 100, label: '100' },
+              { val: 110, label: '110' },
+              { val: 120, label: '120' },
+              { val: 140, label: '140' },
+              { val: 160, label: '160' },
+              { val: 252, label: 'Capot' },
+            ].map(shortcut => (
+              <button
+                key={shortcut.val}
+                type="button"
+                onClick={() => handleContractChange(shortcut.val)}
+                className={`py-1.5 px-1 rounded-lg text-xs font-bold border text-center transition-colors cursor-pointer ${
+                  contract === shortcut.val
+                    ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
+                }`}
+              >
+                {shortcut.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {BELOTE_CONTRACTS.map(c => (
-            <button
-              key={c.value}
-              type="button"
-              onClick={() => {
-                setContract(c.value)
-                if (c.value === 252 || c.value === 500) setPointsTaker(162)
-              }}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
-                contract === c.value
-                  ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
-                  : 'school-subtle hover:border-[#c83b3b]/40'
-              }`}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
+
+        {/* Colonne droite : Zone tactile sur toute la hauteur */}
+        <QuickScoreBadge
+          value={contract}
+          values={[80, 90, 100, 110, 120, 130, 140, 150, 160, 252, 500]}
+          onChange={handleContractChange}
+          onOpenPad={() => setOpenContractSheet(true)}
+          formatDisplay={val => (val === 252 ? 'Capot' : val === 500 ? '500' : val)}
+          showPlus={false}
+          tall={true}
+        />
       </div>
 
       {/* Points réalisés par le preneur */}
@@ -354,6 +392,46 @@ export function BeloteEngine({ game, onFinish }) {
               { label: '0', delta: -announcements, colorClass: 'bg-white dark:bg-slate-900 border-2 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400' },
             ]}
           />
+        </div>
+      </BottomSheet>
+
+      {/* BottomSheet tactile pour le contrat complet */}
+      <BottomSheet
+        open={openContractSheet}
+        onClose={() => setOpenContractSheet(false)}
+        title="Contrat annoncé"
+      >
+        <div className="px-5 pt-2 pb-6 space-y-3">
+          <p className="text-xs text-stone-500 dark:text-slate-400 font-medium">
+            Sélectionnez l&apos;enchère annoncée pour cette donne :
+          </p>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            {BELOTE_CONTRACTS.map(c => {
+              const isSelected = contract === c.value
+              return (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => {
+                    handleContractChange(c.value)
+                    setOpenContractSheet(false)
+                  }}
+                  className={`py-2.5 px-2 rounded-xl border text-center font-bold transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-xs'
+                      : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-200'
+                  }`}
+                >
+                  <div className="text-base font-black leading-tight">
+                    {c.value === 252 ? 'Capot' : c.value === 500 ? 'Générale' : c.value}
+                  </div>
+                  <div className={`text-[10px] mt-0.5 ${isSelected ? 'text-white/80' : 'text-stone-400 dark:text-slate-400'}`}>
+                    {c.value === 252 ? '252 pts' : c.value === 500 ? '500 pts' : `${c.value} pts`}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
         </div>
       </BottomSheet>
     </div>

@@ -20,6 +20,8 @@ export function QuickScoreBadge({
   showPlus = true,
   tall = false,
   formatBubble,
+  formatDisplay,
+  values,
   className = '',
 }) {
   const [isDragging, setIsDragging] = useState(false)
@@ -37,6 +39,10 @@ export function QuickScoreBadge({
   }, [value])
 
   const clampValue = (val) => {
+    if (values && values.length > 0) {
+      if (values.includes(val)) return val
+      return values.reduce((prev, curr) => Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev)
+    }
     let res = val
     if (min !== undefined && res < min) res = min
     if (max !== undefined && res > max) res = max
@@ -70,9 +76,18 @@ export function QuickScoreBadge({
       hasMovedRef.current = true
     }
 
-    // Sensibilité : ~14px par pas de score (identique à ScorePad)
-    const stepsCount = Math.round(totalDeltaY / 14) * step
-    const nextVal = clampValue(dragStartValueRef.current + stepsCount)
+    let nextVal
+    if (values && values.length > 0) {
+      const startIndex = values.indexOf(dragStartValueRef.current)
+      const safeIndex = startIndex !== -1 ? startIndex : 0
+      const indexSteps = Math.round(totalDeltaY / 22)
+      const targetIndex = Math.max(0, Math.min(values.length - 1, safeIndex + indexSteps))
+      nextVal = values[targetIndex]
+    } else {
+      // Sensibilité : ~14px par pas de score (identique à ScorePad)
+      const stepsCount = Math.round(totalDeltaY / 14) * step
+      nextVal = clampValue(dragStartValueRef.current + stepsCount)
+    }
 
     if (nextVal !== currentValueRef.current) {
       currentValueRef.current = nextVal
@@ -121,8 +136,17 @@ export function QuickScoreBadge({
     const handleNativeWheel = (e) => {
       e.stopPropagation()
       e.preventDefault()
-      const delta = e.deltaY < 0 ? step : -step
-      const nextVal = clampValue(currentValueRef.current + delta)
+      let nextVal
+      if (values && values.length > 0) {
+        const curIdx = values.indexOf(currentValueRef.current)
+        const safeIdx = curIdx !== -1 ? curIdx : 0
+        const delta = e.deltaY < 0 ? 1 : -1
+        const targetIdx = Math.max(0, Math.min(values.length - 1, safeIdx + delta))
+        nextVal = values[targetIdx]
+      } else {
+        const delta = e.deltaY < 0 ? step : -step
+        nextVal = clampValue(currentValueRef.current + delta)
+      }
       if (nextVal !== currentValueRef.current) {
         currentValueRef.current = nextVal
         onChange?.(nextVal)
@@ -133,11 +157,12 @@ export function QuickScoreBadge({
     }
     el.addEventListener('wheel', handleNativeWheel, { passive: false })
     return () => el.removeEventListener('wheel', handleNativeWheel)
-  }, [step, onChange, min, max])
+  }, [step, onChange, min, max, values])
 
   const cur = isDragging ? currentValueRef.current : value
   const displaySign = showPlus && cur > 0 ? '+' : ''
   const isNonZero = cur !== 0
+  const displayedValue = formatDisplay ? formatDisplay(cur) : `${displaySign}${cur}`
 
   return (
     <div className={`relative inline-flex items-center select-none flex-shrink-0 ${tall ? 'self-stretch' : ''}`}>
@@ -147,7 +172,7 @@ export function QuickScoreBadge({
         ref={badgeRef}
         role="button"
         tabIndex={0}
-        aria-label={`Score : ${displaySign}${cur}. Glisser vers le haut ou le bas pour ajuster.`}
+        aria-label={`Score : ${displayedValue}. Glisser vers le haut ou le bas pour ajuster.`}
         title="Glisser vers le haut ou le bas pour ajuster rapidement, ou cliquer pour ouvrir le pavé"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -169,15 +194,15 @@ export function QuickScoreBadge({
         {tall ? (
           <>
             <ChevronUp size={15} className="opacity-40 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />
-            <span className="text-2xl sm:text-3xl font-black tabular-nums leading-none tracking-tight text-center my-auto">
-              {displaySign}{cur}
+            <span className="text-xl sm:text-2xl font-black tabular-nums leading-none tracking-tight text-center my-auto px-1 truncate max-w-full">
+              {displayedValue}
             </span>
             <ChevronDown size={15} className="opacity-40 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />
           </>
         ) : (
           <>
-            <span className="text-base sm:text-lg font-black tabular-nums leading-none tracking-tight flex-1 text-center">
-              {displaySign}{cur}
+            <span className="text-base sm:text-lg font-black tabular-nums leading-none tracking-tight flex-1 text-center truncate">
+              {displayedValue}
             </span>
             <div className="flex flex-col items-center justify-center -mr-0.5 opacity-40 group-hover:opacity-100 transition-opacity">
               <ArrowUpDown size={11} strokeWidth={2.5} />
