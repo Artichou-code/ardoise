@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ArrowLeft, Plus, Pencil, Trash2, Users, Award } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trash2, Users, Award, Search, X } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { Avatar, AvatarPicker } from './ui/Avatar'
 import { BottomSheet } from './ui/BottomSheet'
@@ -85,6 +85,14 @@ export function PlayersScreen() {
   const [editPlayer, setEditPlayer] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [detailPlayer, setDetailPlayer] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Réinitialiser la recherche si le nombre de joueurs repasse <= 8
+  useEffect(() => {
+    if (players.length <= 8 && searchQuery) {
+      setSearchQuery('')
+    }
+  }, [players.length, searchQuery])
 
   // Statistiques calculées pour afficher badges et fiches
   const playerStatsMap = useMemo(() => {
@@ -100,6 +108,23 @@ export function PlayersScreen() {
       (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })
     )
   }, [players])
+
+  // Filtrage par recherche (insensible casse et accents)
+  const filteredPlayers = useMemo(() => {
+    if (!searchQuery.trim() || players.length <= 8) return sortedPlayers
+    const query = searchQuery
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+    return sortedPlayers.filter(p => {
+      const name = (p.name || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+      return name.includes(query)
+    })
+  }, [sortedPlayers, searchQuery, players.length])
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
@@ -126,7 +151,43 @@ export function PlayersScreen() {
       </header>
 
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">
-        {sortedPlayers.length === 0 ? (
+        {/* Barre de recherche uniquement si plus de 8 joueurs enregistrés */}
+        {players.length > 8 && (
+          <div className="mb-3">
+            <div className="relative flex items-center">
+              <Search
+                size={16}
+                className="absolute left-3.5 text-stone-400 dark:text-slate-500 pointer-events-none"
+              />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Rechercher un joueur..."
+                className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-medium text-stone-900 dark:text-slate-100 placeholder-stone-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#c83b3b] focus:ring-1 focus:ring-[#c83b3b]/30 shadow-2xs transition-all"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 p-1 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  aria-label="Effacer la recherche"
+                >
+                  <X size={15} />
+                </button>
+              )}
+            </div>
+            {searchQuery.trim() && (
+              <div className="flex items-center justify-between px-1 mt-1.5 text-[11px] font-semibold text-stone-500 dark:text-slate-400">
+                <span>
+                  {filteredPlayers.length} résultat{filteredPlayers.length > 1 ? 's' : ''}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {players.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
             <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
               <Users size={22} className="text-stone-400 dark:text-slate-500" />
@@ -145,9 +206,28 @@ export function PlayersScreen() {
               Ajouter un premier joueur
             </button>
           </div>
+        ) : filteredPlayers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+            <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
+              <Search size={22} className="text-stone-400 dark:text-slate-500" />
+            </div>
+            <p className="font-serif-title font-bold text-base mb-1">
+              Aucun résultat
+            </p>
+            <p className="text-stone-500 dark:text-slate-400 text-xs mb-4">
+              Aucun joueur ne correspond à « {searchQuery.trim()} »
+            </p>
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-stone-700 dark:text-slate-300 border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              Effacer la recherche
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            {sortedPlayers.map(p => {
+            {filteredPlayers.map(p => {
               const pStat = playerStatsMap.get(normalizePlayerName(p.name))
               const fullPlayerData = pStat || {
                 ...p,
