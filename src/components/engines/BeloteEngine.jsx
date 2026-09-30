@@ -160,7 +160,8 @@ export function BeloteEngine({ game, onFinish }) {
           values={[80, 90, 100, 110, 120, 130, 140, 150, 160, 252, 500]}
           onChange={handleContractChange}
           onOpenPad={() => setOpenContractSheet(true)}
-          formatDisplay={val => (val === 252 ? 'Capot' : val === 500 ? '500' : val)}
+          formatDisplay={val => val}
+          formatSub={val => (val === 252 ? 'Capot' : val === 500 ? 'Générale' : null)}
           showPlus={false}
           tall={true}
         />
@@ -219,6 +220,7 @@ export function BeloteEngine({ game, onFinish }) {
           step={1}
           showPlus={false}
           tall={true}
+          formatSub={val => (val === 162 ? 'Capot' : null)}
         />
       </div>
 

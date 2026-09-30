@@ -21,6 +21,7 @@ export function QuickScoreBadge({
   tall = false,
   formatBubble,
   formatDisplay,
+  formatSub,
   values,
   className = '',
 }) {
@@ -163,6 +164,7 @@ export function QuickScoreBadge({
   const displaySign = showPlus && cur > 0 ? '+' : ''
   const isNonZero = cur !== 0
   const displayedValue = formatDisplay ? formatDisplay(cur) : `${displaySign}${cur}`
+  const subText = formatSub ? formatSub(cur) : null
 
   return (
     <div className={`relative inline-flex items-center select-none flex-shrink-0 ${tall ? 'self-stretch' : ''}`}>
@@ -172,7 +174,7 @@ export function QuickScoreBadge({
         ref={badgeRef}
         role="button"
         tabIndex={0}
-        aria-label={`Score : ${displayedValue}. Glisser vers le haut ou le bas pour ajuster.`}
+        aria-label={`Score : ${displayedValue}${subText ? ` (${subText})` : ''}. Glisser vers le haut ou le bas pour ajuster.`}
         title="Glisser vers le haut ou le bas pour ajuster rapidement, ou cliquer pour ouvrir le pavé"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -181,7 +183,7 @@ export function QuickScoreBadge({
         style={{ touchAction: 'none' }}
         className={`group relative border transition-all cursor-ns-resize select-none ${
           tall
-            ? 'flex flex-col items-center justify-between min-w-[4.8rem] w-20 sm:w-24 h-full self-stretch py-2 px-2 rounded-2xl'
+            ? 'flex flex-col items-center justify-between min-w-[4.8rem] w-20 sm:w-24 h-full self-stretch py-2 px-1.5 rounded-2xl'
             : 'flex items-center justify-between gap-1.5 min-w-[4.2rem] h-10 px-2.5 py-1 rounded-xl'
         } ${
           isDragging
@@ -193,17 +195,31 @@ export function QuickScoreBadge({
       >
         {tall ? (
           <>
-            <ChevronUp size={15} className="opacity-40 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />
-            <span className="text-xl sm:text-2xl font-black tabular-nums leading-none tracking-tight text-center my-auto px-1 truncate max-w-full">
-              {displayedValue}
-            </span>
-            <ChevronDown size={15} className="opacity-40 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />
+            <ChevronUp size={14} className="opacity-40 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />
+            <div className="flex flex-col items-center justify-center my-auto min-w-0 max-w-full px-1">
+              <span className="text-xl sm:text-2xl font-black tabular-nums leading-none tracking-tight text-center">
+                {displayedValue}
+              </span>
+              {subText && (
+                <span className="text-[10px] font-extrabold uppercase tracking-tight text-center mt-1 leading-none opacity-90 truncate max-w-full">
+                  {subText}
+                </span>
+              )}
+            </div>
+            <ChevronDown size={14} className="opacity-40 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />
           </>
         ) : (
           <>
-            <span className="text-base sm:text-lg font-black tabular-nums leading-none tracking-tight flex-1 text-center truncate">
-              {displayedValue}
-            </span>
+            <div className="flex items-baseline justify-center gap-1 flex-1 text-center truncate">
+              <span className="text-base sm:text-lg font-black tabular-nums leading-none tracking-tight">
+                {displayedValue}
+              </span>
+              {subText && (
+                <span className="text-[9px] font-bold uppercase tracking-tight opacity-80">
+                  {subText}
+                </span>
+              )}
+            </div>
             <div className="flex flex-col items-center justify-center -mr-0.5 opacity-40 group-hover:opacity-100 transition-opacity">
               <ArrowUpDown size={11} strokeWidth={2.5} />
             </div>
