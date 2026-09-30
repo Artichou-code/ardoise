@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, RotateCcw, ChevronDown, ChevronUp, Flag, BookOpen } from 'lucide-react'
+import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { BurgerMenuButton } from './BurgerMenu'
 import { Avatar } from './ui/Avatar'
@@ -28,7 +28,7 @@ const ENGINE_MAP = {
 }
 
 export function GameScreen() {
-  const { activeGame, exitGame, undoLastRound, canUndo, finishGame } = useGame()
+  const { activeGame, exitGame, undoLastRound, cancelCorrection, canUndo, finishGame } = useGame()
   const [showHistory, setShowHistory] = useState(false)
   const [showExitConfirm, setShowExitConfirm] = useState(false)
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
@@ -62,13 +62,8 @@ export function GameScreen() {
           <span className="font-serif-title font-bold text-base truncate">
             {activeGame.name}
           </span>
-          <span className="text-xs font-semibold text-[#c83b3b] shrink-0 whitespace-nowrap flex items-center gap-1">
-            <span>M.{activeGame.rounds.length + 1}</span>
-            {activeGame.isCorrection && (
-              <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-[#c83b3b]/10 text-[#c83b3b]">
-                Correction
-              </span>
-            )}
+          <span className="text-xs font-semibold text-[#c83b3b] shrink-0 whitespace-nowrap">
+            M.{activeGame.rounds.length + 1}
           </span>
           <button
             type="button"
@@ -81,7 +76,17 @@ export function GameScreen() {
           </button>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          {canUndo && (
+          {activeGame.isCorrection ? (
+            <button
+              type="button"
+              onClick={cancelCorrection}
+              className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Annuler la modification (conserver la manche)"
+              aria-label="Annuler la modification"
+            >
+              <RotateCw size={16} className="text-stone-600 dark:text-slate-400 hover:text-[#c83b3b]" />
+            </button>
+          ) : canUndo ? (
             <button
               type="button"
               onClick={() => setShowUndoConfirm(true)}
@@ -91,7 +96,7 @@ export function GameScreen() {
             >
               <RotateCcw size={16} className="text-stone-600 dark:text-slate-400" />
             </button>
-          )}
+          ) : null}
           <BurgerMenuButton />
         </div>
       </header>

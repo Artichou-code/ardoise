@@ -129,32 +129,8 @@ export function QuickScoreBadge({
   const displaySign = showPlus && cur > 0 ? '+' : ''
   const isNonZero = cur !== 0
 
-  let bubbleInfo = null
-  if (formatBubble) {
-    const res = formatBubble(cur)
-    if (res) {
-      if (typeof res === 'string') {
-        bubbleInfo = { text: res, variant: 'default' }
-      } else if (typeof res === 'object' && res.text) {
-        bubbleInfo = res
-      }
-    }
-  }
-
   return (
     <div className="relative inline-flex items-center select-none flex-shrink-0">
-      {/* Pastille d'information minimaliste (score total) à gauche du badge pendant le glissement */}
-      {isDragging && bubbleInfo && (
-        <div
-          className={`absolute right-full mr-2 top-1/2 -translate-y-1/2 z-40 w-max whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-bold shadow-xs pointer-events-none select-none animate-in fade-in zoom-in-95 duration-100 ${
-            bubbleInfo.variant === 'sursis'
-              ? 'bg-amber-600 text-white'
-              : 'bg-[#c83b3b] text-white'
-          }`}
-        >
-          <span>{bubbleInfo.text}</span>
-        </div>
-      )}
 
       {/* Zone interactive compacte */}
       <div

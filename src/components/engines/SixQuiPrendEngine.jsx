@@ -105,7 +105,7 @@ export function SixQuiPrendEngine({ game, onFinish }) {
         onClick={submitRound}
         className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red"
       >
-        {game.isCorrection ? 'Valider la correction' : 'Valider la manche'}
+        Valider la manche
       </button>
 
       {editingPlayer && (

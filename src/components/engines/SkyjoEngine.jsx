@@ -159,7 +159,7 @@ export function SkyjoEngine({ game, onFinish }) {
         disabled={!canSubmit}
         className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40"
       >
-        {game.isCorrection ? 'Valider la correction' : 'Valider la manche'}
+        Valider la manche
       </button>
 
       {editingPlayer && (
