@@ -6,9 +6,34 @@ import { GameProvider } from './context/GameContext.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import { ErrorBoundary } from './components/ui/ErrorBoundary.jsx'
 
-window.addEventListener('vite:preloadError', () => {
-  window.location.reload()
+// Gestion transparente des rechargements lors de nouveaux déploiements (chunks obsolètes)
+window.addEventListener('vite:preloadError', (event) => {
+  event?.preventDefault?.()
+  const hasReloaded = sessionStorage.getItem('chunk_reload_lock')
+  if (!hasReloaded) {
+    sessionStorage.setItem('chunk_reload_lock', 'true')
+    window.location.reload()
+  }
 })
+
+window.addEventListener('error', (event) => {
+  const msg = event?.message || ''
+  if (
+    msg.includes('Failed to load module script') ||
+    msg.includes('dynamically imported module') ||
+    msg.includes('error loading dynamically imported module')
+  ) {
+    const hasReloaded = sessionStorage.getItem('chunk_reload_lock')
+    if (!hasReloaded) {
+      sessionStorage.setItem('chunk_reload_lock', 'true')
+      window.location.reload()
+    }
+  }
+})
+
+setTimeout(() => {
+  sessionStorage.removeItem('chunk_reload_lock')
+}, 3000)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

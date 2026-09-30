@@ -12,10 +12,10 @@ import { formatTypography } from '../utils/typography'
 import { getActiveSession } from '../store/liveSession'
 import { RulesSheet } from './RulesSheet'
 import { GameDetailSheet } from './GameDetailSheet'
+import { GameSetupSheet } from './GameSetupSheet'
 import { ShareGamesModal } from './ShareGamesModal'
 import { SyncModal } from './SyncModal'
 
-const GameSetupSheet = lazy(() => import('./GameSetupSheet').then((m) => ({ default: m.GameSetupSheet })))
 const LegalModal = lazy(() => import('./LegalModal').then((m) => ({ default: m.LegalModal })))
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
 const ArtCreaUniverseModal = lazy(() => import('./ArtCreaUniverseModal').then((m) => ({ default: m.ArtCreaUniverseModal })))
@@ -59,24 +59,8 @@ export function HomeScreen() {
       }
     }
 
-    // Préchauffage en tâche de fond de la modale de préparation de partie
-    const prefetchSetup = () => {
-      import('./GameSetupSheet').catch(() => {})
-    }
-    let idleHandle = null
-    let timerHandle = null
-    if (typeof window !== 'undefined') {
-      if ('requestIdleCallback' in window) {
-        idleHandle = window.requestIdleCallback(prefetchSetup)
-      } else {
-        timerHandle = setTimeout(prefetchSetup, 1200)
-      }
-    }
-
     return () => {
       window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
-      if (idleHandle && 'cancelIdleCallback' in window) window.cancelIdleCallback(idleHandle)
-      if (timerHandle) clearTimeout(timerHandle)
     }
   }, [])
 
