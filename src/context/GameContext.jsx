@@ -45,6 +45,8 @@ export function GameProvider({ children }) {
   const lastSessionSignatureRef = useRef('')
 
   const activeGame = (Array.isArray(games) ? games : []).find(g => g && g.id === activeGameId) || null
+  const activeGameRef = useRef(activeGame)
+  activeGameRef.current = activeGame
 
   // Sync players to storage
   useEffect(() => { savePlayers(players) }, [players])
@@ -112,6 +114,7 @@ export function GameProvider({ children }) {
   // Save game helper
   const persistGame = useCallback((game) => {
     if (!game || !game.id) return
+    activeGameRef.current = game
     saveGame(game)
     setGames(prev => {
       const currentList = Array.isArray(prev) ? prev : []
@@ -157,10 +160,11 @@ export function GameProvider({ children }) {
 
   // Mettre à jour les scores
   const updateScores = useCallback((roundData) => {
-    if (!activeGame) return
+    const current = activeGameRef.current || activeGame
+    if (!current) return
     // Snapshot pour correction éventuelle de la manche
     historyRef.current = [...historyRef.current, {
-      ...activeGame,
+      ...current,
       restoredDelta: null,
       restoredRound: null,
       correctionBackup: null,
@@ -168,9 +172,9 @@ export function GameProvider({ children }) {
     }]
     setHistoryTick(t => t + 1)
     const updated = {
-      ...activeGame,
+      ...current,
       scores: roundData.scores,
-      rounds: [...activeGame.rounds, roundData],
+      rounds: [...current.rounds, roundData],
       restoredDelta: null,
       restoredRound: null,
       correctionBackup: null,
@@ -183,29 +187,31 @@ export function GameProvider({ children }) {
     if (liveSession && liveSession.code) {
       pushGameToLiveSession(liveSession.code, updated).catch(() => {})
     }
+    return updated
   }, [activeGame, persistGame])
 
   // Revenir sur la dernière manche pour modification (correction avec pré-remplissage)
   const undoLastRound = useCallback(() => {
-    if (!activeGame || (!historyRef.current.length && (!activeGame.rounds || activeGame.rounds.length === 0))) {
+    const current = activeGameRef.current || activeGame
+    if (!current || (!historyRef.current.length && (!current.rounds || current.rounds.length === 0))) {
       return false
     }
 
     let prev = historyRef.current.length > 0 ? historyRef.current.pop() : null
-    const lastRound = activeGame.rounds[activeGame.rounds.length - 1]
+    const lastRound = current.rounds[current.rounds.length - 1]
     const delta = lastRound?.delta || lastRound?.penalties || lastRound?.scores || null
 
     if (!prev) {
       // Reconstituer l'état précédent si l'historique en mémoire est vide (ex: après un rafraîchissement)
-      const prevRounds = activeGame.rounds.slice(0, -1)
+      const prevRounds = current.rounds.slice(0, -1)
       let prevScores = {}
       if (prevRounds.length > 0) {
         prevScores = { ...prevRounds[prevRounds.length - 1].scores }
       } else {
-        prevScores = Object.fromEntries(activeGame.players.map(p => [p.id, 0]))
+        prevScores = Object.fromEntries(current.players.map(p => [p.id, 0]))
       }
       prev = {
-        ...activeGame,
+        ...current,
         rounds: prevRounds,
         scores: prevScores,
         isCorrection: false,
@@ -218,9 +224,9 @@ export function GameProvider({ children }) {
       restoredRound: lastRound || null,
       restoredDelta: delta,
       correctionBackup: {
-        scores: { ...activeGame.scores },
-        rounds: [...activeGame.rounds],
-        status: activeGame.status || 'playing',
+        scores: { ...current.scores },
+        rounds: [...current.rounds],
+        status: current.status || 'playing',
       },
       isCorrection: true,
       updatedAt: Date.now(),
@@ -237,13 +243,14 @@ export function GameProvider({ children }) {
 
   // Annuler la modification en cours et rétablir la manche telle qu'elle était
   const cancelCorrection = useCallback(() => {
-    if (!activeGame || !activeGame.isCorrection) return false
+    const current = activeGameRef.current || activeGame
+    if (!current || !current.isCorrection) return false
 
     // Remettre un snapshot dans historyRef pour pouvoir modifier à nouveau si désiré
     const historySnapshot = {
-      ...activeGame,
-      scores: activeGame.scores,
-      rounds: activeGame.rounds,
+      ...current,
+      scores: current.scores,
+      rounds: current.rounds,
       isCorrection: false,
       restoredRound: null,
       restoredDelta: null,
@@ -251,20 +258,20 @@ export function GameProvider({ children }) {
     }
     historyRef.current = [...historyRef.current, historySnapshot]
 
-    let restoredScores = activeGame.correctionBackup?.scores
-    let restoredRounds = activeGame.correctionBackup?.rounds
+    let restoredScores = current.correctionBackup?.scores
+    let restoredRounds = current.correctionBackup?.rounds
 
     // Fallback si correctionBackup n'était pas stocké
-    if (!restoredRounds && activeGame.restoredRound) {
-      restoredRounds = [...activeGame.rounds, activeGame.restoredRound]
-      restoredScores = activeGame.restoredRound.scores || activeGame.scores
+    if (!restoredRounds && current.restoredRound) {
+      restoredRounds = [...current.rounds, current.restoredRound]
+      restoredScores = current.restoredRound.scores || current.scores
     }
 
     const restoredGame = {
-      ...activeGame,
-      scores: restoredScores || activeGame.scores,
-      rounds: restoredRounds || activeGame.rounds,
-      status: activeGame.correctionBackup?.status || activeGame.status || 'playing',
+      ...current,
+      scores: restoredScores || current.scores,
+      rounds: restoredRounds || current.rounds,
+      status: current.correctionBackup?.status || current.status || 'playing',
       isCorrection: false,
       restoredRound: null,
       restoredDelta: null,
@@ -287,9 +294,10 @@ export function GameProvider({ children }) {
 
   // Terminer la partie
   const finishGame = useCallback((winnerId) => {
-    if (!activeGame) return
+    const current = activeGameRef.current || activeGame
+    if (!current) return
     const updated = {
-      ...activeGame,
+      ...current,
       status: 'finished',
       winner: winnerId,
       finishedAt: Date.now(),
@@ -311,8 +319,9 @@ export function GameProvider({ children }) {
 
   // Revanche
   const rematch = useCallback(() => {
-    if (!activeGame) return
-    createGame(activeGame.type, activeGame.players, activeGame.config)
+    const current = activeGameRef.current || activeGame
+    if (!current) return
+    createGame(current.type, current.players, current.config)
   }, [activeGame, createGame])
 
   // Quitter la partie
@@ -322,6 +331,7 @@ export function GameProvider({ children }) {
     setActiveGameId(null)
     setScreen('home')
   }, [])
+
 
   // Supprimer une partie de l'historique
   const removeGame = useCallback((id) => {
