@@ -5,17 +5,18 @@ import { formatTypography } from '../utils/typography'
 /**
  * Fiche mémo des règles officielles (Bottom Sheet tactile avec scroll lock).
  */
-export function RulesSheet({ gameType, onClose, onStartSetup }) {
+export function RulesSheet({ gameType, variant, title, onClose, onStartSetup }) {
   const meta = gameType ? GAME_META[gameType] : null
   if (!meta || !meta.rules) return null
 
   const { rules } = meta
+  const sheetTitle = title || (gameType === 'belote' && variant === 'coinche' ? 'Règles — Coinche' : `Règles — ${meta.name}`)
 
   return (
     <BottomSheet
       open={!!gameType}
       onClose={onClose}
-      title={formatTypography(`Règles — ${meta.name}`)}
+      title={formatTypography(sheetTitle)}
       subtitle={formatTypography(`${meta.playersBadge} · ${meta.categoryBadge}`)}
     >
       <div className="px-5 py-4 space-y-5">

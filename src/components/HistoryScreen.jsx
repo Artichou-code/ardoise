@@ -247,14 +247,20 @@ export function HistoryScreen() {
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => e.key === 'Enter' && handleCardClick(game)}
-                  className={`school-card rounded-xl overflow-hidden cursor-pointer transition-all active:scale-[0.99] shadow-2xs group ${
+                  className={`rounded-xl overflow-hidden cursor-pointer transition-all active:scale-[0.99] shadow-2xs group ${
                     isSelected
-                      ? 'border-2 border-[#c83b3b] ring-2 ring-[#c83b3b]/15'
-                      : 'hover:border-[#c83b3b]/60'
+                      ? 'border-2 border-[#c83b3b] ring-2 ring-[#c83b3b]/15 bg-white dark:bg-slate-900'
+                      : game.status === 'active'
+                      ? 'bg-[#c83b3b]/[0.04] dark:bg-[#c83b3b]/[0.08] border border-[#c83b3b]/35 dark:border-[#c83b3b]/45 hover:border-[#c83b3b]'
+                      : 'school-card hover:border-[#c83b3b]/60'
                   }`}
                 >
                   {/* Header */}
-                  <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-stone-100 dark:border-slate-800">
+                  <div className={`flex items-center justify-between gap-3 px-4 py-3 border-b ${
+                    game.status === 'active'
+                      ? 'border-[#c83b3b]/15 dark:border-[#c83b3b]/25'
+                      : 'border-stone-100 dark:border-slate-800'
+                  }`}>
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       {isSelectionMode && (
                         <div className="text-[#c83b3b] shrink-0">
@@ -312,21 +318,25 @@ export function HistoryScreen() {
                                 : 'bg-stone-50/60 dark:bg-slate-800/40 border-stone-200/60 dark:border-slate-800 text-stone-700 dark:text-slate-300'
                             }`}
                           >
-                            <span
-                              className={`text-[10px] font-extrabold tabular-nums shrink-0 ${
-                                isWinner
-                                  ? 'text-emerald-700 dark:text-emerald-400'
-                                  : 'text-stone-400 dark:text-slate-500'
-                              }`}
-                            >
-                              {rank === 1 ? '1er' : `${rank}e`}
-                            </span>
-                            <Avatar
-                              player={player}
-                              size="xs"
-                              leader={isWinner}
-                              leaderColor="#10b981"
-                            />
+                            <div className="relative shrink-0">
+                              <Avatar
+                                player={player}
+                                size="xs"
+                                leader={isWinner}
+                                leaderColor="#10b981"
+                              />
+                              <span
+                                className={`absolute -top-1.5 -left-1 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 ${
+                                  isWinner
+                                    ? 'bg-emerald-600 text-white'
+                                    : rank === 1
+                                    ? 'bg-[#c83b3b] text-white'
+                                    : 'bg-stone-500/90 dark:bg-slate-600 text-white'
+                                }`}
+                              >
+                                {rank === 1 ? '1er' : `${rank}e`}
+                              </span>
+                            </div>
                             <span className="flex-1 truncate font-semibold text-xs min-w-0">
                               {player.name}
                             </span>
@@ -345,7 +355,11 @@ export function HistoryScreen() {
 
                   {/* Actions (masquées pendant la sélection multiple pour éviter les faux clics) */}
                   {!isSelectionMode && (
-                    <div className="flex border-t border-stone-100 dark:border-slate-800">
+                    <div className={`flex border-t ${
+                      game.status === 'active'
+                        ? 'border-[#c83b3b]/15 dark:border-[#c83b3b]/25 bg-black/[0.015] dark:bg-white/[0.015]'
+                        : 'border-stone-100 dark:border-slate-800'
+                    }`}>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -362,7 +376,11 @@ export function HistoryScreen() {
                           e.stopPropagation()
                           setDetailGame(game)
                         }}
-                        className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-bold border-l border-stone-100 dark:border-slate-800 text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] hover:bg-stone-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                        className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-bold border-l text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] hover:bg-stone-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer ${
+                          game.status === 'active'
+                            ? 'border-[#c83b3b]/15 dark:border-[#c83b3b]/25'
+                            : 'border-stone-100 dark:border-slate-800'
+                        }`}
                       >
                         <FileText size={13} className="text-[#c83b3b]" /> Déroulement
                       </button>
@@ -373,7 +391,11 @@ export function HistoryScreen() {
                             e.stopPropagation()
                             resumeGame(game.id)
                           }}
-                          className="flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-bold border-l border-stone-100 dark:border-slate-800 text-[#c83b3b] hover:bg-[#c83b3b]/5 transition-colors cursor-pointer"
+                          className={`flex items-center justify-center gap-1.5 flex-1 py-2.5 text-xs font-bold border-l text-[#c83b3b] hover:bg-[#c83b3b]/10 transition-colors cursor-pointer ${
+                            game.status === 'active'
+                              ? 'border-[#c83b3b]/15 dark:border-[#c83b3b]/25'
+                              : 'border-stone-100 dark:border-slate-800'
+                          }`}
                         >
                           <Play size={13} /> Reprendre
                         </button>

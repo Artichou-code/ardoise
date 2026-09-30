@@ -8,7 +8,6 @@ import { ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react'
  * - Retour haptique vibrant à chaque cran.
  * - Support d'une variante haute (tall) couvrant 2 lignes pour équilibrer les choix manuels.
  * - Un simple clic/tap sans glisser ouvre la feuille complète (ScorePad).
- * - Prise en charge de la molette de la souris sur ordinateur.
  */
 export function QuickScoreBadge({
   value = 0,
@@ -129,37 +128,6 @@ export function QuickScoreBadge({
     } catch {}
   }
 
-  const badgeRef = useRef(null)
-
-  useEffect(() => {
-    const el = badgeRef.current
-    if (!el) return
-    const handleNativeWheel = (e) => {
-      e.stopPropagation()
-      e.preventDefault()
-      let nextVal
-      if (values && values.length > 0) {
-        const curIdx = values.indexOf(currentValueRef.current)
-        const safeIdx = curIdx !== -1 ? curIdx : 0
-        const delta = e.deltaY < 0 ? 1 : -1
-        const targetIdx = Math.max(0, Math.min(values.length - 1, safeIdx + delta))
-        nextVal = values[targetIdx]
-      } else {
-        const delta = e.deltaY < 0 ? step : -step
-        nextVal = clampValue(currentValueRef.current + delta)
-      }
-      if (nextVal !== currentValueRef.current) {
-        currentValueRef.current = nextVal
-        onChange?.(nextVal)
-        try {
-          navigator.vibrate?.(8)
-        } catch {}
-      }
-    }
-    el.addEventListener('wheel', handleNativeWheel, { passive: false })
-    return () => el.removeEventListener('wheel', handleNativeWheel)
-  }, [step, onChange, min, max, values])
-
   const cur = isDragging ? currentValueRef.current : value
   const displaySign = showPlus && cur > 0 ? '+' : ''
   const isNonZero = cur !== 0
@@ -171,7 +139,6 @@ export function QuickScoreBadge({
 
       {/* Zone interactive compacte ou haute */}
       <div
-        ref={badgeRef}
         role="button"
         tabIndex={0}
         aria-label={`Score : ${displayedValue}${subText ? ` (${subText})` : ''}. Glisser vers le haut ou le bas pour ajuster.`}

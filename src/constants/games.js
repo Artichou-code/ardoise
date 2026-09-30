@@ -332,8 +332,8 @@ export const GAME_META = {
     playersBadge: '2 éq. (4 j.)',
     categoryBadge: '32 cartes',
     description:
-      "Le grand classique en 2 contre 2 : prenez l'atout, réalisez vos plis et atteignez votre contrat pour marquer les 162 points (ou réussir un Capot).",
-    minPlayers: 2,
+      "Le grand classique en 2 contre 2 : jouez à la Belote classique ou à la Coinche (enchères, coinché, surcoinché) et marquez les points par équipes !",
+    minPlayers: 4,
     maxPlayers: 4,
     scoreDir: 'high',
     teams: true,
@@ -342,9 +342,9 @@ export const GAME_META = {
         {
           title: 'Informations générales & Équipes',
           items: [
-            'Nombre de joueurs : 4 joueurs répartis en 2 équipes de 2 partenaires assis face à face (Nous vs Eux).',
+            'Nombre de joueurs : Exactement 4 joueurs, répartis en 2 équipes de 2 partenaires assis face à face (Nous vs Eux).',
             'Matériel : Un jeu de 32 cartes (du 7 à l’As).',
-            'Objectif : Remplir les contrats annoncés en cumulant au fil des donnes le plus grand nombre de points (souvent jusqu’à 1000 ou 1500 points).',
+            'Objectif : Remplir les contrats annoncés en cumulant au fil des donnes le plus grand nombre de points (généralement 1 000 ou 1 500 points).',
           ],
         },
         {
@@ -357,36 +357,50 @@ export const GAME_META = {
           ],
         },
         {
-          title: 'Prise et Contrats (Belote vs Coinche)',
+          title: 'Variante 1 : Belote classique',
           items: [
-            'Belote classique : Une carte est retournée au centre. Les joueurs choisissent tour à tour de la prendre (la couleur devient l’atout) ou de passer. Contrat minimal : réaliser au moins 82 points.',
-            'Coinche : Les joueurs enchérissent par paliers de 10 points (de 80 à 160) en annonçant la couleur d’atout. Possibilité de Contrer (« Coincher ») pour doubler les points, ou « Surcoincher » pour quadrupler.',
-            'Capot : Réaliser les 8 plis de la donne (vaut 252 points).',
-            'Générale (Coinche) : Un seul joueur réalise les 8 plis à lui tout seul (vaut 500 points).',
+            'Prise à la retourne : Chaque joueur reçoit 5 cartes. Une carte est retournée au centre. Les joueurs choisissent tour à tour de la prendre (sa couleur devient l’atout) ou de passer (2 tours possibles).',
+            'Distribution finale : Une fois l’atout choisi, le preneur reçoit 2 cartes supplémentaires et les autres 3 cartes (8 cartes en main chacun).',
+            'Contrat minimal : Le camp preneur s’engage à réaliser au moins 82 points (la moitié de 162 + 1) pour réussir sa prise.',
+            'Capot : Remporter l’intégralité des 8 plis rapporte 252 points.',
           ],
         },
         {
-          title: 'Annonces spéciales (Belote-Rebelote)',
+          title: 'Variante 2 : Coinche (Contrée)',
           items: [
-            'Belote et Rebelote (+20 pts) : Accordé au joueur possédant le Roi et la Dame d’atout. Il annonce « Belote » en posant la première carte, puis « Rebelote » en posant la seconde.',
-            'Ces 20 points sont inviolables : ils restent acquis même si l’équipe preneuse chute son contrat.',
+            'Distribution totale : Toutes les cartes sont distribuées dès le départ (8 cartes chacun, sans retourne).',
+            'Enchères chiffrées : Les joueurs annoncent tour à tour un contrat de 80 à 160 points (par paliers de 10) en désignant la couleur d’atout, ou passent.',
+            'Coincher (Contre) : L’équipe adverse peut à tout moment « Coincher » l’annonce adverse pour doubler les points (×2) si elle pense que le preneur va chuter.',
+            'Surcoincher (Surcontre) : L’équipe attaquante peut répliquer en « Surcoinchant » pour quadrupler la valeur de la donne (×4).',
+            'Capot (250 pts) & Générale (500 pts) : Annonces ultimes pour remporter tous les plis à 2 ou en solitaire.',
+          ],
+        },
+        {
+          title: 'Annonces spéciales & Belote-Rebelote',
+          items: [
+            'Belote et Rebelote (+20 pts) : Détenues par le joueur qui possède le Roi et la Dame d’atout. Il annonce « Belote » en jouant la 1re, puis « Rebelote » en jouant la 2de.',
+            'Inviolabilité : Les 20 points de Belote-Rebelote restent acquis même si l’équipe preneuse chute son contrat.',
+            'Autres annonces éventuelles : Tierce (+20 pts, suite de 3 cartes), Cinquante (+50 pts, suite de 4), Carré (+100 pts, ou 4 Valets = +200 pts).',
           ],
         },
         {
           title: 'Décompte des points & Chute (Dedans)',
           items: [
-            'Contrat réussi : L’équipe preneuse marque ses points réalisés + le montant de son contrat + annonces. La défense marque ses points faits.',
-            'Chute (« Dedans ») : Si les preneurs font moins de 82 points (ou moins que leur enchère), ils ne marquent rien (sauf Belote éventuelle). La défense empoche les 162 points + le contrat + annonces.',
+            'Contrat réussi : Le preneur marque ses points réalisés + son contrat (multiplié par 2 si coinché, par 4 si surcoinché) + annonces. La défense marque ses points faits.',
+            'Chute (« Dedans ») : Si les preneurs ne font pas leur contrat, ils ne marquent rien (sauf Belote). La défense empoche les 162 points + le contrat (multiplié si coinché) + toutes les annonces.',
+            'Litige (Belote classique) : En cas de stricte égalité 81-81, la défense marque ses 81 points et les 81 points du preneur sont remis en jeu pour le vainqueur de la donne suivante.',
           ],
         },
       ],
       summaryTable: [
+        { item: 'Joueurs / Équipes', value: '4 joueurs en 2 équipes fixes (Nous vs Eux)' },
         { item: 'Total des plis (avec 10 de der)', value: '162 pts' },
         { item: 'Belote + Rebelote (Roi & Dame atout)', value: '+20 pts inviolables' },
-        { item: 'Contrat minimum (Belote classique)', value: '82 pts' },
-        { item: 'Capot (tous les 8 plis)', value: '252 pts' },
-        { item: 'Générale (Coinche)', value: '500 pts' },
-        { item: 'Chute (« Dedans »)', value: 'Défense prend les 162 pts + contrat' },
+        { item: 'Contrat Belote classique', value: '≥ 82 pts (ou Capot 252 pts)' },
+        { item: 'Enchères Coinche', value: '80 à 160 pts (paliers de 10)' },
+        { item: 'Coinche / Surcoinche', value: 'Coefficients ×2 et ×4' },
+        { item: 'Capot / Générale', value: '250 / 252 pts · 500 pts' },
+        { item: 'Chute (« Dedans »)', value: 'Défense empoche 162 pts + contrat' },
       ],
     },
   },
@@ -597,14 +611,21 @@ export const TAROT_CONTRACTS = [
 
 export const TAROT_BOUTS_THRESHOLDS = [56, 51, 41, 36] // 0,1,2,3 bouts
 
-export const BELOTE_CONTRACTS = [
+export const BELOTE_SIMPLE_CONTRACTS = [
+  { value: 82, label: 'Prise simple (≥ 82 pts)' },
+  { value: 252, label: 'Capot (252 pts)' },
+]
+
+export const COINCHE_CONTRACTS = [
   { value: 80, label: '80' }, { value: 90, label: '90' },
   { value: 100, label: '100' }, { value: 110, label: '110' },
   { value: 120, label: '120' }, { value: 130, label: '130' },
   { value: 140, label: '140' }, { value: 150, label: '150' },
-  { value: 160, label: '160' }, { value: 252, label: 'Capot (252)' },
+  { value: 160, label: '160' }, { value: 250, label: 'Capot (250)' },
   { value: 500, label: 'Générale (500)' },
 ]
+
+export const BELOTE_CONTRACTS = COINCHE_CONTRACTS
 
 // Avatars illustrés (10 avatars complétant la grille 5x2)
 export const PRESET_AVATARS = Array.from(
@@ -636,12 +657,21 @@ export const AVATAR_COLOR_NAMES = {
 }
 
 /**
- * Renvoie le titre affiché d'une partie en nettoyant les variantes historiques (ex: Président -> Trou du cul)
+ * Renvoie le titre affiché d'une partie en nettoyant les variantes historiques (ex: Président -> Trou du cul, Belote/Coinche -> Belote ou Coinche)
  */
 export function getGameDisplayName(game) {
   if (!game) return ''
-  if (game.type === GAMES.PRESIDENT || game.name?.includes('Trou du cul') || game.name?.includes('Président')) {
+  const typeLower = (game.type || '').toLowerCase()
+  const nameLower = (game.name || '').toLowerCase()
+
+  if (typeLower === GAMES.PRESIDENT || nameLower.includes('trou du cul') || nameLower.includes('président') || nameLower.includes('president')) {
     return 'Trou du cul'
+  }
+  if (typeLower === GAMES.BELOTE || nameLower.includes('belote') || nameLower.includes('coinche')) {
+    if (game.config?.variant === 'coinche' || (nameLower.includes('coinche') && !nameLower.includes('belote'))) {
+      return 'Coinche'
+    }
+    return 'Belote'
   }
   return game.name
 }

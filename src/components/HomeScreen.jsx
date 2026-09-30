@@ -195,11 +195,11 @@ export function HomeScreen() {
                   key={game.id}
                   type="button"
                   onClick={() => resumeGame(game.id)}
-                  className="w-full flex items-center justify-between gap-3 p-3.5 rounded-xl school-card hover:border-[#c83b3b] transition-all active:scale-[0.99] text-left shadow-2xs group"
+                  className="w-full flex items-center justify-between gap-3 p-3.5 rounded-xl bg-[#c83b3b]/[0.04] dark:bg-[#c83b3b]/[0.08] border border-[#c83b3b]/35 dark:border-[#c83b3b]/45 hover:border-[#c83b3b] transition-all active:scale-[0.99] text-left shadow-2xs group"
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-serif-title font-bold text-base leading-tight">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <p className="font-serif-title font-bold text-base leading-tight truncate">
                         {getGameDisplayName(game)}
                       </p>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300 whitespace-nowrap shrink-0">

@@ -73,28 +73,59 @@ export function computeTarotScore({
 }
 
 // --- BELOTE / COINCHE ---
-export function computeBeloteScore({ contract, announcements, takerTeam, pointsTaker }) {
+export function computeBeloteScore({
+  variant = 'belote',
+  contract = 82,
+  announcements = 0,
+  takerTeam = 'nous',
+  pointsTaker = 82,
+  coincheMultiplier = 1,
+}) {
   const total = 162
   const ann = announcements || 0
+  const mult = coincheMultiplier || 1
   let takerScore = 0
   let defenseScore = 0
 
-  if (contract === 500) {
-    const won = pointsTaker === total
-    takerScore = won ? 500 + ann : 0
-    defenseScore = won ? 0 : 500 + ann
-  } else if (contract === 252) {
-    const won = pointsTaker === total
-    takerScore = won ? 252 + ann : 0
-    defenseScore = won ? 0 : 252 + ann
-  } else {
-    const won = pointsTaker >= 82 && (pointsTaker + ann) >= contract
-    if (won) {
-      takerScore = pointsTaker + contract + ann
-      defenseScore = total - pointsTaker
+  if (variant === 'coinche') {
+    // Mode COINCHE (enchères 80-160, Capot, Générale + Coinche x2/x4)
+    if (contract === 500) {
+      // Générale
+      const won = pointsTaker === total
+      takerScore = won ? 500 * mult + 162 + ann : 0
+      defenseScore = won ? 0 : 162 + 500 * mult + ann
+    } else if (contract === 250 || contract === 252) {
+      // Capot
+      const won = pointsTaker === total
+      takerScore = won ? 250 * mult + 162 + ann : 0
+      defenseScore = won ? 0 : 162 + 250 * mult + ann
     } else {
-      takerScore = 0
-      defenseScore = total + contract + ann
+      // Enchère chiffrée
+      const won = (pointsTaker + ann) >= contract && pointsTaker >= 82
+      if (won) {
+        takerScore = (contract * mult) + pointsTaker + ann
+        defenseScore = total - pointsTaker
+      } else {
+        takerScore = 0
+        defenseScore = total + (contract * mult) + ann
+      }
+    }
+  } else {
+    // Mode BELOTE CLASSIQUE (Prise simple ≥ 82 pts ou Capot 252 pts)
+    if (contract === 252 || contract === 250) {
+      const won = pointsTaker === total
+      takerScore = won ? 252 + ann : 0
+      defenseScore = won ? 0 : 162 + 252 + ann
+    } else {
+      // Prise standard
+      const won = pointsTaker >= 82
+      if (won) {
+        takerScore = pointsTaker + ann
+        defenseScore = total - pointsTaker
+      } else {
+        takerScore = 0
+        defenseScore = total + ann
+      }
     }
   }
 

@@ -6,7 +6,7 @@ import { Avatar } from './ui/Avatar'
 import { ConfirmDialog } from './ui/Dialog'
 import { RulesSheet } from './RulesSheet'
 import { getRanking } from '../utils/gameUtils'
-import { GAME_META, GAMES } from '../constants/games'
+import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
 import { DourakEngine } from './engines/DourakEngine'
 import { CaracoleEngine } from './engines/CaracoleEngine'
 import { SkyjoEngine } from './engines/SkyjoEngine'
@@ -60,7 +60,7 @@ export function GameScreen() {
         </button>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="font-serif-title font-bold text-base truncate">
-            {activeGame.type === GAMES.PRESIDENT || activeGame.name?.startsWith('Trou du cul') ? 'Trou du cul' : activeGame.name}
+            {getGameDisplayName(activeGame)}
           </span>
           <span className="text-xs font-semibold text-[#c83b3b] shrink-0 whitespace-nowrap">
             M.{activeGame.rounds.length + 1}
@@ -103,57 +103,134 @@ export function GameScreen() {
 
       {/* Tableau des scores */}
       <div className="flex-shrink-0 px-3 sm:px-4 pt-1.5 pb-1">
-        <div className={`grid ${
-          activeGame.players.length <= 2 ? 'grid-cols-2 gap-1.5' :
-          activeGame.players.length === 3 ? 'grid-cols-3 gap-1.5' :
-          activeGame.players.length === 4 ? 'grid-cols-4 gap-1.5' :
-          activeGame.players.length === 5 ? 'grid-cols-5 gap-1' :
-          activeGame.players.length === 6 ? 'grid-cols-6 gap-1' :
-          'grid-cols-4 gap-1'
-        }`}>
-          {ranking.map(({ id, score, rank }) => {
-            const player = activeGame.players.find(p => p.id === id)
-            if (!player) return null
-            const isLeader = id === leaderId
-            const isCrowded = activeGame.players.length >= 5
-            return (
-              <div
-                key={id}
-                className={`flex flex-col items-center rounded-xl transition-all ${
-                  isCrowded ? 'gap-0.5 py-1 px-1' : 'gap-0.5 py-1.5 px-1.5'
-                } ${
-                  isLeader
-                    ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
-                    : 'school-card'
-                }`}
-              >
-                <div className="flex items-center justify-between w-full px-0.5 leading-none">
-                  <span className={`text-[9px] font-bold uppercase ${
-                    isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
-                  }`}>
-                    {rank === 1 ? '1er' : `${rank}e`}
-                  </span>
-                  {isLeader && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
-                  )}
-                </div>
-                <Avatar player={player} size={isCrowded ? 'xs' : 'sm-compact'} leader={isLeader} />
-                <span className="text-[11px] font-semibold truncate max-w-full text-center px-0.5 leading-tight">
-                  {player.name}
-                </span>
-                <span
-                  className={`font-black tabular-nums leading-none ${
-                    isCrowded ? 'text-sm' : 'text-base'
-                  } ${
-                    isLeader ? 'text-[#c83b3b]' : ''
+        {activeGame.type === GAMES.BELOTE && activeGame.players.length === 4 ? (
+          <div className="grid grid-cols-2 gap-2">
+            {(() => {
+              const pNous = [activeGame.players[0], activeGame.players[1]].filter(Boolean)
+              const pEux = [activeGame.players[2], activeGame.players[3]].filter(Boolean)
+              const scoreNous = activeGame.scores[pNous[0]?.id] || 0
+              const scoreEux = activeGame.scores[pEux[0]?.id] || 0
+              const isNousLeader = scoreNous >= scoreEux
+              const isEuxLeader = scoreEux >= scoreNous
+              const isTie = scoreNous === scoreEux
+
+              const teams = [
+                {
+                  id: 'nous',
+                  label: 'Équipe 1',
+                  players: pNous,
+                  score: scoreNous,
+                  isLeader: isNousLeader,
+                  rank: scoreNous > scoreEux ? 1 : isTie ? 1 : 2,
+                },
+                {
+                  id: 'eux',
+                  label: 'Équipe 2',
+                  players: pEux,
+                  score: scoreEux,
+                  isLeader: isEuxLeader,
+                  rank: scoreEux > scoreNous ? 1 : isTie ? 1 : 2,
+                },
+              ]
+
+              return teams.map(t => (
+                <div
+                  key={t.id}
+                  className={`flex flex-col justify-between rounded-xl py-1.5 px-2.5 transition-all ${
+                    t.isLeader
+                      ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
+                      : 'school-card'
                   }`}
                 >
-                  {score}
-                </span>
-              </div>
-            )
-          })}
-        </div>
+                  {/* Ligne 1 : Rang + Noms des joueurs uniquement */}
+                  <div className="flex items-center justify-between w-full leading-none mb-1 gap-1">
+                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 min-w-0">
+                      <span className={`shrink-0 ${t.isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'}`}>
+                        {t.rank === 1 ? '1er' : '2e'} ·
+                      </span>
+                      <span className={`truncate font-extrabold ${t.id === 'nous' ? 'text-[#c83b3b] dark:text-rose-400' : 'text-[#1e3a5f] dark:text-sky-400'}`}>
+                        {t.players.map(p => p.name).join(' & ')}
+                      </span>
+                    </span>
+                    {t.isLeader && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b] shrink-0" />
+                    )}
+                  </div>
+
+                  {/* Ligne 2 : Avatars à gauche + Score centré dans l'espace disponible */}
+                  <div className="flex items-center w-full py-0.5">
+                    <div className="flex items-center gap-1 shrink-0">
+                      {t.players.map(p => (
+                        <Avatar key={p.id} player={p} size="sm-compact" leader={t.isLeader} />
+                      ))}
+                    </div>
+                    <div className="flex-1 flex items-center justify-center min-w-0">
+                      <span
+                        className={`font-black tabular-nums leading-none text-2xl sm:text-3xl text-center ${
+                          t.isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
+                        }`}
+                      >
+                        {t.score}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            })()}
+          </div>
+        ) : (
+          <div className={`grid ${
+            activeGame.players.length <= 2 ? 'grid-cols-2 gap-1.5' :
+            activeGame.players.length === 3 ? 'grid-cols-3 gap-1.5' :
+            activeGame.players.length === 4 ? 'grid-cols-4 gap-1.5' :
+            activeGame.players.length === 5 ? 'grid-cols-5 gap-1' :
+            activeGame.players.length === 6 ? 'grid-cols-6 gap-1' :
+            'grid-cols-4 gap-1'
+          }`}>
+            {ranking.map(({ id, score, rank }) => {
+              const player = activeGame.players.find(p => p.id === id)
+              if (!player) return null
+              const isLeader = id === leaderId
+              const isCrowded = activeGame.players.length >= 5
+              return (
+                <div
+                  key={id}
+                  className={`flex flex-col items-center rounded-xl transition-all ${
+                    isCrowded ? 'gap-0.5 py-1 px-1' : 'gap-0.5 py-1.5 px-1.5'
+                  } ${
+                    isLeader
+                      ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
+                      : 'school-card'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full px-0.5 leading-none">
+                    <span className={`text-[9px] font-bold uppercase ${
+                      isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
+                    }`}>
+                      {rank === 1 ? '1er' : `${rank}e`}
+                    </span>
+                    {isLeader && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
+                    )}
+                  </div>
+                  <Avatar player={player} size={isCrowded ? 'xs' : 'sm-compact'} leader={isLeader} />
+                  <span className="text-[11px] font-semibold truncate max-w-full text-center px-0.5 leading-tight">
+                    {player.name}
+                  </span>
+                  <span
+                    className={`font-black tabular-nums leading-none ${
+                      isCrowded ? 'text-sm' : 'text-base'
+                    } ${
+                      isLeader ? 'text-[#c83b3b]' : ''
+                    }`}
+                  >
+                    {score}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Moteur de saisie de manche */}
@@ -202,25 +279,42 @@ export function GameScreen() {
                     M.{activeGame.rounds.length - i}
                   </span>
                   <div className="flex flex-wrap gap-x-3 gap-y-1">
-                    {activeGame.players.map(p => {
-                      const rep = round.reprieves?.find(r => r.playerId === p.id)
-                      return (
-                        <span key={p.id} className="flex items-center gap-1 tabular-nums">
-                          <span className="font-medium text-stone-500 dark:text-slate-400">{p.name}:</span>
-                          <span className="font-bold text-stone-800 dark:text-slate-200">
-                            {round.delta?.[p.id] != null ? (round.delta[p.id] >= 0 ? '+' : '') + round.delta[p.id] : '—'}
+                    {activeGame.type === GAMES.BELOTE && activeGame.players.length === 4 ? (
+                      <>
+                        <span className="flex items-center gap-1 tabular-nums">
+                          <span className="font-semibold text-stone-700 dark:text-slate-300">Éq. 1:</span>
+                          <span className="font-bold text-[#c83b3b]">
+                            +{round.teamScores?.nous ?? round.delta?.[activeGame.players[0]?.id] ?? 0}
                           </span>
-                          {rep && (
-                            <span
-                              className="text-[10px] font-bold text-[#c83b3b] bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 px-1 py-0.2 rounded"
-                              title={`Sursis accordé : ${rep.original} -> ${rep.reduced} pts`}
-                            >
-                              sursis
-                            </span>
-                          )}
                         </span>
-                      )
-                    })}
+                        <span className="flex items-center gap-1 tabular-nums">
+                          <span className="font-semibold text-stone-700 dark:text-slate-300">Éq. 2:</span>
+                          <span className="font-bold text-[#c83b3b]">
+                            +{round.teamScores?.eux ?? round.delta?.[activeGame.players[2]?.id] ?? 0}
+                          </span>
+                        </span>
+                      </>
+                    ) : (
+                      activeGame.players.map(p => {
+                        const rep = round.reprieves?.find(r => r.playerId === p.id)
+                        return (
+                          <span key={p.id} className="flex items-center gap-1 tabular-nums">
+                            <span className="font-medium text-stone-500 dark:text-slate-400">{p.name}:</span>
+                            <span className="font-bold text-stone-800 dark:text-slate-200">
+                              {round.delta?.[p.id] != null ? (round.delta[p.id] >= 0 ? '+' : '') + round.delta[p.id] : '—'}
+                            </span>
+                            {rep && (
+                              <span
+                                className="text-[10px] font-bold text-[#c83b3b] bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 px-1 py-0.2 rounded"
+                                title={`Sursis accordé : ${rep.original} -> ${rep.reduced} pts`}
+                              >
+                                sursis
+                              </span>
+                            )}
+                          </span>
+                        )
+                      })
+                    )}
                   </div>
                 </div>
               ))}
@@ -232,6 +326,8 @@ export function GameScreen() {
       {/* Règles officielles */}
       <RulesSheet
         gameType={showRules ? activeGame.type : null}
+        variant={activeGame.config?.variant}
+        title={activeGame.type === GAMES.BELOTE ? (activeGame.config?.variant === 'coinche' ? 'Règles — Coinche' : 'Règles — Belote') : undefined}
         onClose={() => setShowRules(false)}
       />
 

@@ -2,6 +2,7 @@
 
 const STORAGE_KEYS = {
   PLAYERS: 'ardoise_players',
+  DELETED_PLAYERS: 'ardoise_deleted_players',
   GAMES: 'ardoise_games',
   DELETED_GAMES: 'ardoise_deleted_games',
   ACTIVE_GAME: 'ardoise_active_game',
@@ -10,14 +11,63 @@ const STORAGE_KEYS = {
 }
 
 // --- Joueurs ---
+export const loadDeletedPlayerIds = () => {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEYS.DELETED_PLAYERS))
+    return Array.isArray(raw) ? raw : []
+  } catch { return [] }
+}
+
+export const untombstonePlayer = (id, name) => {
+  try {
+    const deleted = loadDeletedPlayerIds()
+    const norm = name ? name.trim().toLowerCase() : ''
+    const filtered = deleted.filter(item => item !== id && item !== norm)
+    if (filtered.length !== deleted.length) {
+      localStorage.setItem(STORAGE_KEYS.DELETED_PLAYERS, JSON.stringify(filtered))
+    }
+  } catch {}
+}
+
 export const savePlayers = (players) =>
   localStorage.setItem(STORAGE_KEYS.PLAYERS, JSON.stringify(players))
 
 export const loadPlayers = () => {
   try {
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEYS.PLAYERS))
-    return Array.isArray(raw) ? raw.filter(p => p && typeof p === 'object' && p.name) : []
+    const deletedIds = new Set(loadDeletedPlayerIds())
+    return Array.isArray(raw)
+      ? raw.filter(p => p && typeof p === 'object' && p.name && !deletedIds.has(p.id) && !deletedIds.has(p.name.trim().toLowerCase()))
+      : []
   } catch { return [] }
+}
+
+export const deletePlayer = (id, name) => {
+  if (!id && !name) return
+  // 1. Ajouter l'ID et le nom normalisé à la liste des tombstones
+  try {
+    const deleted = loadDeletedPlayerIds()
+    const candidates = [id, name ? name.trim().toLowerCase() : null].filter(Boolean)
+    let changed = false
+    for (const item of candidates) {
+      if (!deleted.includes(item)) {
+        deleted.push(item)
+        changed = true
+      }
+    }
+    if (changed) {
+      localStorage.setItem(STORAGE_KEYS.DELETED_PLAYERS, JSON.stringify(deleted.slice(-500)))
+    }
+  } catch {}
+
+  // 2. Retirer du localStorage
+  const players = loadPlayers().filter(p => {
+    if (!p) return false
+    if (id && p.id === id) return false
+    if (name && p.name && p.name.trim().toLowerCase() === name.trim().toLowerCase()) return false
+    return true
+  })
+  savePlayers(players)
 }
 
 // --- Parties ---

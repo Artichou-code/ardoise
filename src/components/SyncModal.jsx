@@ -18,6 +18,7 @@ import { useScrollLock } from '../hooks/useScrollLock'
 import {
   getSyncKey,
   setSyncKey,
+  extractCodeFromInput,
   generateMemorableSyncKey,
   getLastSyncedAt,
   isAutoSyncEnabled,
@@ -49,6 +50,12 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
     if (!key) {
       key = generateMemorableSyncKey()
       setSyncKey(key)
+    } else {
+      const normalized = extractCodeFromInput(key)
+      if (normalized && normalized !== key) {
+        key = normalized
+        setSyncKey(normalized)
+      }
     }
     setCurrentSyncKey(key)
     setLastSynced(getLastSyncedAt())
@@ -69,7 +76,9 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
     setIsLoading(true)
     setStatusMessage(null)
     try {
-      const result = await synchronizeNotebook(currentSyncKey)
+      const cleanKey = extractCodeFromInput(currentSyncKey || getSyncKey())
+      const result = await synchronizeNotebook(cleanKey)
+      setCurrentSyncKey(cleanKey)
       setLastSynced(getLastSyncedAt())
       setStatusMessage({ type: 'success', text: result.message })
       if (onDataUpdated) onDataUpdated()
@@ -82,13 +91,13 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
 
   const handleLinkExistingKey = async (e) => {
     e.preventDefault()
-    const cleanKey = inputKey.trim().toUpperCase()
+    const cleanKey = extractCodeFromInput(inputKey)
     if (!cleanKey) return
 
     setIsLoading(true)
     setStatusMessage(null)
     try {
-      const result = await synchronizeNotebook(cleanKey)
+      const result = await synchronizeNotebook(cleanKey, { requireExisting: true })
       setCurrentSyncKey(cleanKey)
       setInputKey('')
       setLastSynced(getLastSyncedAt())
@@ -310,9 +319,15 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                   <input
                     type="text"
                     value={inputKey}
-                    onChange={(e) => setInputKey(e.target.value.toUpperCase())}
+                    onChange={(e) => {
+                      let val = e.target.value.toUpperCase().replace(/\s+/g, '')
+                      if (/^ARD[A-Z0-9]/i.test(val) && !val.startsWith('ARD-')) {
+                        val = 'ARD-' + val.slice(3)
+                      }
+                      setInputKey(val)
+                    }}
                     placeholder="Ex&nbsp;: ARD-7B92"
-                    maxLength={10}
+                    maxLength={12}
                     className="flex-1 font-mono uppercase px-3 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-stone-800 dark:text-slate-200 focus:outline-none focus:border-[#c83b3b]"
                   />
                   <button

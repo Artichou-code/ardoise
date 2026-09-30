@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import {
   saveGame, loadGames, deleteGame, loadDeletedGameIds,
-  savePlayers, loadPlayers,
+  savePlayers, loadPlayers, deletePlayer, untombstonePlayer,
   saveActiveGameId, loadActiveGameId,
   saveCustomPreset, deleteCustomPreset, loadCustomPresets,
   generateId
@@ -354,6 +354,8 @@ export function GameProvider({ children }) {
 
   // Gestion joueurs
   const savePlayer = useCallback((player) => {
+    if (!player) return
+    untombstonePlayer(player.id, player.name)
     setPlayers(prev => {
       const idx = prev.findIndex(p => p.id === player.id)
       let next
@@ -365,22 +367,42 @@ export function GameProvider({ children }) {
       }
       return sortPlayersAlpha(next)
     })
+
+    if (isAutoSyncEnabled() && getSyncKey()) {
+      pushNotebookToCloud().catch(() => {})
+    }
   }, [])
 
   const removePlayer = useCallback((id) => {
-    setPlayers(prev => prev.filter(p => p.id !== id))
+    let deletedPlayer = null
+    setPlayers(prev => {
+      deletedPlayer = prev.find(p => p.id === id)
+      return prev.filter(p => p.id !== id)
+    })
+    deletePlayer(id, deletedPlayer?.name)
+
+    // Pousser immédiatement vers le Cloud si auto-sync activé
+    if (isAutoSyncEnabled() && getSyncKey()) {
+      pushNotebookToCloud().catch(() => {})
+    }
   }, [])
 
   // Gestion modèles personnalisés
   const savePreset = useCallback((preset) => {
     const updated = saveCustomPreset(preset)
     setCustomPresets(updated)
+    if (isAutoSyncEnabled() && getSyncKey()) {
+      pushNotebookToCloud().catch(() => {})
+    }
     return updated
   }, [])
 
   const deletePreset = useCallback((id) => {
     const updated = deleteCustomPreset(id)
     setCustomPresets(updated)
+    if (isAutoSyncEnabled() && getSyncKey()) {
+      pushNotebookToCloud().catch(() => {})
+    }
     return updated
   }, [])
 

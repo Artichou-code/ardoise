@@ -7,6 +7,7 @@ import {
   loadTheme,
   saveTheme,
   loadDeletedGameIds,
+  loadDeletedPlayerIds,
 } from './storage'
 
 const SYNC_KEYS = {
@@ -22,36 +23,41 @@ const API_BASE = '/api'
  * un code seul, une URL complète (https://.../?share=ARD-R4RT) ou un texte partagé.
  */
 export function extractCodeFromInput(rawInput) {
-  const str = (rawInput || '').trim()
+  let str = (rawInput || '').trim()
   if (!str) return ''
 
   // 1. Paramètre d'URL ?share=..., ?game=..., ?session=..., ?sync=...
   const paramMatch = str.match(/[?&](?:share|game|session|sync)=([A-Za-z0-9_-]+)/i)
   if (paramMatch && paramMatch[1]) {
-    return decodeURIComponent(paramMatch[1]).trim().toUpperCase()
-  }
-
-  // 2. Motif explicite ARD-XXXX n'importe où dans le texte ou l'URL
-  const ardMatch = str.match(/\b(ARD-[A-Za-z0-9]{3,12})\b/i)
-  if (ardMatch && ardMatch[1]) {
-    return ardMatch[1].toUpperCase()
-  }
-
-  // 3. Si c'est une URL de type .../share/CODE ou .../sessions/CODE
-  if (/^https?:\/\//i.test(str)) {
+    str = decodeURIComponent(paramMatch[1]).trim()
+  } else if (/^https?:\/\//i.test(str)) {
+    // Si c'est une URL de type .../share/CODE ou .../sessions/CODE ou .../sync/CODE
     try {
       const url = new URL(str)
       const segments = url.pathname.split('/').filter(Boolean)
       if (segments.length > 0) {
-        return decodeURIComponent(segments[segments.length - 1]).trim().toUpperCase()
+        str = decodeURIComponent(segments[segments.length - 1]).trim()
       }
     } catch {}
   }
 
-  // 4. Si l'utilisateur a tapé uniquement les 4 caractères sans "ARD-" (ex: "R4RT")
-  const upper = str.toUpperCase()
-  if (/^[A-Z0-9]{4}$/.test(upper)) {
-    return `ARD-${upper}`
+  const upper = str.toUpperCase().trim()
+
+  // 2. Motif explicite avec ou sans tiret : ARD-XXXX, ARD_XXXX, ARD XXXX ou ARDXXXX
+  const ardMatch = upper.match(/\bARD[-_\s]?([A-Z0-9]{3,12})\b/i) || upper.match(/^ARD[-_\s]?([A-Z0-9]{3,12})$/i)
+  if (ardMatch && ardMatch[1]) {
+    return `ARD-${ardMatch[1]}`
+  }
+
+  // 3. Si l'utilisateur a tapé uniquement les 4 caractères sans "ARD" (ex: "44D7" ou "R4RT")
+  const compact = upper.replace(/[^A-Z0-9]/g, '')
+  if (/^[A-Z0-9]{4}$/.test(compact)) {
+    return `ARD-${compact}`
+  }
+
+  // 4. Si commence par ARD sans séparateur (ex: "ARD44D7")
+  if (/^ARD[A-Z0-9]{3,12}$/.test(compact)) {
+    return `ARD-${compact.slice(3)}`
   }
 
   return upper
@@ -70,7 +76,13 @@ export function generateMemorableSyncKey() {
 }
 
 export function getSyncKey() {
-  return localStorage.getItem(SYNC_KEYS.SYNC_KEY) || ''
+  const raw = localStorage.getItem(SYNC_KEYS.SYNC_KEY) || ''
+  if (!raw) return ''
+  const clean = extractCodeFromInput(raw)
+  if (clean && clean !== raw) {
+    localStorage.setItem(SYNC_KEYS.SYNC_KEY, clean)
+  }
+  return clean || raw
 }
 
 export function setSyncKey(key) {
@@ -187,9 +199,15 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
   }
 
   // 2. Fusion des joueurs par nom normalisé (inclut les joueurs présents dans les parties importées)
+  const deletedPlayersSet = new Set(loadDeletedPlayerIds())
   const playersMap = new Map()
   for (const p of localPlayers) {
-    if (p && p.name) playersMap.set(p.name.trim().toLowerCase(), p)
+    if (p && p.name) {
+      const norm = p.name.trim().toLowerCase()
+      if (!deletedPlayersSet.has(p.id) && !deletedPlayersSet.has(norm)) {
+        playersMap.set(norm, p)
+      }
+    }
   }
 
   const allIncomingPlayers = [...incomingPlayers]
@@ -210,6 +228,7 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
     if (!p || !p.name) continue
     const key = p.name.trim().toLowerCase()
     if (key === 'nous' || key === 'eux') continue
+    if (deletedPlayersSet.has(p.id) || deletedPlayersSet.has(key)) continue
     if (!playersMap.has(key)) {
       playersMap.set(key, {
         id: p.id || `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -414,6 +433,18 @@ export function applyNotebook(incoming, mode = 'merge') {
       localStorage.setItem('ardoise_deleted_games', JSON.stringify(filteredDeleted))
     } catch {}
 
+    const incomingPlayers = Array.isArray(incoming.players) ? incoming.players : []
+    // Dé-tombstoner les joueurs restaurés si remplacement explicite
+    try {
+      const incomingPlayerKeys = new Set(
+        incomingPlayers.map(p => p && p.id).concat(
+          incomingPlayers.map(p => p && p.name && p.name.trim().toLowerCase())
+        ).filter(Boolean)
+      )
+      const filteredDeletedPlayers = loadDeletedPlayerIds().filter(k => !incomingPlayerKeys.has(k))
+      localStorage.setItem('ardoise_deleted_players', JSON.stringify(filteredDeletedPlayers))
+    } catch {}
+
     if (Array.isArray(incoming.players)) savePlayers(incoming.players)
     localStorage.setItem('ardoise_games', JSON.stringify(incomingGames))
     if (Array.isArray(incoming.customPresets)) saveCustomPresets(incoming.customPresets)
@@ -490,17 +521,19 @@ export async function pushNotebookToCloud(syncKey) {
 /**
  * Synchronisation bidirectionnelle automatique complète avec le Cloud
  */
-export async function synchronizeNotebook(syncKey) {
+export async function synchronizeNotebook(syncKey, options = {}) {
   const key = extractCodeFromInput(syncKey || getSyncKey())
   if (!key) throw new Error('Clé manquante')
-
-  setSyncKey(key)
 
   // 1. Tenter de récupérer le carnet distant
   const remote = await fetchRemoteNotebook(key)
 
   if (!remote.found || !remote.payload) {
-    // Si c'est un nouveau carnet, on pousse notre carnet local pour l'initialiser
+    if (options.requireExisting) {
+      throw new Error(`Aucun carnet trouvé pour le code ${key}. Vérifiez le code sur votre autre appareil.`)
+    }
+    // Si c'est un nouveau carnet, on associe la clé et on pousse notre carnet local pour l'initialiser
+    setSyncKey(key)
     const pushResult = await pushNotebookToCloud(key)
     const local = exportNotebookPayload()
     return {
@@ -515,6 +548,9 @@ export async function synchronizeNotebook(syncKey) {
       },
     }
   }
+
+  // Si trouvé, on associe définitivement la clé
+  setSyncKey(key)
 
   // 2. Fusionner le distant avec le local
   const applyResult = applyNotebook(remote.payload, 'merge')
