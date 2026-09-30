@@ -112,18 +112,27 @@ export function QuickScoreBadge({
     } catch {}
   }
 
-  const handleWheel = (e) => {
-    e.stopPropagation()
-    e.preventDefault()
-    const delta = e.deltaY < 0 ? step : -step
-    const nextVal = clampValue(value + delta)
-    if (nextVal !== value) {
-      onChange?.(nextVal)
-      try {
-        navigator.vibrate?.(8)
-      } catch {}
+  const badgeRef = useRef(null)
+
+  useEffect(() => {
+    const el = badgeRef.current
+    if (!el) return
+    const handleNativeWheel = (e) => {
+      e.stopPropagation()
+      e.preventDefault()
+      const delta = e.deltaY < 0 ? step : -step
+      const nextVal = clampValue(currentValueRef.current + delta)
+      if (nextVal !== currentValueRef.current) {
+        currentValueRef.current = nextVal
+        onChange?.(nextVal)
+        try {
+          navigator.vibrate?.(8)
+        } catch {}
+      }
     }
-  }
+    el.addEventListener('wheel', handleNativeWheel, { passive: false })
+    return () => el.removeEventListener('wheel', handleNativeWheel)
+  }, [step, onChange, min, max])
 
   const cur = isDragging ? currentValueRef.current : value
   const displaySign = showPlus && cur > 0 ? '+' : ''
@@ -134,6 +143,7 @@ export function QuickScoreBadge({
 
       {/* Zone interactive compacte */}
       <div
+        ref={badgeRef}
         role="button"
         tabIndex={0}
         aria-label={`Score : ${displaySign}${cur}. Glisser vers le haut ou le bas pour ajuster.`}
@@ -142,7 +152,6 @@ export function QuickScoreBadge({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
-        onWheel={handleWheel}
         style={{ touchAction: 'none' }}
         className={`group relative flex items-center justify-between gap-1.5 min-w-[4.2rem] h-10 px-2.5 py-1 rounded-xl border transition-all cursor-ns-resize ${
           isDragging
