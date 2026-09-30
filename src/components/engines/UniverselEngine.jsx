@@ -4,6 +4,7 @@ import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
+import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 
 export function UniverselEngine({ game, onFinish }) {
   const { updateScores } = useGame()
@@ -165,14 +166,9 @@ export function UniverselEngine({ game, onFinish }) {
             const isEliminated = scoreDir === 'low_limit' && limit && transformed >= limit && !isSpecial
 
             return (
-              <button
+              <div
                 key={p.id}
-                type="button"
-                onClick={() => {
-                  setEditingPlayer(p)
-                  setOpen(true)
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all active:scale-[0.99] ${
+                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border transition-all ${
                   isSpecial
                     ? 'border-[#c83b3b] bg-[#c83b3b]/10 ring-1 ring-[#c83b3b]/40'
                     : isEliminated
@@ -180,35 +176,50 @@ export function UniverselEngine({ game, onFinish }) {
                     : 'school-subtle hover:border-[#c83b3b]'
                 }`}
               >
-                <Avatar player={p} size="xs" />
-                <div className="flex-1 min-w-0">
-                  <span className="font-semibold text-sm truncate block">
-                    {p.name}
-                  </span>
-                  <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400">
-                    {pts !== 0 ? (
-                      isSpecial ? (
-                        <span className="text-[#c83b3b] font-bold">
-                          {projected} → {transformed} pts ({getShortActionLabel()})
-                        </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingPlayer(p)
+                    setOpen(true)
+                  }}
+                  className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer focus:outline-none select-none active:opacity-80 transition-opacity"
+                >
+                  <Avatar player={p} size="xs" />
+                  <div className="flex-1 min-w-0">
+                    <span className="font-semibold text-sm truncate block">
+                      {p.name}
+                    </span>
+                    <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400">
+                      {pts !== 0 ? (
+                        isSpecial ? (
+                          <span className="text-[#c83b3b] font-bold">
+                            {projected} → {transformed} pts ({getShortActionLabel()})
+                          </span>
+                        ) : (
+                          scoreDir === 'low_limit' && limit
+                            ? `${current} + ${pts} = ${projected}/${limit}`
+                            : `${current} + ${pts} = ${projected} pts`
+                        )
                       ) : (
-                        scoreDir === 'low_limit' && limit
-                          ? `${current} + ${pts} = ${projected}/${limit}`
-                          : `${current} + ${pts} = ${projected} pts`
-                      )
-                    ) : (
-                      scoreDir === 'low_limit' && limit ? (
-                        `${current}/${limit} pts`
-                      ) : (
-                        `${current} pts`
-                      )
-                    )}
-                  </span>
-                </div>
-                <span className="text-lg font-black tabular-nums">
-                  {pts >= 0 ? '+' : ''}{pts}
-                </span>
-              </button>
+                        scoreDir === 'low_limit' && limit ? (
+                          `${current}/${limit} pts`
+                        ) : (
+                          `${current} pts`
+                        )
+                      )}
+                    </span>
+                  </div>
+                </button>
+                <QuickScoreBadge
+                  value={pts}
+                  onChange={v => setRoundScores(prev => ({ ...prev, [p.id]: v }))}
+                  onOpenPad={() => {
+                    setEditingPlayer(p)
+                    setOpen(true)
+                  }}
+                  showPlus={true}
+                />
+              </div>
             )
           })}
         </div>

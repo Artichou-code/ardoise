@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Sparkles, X } from 'lucide-react'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
+import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { Avatar } from '../ui/Avatar'
 import { useGame } from '../../context/GameContext'
 
@@ -117,43 +118,57 @@ export function CaracoleEngine({ game, onFinish }) {
             const isEliminated = projected >= limit && !isReprieve
 
             return (
-              <button
+              <div
                 key={p.id}
-                type="button"
-                onClick={() => {
-                  setEditingPlayer(p)
-                  setOpen(true)
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all active:scale-[0.99] ${
+                className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border transition-all ${
                   isReprieve
                     ? 'border-[#c83b3b] bg-[#c83b3b]/10 ring-1 ring-[#c83b3b]/40'
                     : isEliminated
                     ? 'border-red-400/80 bg-red-500/10'
-                    : 'school-subtle hover:border-[#c83b3b]'
+                    : 'school-subtle hover:border-[#c83b3b]/60'
                 }`}
               >
-                <Avatar player={p} size="xs" />
-                <div className="flex-1 min-w-0">
-                  <span className="font-semibold text-sm truncate block">
-                    {p.name}
-                  </span>
-                  {pen > 0 && (
-                    <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400">
-                      {current} + {pen} ={' '}
-                      {isReprieve ? (
-                        <span className="text-[#c83b3b] font-bold">
-                          {projected} → {sursisTarget} pts (sursis !)
-                        </span>
-                      ) : (
-                        `${projected} pts`
-                      )}
+                {/* Zone clic joueur (nom + avatar + calculs) -> ouvre la modale complète */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingPlayer(p)
+                    setOpen(true)
+                  }}
+                  className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer focus:outline-none select-none active:opacity-80 transition-opacity"
+                >
+                  <Avatar player={p} size="xs" />
+                  <div className="flex-1 min-w-0">
+                    <span className="font-semibold text-sm truncate block text-stone-900 dark:text-slate-100">
+                      {p.name}
                     </span>
-                  )}
-                </div>
-                <span className="text-lg font-black tabular-nums">
-                  +{pen}
-                </span>
-              </button>
+                    {pen > 0 && (
+                      <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400 block mt-0.5">
+                        {current} + {pen} ={' '}
+                        {isReprieve ? (
+                          <span className="text-[#c83b3b] font-bold">
+                            {projected} → {sursisTarget} pts (sursis !)
+                          </span>
+                        ) : (
+                          `${projected} pts`
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </button>
+
+                {/* Zone roulette tactile compacte (glissement vertical haut/bas ou clic) */}
+                <QuickScoreBadge
+                  value={pen}
+                  onChange={v => setPenalty(p.id, v)}
+                  onOpenPad={() => {
+                    setEditingPlayer(p)
+                    setOpen(true)
+                  }}
+                  min={0}
+                  showPlus={true}
+                />
+              </div>
             )
           })}
         </div>

@@ -4,6 +4,7 @@ import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
+import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 
 export function SixQuiPrendEngine({ game, onFinish }) {
   const { updateScores } = useGame()
@@ -48,25 +49,38 @@ export function SixQuiPrendEngine({ game, onFinish }) {
           {game.players.map(p => {
             const total = game.scores[p.id] || 0
             const danger = total >= 50
+            const heads = roundScores[p.id] || 0
             return (
-              <button
+              <div
                 key={p.id}
-                type="button"
-                onClick={() => { setEditingPlayer(p); setOpen(true) }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl school-subtle hover:border-[#c83b3b] active:scale-[0.99] transition-all"
+                className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl school-subtle hover:border-[#c83b3b]/60 transition-all"
               >
-                <Avatar player={p} size="xs" />
-                <span className="flex-1 font-semibold text-sm text-left truncate">
-                  {p.name}
-                </span>
-                {danger && <AlertTriangle size={14} className="text-[#c83b3b]" />}
-                <span className="text-xs font-medium text-stone-500 dark:text-slate-400">
-                  Cumul : {total}/66
-                </span>
-                <span className="text-lg font-black tabular-nums ml-2 text-[#c83b3b]">
-                  +{roundScores[p.id] || 0}
-                </span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => { setEditingPlayer(p); setOpen(true) }}
+                  className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer focus:outline-none select-none active:opacity-80 transition-opacity"
+                >
+                  <Avatar player={p} size="xs" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-sm truncate">
+                        {p.name}
+                      </span>
+                      {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
+                    </div>
+                    <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400 block mt-0.5">
+                      Cumul : {total}/66
+                    </span>
+                  </div>
+                </button>
+                <QuickScoreBadge
+                  value={heads}
+                  onChange={v => setRoundScores(prev => ({ ...prev, [p.id]: Math.max(0, v) }))}
+                  onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
+                  min={0}
+                  showPlus={true}
+                />
+              </div>
             )
           })}
         </div>

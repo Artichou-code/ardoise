@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
+import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { Avatar } from '../ui/Avatar'
 import { useGame } from '../../context/GameContext'
 import { computeSkyjoRound, checkSkyjoEnd, isSkyjoScoreDoubled } from '../../engines/gameEngines'
@@ -95,25 +96,32 @@ export function SkyjoEngine({ game, onFinish }) {
         </p>
         <div className="space-y-2">
           {game.players.map(p => (
-            <button
+            <div
               key={p.id}
-              type="button"
-              onClick={() => { setEditingPlayer(p); setOpen(true) }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl school-subtle hover:border-[#c83b3b] active:scale-[0.99] transition-all"
+              className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl school-subtle hover:border-[#c83b3b]/60 transition-all"
             >
-              <Avatar player={p} size="xs" />
-              <span className="flex-1 font-semibold text-sm text-left truncate">
-                {p.name}
-              </span>
-              {closerId === p.id && closerDoubled && (
-                <span className="text-xs text-[#c83b3b] font-bold">
-                  ×2 ({roundScores[p.id] * 2})
+              <button
+                type="button"
+                onClick={() => { setEditingPlayer(p); setOpen(true) }}
+                className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer focus:outline-none select-none active:opacity-80 transition-opacity"
+              >
+                <Avatar player={p} size="xs" />
+                <span className="flex-1 font-semibold text-sm truncate">
+                  {p.name}
                 </span>
-              )}
-              <span className="text-lg font-black tabular-nums">
-                {roundScores[p.id] >= 0 ? '+' : ''}{roundScores[p.id]}
-              </span>
-            </button>
+                {closerId === p.id && closerDoubled && (
+                  <span className="text-xs text-[#c83b3b] font-bold shrink-0">
+                    ×2 ({roundScores[p.id] * 2})
+                  </span>
+                )}
+              </button>
+              <QuickScoreBadge
+                value={roundScores[p.id] || 0}
+                onChange={v => setRoundScores(prev => ({ ...prev, [p.id]: v }))}
+                onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
+                showPlus={true}
+              />
+            </div>
           ))}
         </div>
       </div>
