@@ -176,6 +176,10 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                         <img
                           src="/ART-crea.svg"
                           alt="Logo ART-créa"
+                          width={48}
+                          height={26}
+                          loading="lazy"
+                          decoding="async"
                           className="h-6.5 w-auto max-w-full object-contain object-left select-none"
                           draggable={false}
                         />
@@ -187,6 +191,10 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                         <img
                           src={card.logoSrc}
                           alt={card.title}
+                          width={40}
+                          height={40}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full rounded-xl object-cover shadow-2xs"
                           draggable={false}
                         />

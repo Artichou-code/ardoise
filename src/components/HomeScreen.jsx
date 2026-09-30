@@ -16,9 +16,10 @@ import { GameSetupSheet } from './GameSetupSheet'
 import { ShareGamesModal } from './ShareGamesModal'
 import { SyncModal } from './SyncModal'
 
-const LegalModal = lazy(() => import('./LegalModal').then((m) => ({ default: m.LegalModal })))
+import { LegalModal } from './LegalModal'
+import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
+
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
-const ArtCreaUniverseModal = lazy(() => import('./ArtCreaUniverseModal').then((m) => ({ default: m.ArtCreaUniverseModal })))
 
 export function HomeScreen() {
   const { games, setScreen, resumeGame, customPresets, deletePreset, createGame, reloadStorage, liveSessionNotice, setLiveSessionNotice } = useGame()
