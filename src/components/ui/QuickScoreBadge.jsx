@@ -201,10 +201,27 @@ export function QuickScoreBadge({
                 {displayedValue}
               </span>
               {subText && (
-                <span className="text-[10px] font-extrabold uppercase tracking-tight text-center mt-1 leading-none opacity-90 truncate max-w-full">
+                <span className="text-[10px] font-extrabold uppercase tracking-tight text-center mt-0.5 leading-none opacity-90 truncate max-w-full">
                   {subText}
                 </span>
               )}
+              {/* Repère tactile discret : doigt avec onde de tap (Variante 1) */}
+              <div className="relative flex items-center justify-center mt-1 w-5 h-5 pointer-events-none">
+                <span className="absolute w-3 h-3 rounded-full bg-[#c83b3b]/25 anim-tap-ripple" />
+                <svg
+                  className="w-3.5 h-3.5 text-[#c83b3b] opacity-65 group-hover:opacity-100 anim-finger-tap transition-opacity"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777"
+                  />
+                </svg>
+              </div>
             </div>
             <ChevronDown size={15} className="opacity-45 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />
           </>

@@ -211,3 +211,24 @@ html.dark input, html.dark button, html.dark select, html.dark textarea {
   transform: translate3d(100%, 0, 0) !important;
   transition: transform 0.28s cubic-bezier(0.32, 0, 0.67, 0) !important;
 }
+
+/* Animation Tap Tactile (Affordance de clic sur zone tactile) */
+@keyframes fingerTap {
+  0%, 100% { transform: scale(1) translateY(0); }
+  40% { transform: scale(0.85) translateY(2px); }
+  60% { transform: scale(1.05) translateY(-1px); }
+}
+
+@keyframes tapRipple {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.anim-finger-tap {
+  animation: fingerTap 2.5s infinite ease-in-out;
+}
+
+.anim-tap-ripple {
+  animation: tapRipple 2.5s infinite ease-out;
+}
+
