@@ -14,11 +14,13 @@ import { StatsScreen } from './components/StatsScreen'
 import { PlayersScreen } from './components/PlayersScreen'
 import { TrophiesScreen } from './components/TrophiesScreen'
 
-// Modales lourdes : chargement différé (jamais visibles au 1er rendu)
+// Modales déjà présentes dans le bundle principal (statiquement importées par d'autres écrans)
+import { ShareGamesModal } from './components/ShareGamesModal'
+import { SyncModal } from './components/SyncModal'
+
+// Modales lourdes spécifiques : chargement différé (jamais visibles au 1er rendu)
 const ImportGamesModal = lazy(() => import('./components/ImportGamesModal').then((m) => ({ default: m.ImportGamesModal })))
 const LiveSessionModal = lazy(() => import('./components/LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
-const ShareGamesModal = lazy(() => import('./components/ShareGamesModal').then((m) => ({ default: m.ShareGamesModal })))
-const SyncModal = lazy(() => import('./components/SyncModal').then((m) => ({ default: m.SyncModal })))
 const LegalModal = lazy(() => import('./components/LegalModal').then((m) => ({ default: m.LegalModal })))
 const ArtCreaUniverseModal = lazy(() => import('./components/ArtCreaUniverseModal').then((m) => ({ default: m.ArtCreaUniverseModal })))
 const ShareAppModal = lazy(() => import('./components/ShareAppModal').then((m) => ({ default: m.ShareAppModal })))

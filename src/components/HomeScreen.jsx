@@ -10,14 +10,14 @@ import { formatDate, formatGameStart } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
 import { formatTypography } from '../utils/typography'
 import { getActiveSession } from '../store/liveSession'
+import { RulesSheet } from './RulesSheet'
+import { GameDetailSheet } from './GameDetailSheet'
+import { ShareGamesModal } from './ShareGamesModal'
+import { SyncModal } from './SyncModal'
 
 const GameSetupSheet = lazy(() => import('./GameSetupSheet').then((m) => ({ default: m.GameSetupSheet })))
-const RulesSheet = lazy(() => import('./RulesSheet').then((m) => ({ default: m.RulesSheet })))
-const GameDetailSheet = lazy(() => import('./GameDetailSheet').then((m) => ({ default: m.GameDetailSheet })))
 const LegalModal = lazy(() => import('./LegalModal').then((m) => ({ default: m.LegalModal })))
-const SyncModal = lazy(() => import('./SyncModal').then((m) => ({ default: m.SyncModal })))
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
-const ShareGamesModal = lazy(() => import('./ShareGamesModal').then((m) => ({ default: m.ShareGamesModal })))
 const ArtCreaUniverseModal = lazy(() => import('./ArtCreaUniverseModal').then((m) => ({ default: m.ArtCreaUniverseModal })))
 
 export function HomeScreen() {
@@ -59,7 +59,25 @@ export function HomeScreen() {
       }
     }
 
-    return () => window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
+    // Préchauffage en tâche de fond de la modale de préparation de partie
+    const prefetchSetup = () => {
+      import('./GameSetupSheet').catch(() => {})
+    }
+    let idleHandle = null
+    let timerHandle = null
+    if (typeof window !== 'undefined') {
+      if ('requestIdleCallback' in window) {
+        idleHandle = window.requestIdleCallback(prefetchSetup)
+      } else {
+        timerHandle = setTimeout(prefetchSetup, 1200)
+      }
+    }
+
+    return () => {
+      window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
+      if (idleHandle && 'cancelIdleCallback' in window) window.cancelIdleCallback(idleHandle)
+      if (timerHandle) clearTimeout(timerHandle)
+    }
   }, [])
 
   const activeGames = games.filter(g => g.status === 'active')
