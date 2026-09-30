@@ -102,14 +102,14 @@ export function GameScreen() {
       </header>
 
       {/* Tableau des scores */}
-      <div className="flex-shrink-0 px-3 sm:px-4 pt-3 pb-2">
+      <div className="flex-shrink-0 px-3 sm:px-4 pt-1.5 pb-1">
         <div className={`grid ${
-          activeGame.players.length <= 2 ? 'grid-cols-2 gap-2' :
-          activeGame.players.length === 3 ? 'grid-cols-3 gap-2' :
-          activeGame.players.length === 4 ? 'grid-cols-4 gap-2' :
-          activeGame.players.length === 5 ? 'grid-cols-5 gap-1.5' :
+          activeGame.players.length <= 2 ? 'grid-cols-2 gap-1.5' :
+          activeGame.players.length === 3 ? 'grid-cols-3 gap-1.5' :
+          activeGame.players.length === 4 ? 'grid-cols-4 gap-1.5' :
+          activeGame.players.length === 5 ? 'grid-cols-5 gap-1' :
           activeGame.players.length === 6 ? 'grid-cols-6 gap-1' :
-          'grid-cols-4 gap-1.5'
+          'grid-cols-4 gap-1'
         }`}>
           {ranking.map(({ id, score, rank }) => {
             const player = activeGame.players.find(p => p.id === id)
@@ -120,15 +120,15 @@ export function GameScreen() {
               <div
                 key={id}
                 className={`flex flex-col items-center rounded-xl transition-all ${
-                  isCrowded ? 'gap-0.5 p-1.5' : 'gap-1 p-2.5'
+                  isCrowded ? 'gap-0.5 py-1 px-1' : 'gap-0.5 py-1.5 px-1.5'
                 } ${
                   isLeader
                     ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
                     : 'school-card'
                 }`}
               >
-                <div className="flex items-center justify-between w-full px-0.5">
-                  <span className={`text-[9px] sm:text-[10px] font-bold uppercase ${
+                <div className="flex items-center justify-between w-full px-0.5 leading-none">
+                  <span className={`text-[9px] font-bold uppercase ${
                     isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
                   }`}>
                     {rank === 1 ? '1er' : `${rank}e`}
@@ -137,13 +137,13 @@ export function GameScreen() {
                     <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
                   )}
                 </div>
-                <Avatar player={player} size={isCrowded ? 'xs' : 'sm'} leader={isLeader} />
-                <span className="text-[11px] sm:text-xs font-semibold truncate max-w-full text-center px-0.5">
+                <Avatar player={player} size={isCrowded ? 'xs' : 'sm-compact'} leader={isLeader} />
+                <span className="text-[11px] font-semibold truncate max-w-full text-center px-0.5 leading-tight">
                   {player.name}
                 </span>
                 <span
-                  className={`font-black tabular-nums ${
-                    isCrowded ? 'text-base sm:text-lg' : 'text-xl'
+                  className={`font-black tabular-nums leading-none ${
+                    isCrowded ? 'text-sm' : 'text-base'
                   } ${
                     isLeader ? 'text-[#c83b3b]' : ''
                   }`}
