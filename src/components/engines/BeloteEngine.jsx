@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MoreHorizontal, ChevronRight } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { computeBeloteScore } from '../../engines/gameEngines'
 import { BELOTE_CONTRACTS } from '../../constants/games'
@@ -112,11 +113,14 @@ export function BeloteEngine({ game, onFinish }) {
           <button
             type="button"
             onClick={() => setOpenContractSheet(true)}
-            className="text-left cursor-pointer focus:outline-none"
+            className="text-left cursor-pointer focus:outline-none group/title"
           >
-            <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 leading-tight">
-              Contrat annoncé
-            </p>
+            <div className="flex items-center gap-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 leading-tight group-hover/title:text-[#c83b3b] transition-colors">
+                Contrat annoncé
+              </p>
+              <ChevronRight size={12} className="opacity-40 group-hover/title:opacity-100 group-hover/title:translate-x-0.5 transition-all text-stone-400 group-hover/title:text-[#c83b3b]" />
+            </div>
             <p className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 mt-0.5">
               {contract === 252
                 ? 'Capot (252 pts)'
@@ -134,7 +138,6 @@ export function BeloteEngine({ game, onFinish }) {
               { val: 100, label: '100' },
               { val: 110, label: '110' },
               { val: 120, label: '120' },
-              { val: 140, label: '140' },
               { val: 160, label: '160' },
               { val: 252, label: 'Capot' },
             ].map(shortcut => (
@@ -151,6 +154,18 @@ export function BeloteEngine({ game, onFinish }) {
                 {shortcut.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setOpenContractSheet(true)}
+              title="Autres contrats (ouvrir la liste complète)"
+              className={`py-1.5 px-1 rounded-lg text-xs font-bold border text-center transition-colors cursor-pointer flex items-center justify-center ${
+                ![80, 90, 100, 110, 120, 160, 252].includes(contract)
+                  ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                  : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
+              }`}
+            >
+              <MoreHorizontal size={14} />
+            </button>
           </div>
         </div>
 
@@ -174,11 +189,14 @@ export function BeloteEngine({ game, onFinish }) {
           <button
             type="button"
             onClick={() => setOpenTakerSheet(true)}
-            className="text-left cursor-pointer focus:outline-none"
+            className="text-left cursor-pointer focus:outline-none group/title"
           >
-            <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 leading-tight">
-              Points du preneur (/ 162)
-            </p>
+            <div className="flex items-center gap-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 leading-tight group-hover/title:text-[#c83b3b] transition-colors">
+                Points du preneur (/ 162)
+              </p>
+              <ChevronRight size={12} className="opacity-40 group-hover/title:opacity-100 group-hover/title:translate-x-0.5 transition-all text-stone-400 group-hover/title:text-[#c83b3b]" />
+            </div>
             <p className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 mt-0.5">
               Défense : <span className="font-bold text-stone-700 dark:text-slate-300">{162 - pointsTaker} pts</span>
             </p>
@@ -207,6 +225,18 @@ export function BeloteEngine({ game, onFinish }) {
                 {shortcut.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setOpenTakerSheet(true)}
+              title="Autre score (ouvrir le pavé numérique)"
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer flex items-center justify-center ${
+                ![82, 90, 100, 110, 120, 162].includes(pointsTaker)
+                  ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                  : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
+              }`}
+            >
+              <MoreHorizontal size={14} />
+            </button>
           </div>
         </div>
 
@@ -231,11 +261,14 @@ export function BeloteEngine({ game, onFinish }) {
           <button
             type="button"
             onClick={() => setOpenAnnoncesSheet(true)}
-            className="text-left cursor-pointer focus:outline-none"
+            className="text-left cursor-pointer focus:outline-none group/title"
           >
-            <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 leading-tight">
-              Annonces & Belote
-            </p>
+            <div className="flex items-center gap-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 leading-tight group-hover/title:text-[#c83b3b] transition-colors">
+                Annonces & Belote
+              </p>
+              <ChevronRight size={12} className="opacity-40 group-hover/title:opacity-100 group-hover/title:translate-x-0.5 transition-all text-stone-400 group-hover/title:text-[#c83b3b]" />
+            </div>
             <p className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 mt-0.5">
               {announcements > 0 ? `+${announcements} pts d'annonces` : 'Aucune annonce'}
             </p>
@@ -264,6 +297,18 @@ export function BeloteEngine({ game, onFinish }) {
                 {shortcut.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setOpenAnnoncesSheet(true)}
+              title="Autres annonces (ouvrir le pavé)"
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer flex items-center justify-center ${
+                ![0, 20, 40, 50, 90, 100].includes(announcements)
+                  ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                  : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
+              }`}
+            >
+              <MoreHorizontal size={14} />
+            </button>
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react'
+import { ArrowUpDown, ChevronUp, ChevronDown, SlidersHorizontal } from 'lucide-react'
 
 /**
  * Badge de score compact avec roulette tactile intégrée (scroll tactile / glissement vertical).
@@ -195,7 +195,12 @@ export function QuickScoreBadge({
       >
         {tall ? (
           <>
-            <ChevronUp size={14} className="opacity-40 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />
+            {/* Indicateur de réglage discret en coin supérieur */}
+            <SlidersHorizontal
+              size={10}
+              className="absolute top-2 right-2 opacity-35 group-hover:opacity-85 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b] pointer-events-none"
+            />
+            <ChevronUp size={14} className="opacity-45 group-hover:opacity-100 transition-opacity text-stone-500 dark:text-slate-400 group-hover:text-[#c83b3b]" />
             <div className="flex flex-col items-center justify-center my-auto min-w-0 max-w-full px-1">
               <span className="text-xl sm:text-2xl font-black tabular-nums leading-none tracking-tight text-center">
                 {displayedValue}
