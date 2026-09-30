@@ -8,7 +8,20 @@ import { ArrowUpDown } from 'lucide-react'
  * - Le relâchement du doigt conserve le score choisi sans fermer la page.
  * - La validation finale et fermeture se fait par le bouton rouge « Valider ».
  */
-export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore, formatTotal }) {
+export function ScorePad({
+  value = 0,
+  onChange,
+  onConfirm,
+  label,
+  min,
+  max,
+  step = 1,
+  baseScore,
+  formatTotal,
+  presets,
+  showPlus = true,
+  customButtons,
+}) {
   const [isDragging, setIsDragging] = useState(false)
 
   const dragStartYRef = useRef(0)
@@ -25,12 +38,14 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore
   }, [value])
 
   const clampValue = (val) => {
-    if (min !== undefined && val < min) return min
-    return val
+    let res = val
+    if (min !== undefined && res < min) res = min
+    if (max !== undefined && res > max) res = max
+    return res
   }
 
   // Déclinaison monochrome rouge Ardoise avec transparences graduées
-  const buttons = [
+  const buttons = customButtons || [
     {
       label: '+1',
       delta: 1,
@@ -86,8 +101,9 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore
     }
 
     // Sensibilité : ~14px par pas de score
-    const step = Math.round(totalDeltaY / 14)
-    const nextVal = clampValue(dragStartValueRef.current + step)
+    const dragStep = step || 1
+    const stepsCount = Math.round(totalDeltaY / 14) * dragStep
+    const nextVal = clampValue(dragStartValueRef.current + stepsCount)
 
     if (nextVal !== currentValueRef.current) {
       currentValueRef.current = nextVal
@@ -122,6 +138,7 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore
     } catch {}
   }
 
+  const dragStep = step || 1
   const cur = currentValueRef.current
   const totalScore = baseScore !== undefined ? baseScore + cur : null
   const totalText = formatTotal
@@ -129,6 +146,12 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore
     : totalScore !== null
     ? `Total : ${totalScore}`
     : null
+
+  const displayVal = (v) => {
+    const clamped = clampValue(v)
+    const sign = showPlus && clamped > 0 ? '+' : ''
+    return `${sign}${clamped}`
+  }
 
   return (
     <div className="flex flex-col gap-3 pt-2">
@@ -164,33 +187,33 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore
               {/* Cylindre de roulette */}
               <div className="flex flex-col items-center leading-none">
                 <span className="text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums">
-                  {clampValue(cur + 2) >= 0 ? '+' : ''}{clampValue(cur + 2)}
+                  {displayVal(cur + dragStep * 2)}
                 </span>
                 <span className="text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 my-1 tabular-nums">
-                  {clampValue(cur + 1) >= 0 ? '+' : ''}{clampValue(cur + 1)}
+                  {displayVal(cur + dragStep)}
                 </span>
 
                 {/* Mire centrale */}
                 <div className="relative flex items-center justify-center px-6 py-1 my-0.5 rounded-xl bg-white dark:bg-slate-900 border border-[#c83b3b]/40 shadow-xs">
                   <span className="absolute left-2 text-[#c83b3b] font-mono text-xs font-black">▶</span>
                   <span className="text-4xl font-black text-[#c83b3b] dark:text-red-400 tabular-nums tracking-tight">
-                    {cur >= 0 ? '+' : ''}{cur}
+                    {displayVal(cur)}
                   </span>
                   <span className="absolute right-2 text-[#c83b3b] font-mono text-xs font-black">◀</span>
                 </div>
 
                 <span className="text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 my-1 tabular-nums">
-                  {clampValue(cur - 1) >= 0 ? '+' : ''}{clampValue(cur - 1)}
+                  {displayVal(cur - dragStep)}
                 </span>
                 <span className="text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums">
-                  {clampValue(cur - 2) >= 0 ? '+' : ''}{clampValue(cur - 2)}
+                  {displayVal(cur - dragStep * 2)}
                 </span>
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-0.5 py-1">
               <span className="text-4xl font-black tabular-nums tracking-tight text-stone-900 dark:text-slate-100">
-                {value >= 0 ? '+' : ''}{value}
+                {displayVal(value)}
               </span>
               {totalScore !== null ? (
                 <span className="text-xs font-bold text-stone-600 dark:text-slate-400">
@@ -207,8 +230,36 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore
         </div>
       </div>
 
+      {/* Raccourcis prédéfinis si fournis */}
+      {presets && presets.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 justify-center pt-0.5">
+          {presets.map(p => {
+            const pVal = typeof p === 'object' ? p.value : p
+            const pLabel = typeof p === 'object' ? p.label : `${showPlus && pVal > 0 ? '+' : ''}${pVal}`
+            const isSelected = value === pVal
+            return (
+              <button
+                key={pVal}
+                type="button"
+                onClick={() => {
+                  onChange(pVal)
+                  try { navigator.vibrate?.(10) } catch {}
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
+                }`}
+              >
+                {pLabel}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
       {/* Boutons incrémentaux aux nuances de rouge avec transparences */}
-      <div className="grid grid-cols-5 gap-2 pt-1">
+      <div className={`grid gap-2 pt-1 ${buttons.length === 5 ? 'grid-cols-5' : 'grid-cols-4 sm:grid-cols-5'}`}>
         {buttons.map(({ label: lbl, delta, colorClass }) => (
           <button
             key={lbl}
