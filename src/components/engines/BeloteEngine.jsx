@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MoreHorizontal, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { computeBeloteScore } from '../../engines/gameEngines'
 import { BELOTE_CONTRACTS } from '../../constants/games'
@@ -138,6 +138,7 @@ export function BeloteEngine({ game, onFinish }) {
               { val: 100, label: '100' },
               { val: 110, label: '110' },
               { val: 120, label: '120' },
+              { val: 140, label: '140' },
               { val: 160, label: '160' },
               { val: 252, label: 'Capot' },
             ].map(shortcut => (
@@ -154,18 +155,6 @@ export function BeloteEngine({ game, onFinish }) {
                 {shortcut.label}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={() => setOpenContractSheet(true)}
-              title="Autres contrats (ouvrir la liste complète)"
-              className={`py-1.5 px-1 rounded-lg text-xs font-bold border text-center transition-colors cursor-pointer flex items-center justify-center ${
-                ![80, 90, 100, 110, 120, 160, 252].includes(contract)
-                  ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
-                  : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
-              }`}
-            >
-              <MoreHorizontal size={14} />
-            </button>
           </div>
         </div>
 
@@ -202,8 +191,8 @@ export function BeloteEngine({ game, onFinish }) {
             </p>
           </button>
 
-          {/* Raccourcis manuels équilibrés sur la gauche */}
-          <div className="flex flex-wrap gap-1.5 pt-0.5">
+          {/* Raccourcis manuels équilibrés sur la gauche (2 lignes de 3) */}
+          <div className="grid grid-cols-3 gap-1.5 pt-0.5">
             {[
               { val: 82, label: '82 (fait 80)' },
               { val: 90, label: '90' },
@@ -216,7 +205,7 @@ export function BeloteEngine({ game, onFinish }) {
                 key={shortcut.val}
                 type="button"
                 onClick={() => setPointsTaker(shortcut.val)}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
+                className={`py-1.5 px-1 rounded-lg text-xs font-bold border text-center transition-colors cursor-pointer ${
                   pointsTaker === shortcut.val
                     ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
                     : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
@@ -225,18 +214,6 @@ export function BeloteEngine({ game, onFinish }) {
                 {shortcut.label}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={() => setOpenTakerSheet(true)}
-              title="Autre score (ouvrir le pavé numérique)"
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer flex items-center justify-center ${
-                ![82, 90, 100, 110, 120, 162].includes(pointsTaker)
-                  ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
-                  : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
-              }`}
-            >
-              <MoreHorizontal size={14} />
-            </button>
           </div>
         </div>
 
@@ -274,8 +251,8 @@ export function BeloteEngine({ game, onFinish }) {
             </p>
           </button>
 
-          {/* Raccourcis manuels annonces */}
-          <div className="flex flex-wrap gap-1.5 pt-0.5">
+          {/* Raccourcis manuels annonces (2 lignes de 3) */}
+          <div className="grid grid-cols-3 gap-1.5 pt-0.5">
             {[
               { val: 0, label: '0' },
               { val: 20, label: '+20 (Belote)' },
@@ -288,7 +265,7 @@ export function BeloteEngine({ game, onFinish }) {
                 key={shortcut.val}
                 type="button"
                 onClick={() => setAnnouncements(shortcut.val)}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
+                className={`py-1.5 px-1 rounded-lg text-xs font-bold border text-center transition-colors cursor-pointer ${
                   announcements === shortcut.val
                     ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
                     : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
@@ -297,18 +274,6 @@ export function BeloteEngine({ game, onFinish }) {
                 {shortcut.label}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={() => setOpenAnnoncesSheet(true)}
-              title="Autres annonces (ouvrir le pavé)"
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer flex items-center justify-center ${
-                ![0, 20, 40, 50, 90, 100].includes(announcements)
-                  ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
-                  : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
-              }`}
-            >
-              <MoreHorizontal size={14} />
-            </button>
           </div>
         </div>
 
