@@ -211,9 +211,13 @@ export function QuickScoreBadge({
               )}
             </div>
 
-            {/* Repère tactile discret : même gris que les flèches (stone-500 / slate-400) */}
+            {/* Repère tactile discret : masqué automatiquement pendant le glissement tactile */}
             <div className="flex flex-col items-center gap-0.5 pb-0.5">
-              <div className="relative flex items-center justify-center w-6 h-6 pointer-events-none mb-0.5">
+              <div
+                className={`relative flex items-center justify-center w-6 h-6 pointer-events-none mb-0.5 transition-all duration-200 ${
+                  isDragging ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+                }`}
+              >
                 <span className="absolute w-4 h-4 rounded-full bg-stone-500/15 dark:bg-slate-400/15 anim-tap-ripple" />
                 <svg
                   className="w-4 h-4 text-stone-500 dark:text-slate-400 opacity-55 group-hover:opacity-100 group-hover:text-[#c83b3b] anim-finger-tap transition-all"
