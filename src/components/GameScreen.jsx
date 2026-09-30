@@ -80,11 +80,11 @@ export function GameScreen() {
             <button
               type="button"
               onClick={cancelCorrection}
-              className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-2 rounded-xl border border-[#c83b3b]/35 bg-[#c83b3b]/10 hover:bg-[#c83b3b]/20 dark:bg-[#c83b3b]/20 dark:border-[#c83b3b]/40 transition-colors cursor-pointer"
               title="Annuler la modification (conserver la manche)"
               aria-label="Annuler la modification"
             >
-              <RotateCw size={16} className="text-stone-600 dark:text-slate-400 hover:text-[#c83b3b]" />
+              <RotateCw size={16} className="text-[#c83b3b] dark:text-red-400" />
             </button>
           ) : canUndo ? (
             <button
