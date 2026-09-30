@@ -146,10 +146,10 @@ export function BeloteEngine({ game, onFinish }) {
                 key={shortcut.val}
                 type="button"
                 onClick={() => handleContractChange(shortcut.val)}
-                className={`py-1.5 px-1 rounded-lg text-xs font-bold border text-center transition-colors cursor-pointer ${
+                className={`py-1 px-1 rounded-lg text-xs font-bold border text-center transition-colors cursor-pointer flex items-center justify-center min-h-[2.5rem] ${
                   contract === shortcut.val
                     ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
-                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
+                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
                 }`}
               >
                 {shortcut.label}
@@ -194,26 +194,38 @@ export function BeloteEngine({ game, onFinish }) {
           {/* Raccourcis manuels équilibrés sur la gauche (2 lignes de 3) */}
           <div className="grid grid-cols-3 gap-1.5 pt-0.5">
             {[
-              { val: 82, label: '82 (fait 80)' },
-              { val: 90, label: '90' },
-              { val: 100, label: '100' },
-              { val: 110, label: '110' },
-              { val: 120, label: '120' },
-              { val: 162, label: '162 (Capot)' },
-            ].map(shortcut => (
-              <button
-                key={shortcut.val}
-                type="button"
-                onClick={() => setPointsTaker(shortcut.val)}
-                className={`py-1.5 px-1 rounded-lg text-xs font-bold border text-center transition-colors cursor-pointer ${
-                  pointsTaker === shortcut.val
-                    ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
-                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
-                }`}
-              >
-                {shortcut.label}
-              </button>
-            ))}
+              { val: 82, main: '82', sub: '(fait 80)' },
+              { val: 90, main: '90' },
+              { val: 100, main: '100' },
+              { val: 110, main: '110' },
+              { val: 120, main: '120' },
+              { val: 162, main: '162', sub: '(Capot)' },
+            ].map(shortcut => {
+              const isSelected = pointsTaker === shortcut.val
+              return (
+                <button
+                  key={shortcut.val}
+                  type="button"
+                  onClick={() => setPointsTaker(shortcut.val)}
+                  className={`py-1 px-1 rounded-lg border text-center transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[2.5rem] ${
+                    isSelected
+                      ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                      : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
+                  }`}
+                >
+                  <span className="text-xs font-bold leading-none">{shortcut.main}</span>
+                  {shortcut.sub && (
+                    <span
+                      className={`text-[10px] font-normal leading-tight mt-0.5 ${
+                        isSelected ? 'text-white/80' : 'text-stone-500 dark:text-slate-400'
+                      }`}
+                    >
+                      {shortcut.sub}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
         </div>
 
@@ -254,26 +266,38 @@ export function BeloteEngine({ game, onFinish }) {
           {/* Raccourcis manuels annonces (2 lignes de 3) */}
           <div className="grid grid-cols-3 gap-1.5 pt-0.5">
             {[
-              { val: 0, label: '0' },
-              { val: 20, label: '+20 (Belote)' },
-              { val: 40, label: '+40' },
-              { val: 50, label: '+50' },
-              { val: 90, label: '+90' },
-              { val: 100, label: '+100' },
-            ].map(shortcut => (
-              <button
-                key={shortcut.val}
-                type="button"
-                onClick={() => setAnnouncements(shortcut.val)}
-                className={`py-1.5 px-1 rounded-lg text-xs font-bold border text-center transition-colors cursor-pointer ${
-                  announcements === shortcut.val
-                    ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
-                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400'
-                }`}
-              >
-                {shortcut.label}
-              </button>
-            ))}
+              { val: 0, main: '0' },
+              { val: 20, main: '+20', sub: '(Belote)' },
+              { val: 40, main: '+40' },
+              { val: 50, main: '+50' },
+              { val: 90, main: '+90' },
+              { val: 100, main: '+100' },
+            ].map(shortcut => {
+              const isSelected = announcements === shortcut.val
+              return (
+                <button
+                  key={shortcut.val}
+                  type="button"
+                  onClick={() => setAnnouncements(shortcut.val)}
+                  className={`py-1 px-1 rounded-lg border text-center transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[2.5rem] ${
+                    isSelected
+                      ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                      : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
+                  }`}
+                >
+                  <span className="text-xs font-bold leading-none">{shortcut.main}</span>
+                  {shortcut.sub && (
+                    <span
+                      className={`text-[10px] font-normal leading-tight mt-0.5 ${
+                        isSelected ? 'text-white/80' : 'text-stone-500 dark:text-slate-400'
+                      }`}
+                    >
+                      {shortcut.sub}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
         </div>
 
