@@ -318,7 +318,6 @@ export function GameProvider({ children }) {
   // Quitter la partie
   const exitGame = useCallback(() => {
     historyRef.current = []
-    redoRef.current = []
     setHistoryTick(t => t + 1)
     setActiveGameId(null)
     setScreen('home')
