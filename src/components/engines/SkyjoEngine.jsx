@@ -9,6 +9,7 @@ import { computeSkyjoRound, checkSkyjoEnd, isSkyjoScoreDoubled } from '../../eng
 import { Dialog } from '../ui/Dialog'
 
 export function SkyjoEngine({ game, onFinish }) {
+  const { updateScores } = useGame()
   const [roundScores, setRoundScores] = useState(() => {
     const initial = {}
     for (const p of game.players) {
