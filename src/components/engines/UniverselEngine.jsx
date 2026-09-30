@@ -269,8 +269,8 @@ export function UniverselEngine({ game, onFinish }) {
                 const isSpec = isRuleActive && targetScore != null && proj === targetScore
                 const trans = isSpec ? getTransformedScore(proj) : proj
                 if (isSpec) return `🎯 ${trans}`
-                if (scoreDir === 'low_limit' && limit && trans >= limit) return `💥 ${trans}/${limit}`
-                return `= ${trans}`
+                if (scoreDir === 'low_limit' && limit && trans >= limit) return `Total : ${trans}/${limit}`
+                return `Total : ${trans}`
               }}
             />
           </div>

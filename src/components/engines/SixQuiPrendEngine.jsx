@@ -121,7 +121,7 @@ export function SixQuiPrendEngine({ game, onFinish }) {
               onConfirm={() => setOpen(false)}
               min={0}
               baseScore={game.scores[editingPlayer.id] || 0}
-              formatTotal={(val) => `= ${(game.scores[editingPlayer.id] || 0) + val}/66 🐮`}
+              formatTotal={(val) => `Total : ${(game.scores[editingPlayer.id] || 0) + val}/66 🐮`}
             />
           </div>
         </BottomSheet>

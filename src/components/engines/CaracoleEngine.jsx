@@ -215,9 +215,9 @@ export function CaracoleEngine({ game, onFinish }) {
               formatTotal={(val) => {
                 const curScore = game.scores[editingPlayer.id] || 0
                 const proj = curScore + val
-                if (sursisEnabled && proj === limit) return `🎯 ${sursisTarget}`
-                if (limit && proj >= limit) return `💥 ${proj}`
-                return `= ${proj}`
+                if (sursisEnabled && proj === limit) return `Sursis : ${sursisTarget}`
+                if (limit && proj >= limit) return `Total : ${proj} (Éliminé)`
+                return `Total : ${proj}`
               }}
             />
           </div>

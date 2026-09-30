@@ -127,7 +127,7 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore
   const totalText = formatTotal
     ? formatTotal(cur)
     : totalScore !== null
-    ? `= ${totalScore}`
+    ? `Total : ${totalScore}`
     : null
 
   return (
@@ -194,7 +194,7 @@ export function ScorePad({ value = 0, onChange, onConfirm, label, min, baseScore
               </span>
               {totalScore !== null ? (
                 <span className="text-xs font-bold text-stone-600 dark:text-slate-400">
-                  {formatTotal ? formatTotal(value) : `= ${baseScore + value}`}
+                  {formatTotal ? formatTotal(value) : `Total : ${baseScore + value}`}
                 </span>
               ) : (
                 <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 flex items-center gap-1">
