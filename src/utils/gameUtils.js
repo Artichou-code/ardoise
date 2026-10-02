@@ -52,6 +52,31 @@ export function getRanking(scores, direction = 'high') {
     .map(([id, score], idx) => ({ id, score, rank: idx + 1 }))
 }
 
+const MAX_GAP_MS = 15 * 60 * 1000 // 15 min — pauses au-delà ignorées
+
+export function computePlayDuration(game) {
+  const { rounds = [], startedAt, finishedAt } = game
+  const end = finishedAt || Date.now()
+  const hasSavedAt = rounds.length > 0 && rounds[0].savedAt != null
+
+  if (!hasSavedAt) {
+    // Fallback anciennes parties : plafond à N × 20 min
+    const raw = end - startedAt
+    const cap = Math.max(rounds.length, 1) * 20 * 60 * 1000
+    return Math.min(raw, cap)
+  }
+
+  // Nouvelles parties : somme des gaps inter-manches écrêtés
+  let total = 0
+  let prev = startedAt
+  for (const round of rounds) {
+    total += Math.min(round.savedAt - prev, MAX_GAP_MS)
+    prev = round.savedAt
+  }
+  if (finishedAt) total += Math.min(finishedAt - prev, MAX_GAP_MS)
+  return total
+}
+
 export function formatDuration(ms) {
   const s = Math.floor(ms / 1000)
   const m = Math.floor(s / 60)

@@ -20,7 +20,7 @@ import { ConfirmDialog } from './ui/Dialog'
 import { GameDetailSheet } from './GameDetailSheet'
 import { ShareGamesModal } from './ShareGamesModal'
 import { BurgerMenuButton } from './BurgerMenu'
-import { getRanking, formatDate, formatDuration } from '../utils/gameUtils'
+import { getRanking, formatDate, formatDuration, computePlayDuration } from '../utils/gameUtils'
 
 export function HistoryScreen() {
   const { games, setScreen, removeGame, resumeGame, createGame } = useGame()
@@ -225,7 +225,7 @@ export function HistoryScreen() {
                   : 'high'
               const ranking = getRanking(game.scores, scoreDir)
               const duration = game.finishedAt
-                ? formatDuration(game.finishedAt - game.startedAt)
+                ? formatDuration(computePlayDuration(game))
                 : null
               const isSelected = selectedIds.includes(game.id)
 

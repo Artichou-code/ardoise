@@ -194,7 +194,7 @@ export function GameProvider({ children }) {
     const updated = {
       ...current,
       scores: roundData.scores,
-      rounds: [...current.rounds, roundData],
+      rounds: [...current.rounds, { ...roundData, savedAt: Date.now() }],
       restoredDelta: null,
       restoredRound: null,
       correctionBackup: null,
