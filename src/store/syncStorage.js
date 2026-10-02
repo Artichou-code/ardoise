@@ -214,8 +214,16 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
       const existing = gamesMap.get(g.id)
       const existingRounds = Array.isArray(existing.rounds) ? existing.rounds.length : 0
       const newRounds = Array.isArray(g.rounds) ? g.rounds.length : 0
-      // Garder la version la plus complète ou terminée
-      if (newRounds > existingRounds || (g.status === 'finished' && existing.status !== 'finished')) {
+      const existingUpdated = Number(existing.updatedAt) || Number(existing.finishedAt) || 0
+      const newUpdated = Number(g.updatedAt) || Number(g.finishedAt) || 0
+
+      // Mettre à jour si la version entrante est plus récente, a plus de manches, est terminée ou a des scores modifiés
+      const isNewer = newUpdated > existingUpdated
+      const hasMoreRounds = newRounds > existingRounds
+      const isNewlyFinished = g.status === 'finished' && existing.status !== 'finished'
+      const isContentChanged = newRounds === existingRounds && JSON.stringify(g.scores) !== JSON.stringify(existing.scores)
+
+      if (isNewer || hasMoreRounds || isNewlyFinished || isContentChanged) {
         gamesMap.set(g.id, { ...existing, ...g })
       }
     }

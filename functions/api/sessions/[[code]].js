@@ -4,6 +4,9 @@ export async function onRequest(context) {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    'Pragma': 'no-cache',
+    'Expires': '0',
   };
 
   if (request.method === 'OPTIONS') {
@@ -29,12 +32,18 @@ export async function onRequest(context) {
       }
       const sessionCode = `ARD-${rand}`;
 
+      const initialGames = Array.isArray(body.games)
+        ? body.games
+        : Array.isArray(body.state?.games)
+        ? body.state.games
+        : [];
+
       const initialState = JSON.stringify(body.state || {
         name: body.name || 'Session Ardoise',
         createdAt: new Date().toISOString(),
         host: body.host || 'Hôte',
         participants: body.participants || [],
-        games: [],
+        games: initialGames,
       });
 
       await env.DB.prepare(
@@ -115,6 +124,79 @@ export async function onRequest(context) {
           .run();
 
         return Response.json({ success: true, sessionCode, closed: true, state: currentState }, { headers: corsHeaders });
+      }
+
+      // Action atomique : Pousser une partie sans faire de GET préalable côté client
+      if (body.action === 'push_game' && body.game && body.game.id) {
+        const existing = await env.DB.prepare(
+          'SELECT state_json, closed FROM live_sessions WHERE session_code = ?'
+        )
+          .bind(sessionCode)
+          .first();
+
+        if (!existing) {
+          return Response.json({ error: 'Session introuvable' }, { status: 404, headers: corsHeaders });
+        }
+        if (existing.closed) {
+          return Response.json({ error: 'Session clôturée', closed: true }, { status: 400, headers: corsHeaders });
+        }
+
+        let currentState = {};
+        try {
+          currentState = JSON.parse(existing.state_json || '{}');
+        } catch {}
+
+        if (currentState.closed) {
+          return Response.json({ error: 'Session clôturée', closed: true }, { status: 400, headers: corsHeaders });
+        }
+
+        const games = Array.isArray(currentState.games) ? [...currentState.games] : [];
+        const idx = games.findIndex((g) => g && g.id === body.game.id);
+        if (idx >= 0) {
+          games[idx] = body.game;
+        } else {
+          games.unshift(body.game);
+        }
+        currentState.games = games;
+        currentState.updatedAt = new Date().toISOString();
+
+        await env.DB.prepare(
+          `UPDATE live_sessions
+           SET state_json = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE session_code = ?`
+        )
+          .bind(JSON.stringify(currentState), sessionCode)
+          .run();
+
+        return Response.json({ success: true, sessionCode, state: currentState }, { headers: corsHeaders });
+      }
+
+      // Action atomique : Retirer une partie
+      if (body.action === 'remove_game' && body.gameId) {
+        const existing = await env.DB.prepare(
+          'SELECT state_json, closed FROM live_sessions WHERE session_code = ?'
+        )
+          .bind(sessionCode)
+          .first();
+
+        if (existing) {
+          let currentState = {};
+          try {
+            currentState = JSON.parse(existing.state_json || '{}');
+          } catch {}
+          const games = Array.isArray(currentState.games) ? currentState.games.filter(g => g && g.id !== body.gameId) : [];
+          currentState.games = games;
+          currentState.updatedAt = new Date().toISOString();
+
+          await env.DB.prepare(
+            `UPDATE live_sessions
+             SET state_json = ?, updated_at = CURRENT_TIMESTAMP
+             WHERE session_code = ?`
+          )
+            .bind(JSON.stringify(currentState), sessionCode)
+            .run();
+        }
+        return Response.json({ success: true, sessionCode }, { headers: corsHeaders });
       }
 
       const stateObj = typeof body.state === 'string' ? JSON.parse(body.state) : (body.state || {});

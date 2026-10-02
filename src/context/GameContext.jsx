@@ -18,7 +18,8 @@ import {
   syncSessionGamesToLocal,
   clearActiveSession,
   pushGameToLiveSession,
-  removeGameFromLiveSession
+  removeGameFromLiveSession,
+  createLiveSessionFromGame
 } from '../store/liveSession'
 import { GAME_META } from '../constants/games'
 
@@ -74,18 +75,21 @@ export function GameProvider({ children }) {
 
   // Synchronisation automatique en arrière-plan si une Table en direct est active
   useEffect(() => {
+    let isMounted = true
+
     const checkLiveSession = async () => {
       const current = getActiveSession()
       if (!current || !current.code) return
 
       try {
         const data = await fetchLiveSession(current.code)
+        if (!isMounted) return
         const deletedIds = new Set(loadDeletedGameIds())
         const remoteGames = (Array.isArray(data?.state?.games) ? data.state.games : [])
           .filter(g => g && g.id && !deletedIds.has(g.id))
         const isClosed = Boolean(data?.closed || data?.state?.closed)
 
-        const sig = `${isClosed}-${remoteGames.map(g => `${g.id}:${g.rounds?.length || 0}:${g.status}`).join(',')}`
+        const sig = `${isClosed}-${remoteGames.map(g => `${g.id}:${g.rounds?.length || 0}:${g.status}:${g.updatedAt || 0}:${JSON.stringify(g.scores || {})}`).join('|')}`
         if (sig !== lastSessionSignatureRef.current) {
           lastSessionSignatureRef.current = sig
           const stats = syncSessionGamesToLocal(data)
@@ -107,9 +111,25 @@ export function GameProvider({ children }) {
     }
 
     checkLiveSession()
-    const interval = setInterval(checkLiveSession, 4500)
-    return () => clearInterval(interval)
-  }, [reloadStorage])
+
+    // Polling accéléré (1,2s) en cours de partie pour une réactivité instantanée, 3s sur les autres écrans
+    const pollInterval = screen === 'game' ? 1200 : 3000
+    const interval = setInterval(checkLiveSession, pollInterval)
+
+    // Réveil immédiat au déverrouillage ou retour sur l'onglet mobile
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkLiveSession()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [screen, reloadStorage])
 
   // Save game helper
   const persistGame = useCallback((game) => {
@@ -416,6 +436,18 @@ export function GameProvider({ children }) {
     return updated
   }, [])
 
+  // Créer et basculer instantanément en Table en direct avec la partie en cours
+  const startLiveSessionForGame = useCallback(async (game) => {
+    const targetGame = game || activeGameRef.current || activeGame
+    if (!targetGame) throw new Error('Aucune partie active')
+    const sessionCode = await createLiveSessionFromGame(targetGame)
+    const current = getActiveSession()
+    if (current && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ardoise-live-session-changed', { detail: current }))
+    }
+    return sessionCode
+  }, [activeGame])
+
   const canUndo = Boolean(
     activeGame &&
     activeGame.rounds?.length > 0 &&
@@ -432,6 +464,7 @@ export function GameProvider({ children }) {
       finishGame, rematch, exitGame, removeGame, resumeGame,
       reloadStorage,
       liveSessionNotice, setLiveSessionNotice,
+      startLiveSessionForGame,
     }}>
       {children}
     </GameContext.Provider>

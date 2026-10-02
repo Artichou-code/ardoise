@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Plus, X, Check, BookOpen, Bookmark, BookmarkPlus, Sparkles, ArrowLeftRight, Search, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, X, Check, BookOpen, Bookmark, BookmarkPlus, Sparkles, ArrowLeftRight, Search, ChevronDown, ChevronUp, Radio } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
 import { Avatar, AvatarPicker } from './ui/Avatar'
 import { useGame } from '../context/GameContext'
@@ -65,7 +65,8 @@ function PlayerCreatorSheet({ open, onClose, onAdd }) {
 }
 
 export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }) {
-  const { players: savedPlayers, games, savePlayer, createGame, customPresets, savePreset, deletePreset } = useGame()
+  const { players: savedPlayers, games, savePlayer, createGame, customPresets, savePreset, deletePreset, startLiveSessionForGame } = useGame()
+  const [launchAsLiveTable, setLaunchAsLiveTable] = useState(false)
   const [selectedPlayers, setSelectedPlayers] = useState([])
   const [config, setConfig] = useState({ scoreDir: 'high', limit: 100 })
   const [customGameName, setCustomGameName] = useState('')
@@ -456,7 +457,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
     ? selectedPlayers.length === 4
     : selectedPlayers.length >= (meta.minPlayers || 2)
 
-  const handleStart = () => {
+  const handleStart = async () => {
     const finalConfig = {
       ...config,
       variant: gameType === 'belote' ? beloteVariant : undefined,
@@ -466,7 +467,15 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
         ? (beloteVariant === 'coinche' ? 'Coinche' : 'Belote')
         : undefined,
     }
-    createGame(gameType, selectedPlayers, finalConfig)
+    const newGame = createGame(gameType, selectedPlayers, finalConfig)
+    if (launchAsLiveTable && newGame) {
+      try {
+        await startLiveSessionForGame(newGame)
+        window.dispatchEvent(new CustomEvent('ardoise-open-live-session'))
+      } catch (err) {
+        console.error('Erreur lancement table en direct:', err)
+      }
+    }
     onClose()
   }
 
@@ -490,20 +499,53 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
         title={sheetTitle}
         subtitle={sheetSubtitle}
         headerAction={
-          onOpenRules ? (
+          <div className="flex items-center gap-1">
             <button
               type="button"
-              onClick={() => onOpenRules(gameType)}
-              className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 hover:text-[#c83b3b] transition-colors"
-              title="Consulter les règles"
-              aria-label="Règles"
+              onClick={() => setLaunchAsLiveTable(v => !v)}
+              className={`p-2 rounded-full transition-all cursor-pointer ${
+                launchAsLiveTable
+                  ? 'bg-[#c83b3b]/15 text-[#c83b3b] ring-1 ring-[#c83b3b]/40'
+                  : 'hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 hover:text-[#c83b3b]'
+              }`}
+              title={launchAsLiveTable ? "Mode Table en direct activé (cliquez pour désactiver)" : "Lancer sur une Table en direct (partager avec des amis)"}
+              aria-label="Table en direct"
             >
-              <BookOpen size={18} />
+              <Radio size={18} className={launchAsLiveTable ? 'animate-pulse' : ''} />
             </button>
-          ) : null
+            {onOpenRules ? (
+              <button
+                type="button"
+                onClick={() => onOpenRules(gameType)}
+                className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 hover:text-[#c83b3b] transition-colors cursor-pointer"
+                title="Consulter les règles"
+                aria-label="Règles"
+              >
+                <BookOpen size={18} />
+              </button>
+            ) : null}
+          </div>
         }
       >
         <div className="px-4 sm:px-5 pt-2.5 pb-4 space-y-3.5">
+          {/* Bannière d'indication Table en direct si activée */}
+          {launchAsLiveTable && (
+            <div className="p-2.5 rounded-xl bg-[#c83b3b]/10 border border-[#c83b3b]/25 flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 min-w-0">
+                <Radio size={14} className="text-[#c83b3b] shrink-0 animate-pulse" />
+                <span className="text-[11px] font-semibold text-stone-700 dark:text-slate-300 truncate">
+                  Cette partie créera une <strong>Table en direct</strong> avec QR code.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setLaunchAsLiveTable(false)}
+                className="text-[10px] font-bold text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 shrink-0 cursor-pointer"
+              >
+                Désactiver
+              </button>
+            </div>
+          )}
           {/* Sélecteur de variante Belote vs Coinche */}
           {gameType === 'belote' && (
             <div className="grid grid-cols-2 p-1 bg-stone-100 dark:bg-slate-800 rounded-xl gap-1 border border-stone-200/70 dark:border-slate-700/70">
@@ -1418,11 +1460,16 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
               disabled={!canStart}
               className="flex-1 py-3 px-2 rounded-xl font-bold disabled:opacity-40 btn-margin-red flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[46px]"
             >
+              {launchAsLiveTable && (
+                <Radio size={15} className="animate-pulse shrink-0" />
+              )}
               {gameType === 'belote' ? (
                 selectedPlayers.length === 4 ? (
                   <>
                     <span className="text-xs sm:text-sm font-bold truncate">
-                      {beloteVariant === 'coinche' ? 'Lancer la Coinche' : 'Lancer la Belote'}
+                      {launchAsLiveTable
+                        ? (beloteVariant === 'coinche' ? 'Lancer en direct (Coinche)' : 'Lancer en direct (Belote)')
+                        : (beloteVariant === 'coinche' ? 'Lancer la Coinche' : 'Lancer la Belote')}
                     </span>
                     <span className="text-[11px] font-semibold opacity-85 shrink-0">
                       (2 éq.)
@@ -1435,7 +1482,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                 )
               ) : (
                 <span className="text-xs sm:text-sm font-bold truncate">
-                  Lancer ({selectedPlayers.length}/{meta.minPlayers}+)
+                  {launchAsLiveTable ? 'Lancer en direct' : 'Lancer'} ({selectedPlayers.length}/{meta.minPlayers}+)
                 </span>
               )}
             </button>

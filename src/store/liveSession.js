@@ -91,14 +91,14 @@ export async function createLiveSession(name, hostName, participants = [], initi
 }
 
 /**
- * Récupère l'état actuel d'une session
+ * Récupère l'état actuel d'une session avec cache-busting
  */
 export async function fetchLiveSession(code) {
   const cleanCode = extractCodeFromInput(code)
   if (!cleanCode) throw new Error('Code de session manquant')
 
-  const res = await fetch(`${API_BASE}/sessions/${encodeURIComponent(cleanCode)}`, {
-    headers: { 'Cache-Control': 'no-cache' },
+  const res = await fetch(`${API_BASE}/sessions/${encodeURIComponent(cleanCode)}?_t=${Date.now()}`, {
+    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' },
   })
 
   if (!res.ok) {
@@ -212,55 +212,78 @@ export async function importSessionGames(code) {
 }
 
 /**
- * Met à jour les données de la session (ex: après une manche ou une partie jouée)
+ * Met à jour les données de la session de manière atomique et instantanée (en 1 seule requête POST)
  */
 export async function pushGameToLiveSession(code, game) {
   if (!code || !game) return
+  const cleanCode = extractCodeFromInput(code)
+  if (!cleanCode) return
+
   try {
-    const sessionData = await fetchLiveSession(code)
-    if (sessionData.closed || sessionData.state?.closed) return
-
-    const state = sessionData.state || {}
-    const games = Array.isArray(state.games) ? [...state.games] : []
-
-    const idx = games.findIndex((g) => g.id === game.id)
-    if (idx >= 0) {
-      games[idx] = game
-    } else {
-      games.unshift(game)
-    }
-    state.games = games
-
-    await fetch(`${API_BASE}/sessions/${encodeURIComponent(code)}`, {
+    const res = await fetch(`${API_BASE}/sessions/${encodeURIComponent(cleanCode)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ state }),
+      body: JSON.stringify({ action: 'push_game', game }),
     })
+
+    if (!res.ok) {
+      // Fallback si action push_game n'était pas gérée
+      const sessionData = await fetchLiveSession(cleanCode)
+      if (sessionData.closed || sessionData.state?.closed) return
+
+      const state = sessionData.state || {}
+      const games = Array.isArray(state.games) ? [...state.games] : []
+
+      const idx = games.findIndex((g) => g.id === game.id)
+      if (idx >= 0) {
+        games[idx] = game
+      } else {
+        games.unshift(game)
+      }
+      state.games = games
+
+      await fetch(`${API_BASE}/sessions/${encodeURIComponent(cleanCode)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state }),
+      })
+    }
   } catch (err) {
     console.error('Erreur pushGameToLiveSession:', err)
   }
 }
 
 /**
- * Supprime une partie d'une session en direct active
+ * Supprime une partie d'une session en direct active de façon atomique
  */
 export async function removeGameFromLiveSession(code, gameId) {
   if (!code || !gameId) return
+  const cleanCode = extractCodeFromInput(code)
+  if (!cleanCode) return
   try {
-    const sessionData = await fetchLiveSession(code)
-    if (sessionData.closed || sessionData.state?.closed) return
-
-    const state = sessionData.state || {}
-    const games = Array.isArray(state.games) ? state.games.filter((g) => g && g.id !== gameId) : []
-    state.games = games
-
-    await fetch(`${API_BASE}/sessions/${encodeURIComponent(code)}`, {
+    await fetch(`${API_BASE}/sessions/${encodeURIComponent(cleanCode)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ state }),
+      body: JSON.stringify({ action: 'remove_game', gameId }),
     })
   } catch (err) {
     console.error('Erreur removeGameFromLiveSession:', err)
   }
+}
+
+/**
+ * Crée instantanément une Table en direct à partir d'une partie (active ou en cours)
+ */
+export async function createLiveSessionFromGame(game, hostName = '') {
+  if (!game) throw new Error('Partie introuvable')
+  const gameName = game.name || 'Partie Ardoise'
+  const sessionName = `Table ${gameName}`
+  const cleanHost = (hostName || '').trim() || (game.players?.[0]?.name || 'Hôte')
+  const participants = Array.isArray(game.players)
+    ? game.players.map((p) => ({ name: p.name, joinedAt: new Date().toISOString() }))
+    : []
+
+  const sessionCode = await createLiveSession(sessionName, cleanHost, participants, [game])
+  return sessionCode
 }
 

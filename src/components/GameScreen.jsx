@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen } from 'lucide-react'
+import { useState, useEffect, lazy, Suspense } from 'react'
+import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen, Radio, Trash2 } from 'lucide-react'
 import { useGame } from '../context/GameContext'
+import { getActiveSession } from '../store/liveSession'
 import { BurgerMenuButton } from './BurgerMenu'
 import { Avatar } from './ui/Avatar'
 import { ConfirmDialog } from './ui/Dialog'
@@ -16,6 +17,8 @@ import { TarotEngine } from './engines/TarotEngine'
 import { SixQuiPrendEngine } from './engines/SixQuiPrendEngine'
 import { UniverselEngine } from './engines/UniverselEngine'
 
+const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
+
 const ENGINE_MAP = {
   [GAMES.DOURAK]: DourakEngine,
   [GAMES.CARACOLE]: CaracoleEngine,
@@ -28,12 +31,35 @@ const ENGINE_MAP = {
 }
 
 export function GameScreen() {
-  const { activeGame, exitGame, undoLastRound, cancelCorrection, canUndo, finishGame } = useGame()
+  const { activeGame, exitGame, undoLastRound, cancelCorrection, canUndo, finishGame, startLiveSessionForGame, removeGame } = useGame()
   const [showHistory, setShowHistory] = useState(false)
   const [showExitConfirm, setShowExitConfirm] = useState(false)
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showUndoConfirm, setShowUndoConfirm] = useState(false)
   const [showRules, setShowRules] = useState(false)
+  const [liveSession, setLiveSession] = useState(() => getActiveSession())
+  const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
+  const [isCreatingLive, setIsCreatingLive] = useState(false)
+
+  useEffect(() => {
+    const handleSessionChanged = (e) => setLiveSession(e.detail)
+    window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
+    return () => window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
+  }, [])
+
+  const handleGoLive = async () => {
+    if (isCreatingLive || !activeGame) return
+    setIsCreatingLive(true)
+    try {
+      await startLiveSessionForGame(activeGame)
+      setIsLiveModalOpen(true)
+    } catch (err) {
+      console.error('Erreur passage en direct:', err)
+    } finally {
+      setIsCreatingLive(false)
+    }
+  }
 
   if (!activeGame) {
     return null
@@ -76,6 +102,30 @@ export function GameScreen() {
           </button>
         </div>
         <div className="flex items-center gap-1 shrink-0">
+          {/* Bouton discret Table en direct dans le header (rond) */}
+          {liveSession ? (
+            <button
+              type="button"
+              onClick={() => setIsLiveModalOpen(true)}
+              className="w-7 h-7 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors shrink-0 cursor-pointer flex items-center justify-center"
+              title={`Table en direct active (${liveSession.code}) — Afficher le QR code et le code`}
+              aria-label="Table en direct"
+            >
+              <Radio size={14} className="animate-pulse" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleGoLive}
+              disabled={isCreatingLive}
+              className="w-7 h-7 rounded-full border border-stone-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-600 dark:text-slate-400 hover:text-[#c83b3b] dark:hover:text-rose-400 transition-colors shrink-0 cursor-pointer flex items-center justify-center"
+              title="Passer cette partie sur une Table en direct (partager avec des amis)"
+              aria-label="Passer en direct"
+            >
+              <Radio size={14} className={isCreatingLive ? 'animate-spin' : ''} />
+            </button>
+          )}
+
           {activeGame.isCorrection ? (
             <button
               type="button"
@@ -243,15 +293,23 @@ export function GameScreen() {
             onFinish={finishGame}
           />
 
-          {/* Bouton discret pour terminer la partie de façon anticipée */}
-          <div className="flex justify-center pt-3 pb-2">
+          {/* Actions secondaires sur la même ligne (espace ajusté pour éviter le retour à la ligne) */}
+          <div className="flex items-center gap-2 pt-3 pb-2 w-full max-w-sm mx-auto px-1">
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-all active:scale-[0.98] shadow-2xs cursor-pointer whitespace-nowrap"
+            >
+              <Trash2 size={12} className="text-rose-600 dark:text-rose-400 shrink-0" />
+              <span>Supprimer</span>
+            </button>
             <button
               type="button"
               onClick={() => setShowFinishConfirm(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200 border border-stone-200/90 dark:border-slate-800 hover:border-stone-300 dark:hover:border-slate-700 bg-white/70 dark:bg-slate-900/70 transition-all active:scale-[0.98] shadow-2xs"
+              className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200 border border-stone-200/90 dark:border-slate-800 hover:border-stone-300 dark:hover:border-slate-700 bg-white/70 dark:bg-slate-900/70 hover:bg-stone-50/60 dark:hover:bg-slate-800/60 transition-all active:scale-[0.98] shadow-2xs cursor-pointer whitespace-nowrap"
             >
-              <Flag size={12} className="text-stone-400 dark:text-slate-500" />
-              <span>Finir la partie plus tôt</span>
+              <Flag size={12} className="text-stone-400 dark:text-slate-500 shrink-0" />
+              <span className="whitespace-nowrap">Finir la partie plus tôt</span>
             </button>
           </div>
         </div>
@@ -351,6 +409,16 @@ export function GameScreen() {
         confirmLabel="Clôturer la partie"
       />
 
+      {/* Confirmation suppression de partie */}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={() => removeGame(activeGame.id)}
+        title="Supprimer la partie ?"
+        message="Cette partie sera définitivement effacée et ne figurera pas dans l'historique."
+        confirmLabel="Supprimer"
+      />
+
       {/* Confirmation modification de manche (minimaliste) */}
       <ConfirmDialog
         open={showUndoConfirm}
@@ -361,6 +429,17 @@ export function GameScreen() {
         confirmLabel="Corriger"
         cancelLabel="Conserver"
       />
+
+      {/* Modale Session Journée & Table en direct */}
+      {isLiveModalOpen && (
+        <Suspense fallback={null}>
+          <LiveSessionModal
+            isOpen={isLiveModalOpen}
+            onClose={() => setIsLiveModalOpen(false)}
+            onSessionChanged={(s) => setLiveSession(s)}
+          />
+        </Suspense>
+      )}
     </div>
   )
 }

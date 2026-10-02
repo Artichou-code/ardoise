@@ -39,6 +39,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [statusBanner, setStatusBanner] = useState(null)
+  const [closedSummary, setClosedSummary] = useState(null)
   const [copied, setCopied] = useState(false)
 
   useScrollLock(isOpen)
@@ -55,7 +56,10 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
 
   // Initialisation à l'ouverture de la modale
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) {
+      setClosedSummary(null)
+      return
+    }
     const current = getActiveSession()
     setActiveSession(current)
     setError(null)
@@ -105,24 +109,27 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
           reloadStorage()
 
           if (data.closed || data.state?.closed) {
-            const count = stats.syncedCount || data.state?.games?.length || 0
-            setStatusBanner({
-              type: 'success',
-              text:
-                count > 0
-                  ? `La table a été clôturée par l'hôte. ${count} partie${count > 1 ? 's ont été enregistrées' : ' a été enregistrée'} dans votre carnet\u00A0!`
-                  : `La table a été clôturée par l'hôte.`,
-            })
+            const currentGames = data.state?.games || []
+            const gameNames = [...new Set(currentGames.map((g) => getGameDisplayName(g)).filter(Boolean))]
+            const count = stats.syncedCount || currentGames.length || 0
+            const closedTableName = activeSession.name || 'Table en direct'
             importSessionGames(activeSession.code).then(() => {
               setActiveSession(null)
               setSessionDetails(null)
               reloadStorage()
               if (onSessionChanged) onSessionChanged(null)
+              setClosedSummary({
+                role: 'guest',
+                tableName: closedTableName,
+                count,
+                gameNames,
+                wasClosedByHost: true,
+              })
             })
           }
         })
         .catch(() => {})
-    }, 3500)
+    }, 1500)
     return () => clearInterval(interval)
   }, [isOpen, activeSession, reloadStorage, onSessionChanged])
 
@@ -226,18 +233,20 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     setIsLoading(true)
     setError(null)
     try {
+      const currentGames = sessionDetails?.state?.games || []
+      const gameNames = [...new Set(currentGames.map((g) => getGameDisplayName(g)).filter(Boolean))]
+      const closedTableName = activeSession.name || 'Table en direct'
       const stats = await closeLiveSession(activeSession.code)
       reloadStorage()
-      const count = stats.syncedCount || sessionDetails?.state?.games?.length || 0
+      const count = stats.syncedCount || currentGames.length || 0
       setActiveSession(null)
       setSessionDetails(null)
       if (onSessionChanged) onSessionChanged(null)
-      setStatusBanner({
-        type: 'success',
-        text:
-          count > 0
-            ? `Table clôturée pour tous les participants. Les ${count} partie${count > 1 ? 's sont enregistrées' : ' est enregistrée'} dans les carnets\u00A0!`
-            : `Table en direct clôturée.`,
+      setClosedSummary({
+        role: 'host',
+        tableName: closedTableName,
+        count,
+        gameNames,
       })
     } catch (err) {
       setError(err.message || 'Erreur lors de la clôture')
@@ -252,21 +261,45 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     setIsLoading(true)
     setError(null)
     try {
+      const currentGames = sessionDetails?.state?.games || []
+      const gameNames = [...new Set(currentGames.map((g) => getGameDisplayName(g)).filter(Boolean))]
+      const closedTableName = activeSession.name || 'Table en direct'
       const stats = await importSessionGames(activeSession.code)
       reloadStorage()
-      const count = stats.syncedCount || sessionDetails?.state?.games?.length || 0
+      const count = stats.syncedCount || currentGames.length || 0
       setActiveSession(null)
       setSessionDetails(null)
       if (onSessionChanged) onSessionChanged(null)
-      setStatusBanner({
-        type: 'success',
-        text:
-          count > 0
-            ? `Vous avez quitté la table. ${count} partie${count > 1 ? 's ont été enregistrées' : ' a été enregistrée'} dans votre carnet\u00A0!`
-            : `Vous avez quitté la table en direct.`,
+      setClosedSummary({
+        role: 'guest',
+        tableName: closedTableName,
+        count,
+        gameNames,
       })
     } catch (err) {
       setError(err.message || 'Erreur lors de la déconnexion')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Action : Annuler la table en direct (ferme la session et quitte la modale)
+  const handleCancelLiveSession = async () => {
+    if (!activeSession?.code || isLoading) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      await closeLiveSession(activeSession.code)
+      reloadStorage()
+      setActiveSession(null)
+      setSessionDetails(null)
+      if (onSessionChanged) onSessionChanged(null)
+      onClose()
+    } catch (err) {
+      console.error('Erreur annulation table:', err)
+      setActiveSession(null)
+      if (onSessionChanged) onSessionChanged(null)
+      onClose()
     } finally {
       setIsLoading(false)
     }
@@ -299,15 +332,15 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         {/* En-tête responsive */}
         <div className="relative z-10 p-3.5 sm:p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0">
+            <span className="p-1.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
               <Radio size={18} />
             </span>
             <div className="min-w-0 flex-1">
               <h2 id="live-session-title" className="text-base font-bold font-serif-title leading-snug truncate">
-                Table en direct
+                {closedSummary ? 'Table terminée' : 'Table en direct'}
               </h2>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                Partage automatique des parties jouées
+                {closedSummary ? 'Récapitulatif de clôture' : 'Partage automatique des parties jouées'}
               </p>
             </div>
           </div>
@@ -323,7 +356,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         </div>
 
         {/* Bannière d'erreur */}
-        {error && (
+        {error && !closedSummary && (
           <div className="mx-4 mt-3 p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs border border-rose-200 dark:border-rose-800/50 flex items-center justify-between gap-2">
             <span>{error}</span>
             <button type="button" onClick={() => setError(null)} className="p-1 shrink-0">
@@ -333,7 +366,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         )}
 
         {/* Bannière de confirmation / statut */}
-        {statusBanner && (
+        {statusBanner && !closedSummary && (
           <div className="mx-4 mt-3 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-medium border border-emerald-200 dark:border-emerald-800/50 flex items-start justify-between gap-2">
             <div className="flex items-start gap-2">
               <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
@@ -347,7 +380,75 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
 
         {/* Corps scrollable */}
         <div className="p-4 sm:p-5 overflow-y-auto space-y-4">
-          {activeSession ? (
+          {closedSummary ? (
+            /* VUE DE CONFIRMATION / RÉSUMÉ APRÈS CLÔTURE OU SORTIE */
+            <div className="py-6 px-2 text-center space-y-5 animate-in fade-in zoom-in-95 duration-200">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-xs">
+                <CheckCircle2 size={26} />
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="font-serif-title font-bold text-lg text-stone-900 dark:text-slate-100">
+                  {closedSummary.role === 'host' ? 'Table clôturée' : 'Table quittée'}
+                </h3>
+                <p className="text-xs text-stone-600 dark:text-slate-300 max-w-xs mx-auto leading-relaxed">
+                  {closedSummary.role === 'host' ? (
+                    closedSummary.count > 0 ? (
+                      <>
+                        Table fermée pour tous les participants. <span className="font-semibold text-stone-900 dark:text-slate-100">{closedSummary.count === 1 ? '1 partie a été enregistrée' : `${closedSummary.count} parties ont été enregistrées`}</span> dans le carnet de chaque joueur.
+                      </>
+                    ) : (
+                      <>Table fermée pour tous les participants. Aucune partie n'a été jouée.</>
+                    )
+                  ) : (
+                    closedSummary.count > 0 ? (
+                      <>
+                        {closedSummary.wasClosedByHost ? "L'hôte a clôturé la table." : 'Vous avez quitté la table.'}{' '}
+                        <span className="font-semibold text-stone-900 dark:text-slate-100">
+                          {closedSummary.count === 1 ? '1 partie reste enregistrée' : `${closedSummary.count} parties restent enregistrées`}
+                        </span>{' '}
+                        dans votre carnet.
+                      </>
+                    ) : (
+                      <>{closedSummary.wasClosedByHost ? "L'hôte a clôturé la table en direct." : 'Vous avez quitté la table en direct.'}</>
+                    )
+                  )}
+                </p>
+              </div>
+
+              {closedSummary.gameNames && closedSummary.gameNames.length > 0 && (
+                <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-slate-800/60 border border-stone-200/60 dark:border-slate-700/60 text-left max-w-xs mx-auto space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
+                    {closedSummary.count === 1 ? 'Partie enregistrée' : 'Parties enregistrées'}
+                  </span>
+                  <div className="text-xs font-semibold text-stone-800 dark:text-slate-200 flex flex-wrap gap-1.5">
+                    {closedSummary.gameNames.map((name, i) => (
+                      <span key={i} className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-700">
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 flex flex-col gap-2 max-w-xs mx-auto">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                >
+                  Fermer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setClosedSummary(null)}
+                  className="text-[11px] text-stone-400 hover:text-stone-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors py-1 cursor-pointer"
+                >
+                  Ouvrir ou rejoindre une autre table
+                </button>
+              </div>
+            </div>
+          ) : activeSession ? (
             /* VUE SESSION ACTIVE */
             <div className="space-y-4">
               <div className="p-4 rounded-2xl school-card border border-stone-200 dark:border-slate-800 space-y-3">
@@ -364,12 +465,12 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 </div>
 
                 {/* QR Code d'invitation */}
-                <div className="flex flex-col items-center py-1.5 space-y-2">
+                <div className="flex flex-col items-center py-1 space-y-1.5">
                   <div className="p-2.5 bg-white rounded-xl shadow-xs border border-stone-200 inline-block">
                     <QRCodeSVG value={shareUrl} size={145} level="M" />
                   </div>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 text-center max-w-xs leading-snug">
-                    Vos amis scannent ce QR code pour recevoir et enregistrer automatiquement toutes les parties jouées sur leur Ardoise.
+                  <p className="text-[11px] text-stone-500 dark:text-slate-400 text-center">
+                    Scannez pour rejoindre
                   </p>
                 </div>
 
@@ -391,17 +492,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                     <Share2 size={14} />
                     <span>Inviter</span>
                   </button>
-                </div>
-              </div>
-
-              {/* Statut d'enregistrement automatique */}
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2.5 text-xs">
-                <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                <div className="text-stone-700 dark:text-slate-200 text-[11px] leading-relaxed">
-                  <strong className="font-bold text-emerald-800 dark:text-emerald-300 block">
-                    Synchronisation automatique activée
-                  </strong>
-                  Chaque partie jouée est enregistrée directement dans votre carnet et vos statistiques.
                 </div>
               </div>
 
@@ -458,10 +548,10 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                       type="button"
                       onClick={handleCloseTableByHost}
                       disabled={isLoading}
-                      className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
+                      className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
                     >
                       <PowerOff size={14} />
-                      <span>Clôturer la table et sauvegarder les parties</span>
+                      <span>Sauvegarder et quitter la table</span>
                     </button>
                     <p className="text-[10px] text-stone-500 dark:text-slate-400 text-center leading-tight">
                       Ferme la table chez tous les participants. Toutes les parties jouées restent enregistrées dans le carnet de chacun.
@@ -473,10 +563,10 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                       type="button"
                       onClick={handleLeaveAndKeepGames}
                       disabled={isLoading}
-                      className="w-full py-2.5 px-4 rounded-xl border border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] text-stone-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
+                      className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
                     >
                       <LogOut size={14} />
-                      <span>Quitter la table (conserver les {sessionGames.length} partie{sessionGames.length > 1 ? 's' : ''})</span>
+                      <span>Sauvegarder et quitter la table</span>
                     </button>
                     <p className="text-[10px] text-stone-500 dark:text-slate-400 text-center leading-tight">
                       Les parties synchronisées restent définitivement enregistrées dans votre carnet et vos statistiques.
@@ -605,15 +695,29 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         </div>
 
         {/* Pied */}
-        <div className="p-3 sm:p-4 border-t border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-stone-200 dark:border-slate-700 text-xs font-semibold text-stone-700 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-          >
-            Fermer
-          </button>
-        </div>
+        {!closedSummary && (
+          <div className="p-3 sm:p-4 border-t border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 flex items-center justify-between">
+            {activeSession ? (
+              <button
+                type="button"
+                onClick={handleCancelLiveSession}
+                disabled={isLoading}
+                className="px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/40 text-xs font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
+              >
+                Annuler la table
+              </button>
+            ) : (
+              <div />
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl border border-stone-200 dark:border-slate-700 text-xs font-semibold text-stone-700 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              Fermer
+            </button>
+          </div>
+        )}
       </div>
     </div>,
     document.body

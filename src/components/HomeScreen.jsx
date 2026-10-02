@@ -119,16 +119,16 @@ export function HomeScreen() {
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          {/* Si une table en direct est active, pilule discrète cliquable */}
+          {/* Si une table en direct est active, icône discrète cliquable (rond) */}
           {liveSession && (
             <button
               type="button"
               onClick={() => setIsLiveModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-500/15 transition-colors cursor-pointer"
-              title={`Table en direct\u00A0: ${liveSession.name}`}
+              className="w-8 h-8 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+              title={`Table en direct : ${liveSession.name} (${liveSession.code}) — Afficher le QR code et le code`}
+              aria-label="Table en direct"
             >
-              <Radio size={13} className="animate-pulse" />
-              <span className="hidden sm:inline">En direct</span>
+              <Radio size={15} className="animate-pulse" />
             </button>
           )}
 
@@ -158,29 +158,6 @@ export function HomeScreen() {
             >
               <X size={13} />
             </button>
-          </div>
-        )}
-
-        {/* Bannière Session Journée Active */}
-        {liveSession && (
-          <div
-            onClick={() => setIsLiveModalOpen(true)}
-            className="mb-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between cursor-pointer hover:bg-emerald-500/15 transition-all shadow-2xs group"
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200 truncate">
-                  Table en direct&nbsp;: {liveSession.name}
-                </p>
-                <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                  Code&nbsp;: <strong className="font-mono tracking-wider">{liveSession.code}</strong>
-                </p>
-              </div>
-            </div>
-            <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-bold text-[11px] group-hover:scale-105 transition-transform shrink-0">
-              Voir la table ›
-            </span>
           </div>
         )}
         {/* Parties en cours */}

@@ -69,15 +69,23 @@ export default function App() {
     const handleOpenBurger = () => setIsBurgerMenuOpen(true)
     const handleOpenShareApp = () => setIsShareAppModalOpen(true)
     const handleSessionChanged = (e) => setLiveSession(e.detail)
+    const handleOpenLiveSession = (e) => {
+      if (e?.detail?.code) {
+        setIncomingSessionCode(e.detail.code)
+      }
+      setIsLiveModalOpen(true)
+    }
 
     window.addEventListener('ardoise-open-import-games', handleOpenImport)
     window.addEventListener('ardoise-open-burger-menu', handleOpenBurger)
     window.addEventListener('ardoise-open-share-app', handleOpenShareApp)
+    window.addEventListener('ardoise-open-live-session', handleOpenLiveSession)
     window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
     return () => {
       window.removeEventListener('ardoise-open-import-games', handleOpenImport)
       window.removeEventListener('ardoise-open-burger-menu', handleOpenBurger)
       window.removeEventListener('ardoise-open-share-app', handleOpenShareApp)
+      window.removeEventListener('ardoise-open-live-session', handleOpenLiveSession)
       window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
     }
   }, [])
