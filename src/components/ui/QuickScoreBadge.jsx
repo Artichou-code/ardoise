@@ -142,7 +142,7 @@ export function QuickScoreBadge({
       <div
         role="button"
         tabIndex={0}
-        aria-label={`Score : ${displayedValue}${subText ? ` (${subText})` : ''}. Glisser vers le haut ou le bas pour ajuster.`}
+        aria-label={`Score : ${typeof displayedValue === 'string' || typeof displayedValue === 'number' ? displayedValue : cur}${subText ? ` (${subText})` : ''}. Glisser vers le haut ou le bas pour ajuster.`}
         title="Glisser vers le haut ou le bas pour ajuster rapidement, ou cliquer pour ouvrir le pavé"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}

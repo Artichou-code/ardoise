@@ -276,10 +276,10 @@ export function DameDePiqueEngine({ game, onFinish }) {
               {isNormalRoundComplete ? (
                 <>
                   <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
-                  <span>Manche complète : 26/26 pts alloués (13 Cœurs + Q♠)</span>
+                  <span>Manche complète : 26/26 pts alloués (13 <span className="text-[#c83b3b] font-bold">♥</span> Cœurs + Q<span className="font-bold">♠</span>)</span>
                 </>
               ) : (
-                <span>Attribué : {totalAllocated}/26 pts ({totalHeartsAllocated}/13 Cœurs{queenOwnerId ? ' + Q♠' : ''})</span>
+                <span>Attribué : {totalAllocated}/26 pts ({totalHeartsAllocated}/13 <span className="text-[#c83b3b] font-bold">♥</span> Cœurs{queenOwnerId ? ' + Q♠' : ''})</span>
               )}
             </div>
             <span className="font-bold text-[11px] ml-2 shrink-0">
@@ -306,7 +306,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
                   isChelemWinner
                     ? 'border-[#c83b3b]/60 bg-[#c83b3b]/6 dark:bg-[#c83b3b]/15'
                     : isQueen && !isChelem
-                    ? 'border-[#c83b3b]/60 bg-[#c83b3b]/5'
+                    ? 'border-stone-400 dark:border-slate-600 bg-stone-100/50 dark:bg-slate-800/40'
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
                 }`}
               >
@@ -334,12 +334,12 @@ export function DameDePiqueEngine({ game, onFinish }) {
                       onClick={() => toggleQueen(p.id)}
                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer select-none active:scale-95 shrink-0 ${
                         isQueen
-                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
-                          : 'bg-white dark:bg-slate-900 text-stone-600 dark:text-slate-400 border-stone-200 dark:border-slate-700 hover:border-[#c83b3b]/60 hover:text-[#c83b3b]'
+                          ? 'border-stone-900 bg-stone-900 text-white shadow-2xs dark:border-slate-100 dark:bg-slate-100 dark:text-stone-900'
+                          : 'bg-white dark:bg-slate-900 text-stone-700 dark:text-slate-300 border-stone-200 dark:border-slate-700 hover:border-stone-400'
                       }`}
                       title={isQueen ? "Retirer la Dame de Pique" : "Prendre la Dame de Pique (+13 pts)"}
                     >
-                      <span className="text-sm leading-none">♠</span>
+                      <span className="text-sm leading-none font-bold">♠</span>
                       <span>Dame (+13)</span>
                     </button>
                   ) : (
@@ -393,7 +393,12 @@ export function DameDePiqueEngine({ game, onFinish }) {
                         min={0}
                         max={13}
                         showPlus={false}
-                        formatDisplay={(v) => `${v} ♥`}
+                        formatDisplay={(v) => (
+                          <span className="inline-flex items-baseline gap-1">
+                            <span>{v}</span>
+                            <span className="text-[#c83b3b] font-bold">♥</span>
+                          </span>
+                        )}
                         formatBubble={(v) => {
                           const d = v + (isQueen ? 13 : 0)
                           return { text: `+${d} pts (total ${currentTotal + d})`, variant: d > 10 ? 'danger' : 'default' }
@@ -527,17 +532,17 @@ export function DameDePiqueEngine({ game, onFinish }) {
             {/* Interrupteur Dame de Pique (+13 pts) directement intégré */}
             <div className="flex items-center justify-between p-2.5 rounded-xl border border-stone-200/80 dark:border-slate-800 bg-stone-50/60 dark:bg-slate-800/40">
               <div className="flex items-center gap-2">
-                <span className="text-base leading-none text-[#c83b3b]">♠</span>
+                <span className="text-base leading-none text-stone-900 dark:text-slate-100 font-bold">♠</span>
                 <span className="text-xs font-bold text-stone-800 dark:text-slate-200">Dame de Pique</span>
-                <span className="text-[11px] text-[#c83b3b] font-semibold">(+13 pts)</span>
+                <span className="text-[11px] text-stone-500 dark:text-slate-400 font-semibold">(+13 pts)</span>
               </div>
               <button
                 type="button"
                 onClick={() => setQueenOwnerId(prev => prev === editingPlayer.id ? null : editingPlayer.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer select-none active:scale-95 ${
                   queenOwnerId === editingPlayer.id
-                    ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
-                    : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:border-[#c83b3b]/60 hover:text-[#c83b3b]'
+                    ? 'border-stone-900 bg-stone-900 dark:border-slate-100 dark:bg-slate-100 text-white dark:text-stone-900 shadow-2xs'
+                    : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:border-stone-400'
                 }`}
               >
                 {queenOwnerId === editingPlayer.id ? '✓ A la Dame (+13)' : 'Pas de Dame'}
@@ -553,10 +558,26 @@ export function DameDePiqueEngine({ game, onFinish }) {
               min={0}
               max={13}
               step={1}
-              label="Cœurs ramassés (hors Dame)"
-              subLabel="+1 pt / ♥"
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <span>Cœurs ramassés</span>
+                  <span className="text-[#c83b3b] font-bold">♥</span>
+                  <span className="text-[10px] font-normal lowercase text-stone-400 dark:text-slate-500">(hors Dame)</span>
+                </span>
+              }
+              subLabel={
+                <span className="inline-flex items-center gap-1">
+                  <span>+1 pt /</span>
+                  <span className="text-[#c83b3b] text-sm leading-none font-bold">♥</span>
+                </span>
+              }
               presets={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]}
-              formatDisplay={v => `${v} ♥`}
+              formatDisplay={v => (
+                <span className="inline-flex items-center gap-1.5">
+                  <span>{v}</span>
+                  <span className="text-[#c83b3b] font-bold">♥</span>
+                </span>
+              )}
               formatTotal={v => {
                 const isQueen = queenOwnerId === editingPlayer.id
                 const delta = v + (isQueen ? 13 : 0)

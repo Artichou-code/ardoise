@@ -160,6 +160,13 @@ export function ScorePad({
     return `${sign}${clamped}`
   }
 
+  const getDisplayLength = (val) => {
+    if (typeof val === 'string' || typeof val === 'number') {
+      return String(val).length
+    }
+    return 3
+  }
+
   const valAbove2 = cur + dragStep * 2
   const isAbove2Valid = (min === undefined || valAbove2 >= min) && (max === undefined || valAbove2 <= max)
 
@@ -230,7 +237,7 @@ export function ScorePad({
                 <div className="h-11 shrink-0 my-1 relative flex items-center justify-center px-6 rounded-xl bg-white dark:bg-slate-900 border border-[#c83b3b]/40 shadow-xs">
                   <span className="absolute left-2.5 text-[#c83b3b] font-mono text-xs font-black">▶</span>
                   <span className={`font-black text-[#c83b3b] dark:text-red-400 tabular-nums tracking-tight ${
-                    String(displayVal(cur)).length > 8 ? 'text-2xl sm:text-3xl' : String(displayVal(cur)).length > 5 ? 'text-3xl sm:text-4xl' : 'text-3xl sm:text-4xl'
+                    getDisplayLength(displayVal(cur)) > 8 ? 'text-2xl sm:text-3xl' : getDisplayLength(displayVal(cur)) > 5 ? 'text-3xl sm:text-4xl' : 'text-3xl sm:text-4xl'
                   }`}>
                     {displayVal(cur)}
                   </span>
@@ -245,7 +252,7 @@ export function ScorePad({
           ) : (
             <div className="flex flex-col items-center justify-center gap-1.5 h-full w-full py-2">
               <span className={`font-black tabular-nums tracking-tight text-stone-900 dark:text-slate-100 ${
-                String(displayVal(value)).length > 8 ? 'text-2xl sm:text-3xl' : String(displayVal(value)).length > 5 ? 'text-3xl sm:text-4xl' : 'text-4xl'
+                getDisplayLength(displayVal(value)) > 8 ? 'text-2xl sm:text-3xl' : getDisplayLength(displayVal(value)) > 5 ? 'text-3xl sm:text-4xl' : 'text-4xl'
               }`}>
                 {displayVal(value)}
               </span>
