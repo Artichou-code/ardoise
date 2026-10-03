@@ -3,7 +3,7 @@ import { ChevronUp, ChevronDown, GripVertical } from 'lucide-react'
 import { Avatar } from '../ui/Avatar'
 
 const DOMINO_POINTS = [45, 20, 5, -5]
-const RANK_LABELS = ['1er (Gagnant)', '2e place', '3e place', '4e (Dernier)']
+const RANK_LABELS = ['1er', '2e', '3e', '4e']
 
 /**
  * Composant de classement par Drag & Drop tactile animé pour le contrat Domino du Barbu.
@@ -27,7 +27,7 @@ export function DominoReorderList({
   const cardRefs = useRef([])
   const startYRef = useRef(0)
   const lastOverIndexRef = useRef(null)
-  const itemHeightRef = useRef(62)
+  const itemHeightRef = useRef(54)
   const isDraggingRef = useRef(false)
 
   // Nettoyage au démontage
@@ -47,7 +47,7 @@ export function DominoReorderList({
     if (cardRefs.current[0]) {
       return cardRefs.current[0].getBoundingClientRect().height + 6
     }
-    return 62
+    return 54
   }
 
   const startDrag = (e, index) => {
@@ -78,7 +78,7 @@ export function DominoReorderList({
     if (draggingIndex === null || isDropping || !isDraggingRef.current) return
 
     const dy = e.clientY - startYRef.current
-    const h = itemHeightRef.current || 62
+    const h = itemHeightRef.current || 54
     const totalCount = dominoRanks.length
 
     const minDy = -draggingIndex * h
@@ -121,7 +121,7 @@ export function DominoReorderList({
 
     // Animation de placement : translate jusqu'à la position cible exacte
     setIsDropping(true)
-    const h = itemHeightRef.current || 62
+    const h = itemHeightRef.current || 54
     setDragOffsetY((to - from) * h)
 
     try {
@@ -187,7 +187,7 @@ export function DominoReorderList({
         const rankLabel = RANK_LABELS[effectiveIndex] || `${effectiveIndex + 1}e`
 
         // Déplacement CSS (transform translateY)
-        const h = itemHeightRef.current || 62
+        const h = itemHeightRef.current || 54
         let translateY = 0
         let transition = 'transform 220ms cubic-bezier(0.2, 0, 0, 1), box-shadow 200ms ease'
 
@@ -231,12 +231,12 @@ export function DominoReorderList({
               title="Glisser pour modifier le classement"
               aria-hidden="true"
             >
-              <GripVertical size={16} />
+              <GripVertical size={14} />
             </div>
 
             {/* Rang + Avatar + Nom + Total */}
-            <div className="flex items-center gap-2 min-w-0 flex-1 pointer-events-none">
-              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all ${
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 pointer-events-none">
+              <span className={`w-5.5 h-5.5 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 transition-all ${
                 effectiveIndex === 0
                   ? 'bg-emerald-600 text-white shadow-2xs'
                   : effectiveIndex === dominoRanks.length - 1
@@ -252,8 +252,8 @@ export function DominoReorderList({
                 <span className="font-semibold text-xs truncate block text-stone-900 dark:text-slate-100">
                   {p.name}
                 </span>
-                <span className="text-[10px] text-stone-400 dark:text-slate-500 block truncate">
-                  <strong className={`font-medium ${
+                <span className="text-[10px] text-stone-500 dark:text-slate-400 block whitespace-nowrap">
+                  <strong className={`font-semibold ${
                     effectiveIndex === 0
                       ? 'text-emerald-700 dark:text-emerald-400'
                       : effectiveIndex === dominoRanks.length - 1
@@ -262,15 +262,15 @@ export function DominoReorderList({
                   }`}>
                     {rankLabel}
                   </strong>
-                  <span className="mx-1 opacity-60">·</span>
-                  Total : {(gameScores[p.id] || 0) + points} pts
+                  <span className="mx-1 opacity-40">·</span>
+                  <span>Total : {(gameScores[p.id] || 0) + points} pts</span>
                 </span>
               </div>
             </div>
 
-            {/* Actions : Flèches de secours + Badge de points */}
+            {/* Actions : Flèches haut/bas empilées + Badge de points */}
             <div className="flex items-center gap-1.5 shrink-0">
-              <div className="flex items-center gap-1">
+              <div className="flex flex-col gap-0.5 shrink-0">
                 <button
                   type="button"
                   disabled={effectiveIndex === 0 || isDragActive}
@@ -278,11 +278,11 @@ export function DominoReorderList({
                     e.stopPropagation()
                     moveItem(index, -1)
                   }}
-                  className="w-6.5 h-6.5 rounded-lg border border-stone-200 dark:border-slate-700 flex items-center justify-center text-stone-600 dark:text-slate-300 disabled:opacity-25 disabled:cursor-not-allowed hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-95"
+                  className="w-6 h-3.5 rounded flex items-center justify-center border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-90"
                   title="Monter d'une place"
                   aria-label="Monter d'une place"
                 >
-                  <ChevronUp size={14} />
+                  <ChevronUp size={11} />
                 </button>
                 <button
                   type="button"
@@ -291,15 +291,15 @@ export function DominoReorderList({
                     e.stopPropagation()
                     moveItem(index, 1)
                   }}
-                  className="w-6.5 h-6.5 rounded-lg border border-stone-200 dark:border-slate-700 flex items-center justify-center text-stone-600 dark:text-slate-300 disabled:opacity-25 disabled:cursor-not-allowed hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-95"
+                  className="w-6 h-3.5 rounded flex items-center justify-center border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-90"
                   title="Descendre d'une place"
                   aria-label="Descendre d'une place"
                 >
-                  <ChevronDown size={14} />
+                  <ChevronDown size={11} />
                 </button>
               </div>
 
-              <span className={`min-w-[52px] text-center px-2 py-1 rounded-lg text-xs font-bold shrink-0 transition-colors ${
+              <span className={`min-w-[48px] text-center px-1.5 py-1 rounded-lg text-xs font-bold shrink-0 transition-colors ${
                 points > 0
                   ? 'bg-emerald-600 text-white shadow-2xs'
                   : 'bg-[#c83b3b] text-white shadow-2xs'

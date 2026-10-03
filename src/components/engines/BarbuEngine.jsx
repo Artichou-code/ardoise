@@ -1008,11 +1008,11 @@ export function BarbuEngine({ game, onFinish }) {
           {/* CAS 7 : LE DOMINO */}
           {selectedContract === 'domino' && (
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate">
                   Classement d'arrivée
                 </span>
-                <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
+                <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium shrink-0">
                   Glisser pour réordonner
                 </span>
               </div>
