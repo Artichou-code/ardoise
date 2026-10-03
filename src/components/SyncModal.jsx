@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   FolderDown,
   ArrowRight,
-  Sparkles,
+  CheckCircle2,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import {
@@ -438,7 +438,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
               {importPreview && (
                 <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 space-y-2.5 animate-in fade-in">
                   <div className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300 font-bold">
-                    <Sparkles size={14} />
+                    <CheckCircle2 size={14} />
                     <span>Sauvegarde prête</span>
                   </div>
                   <p className="text-[11px] text-amber-700 dark:text-amber-400">

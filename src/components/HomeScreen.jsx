@@ -61,6 +61,10 @@ export function HomeScreen() {
         ascenseur: 'ascenseur',
         rikiki: 'ascenseur',
         rami: 'rami',
+        yaniv: 'yaniv',
+        'le-yaniv': 'yaniv',
+        barbu: 'barbu',
+        'le-barbu': 'barbu',
         'compteur-universel': 'universel',
       }
       const targetGameId = slugToGameId[slug]

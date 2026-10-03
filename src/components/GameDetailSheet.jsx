@@ -208,7 +208,17 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                         className="hover:bg-stone-50/80 dark:hover:bg-slate-800/40 transition-colors"
                       >
                         <td className="py-1 px-1.5 font-bold text-stone-400 dark:text-slate-500 sticky left-0 bg-white dark:bg-slate-900 z-10 border-r border-stone-100 dark:border-slate-800/60 text-[10px] text-center">
-                          M.{rIdx + 1}
+                          <div>M.{rIdx + 1}</div>
+                          {round.contractId && (
+                            <span className="block text-[8px] font-semibold text-[#c83b3b] uppercase">
+                              {round.contractId}
+                            </span>
+                          )}
+                          {round.isAssaf && (
+                            <span className="block text-[7.5px] font-bold text-[#c83b3b] uppercase">
+                              Assaf!
+                            </span>
+                          )}
                         </td>
                         {game.players.map(p => {
                           const delta = round.delta?.[p.id]

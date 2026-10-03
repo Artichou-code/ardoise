@@ -20,6 +20,8 @@ import { Flip7Engine } from './engines/Flip7Engine'
 import { SeaSaltPaperEngine } from './engines/SeaSaltPaperEngine'
 import { AscenseurEngine } from './engines/AscenseurEngine'
 import { RamiEngine } from './engines/RamiEngine'
+import { YanivEngine } from './engines/YanivEngine'
+import { BarbuEngine } from './engines/BarbuEngine'
 import { UniverselEngine } from './engines/UniverselEngine'
 
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
@@ -37,6 +39,8 @@ const ENGINE_MAP = {
   [GAMES.SEA_SALT_PAPER]: SeaSaltPaperEngine,
   [GAMES.ASCENSEUR]: AscenseurEngine,
   [GAMES.RAMI]: RamiEngine,
+  [GAMES.YANIV]: YanivEngine,
+  [GAMES.BARBU]: BarbuEngine,
   [GAMES.UNIVERSEL]: UniverselEngine,
 }
 

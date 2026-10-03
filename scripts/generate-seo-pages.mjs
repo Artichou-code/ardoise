@@ -107,6 +107,22 @@ export const SEO_PAGES = [
     h1: 'Rami — Compteur de Points Gratuit en Ligne, Rami Sec & Règles Officielles',
   },
   {
+    slug: 'yaniv',
+    gameId: GAMES.YANIV,
+    title: 'Le Yaniv : Règles Officielles du Jeu de Cartes (≤ 5 pts, ASSAF !, Sursis 50/100) & Compteur — Ardoise',
+    description:
+      'Compteur de points en ligne pour le jeu de cartes Yaniv : calcul automatique des annonces (≤ 5 pts), contre ASSAF (+30 pts), règle du sursis à 50 et 100 points, et seuil éliminatoire.',
+    h1: 'Le Yaniv — Règles Complètes, Contre ASSAF ! & Compteur de Points Gratuit',
+  },
+  {
+    slug: 'le-barbu',
+    gameId: GAMES.BARBU,
+    title: 'Le Barbu (Le Tonton) : Règles des 7 Contrats & Feuille de Score en Ligne — Ardoise',
+    description:
+      'Compteur de points pour le jeu de cartes Le Barbu (Le Tonton) à 4 joueurs : Pas de plis, Pas de cœurs, Pas de dames, Le Barbu (-20 pts), 2 derniers plis, La salade (-130 pts) et Le domino (+65 pts).',
+    h1: 'Le Barbu (Le Tonton) — Grille de Score Gratuite & Règles des 7 Contrats',
+  },
+  {
     slug: 'compteur-universel',
     gameId: GAMES.UNIVERSEL,
     title: 'Compteur de Points Universel pour Jeux de Société (Uno, Rami, Mölkky) — Ardoise',

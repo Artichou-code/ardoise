@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { QRCodeSVG } from 'qrcode.react'
-import { X, QrCode, Share2, Copy, Check, Loader2, Sparkles } from 'lucide-react'
+import { X, QrCode, Share2, Copy, Check, Loader2 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { shareGame } from '../store/syncStorage'
 import { getGameDisplayName } from '../constants/games'

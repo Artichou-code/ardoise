@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Anchor, Sparkles, Trophy, AlertCircle, Waves } from 'lucide-react'
+import { Anchor, Trophy, AlertCircle, Waves } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'

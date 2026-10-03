@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Sparkles, X } from 'lucide-react'
+import { Shield, X } from 'lucide-react'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -88,7 +88,7 @@ export function CaracoleEngine({ game, onFinish }) {
       {/* Bannière de notification en cas de sursis */}
       {reprieveNotice && (
         <div className="p-3 rounded-xl border border-[#c83b3b] bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 flex items-start gap-2.5">
-          <Sparkles size={16} className="text-[#c83b3b] mt-0.5 flex-shrink-0" />
+          <Shield size={16} className="text-[#c83b3b] mt-0.5 flex-shrink-0" />
           <div className="flex-1 text-xs">
             <span className="font-bold text-[#c83b3b] block">Sursis accordé !</span>
             <span className="text-stone-700 dark:text-slate-300 font-medium leading-relaxed">

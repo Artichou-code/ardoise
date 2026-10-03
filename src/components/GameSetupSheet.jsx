@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Plus, X, Check, BookOpen, Bookmark, BookmarkPlus, Sparkles, ArrowLeftRight, Search, ChevronDown, ChevronUp, Radio } from 'lucide-react'
+import { Plus, X, Check, BookOpen, Bookmark, BookmarkPlus, Flame, ArrowLeftRight, Search, ChevronDown, ChevronUp, Radio } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
 import { Avatar, AvatarPicker } from './ui/Avatar'
 import { useGame } from '../context/GameContext'
@@ -232,6 +232,12 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
       setCustomGameName('')
     } else if (gameType === 'rami') {
       setConfig({ limit: 100 })
+      setCustomGameName('')
+    } else if (gameType === 'yaniv') {
+      setConfig({ limit: 100, sursis: true })
+      setCustomGameName('')
+    } else if (gameType === 'barbu') {
+      setConfig({ rounds: 28, scoreDir: 'high' })
       setCustomGameName('')
     } else if (gameType === 'universel') {
       setConfig({
@@ -1239,6 +1245,93 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
             </div>
           )}
 
+          {/* Config spécifique Yaniv */}
+          {gameType === 'yaniv' && (
+            <div className="space-y-4 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+                  Seuil éliminatoire
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { val: 50, title: '50 pts', sub: 'Express' },
+                    { val: 100, title: '100 pts', sub: 'Standard' },
+                    { val: 200, title: '200 pts', sub: 'Longue' },
+                  ].map(({ val, title, sub }) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                      className={`py-2 px-1 rounded-xl text-center border transition-colors focus:outline-none cursor-pointer ${
+                        (config.limit || 100) === val
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      <span className="block font-bold text-xs">{title}</span>
+                      <span className="block text-[10px] font-semibold opacity-85 mt-0.5">{sub}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Règle de sursis Yaniv (paliers à 50 et 100 pts) */}
+              <div className="flex items-center justify-between p-2.5 rounded-xl border border-stone-200 dark:border-slate-800 school-subtle">
+                <div>
+                  <span className="font-bold text-xs block text-stone-800 dark:text-slate-200">
+                    Sursis Yaniv (Halving)
+                  </span>
+                  <span className="text-[10px] text-stone-500 dark:text-slate-400">
+                    Pile à 50 pts ➔ 25 pts · Pile à 100 pts ➔ 50 pts
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setConfig(c => ({ ...c, sursis: !c.sursis }))}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all border ${
+                    config.sursis !== false
+                      ? 'bg-[#c83b3b] text-white border-[#c83b3b]'
+                      : 'border-stone-300 dark:border-slate-700 text-stone-500'
+                  }`}
+                >
+                  {config.sursis !== false ? 'Actif' : 'Non'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Config spécifique Barbu */}
+          {gameType === 'barbu' && (
+            <div className="space-y-4 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+                  Format de la partie (4 joueurs)
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { val: 28, title: '28 donnes', sub: 'Partie complète (7/j.)' },
+                    { val: 14, title: '14 donnes', sub: 'Demi-partie' },
+                    { val: 7, title: '7 donnes', sub: 'Tour rapide' },
+                  ].map(({ val, title, sub }) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, rounds: val }))}
+                      className={`py-2 px-1 rounded-xl text-center border transition-colors focus:outline-none cursor-pointer ${
+                        (config.rounds || 28) === val
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      <span className="block font-bold text-xs">{title}</span>
+                      <span className="block text-[10px] font-semibold opacity-85 mt-0.5">{sub}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Config spécifique Universel */}
           {gameType === 'universel' && (
             <div className="space-y-4 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
@@ -1348,7 +1441,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
               <div className="pt-2 border-t border-stone-200 dark:border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <Sparkles size={15} className="text-[#c83b3b]" />
+                    <Flame size={15} className="text-[#c83b3b]" />
                     <span className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-slate-300">
                       Règle de palier spécifique
                     </span>

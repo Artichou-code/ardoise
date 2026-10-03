@@ -13,6 +13,8 @@ export const GAMES = {
   SEA_SALT_PAPER: 'sea_salt_paper',
   ASCENSEUR: 'ascenseur',
   RAMI: 'rami',
+  YANIV: 'yaniv',
+  BARBU: 'barbu',
   UNIVERSEL: 'universel',
 }
 
@@ -886,6 +888,150 @@ export const GAME_META = {
       ],
     },
   },
+  [GAMES.YANIV]: {
+    id: GAMES.YANIV,
+    deckType: 'classic',
+    name: 'Le Yaniv',
+    playersBadge: '2 à 6 j.',
+    categoryBadge: '54 cartes',
+    description:
+      "Allégez votre main et annoncez « Yaniv » (≤ 5 pts) pour marquer 0 pt. Attention au contre « ASSAF ! » (+30 pts) et aux précieux sursis à 50 et 100 pts !",
+    minPlayers: 2,
+    maxPlayers: 6,
+    scoreDir: 'low',
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & But du jeu',
+          items: [
+            'Nombre de joueurs : 2 à 6 joueurs.',
+            'Matériel : 1 jeu de 54 cartes (52 cartes standard + 2 Jokers).',
+            'Objectif : Avoir le plus petit total de points de pénalité. La partie prend fin dès qu’un joueur atteint ou dépasse 100 points (ou 200 points).',
+          ],
+        },
+        {
+          title: 'Distribution & Déroulement du tour',
+          items: [
+            'Chaque joueur reçoit 5 cartes face cachée. Le reste forme la pioche et la première carte est retournée pour entamer la défausse.',
+            'À son tour, un joueur a le choix entre :',
+            '1. Annoncer « Yaniv ! » s’il estime que la somme de ses cartes en main est inférieure ou égale à 5 points (met fin au tour).',
+            '2. Défausser 1 carte ou 1 combinaison valide (paire, brelan, carré ou suite de 3+ cartes de même couleur), puis piocher 1 carte (au talon ou aux extrémités de la défausse).',
+          ],
+        },
+        {
+          title: 'Valeur des cartes en main',
+          items: [
+            'Jokers : 0 point (clés pour réduire son total).',
+            'As : 1 point.',
+            'Cartes 2 à 10 : Valeur faciale (2 à 10 points).',
+            'Figures (Valet, Dame, Roi) : 10 points chacune.',
+          ],
+        },
+        {
+          title: 'Résolution de la manche : Yaniv vs ASSAF !',
+          items: [
+            'Yaniv Réussi : Si l’annonceur a STRICTEMENT le score le plus faible de la table, il marque 0 point. Tous les adversaires marquent la valeur exacte de leur main.',
+            'ASSAF ! (Le Contre) : Si un adversaire a un score inférieur OU ÉGAL à l’annonceur, il crie « ASSAF ! ». L’adversaire avec le score le plus bas marque 0 point. L’annonceur encaisse alors 30 points de pénalité en PLUS de sa propre main ! Les autres joueurs marquent normalement leur main.',
+          ],
+        },
+        {
+          title: 'Règle du Sursis (Halving / Coup de Palier)',
+          items: [
+            'Si à la fin d’une manche, le score cumulé d’un joueur tombe EXACTEMENT à 50 points, son score retombe à 25 points !',
+            'S’il atteint EXACTEMENT 100 points, son score retombe à 50 points !',
+          ],
+        },
+        {
+          title: 'Fin de partie & Vainqueur',
+          items: [
+            'Dès qu’un joueur franchit le seuil éliminatoire (100 points par défaut) sans bénéficier d’un sursis, la partie prend fin.',
+            'Le joueur avec le total le plus bas remporte la victoire !',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Main de départ', value: '5 cartes' },
+        { item: 'Seuil d’annonce Yaniv', value: 'Main ≤ 5 points' },
+        { item: 'Yaniv réussi', value: 'Annonceur = 0 pt, autres = valeur main' },
+        { item: 'Contre « ASSAF ! »', value: 'Annonceur = main + 30 pts, rival = 0 pt' },
+        { item: 'Jokers / As / Figures', value: 'Joker = 0 pt, As = 1 pt, Figures = 10 pts' },
+        { item: 'Sursis à 50 / 100 pts', value: 'Score divisé par 2 (50 ➔ 25, 100 ➔ 50)' },
+        { item: 'Seuil éliminatoire', value: '100 points (le plus bas gagne)' },
+      ],
+    },
+  },
+  [GAMES.BARBU]: {
+    id: GAMES.BARBU,
+    deckType: 'classic',
+    name: 'Le Barbu (Le Tonton)',
+    playersBadge: '4 j.',
+    categoryBadge: '52 cartes',
+    description:
+      "Le grand classique français de plis à contrat ! 7 contrats impitoyables : Pas de plis, Pas de cœurs, Pas de dames, Le Barbu, 2 derniers plis, La salade et Le domino.",
+    minPlayers: 4,
+    maxPlayers: 4,
+    scoreDir: 'high',
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & Organisation',
+          items: [
+            'Nombre de joueurs : Exactement 4 joueurs.',
+            'Matériel : Un jeu de 52 cartes (sans jokers). Chaque joueur reçoit 13 cartes par donne.',
+            'Principe : Une partie complète comprend 28 donnes (chaque joueur est donneur 7 fois et choisit un contrat différent à chaque tour).',
+            'Ordre des cartes : As > Roi > Dame > Valet > 10 > 9 > 8 > 7 > 6 > 5 > 4 > 3 > 2. Aucun atout (sauf Domino). On doit obligatoirement fournir la couleur demandée.',
+          ],
+        },
+        {
+          title: 'Les 5 Contrats Négatifs Simples',
+          items: [
+            '1. Pas de Plis : Chaque pli ramassé coûte -2 points (13 plis = -26 points au total).',
+            '2. Pas de Cœurs : Chaque carte de Cœur coûte -2 points, sauf l’As de Cœur qui coûte -6 points (total = -30 points). Interdiction d’entamer Cœur tant qu’on a une autre couleur.',
+            '3. Pas de Dames : Chaque Dame ramassée coûte -6 points (4 Dames = -24 points au total).',
+            '4. Le Barbu (Roi de Cœur) : Le joueur qui ramasse le Roi de Cœur encaisse -20 points. Interdiction d’entamer Cœur au 1er pli et interdiction de jeter le Roi de Cœur si on a la couleur demandée.',
+            '5. Deux Derniers Plis : Le 12e pli coûte -10 points, le 13e pli (dernier) coûte -20 points (total = -30 points).',
+          ],
+        },
+        {
+          title: 'Le 6e Contrat : La Salade',
+          items: [
+            'La Salade cumule TOUS les malus des 5 contrats précédents en une seule donne dantesque :',
+            'Plis (-2 pts chacun = -26 pts) + Cœurs (-2 pts chacun, As = -6 pts = -30 pts) + Dames (-6 pts chacune = -24 pts) + Barbu (-20 pts) + 2 Derniers Plis (-10 et -20 pts = -30 pts).',
+            'Total de la Salade : -130 points répartis entre les joueurs !',
+          ],
+        },
+        {
+          title: 'Le 7e Contrat : Le Domino (La Réussite)',
+          items: [
+            'Contrat positif sans levées ! Les joueurs posent les 7 au centre puis montent ou descendent dans la couleur.',
+            '1er joueur débarrassé de ses cartes : +45 points.',
+            '2e joueur débarrassé : +20 points.',
+            '3e joueur : +5 points.',
+            '4e joueur (dernier restant) : -5 points.',
+            'Total distribué au Domino : +65 points.',
+          ],
+        },
+        {
+          title: 'Fin de partie & Classement',
+          items: [
+            'La partie se termine après les 28 donnes (ou le nombre de tours convenu).',
+            'Le joueur ayant cumulé le total de points le plus élevé (le moins négatif ou le plus positif) remporte la victoire !',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Joueurs & Cartes', value: '4 joueurs, 52 cartes (13 par joueur)' },
+        { item: 'Pas de Plis', value: '-2 pts / pli (-26 pts total)' },
+        { item: 'Pas de Cœurs', value: '-2 pts / cœur, As = -6 pts (-30 pts total)' },
+        { item: 'Pas de Dames', value: '-6 pts / Dame (-24 pts total)' },
+        { item: 'Le Barbu (Roi ♥)', value: '-20 pts pour le preneur' },
+        { item: 'Deux Derniers Plis', value: '12e = -10 pts, 13e = -20 pts (-30 pts total)' },
+        { item: 'La Salade', value: 'Tous les malus combinés (-130 pts total)' },
+        { item: 'Le Domino', value: '1er: +45, 2e: +20, 3e: +5, 4e: -5 pts' },
+        { item: 'Vainqueur', value: 'Score le plus élevé à l’issue des donnes' },
+      ],
+    },
+  },
   [GAMES.UNIVERSEL]: {
     id: GAMES.UNIVERSEL,
     deckType: 'any',
@@ -970,6 +1116,16 @@ export const COINCHE_CONTRACTS = [
 ]
 
 export const BELOTE_CONTRACTS = COINCHE_CONTRACTS
+
+export const BARBU_CONTRACTS = [
+  { id: 'plis', label: 'Pas de Plis', short: 'Plis', icon: 'Layers', totalPoints: -26, rule: '-2 pts / pli' },
+  { id: 'coeurs', label: 'Pas de Cœurs', short: 'Cœurs', icon: 'Heart', totalPoints: -30, rule: '-2 pts / ♥, As -6 pts' },
+  { id: 'dames', label: 'Pas de Dames', short: 'Dames', icon: 'Crown', totalPoints: -24, rule: '-6 pts / Dame' },
+  { id: 'barbu', label: 'Le Barbu', short: 'Barbu', icon: 'Shield', totalPoints: -20, rule: 'Roi de Cœur = -20 pts' },
+  { id: 'derniers', label: '2 Derniers Plis', short: '2 Der.', icon: 'Clock', totalPoints: -30, rule: '12e = -10, 13e = -20' },
+  { id: 'salade', label: 'La Salade', short: 'Salade', icon: 'Flame', totalPoints: -130, rule: 'Tous malus combinés' },
+  { id: 'domino', label: 'Le Domino', short: 'Domino', icon: 'Trophy', totalPoints: 65, rule: '1er +45, 2e +20, 3e +5, 4e -5' },
+]
 
 // Avatars illustrés (10 avatars complétant la grille 5x2)
 export const PRESET_AVATARS = Array.from(
