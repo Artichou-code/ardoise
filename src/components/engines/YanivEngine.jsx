@@ -478,23 +478,13 @@ export function YanivEngine({ game, onFinish }) {
             <span className="font-semibold text-stone-700 dark:text-slate-300">As 1 · Figures 10 · Joker 0</span>
           </div>
 
-          <div className="space-y-2 pt-2">
+          <div className="pt-2">
             <button
               type="button"
               onClick={() => setShowZeroConfirm(false)}
               className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white btn-margin-red cursor-pointer shadow-xs active:scale-[0.99] transition-all"
             >
               Saisir les points des adversaires
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowZeroConfirm(false)
-                submitRound()
-              }}
-              className="w-full py-2 rounded-xl text-xs font-semibold text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            >
-              Valider quand même la manche (0 pt)
             </button>
           </div>
         </div>
