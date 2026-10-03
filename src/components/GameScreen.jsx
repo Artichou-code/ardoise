@@ -343,43 +343,44 @@ export function GameScreen() {
                   return (
                     <div
                       key={id}
-                      className={`flex flex-col justify-between rounded-xl px-2 py-1.5 transition-all min-h-[48px] ${colSpan} ${
+                      className={`relative flex items-center justify-between rounded-xl px-2 py-1.5 transition-all min-h-[48px] ${colSpan} ${
                         isLeader
                           ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
                           : 'school-card'
                       }`}
                     >
-                      {/* Ligne du haut : Avatar + Rang à gauche, Score à droite */}
-                      <div className="flex items-center justify-between w-full leading-none">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <Avatar
-                            player={player}
-                            size={count <= 2 ? 'sm-compact' : 'xs'}
-                            leader={isLeader}
-                          />
-                          <div className="flex items-center gap-1 leading-none shrink-0">
-                            <span className={`text-[9px] font-extrabold uppercase ${
-                              isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
-                            }`}>
-                              {rank === 1 ? '1er' : `${rank}e`}
-                            </span>
-                            {isLeader && <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b] shrink-0" />}
-                          </div>
-                        </div>
+                      {/* Rang en haut à gauche de l'avatar */}
+                      <div className="absolute top-1 left-1.5 flex items-center gap-0.5 leading-none select-none">
+                        <span className={`text-[8.5px] font-extrabold uppercase ${
+                          isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
+                        }`}>
+                          {rank === 1 ? '1er' : `${rank}e`}
+                        </span>
+                        {isLeader && <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />}
+                      </div>
 
-                        <span className={`font-black tabular-nums shrink-0 leading-none pl-1 ${
-                          count <= 2 ? 'text-xl sm:text-2xl' : 'text-base sm:text-lg'
+                      {/* Zone gauche : Avatar centré par rapport au nom */}
+                      <div className="flex-1 flex flex-col items-center justify-center min-w-0 pr-1">
+                        <Avatar
+                          player={player}
+                          size={count <= 2 ? 'sm-compact' : 'xs'}
+                          leader={isLeader}
+                        />
+                        <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center leading-tight mt-0.5 text-stone-900 dark:text-slate-100 block">
+                          {player.name}
+                        </span>
+                      </div>
+
+                      {/* Zone droite restante : Score centré et légèrement plus grand */}
+                      <div className="w-8 sm:w-9 shrink-0 flex items-center justify-center">
+                        <span className={`font-black tabular-nums leading-none ${
+                          count <= 2 ? 'text-2xl sm:text-3xl' : 'text-lg sm:text-xl'
                         } ${
                           isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
                         }`}>
                           {score}
                         </span>
                       </div>
-
-                      {/* Ligne du bas : Nom sous l'avatar sur toute la largeur (zéro coupure) */}
-                      <span className="text-[11px] font-bold truncate block text-stone-900 dark:text-slate-100 leading-tight mt-1 px-0.5">
-                        {player.name}
-                      </span>
                     </div>
                   )
                 })}
