@@ -294,14 +294,14 @@ export function PresidentReorderList({
               />
 
               <div className="min-w-0 flex-1">
-                {/* Ligne 1 : Nom complet du joueur (jamais tronqué pour les noms classiques) */}
+                {/* Ligne 1 : Nom complet du joueur */}
                 <span className="font-semibold text-xs sm:text-sm truncate block text-stone-900 dark:text-slate-100 leading-tight">
                   {p.name}
                 </span>
 
-                {/* Ligne 2 : Badge du rôle officiel + Projection du score */}
-                <div className="flex items-center gap-1.5 text-[10px] text-stone-500 dark:text-slate-400 mt-0.5 min-w-0">
-                  <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${
+                {/* Ligne 2 : Badge du rôle officiel */}
+                <div className="mt-1 min-w-0">
+                  <span className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
                     isPresident
                       ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                       : isVicePresident
@@ -314,28 +314,12 @@ export function PresidentReorderList({
                   }`}>
                     {role.label}
                   </span>
-
-                  <span className="shrink-0 opacity-40">·</span>
-
-                  <span className="truncate whitespace-nowrap" title={`Score actuel : ${currentTotal} pts ➔ Nouveau total : ${projectedTotal} pts`}>
-                    <span className="hidden sm:inline">Total : {currentTotal} ➔ </span>
-                    <span className="sm:hidden">Total : </span>
-                    <strong className={`font-bold ${
-                      role.points > 0
-                        ? 'text-emerald-700 dark:text-emerald-400'
-                        : role.points < 0
-                        ? 'text-[#c83b3b] dark:text-red-400'
-                        : 'text-stone-700 dark:text-slate-300'
-                    }`}>
-                      {projectedTotal} pts
-                    </strong>
-                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Actions : Flèches haut/bas empilées + Badge de points */}
-            <div className="flex items-center gap-1.5 shrink-0">
+            {/* Actions & Scores : Flèches + Colonne des scores (Manche & Total) */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <div className="flex flex-col gap-0.5 shrink-0">
                 <button
                   type="button"
@@ -344,7 +328,7 @@ export function PresidentReorderList({
                     e.stopPropagation()
                     moveItem(index, -1)
                   }}
-                  className="w-6 h-3.5 rounded flex items-center justify-center border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-90"
+                  className="w-5.5 h-3.5 rounded flex items-center justify-center border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-90"
                   title="Monter d'une place"
                   aria-label="Monter d'une place"
                 >
@@ -357,7 +341,7 @@ export function PresidentReorderList({
                     e.stopPropagation()
                     moveItem(index, 1)
                   }}
-                  className="w-6 h-3.5 rounded flex items-center justify-center border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-90"
+                  className="w-5.5 h-3.5 rounded flex items-center justify-center border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-90"
                   title="Descendre d'une place"
                   aria-label="Descendre d'une place"
                 >
@@ -365,15 +349,35 @@ export function PresidentReorderList({
                 </button>
               </div>
 
-              <span className={`min-w-[44px] text-center px-1.5 py-1 rounded-lg text-xs font-bold shrink-0 transition-colors ${
-                role.points > 0
-                  ? 'bg-emerald-600 text-white shadow-2xs'
-                  : role.points < 0
-                  ? 'bg-[#c83b3b] text-white shadow-2xs'
-                  : 'bg-stone-200 dark:bg-slate-700 text-stone-700 dark:text-slate-300'
-              }`}>
-                {role.points > 0 ? `+${role.points}` : role.points} pts
-              </span>
+              {/* Colonne Score du tour & Score Total projeté */}
+              <div
+                className="flex flex-col items-end shrink-0"
+                title={`Score actuel : ${currentTotal} pts ➔ Nouveau total : ${projectedTotal} pts`}
+              >
+                <span className={`min-w-[44px] text-center px-1.5 py-0.5 rounded-md text-xs font-bold transition-colors ${
+                  role.points > 0
+                    ? 'bg-emerald-600 text-white shadow-2xs'
+                    : role.points < 0
+                    ? 'bg-[#c83b3b] text-white shadow-2xs'
+                    : 'bg-stone-200 dark:bg-slate-700 text-stone-700 dark:text-slate-300'
+                }`}>
+                  {role.points > 0 ? `+${role.points}` : role.points} pts
+                </span>
+
+                <span className="text-[10px] text-stone-500 dark:text-slate-400 font-medium whitespace-nowrap mt-0.5 text-right">
+                  <span className="hidden sm:inline">Total : {currentTotal} ➔ </span>
+                  <span className="sm:hidden">Total : </span>
+                  <strong className={`font-bold ${
+                    role.points > 0
+                      ? 'text-emerald-700 dark:text-emerald-400'
+                      : role.points < 0
+                      ? 'text-[#c83b3b] dark:text-red-400'
+                      : 'text-stone-700 dark:text-slate-300'
+                  }`}>
+                    {projectedTotal} pts
+                  </strong>
+                </span>
+              </div>
             </div>
           </div>
         )
