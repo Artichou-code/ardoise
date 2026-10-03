@@ -76,10 +76,10 @@ export function PresidentEngine({ game }) {
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Avatar player={prevPresPlayer} size="xs" crown={true} leader={true} leaderColor="#10b981" />
                   <div className="min-w-0 flex-1">
-                    <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
+                    <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100 leading-none">
                       {prevPresPlayer.name}
                     </span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 inline-block whitespace-nowrap mt-0.5">
+                    <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 block truncate leading-tight mt-0.5">
                       Président
                     </span>
                   </div>
@@ -99,10 +99,10 @@ export function PresidentEngine({ game }) {
                 {/* Colonne Droite : Trou du cul */}
                 <div className="flex items-center justify-end gap-2 min-w-0 flex-1 text-right">
                   <div className="min-w-0 flex-1">
-                    <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
+                    <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100 leading-none">
                       {prevTrouPlayer.name}
                     </span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-red-100 dark:bg-red-950/60 text-[#c83b3b] dark:text-red-300 inline-block whitespace-nowrap mt-0.5">
+                    <span className="text-[11px] font-bold text-[#c83b3b] dark:text-red-400 block truncate leading-tight mt-0.5">
                       Trou du cul
                     </span>
                   </div>
@@ -125,10 +125,10 @@ export function PresidentEngine({ game }) {
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <Avatar player={prevVicePresPlayer} size="xs" />
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
+                      <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100 leading-none">
                         {prevVicePresPlayer.name}
                       </span>
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 inline-block whitespace-nowrap mt-0.5">
+                      <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 block truncate leading-tight mt-0.5">
                         Vice-Président
                       </span>
                     </div>
@@ -148,10 +148,10 @@ export function PresidentEngine({ game }) {
                   {/* Colonne Droite : Vice-Trou */}
                   <div className="flex items-center justify-end gap-2 min-w-0 flex-1 text-right">
                     <div className="min-w-0 flex-1">
-                      <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
+                      <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100 leading-none">
                         {prevViceTrouPlayer.name}
                       </span>
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-red-50 dark:bg-red-950/40 text-[#c83b3b] dark:text-red-300 inline-block whitespace-nowrap mt-0.5">
+                      <span className="text-[11px] font-semibold text-[#c83b3b]/90 dark:text-red-400 block truncate leading-tight mt-0.5">
                         Vice-Trou
                       </span>
                     </div>

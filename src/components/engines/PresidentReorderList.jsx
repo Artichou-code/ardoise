@@ -299,22 +299,20 @@ export function PresidentReorderList({
                   {p.name}
                 </span>
 
-                {/* Ligne 2 : Badge du rôle officiel (plus proche du nom) */}
-                <div className="mt-0.5 min-w-0">
-                  <span className={`inline-block text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0 leading-tight ${
-                    isPresident
-                      ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
-                      : isVicePresident
-                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
-                      : isTrou
-                      ? 'bg-red-100 dark:bg-red-950/60 text-[#c83b3b] dark:text-red-300'
-                      : isViceTrou
-                      ? 'bg-red-50 dark:bg-red-950/40 text-[#c83b3b] dark:text-red-300'
-                      : 'bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-400'
-                  }`}>
-                    {role.label}
-                  </span>
-                </div>
+                {/* Ligne 2 : Rôle officiel (typographique, parfaitement aligné sans pastille) */}
+                <span className={`text-[11px] block truncate leading-tight mt-0.5 ${
+                  isPresident
+                    ? 'text-emerald-700 dark:text-emerald-400 font-bold'
+                    : isVicePresident
+                    ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                    : isTrou
+                    ? 'text-[#c83b3b] dark:text-red-400 font-bold'
+                    : isViceTrou
+                    ? 'text-[#c83b3b]/90 dark:text-red-400 font-semibold'
+                    : 'text-stone-500 dark:text-slate-400 font-medium'
+                }`}>
+                  {role.label}
+                </span>
               </div>
             </div>
 
