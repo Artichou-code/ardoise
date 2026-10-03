@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
-import { ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Radio, Share2, CheckCircle2, X } from 'lucide-react'
+import { ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Radio, Share2, CheckCircle2, X, Dices } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META, getGameDisplayName } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
@@ -313,21 +313,21 @@ export function HomeScreen() {
           {/* Filtres par type de matériel */}
           <div className="flex items-center gap-1.5 mb-2.5">
             {[
-              { key: null, label: 'Tous' },
-              { key: 'classic', label: '🃏 Cartes classiques' },
-              { key: 'dedicated', label: '📦 Jeu dédié' },
-            ].map(({ key, label }) => (
+              { key: null, label: 'Tous', icon: null },
+              { key: 'classic', label: 'Cartes classiques', icon: <span className="text-[13px] leading-none">🂱</span> },
+              { key: 'dedicated', label: 'Jeu de société', icon: <Dices size={12} className="shrink-0" /> },
+            ].map(({ key, label, icon }) => (
               <button
                 key={String(key)}
                 type="button"
                 onClick={() => setDeckFilter(prev => prev === key ? null : key)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border whitespace-nowrap ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border whitespace-nowrap ${
                   deckFilter === key
                     ? 'bg-[#c83b3b] text-white border-[#c83b3b]'
                     : 'bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400 border-stone-200 dark:border-slate-700 hover:border-[#c83b3b] hover:text-[#c83b3b]'
                 }`}
               >
-                {label}
+                {icon}{label}
               </button>
             ))}
           </div>

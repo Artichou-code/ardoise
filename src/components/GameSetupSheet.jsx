@@ -791,13 +791,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                   >
                     <Plus size={14} /> Créer un joueur
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleCreateDemoPlayers}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#c83b3b]/40 bg-[#c83b3b]/10 text-[#c83b3b] dark:text-red-400 font-bold text-xs hover:bg-[#c83b3b]/20 transition-colors cursor-pointer shadow-2xs"
-                  >
-                    <Sparkles size={14} /> Ajouter 4 joueurs démo
-                  </button>
+
                 </div>
               </div>
             ) : (
