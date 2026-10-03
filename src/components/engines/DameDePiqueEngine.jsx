@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle2, Trophy } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Trophy, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -42,6 +42,30 @@ export function DameDePiqueEngine({ game, onFinish }) {
   const [showIncompleteDialog, setShowIncompleteDialog] = useState(false)
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [open, setOpen] = useState(false)
+
+  // Navigation fluide entre joueurs dans la BottomSheet
+  const currentEditingIndex = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
+  const hasNextPlayer = currentEditingIndex >= 0 && currentEditingIndex < game.players.length - 1
+  const nextPlayer = hasNextPlayer ? game.players[currentEditingIndex + 1] : null
+  const hasPrevPlayer = currentEditingIndex > 0
+  const prevPlayer = hasPrevPlayer ? game.players[currentEditingIndex - 1] : null
+
+  const handleConfirmPad = () => {
+    if (hasNextPlayer && nextPlayer) {
+      setEditingPlayer(nextPlayer)
+    } else {
+      setOpen(false)
+    }
+  }
+
+  const confirmLabel = hasNextPlayer && nextPlayer ? (
+    <span className="inline-flex items-center justify-center gap-1.5 truncate max-w-full">
+      <span>Valider & Suivant</span>
+      <span className="text-xs font-medium opacity-85 truncate">({nextPlayer.name})</span>
+    </span>
+  ) : (
+    <span>Valider et terminer</span>
+  )
 
   // Calcul des points de la manche pour un joueur donné
   const computeRoundDelta = (playerId) => {
@@ -431,35 +455,93 @@ export function DameDePiqueEngine({ game, onFinish }) {
         </div>
       </Dialog>
 
-      {/* BottomSheet de saisie précise de Cœurs */}
+      {/* BottomSheet de saisie précise de Cœurs et Dame de Pique */}
       <BottomSheet open={open} onClose={() => setOpen(false)}>
         {editingPlayer && (
-          <div className="p-4">
-            <h3 className="font-serif-title font-bold text-lg mb-1">
-              Cœurs ramassés par {editingPlayer.name}
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-slate-400 mb-4">
-              Indiquez le nombre de Cœurs encaissés lors de cette manche (de 0 à 13).
-            </p>
+          <div className="px-4 pt-1 pb-6 space-y-3">
+            {/* Carte du joueur actif & Navigation Joueur précédent / Joueur suivant */}
+            <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Avatar player={editingPlayer} size="sm" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-sm truncate text-stone-900 dark:text-slate-100">
+                      {editingPlayer.name}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
+                      {currentEditingIndex + 1}/{game.players.length}
+                    </span>
+                  </div>
+                  <span className="text-xs text-stone-500 dark:text-slate-400">
+                    Total actuel : {game.scores[editingPlayer.id] || 0} pts
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  disabled={!hasPrevPlayer}
+                  onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
+                  aria-label="Joueur précédent"
+                >
+                  <ChevronLeft size={17} />
+                </button>
+                <button
+                  type="button"
+                  disabled={!hasNextPlayer}
+                  onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
+                  aria-label="Joueur suivant"
+                >
+                  <ChevronRight size={17} />
+                </button>
+              </div>
+            </div>
+
+            {/* Interrupteur Dame de Pique (+13 pts) directement intégré */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl border border-stone-200/80 dark:border-slate-800 bg-stone-50/60 dark:bg-slate-800/40">
+              <div className="flex items-center gap-2">
+                <span className="text-base leading-none text-[#c83b3b]">♠</span>
+                <span className="text-xs font-bold text-stone-800 dark:text-slate-200">Dame de Pique</span>
+                <span className="text-[11px] text-[#c83b3b] font-semibold">(+13 pts)</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQueenOwnerId(prev => prev === editingPlayer.id ? null : editingPlayer.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer select-none active:scale-95 ${
+                  queenOwnerId === editingPlayer.id
+                    ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                    : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:border-[#c83b3b]/60 hover:text-[#c83b3b]'
+                }`}
+              >
+                {queenOwnerId === editingPlayer.id ? '✓ A la Dame (+13)' : 'Pas de Dame'}
+              </button>
+            </div>
+
             <ScorePad
+              key={editingPlayer.id}
               value={playerHearts[editingPlayer.id] || 0}
               onChange={v => setPlayerHearts(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, Math.min(13, v)) }))}
-              onConfirm={() => setOpen(false)}
+              onConfirm={handleConfirmPad}
+              confirmLabel={confirmLabel}
               min={0}
               max={13}
               step={1}
-              label="Nombre de Cœurs"
+              label="Cœurs ramassés (hors Dame)"
+              subLabel="+1 pt / ♥"
+              presets={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]}
+              formatDisplay={v => `${v} ♥`}
+              formatTotal={v => {
+                const isQueen = queenOwnerId === editingPlayer.id
+                const delta = v + (isQueen ? 13 : 0)
+                const cur = game.scores[editingPlayer.id] || 0
+                return `+${delta} pts ${isQueen ? '(avec Q♠ +13)' : ''} · Nouveau total : ${cur + delta} pts`
+              }}
               showPlus={false}
-              customButtons={[
-                { label: '0', value: 0 },
-                { label: '1', value: 1 },
-                { label: '2', value: 2 },
-                { label: '3', value: 3 },
-                { label: '4', value: 4 },
-                { label: '5', value: 5 },
-                { label: '8', value: 8 },
-                { label: '13 (Tous)', value: 13 },
-              ]}
             />
           </div>
         )}
