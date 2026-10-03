@@ -132,13 +132,8 @@ export function GameScreen() {
 
   useEffect(() => {
     const handleSessionChanged = (e) => setLiveSession(e.detail)
-    const handleOpenRules = () => setShowRules(true)
     window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
-    window.addEventListener('ardoise-open-rules', handleOpenRules)
-    return () => {
-      window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
-      window.removeEventListener('ardoise-open-rules', handleOpenRules)
-    }
+    return () => window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
   }, [])
 
   const handleGoLive = async () => {

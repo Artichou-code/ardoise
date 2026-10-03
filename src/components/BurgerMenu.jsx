@@ -13,7 +13,6 @@ import {
   Moon,
   Share2,
   Trophy,
-  BookOpen,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useTheme } from '../context/ThemeContext'
@@ -54,7 +53,6 @@ export function BurgerMenu({
   onOpenLiveSession,
   onOpenShareGames,
   onOpenSync,
-  onOpenRules,
   onOpenLegal,
   onOpenArtCrea,
   liveSession,
@@ -288,30 +286,6 @@ export function BurgerMenu({
                   </p>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
                     Guide des distinctions
-                  </p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleAction(() => {
-                  if (onOpenRules) {
-                    onOpenRules()
-                  } else {
-                    window.dispatchEvent(new CustomEvent('ardoise-open-rules'))
-                  }
-                })}
-                className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
-              >
-                <span className="p-2 rounded-lg bg-white/85 dark:bg-slate-800/85 border border-stone-200/90 dark:border-slate-700/70 text-[#c83b3b] group-hover:border-[#c83b3b]/35 shrink-0 group-hover:scale-105 transition-all">
-                  <BookOpen size={16} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
-                    Règles du jeu
-                  </p>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                    Guides officiels et décomptes
                   </p>
                 </div>
               </button>
