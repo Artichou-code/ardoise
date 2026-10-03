@@ -40,10 +40,6 @@ export function ScorePad({
   const clampValue = (val) => {
     let num = Number(val)
     if (isNaN(num)) num = min !== undefined ? min : 0
-    if (values && values.length > 0) {
-      if (values.includes(num)) return num
-      return values.reduce((prev, curr) => Math.abs(curr - num) < Math.abs(prev - num) ? curr : prev)
-    }
     if (min !== undefined && num < min) num = min
     if (max !== undefined && num > max) num = max
     return num

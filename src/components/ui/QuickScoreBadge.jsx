@@ -39,11 +39,12 @@ export function QuickScoreBadge({
   }, [value])
 
   const clampValue = (val) => {
+    let res = Number(val)
+    if (isNaN(res)) res = min !== undefined ? min : 0
     if (values && values.length > 0) {
-      if (values.includes(val)) return val
-      return values.reduce((prev, curr) => Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev)
+      if (values.includes(res)) return res
+      return values.reduce((prev, curr) => Math.abs(curr - res) < Math.abs(prev - res) ? curr : prev)
     }
-    let res = val
     if (min !== undefined && res < min) res = min
     if (max !== undefined && res > max) res = max
     return res
