@@ -20,6 +20,7 @@ import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { Dialog } from '../ui/Dialog'
+import { DominoReorderList } from './DominoReorderList'
 import { BARBU_CONTRACTS } from '../../constants/games'
 
 export function BarbuEngine({ game, onFinish }) {
@@ -1011,103 +1012,17 @@ export function BarbuEngine({ game, onFinish }) {
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
                   Classement d'arrivée
                 </span>
-                <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                  Ordre décroissant
+                <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
+                  Glisser pour réordonner
                 </span>
               </div>
 
-              <div className="space-y-1.5">
-                {dominoRanks.map((pId, index) => {
-                  const p = game.players.find(pl => pl.id === pId)
-                  if (!p) return null
-                  const points = [45, 20, 5, -5][index]
-                  const rankLabels = ['1er (Gagnant)', '2e place', '3e place', '4e (Dernier)']
-
-                  return (
-                    <div
-                      key={p.id}
-                      className={`px-3 py-2 rounded-xl border flex items-center justify-between gap-2 transition-all ${
-                        index === 0
-                          ? 'border-emerald-500/80 bg-emerald-50/50 dark:bg-emerald-950/20'
-                          : index === 3
-                          ? 'border-[#c83b3b]/60 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/15'
-                          : 'school-subtle'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                          index === 0 ? 'bg-emerald-600 text-white' : 'bg-stone-200 dark:bg-slate-700 text-stone-700 dark:text-slate-300'
-                        }`}>
-                          {index + 1}
-                        </span>
-                        <Avatar player={p} size="xs" />
-                        <div className="min-w-0 flex-1">
-                          <span className="font-semibold text-xs truncate block text-stone-900 dark:text-slate-100">
-                            {p.name}
-                          </span>
-                          <span className="text-[10px] text-stone-400 dark:text-slate-500 block truncate">
-                            <strong className="font-medium text-stone-600 dark:text-slate-400">{rankLabels[index]}</strong>
-                            <span className="mx-1 opacity-60">·</span>
-                            Total : {(game.scores[p.id] || 0) + points} pts
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {/* Flèches pour monter ou descendre dans le classement */}
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            disabled={index === 0}
-                            onClick={() => {
-                              if (index === 0) return
-                              setDominoRanks(prev => {
-                                const arr = [...prev]
-                                const temp = arr[index - 1]
-                                arr[index - 1] = arr[index]
-                                arr[index] = temp
-                                return arr
-                              })
-                            }}
-                            className="w-6.5 h-6.5 rounded-lg border border-stone-200 dark:border-slate-700 flex items-center justify-center text-stone-600 dark:text-slate-300 disabled:opacity-25 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-95"
-                            title="Monter d'une place"
-                            aria-label="Monter d'une place"
-                          >
-                            <ChevronUp size={14} />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={index === dominoRanks.length - 1}
-                            onClick={() => {
-                              if (index === dominoRanks.length - 1) return
-                              setDominoRanks(prev => {
-                                const arr = [...prev]
-                                const temp = arr[index + 1]
-                                arr[index + 1] = arr[index]
-                                arr[index] = temp
-                                return arr
-                              })
-                            }}
-                            className="w-6.5 h-6.5 rounded-lg border border-stone-200 dark:border-slate-700 flex items-center justify-center text-stone-600 dark:text-slate-300 disabled:opacity-25 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-95"
-                            title="Descendre d'une place"
-                            aria-label="Descendre d'une place"
-                          >
-                            <ChevronDown size={14} />
-                          </button>
-                        </div>
-
-                        <span className={`min-w-[52px] text-center px-2 py-1 rounded-lg text-xs font-bold shrink-0 ${
-                          points > 0
-                            ? 'bg-emerald-600 text-white shadow-2xs'
-                            : 'bg-[#c83b3b] text-white shadow-2xs'
-                        }`}>
-                          {points > 0 ? `+${points}` : points} pts
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+              <DominoReorderList
+                dominoRanks={dominoRanks}
+                setDominoRanks={setDominoRanks}
+                players={game.players}
+                gameScores={game.scores}
+              />
             </div>
           )}
 
