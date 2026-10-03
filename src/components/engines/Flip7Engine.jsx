@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Trophy, Flame } from 'lucide-react'
+import { Trophy, Flame, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -34,6 +34,25 @@ export function Flip7Engine({ game, onFinish }) {
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [open, setOpen] = useState(false)
   const [showZeroConfirm, setShowZeroConfirm] = useState(false)
+
+  // Navigation séquentielle entre joueurs dans le ScorePad
+  const currentEditingIndex = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
+  const hasPrevPlayer = currentEditingIndex > 0
+  const hasNextPlayer = currentEditingIndex >= 0 && currentEditingIndex < game.players.length - 1
+  const prevPlayer = hasPrevPlayer ? game.players[currentEditingIndex - 1] : null
+  const nextPlayer = hasNextPlayer ? game.players[currentEditingIndex + 1] : null
+
+  const handleConfirmPad = () => {
+    if (hasNextPlayer) {
+      setEditingPlayer(nextPlayer)
+    } else {
+      setOpen(false)
+    }
+  }
+
+  const confirmLabel = hasNextPlayer
+    ? `Valider & Suivant (${nextPlayer.name})`
+    : 'Valider et terminer'
 
   const toggleFlip7 = (playerId) => {
     setBustedPlayers(prev => ({ ...prev, [playerId]: false }))
@@ -257,30 +276,123 @@ export function Flip7Engine({ game, onFinish }) {
       {/* BottomSheet de saisie précise */}
       <BottomSheet open={open} onClose={() => setOpen(false)}>
         {editingPlayer && (
-          <div className="p-4">
-            <h3 className="font-serif-title font-bold text-lg mb-1">
-              Points de {editingPlayer.name}
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-slate-400 mb-4">
-              Indiquez les points cumulés des cartes de la manche.
-            </p>
+          <div className="px-4 pt-1 pb-6 space-y-3">
+            {/* Carte du joueur actif & Navigation Joueur précédent / Joueur suivant */}
+            <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Avatar
+                  player={editingPlayer}
+                  size="sm"
+                  leader={flip7BonusPlayers[editingPlayer.id]}
+                  leaderColor="#f59e0b"
+                />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-sm truncate text-stone-900 dark:text-slate-100">
+                      {editingPlayer.name}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
+                      {currentEditingIndex + 1}/{game.players.length}
+                    </span>
+                    {flip7BonusPlayers[editingPlayer.id] && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 shrink-0">
+                        Flip 7 (+15)
+                      </span>
+                    )}
+                    {bustedPlayers[editingPlayer.id] && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200 dark:bg-slate-700 text-stone-600 dark:text-slate-400 shrink-0">
+                        Bust (0 pt)
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-stone-500 dark:text-slate-400">
+                    Total actuel : {game.scores[editingPlayer.id] || 0} pts
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  disabled={!hasPrevPlayer}
+                  onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
+                  aria-label="Joueur précédent"
+                >
+                  <ChevronLeft size={17} />
+                </button>
+                <button
+                  type="button"
+                  disabled={!hasNextPlayer}
+                  onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
+                  aria-label="Joueur suivant"
+                >
+                  <ChevronRight size={17} />
+                </button>
+              </div>
+            </div>
+
+            {/* Raccourcis rapides Bust / Flip 7 */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => toggleBust(editingPlayer.id)}
+                className={`p-2 px-3 rounded-xl border flex items-center justify-between text-xs font-semibold transition-all cursor-pointer select-none active:scale-95 ${
+                  bustedPlayers[editingPlayer.id]
+                    ? 'border-stone-400 bg-stone-200 dark:bg-slate-700 text-stone-900 dark:text-white'
+                    : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-stone-400'
+                }`}
+              >
+                <span>{bustedPlayers[editingPlayer.id] ? '✓ Éliminé (Bust)' : 'Bust (0 pt)'}</span>
+                <span className="text-[10px] opacity-75">0 pt</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => toggleFlip7(editingPlayer.id)}
+                className={`p-2 px-3 rounded-xl border flex items-center justify-between text-xs font-semibold transition-all cursor-pointer select-none active:scale-95 ${
+                  flip7BonusPlayers[editingPlayer.id]
+                    ? 'border-amber-500 bg-amber-500/15 text-amber-800 dark:text-amber-200 ring-1 ring-amber-500/40'
+                    : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-amber-400'
+                }`}
+              >
+                <span className="flex items-center gap-1">
+                  <Flame size={13} className="text-amber-500" />
+                  <span>{flip7BonusPlayers[editingPlayer.id] ? '✓ Flip 7 !' : 'Flip 7 !'}</span>
+                </span>
+                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">+15 pts</span>
+              </button>
+            </div>
+
             <ScorePad
+              key={editingPlayer.id}
               value={roundScores[editingPlayer.id] || 0}
               onChange={v => handleScoreChange(editingPlayer.id, v)}
-              onConfirm={() => setOpen(false)}
+              onConfirm={handleConfirmPad}
+              confirmLabel={confirmLabel}
               min={0}
               step={1}
               label="Points de la manche"
-              showPlus={true}
+              subLabel={`Objectif : ${TARGET_SCORE} pts`}
+              presets={[0, 10, 15, 20, 25, 30, 40, 50]}
+              formatDisplay={v => `${v} pts`}
+              formatTotal={val => {
+                const cur = game.scores[editingPlayer.id] || 0
+                const proj = cur + val
+                const isWin = proj >= TARGET_SCORE
+                return `+${val} pts · Nouveau total : ${proj}/${TARGET_SCORE} pts${isWin ? ' 🏆 Seuil atteint !' : ''}`
+              }}
+              baseScore={game.scores[editingPlayer.id] || 0}
+              showPlus={false}
               customButtons={[
-                { label: '0 (Bust)', value: 0 },
-                { label: '+5', value: (roundScores[editingPlayer.id] || 0) + 5 },
-                { label: '+10', value: (roundScores[editingPlayer.id] || 0) + 10 },
-                { label: '+15 (Flip 7)', value: (roundScores[editingPlayer.id] || 0) + 15 },
-                { label: '+20', value: (roundScores[editingPlayer.id] || 0) + 20 },
-                { label: '+25', value: (roundScores[editingPlayer.id] || 0) + 25 },
-                { label: '+30', value: (roundScores[editingPlayer.id] || 0) + 30 },
-                { label: '+50', value: (roundScores[editingPlayer.id] || 0) + 50 },
+                { label: '0', delta: -(roundScores[editingPlayer.id] || 0) },
+                { label: '+1', delta: 1 },
+                { label: '+5', delta: 5 },
+                { label: '+10', delta: 10 },
+                { label: '+15 (Flip 7)', delta: 15 },
               ]}
             />
           </div>
