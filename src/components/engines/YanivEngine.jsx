@@ -597,12 +597,16 @@ export function YanivEngine({ game, onFinish }) {
 
               <div className="flex flex-col items-end gap-1.5 shrink-0">
                 {callerId === editingPlayer.id ? (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300">
-                    Annonceur
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap ${
+                    isAssaf
+                      ? 'bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300'
+                      : 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                  }`}>
+                    {isAssaf ? 'Annonceur Assaf' : 'Annonceur Yaniv'}
                   </span>
                 ) : isAssaf && assafRivalId === editingPlayer.id ? (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
-                    Contreur
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 whitespace-nowrap">
+                    Contreur Assaf
                   </span>
                 ) : null}
 
