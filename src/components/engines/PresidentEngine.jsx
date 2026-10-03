@@ -57,105 +57,112 @@ export function PresidentEngine({ game }) {
       {/* Échanges de cartes de début de manche (2 colonnes & flèches directionnelles) */}
       {lastRound && prevPresPlayer && prevTrouPlayer && (
         <div className="school-card rounded-xl p-2.5 sm:p-3 space-y-2">
+          {/* En-tête court et compact */}
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5">
-              <ArrowLeftRight size={12} className="text-[#c83b3b]" />
-              <span>Échanges de cartes (début de manche)</span>
+            <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5 truncate">
+              <ArrowLeftRight size={12} className="text-[#c83b3b] shrink-0" />
+              <span className="truncate">Échanges de cartes</span>
             </p>
-            <span className="text-[10px] font-semibold text-stone-400 dark:text-slate-500">
+            <span className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 shrink-0 whitespace-nowrap">
               Manche {game.rounds.length + 1}
             </span>
           </div>
 
           <div className="space-y-1.5">
             {/* Grand échange : Président ⇄ Trou du cul (2 cartes) */}
-            <div className="flex items-center justify-between gap-1.5 sm:gap-2 p-2 rounded-xl bg-stone-50/70 dark:bg-slate-800/40 border border-stone-200/70 dark:border-slate-800">
-              {/* Colonne Gauche : Président */}
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <Avatar player={prevPresPlayer} size="xs" crown={true} leader={true} leaderColor="#10b981" />
-                <div className="min-w-0">
-                  <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
-                    {prevPresPlayer.name}
+            <div className="p-2 sm:p-2.5 rounded-xl bg-stone-50/70 dark:bg-slate-800/40 border border-stone-200/70 dark:border-slate-800">
+              <div className="flex items-center justify-between gap-2">
+                {/* Colonne Gauche : Président */}
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <Avatar player={prevPresPlayer} size="xs" crown={true} leader={true} leaderColor="#10b981" />
+                  <div className="min-w-0 flex-1">
+                    <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
+                      {prevPresPlayer.name}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 inline-block whitespace-nowrap mt-0.5">
+                      Président
+                    </span>
+                  </div>
+                </div>
+
+                {/* Badge central compact avec flèche */}
+                <div
+                  className="flex items-center justify-center shrink-0 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-stone-200/90 dark:border-slate-700 shadow-2xs"
+                  title="Le Trou donne ses 2 meilleures cartes au Président ; le Président donne 2 cartes au choix au Trou"
+                >
+                  <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#c83b3b]">
+                    <ArrowLeftRight size={11} strokeWidth={2.5} />
+                    <span className="whitespace-nowrap">2 cartes</span>
                   </span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 inline-block">
-                    Président
-                  </span>
+                </div>
+
+                {/* Colonne Droite : Trou du cul */}
+                <div className="flex items-center justify-end gap-2 min-w-0 flex-1 text-right">
+                  <div className="min-w-0 flex-1">
+                    <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
+                      {prevTrouPlayer.name}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-red-100 dark:bg-red-950/60 text-[#c83b3b] dark:text-red-300 inline-block whitespace-nowrap mt-0.5">
+                      Trou du cul
+                    </span>
+                  </div>
+                  <Avatar player={prevTrouPlayer} size="xs" />
                 </div>
               </div>
 
-              {/* Centre : Flèches et nombre de cartes */}
-              <div
-                className="flex flex-col items-center shrink-0 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-stone-200/90 dark:border-slate-700 shadow-2xs"
-                title="Le Trou donne ses 2 meilleures cartes au Président ; le Président donne 2 cartes au choix au Trou"
-              >
-                <span className="inline-flex items-center gap-1 text-[11px] font-black text-stone-800 dark:text-slate-100">
-                  <ArrowLeftRight size={11} className="text-[#c83b3b]" />
-                  <span>2 cartes</span>
-                </span>
-                <div className="flex items-center gap-1 text-[9px] text-stone-500 dark:text-slate-400 mt-0.5 whitespace-nowrap">
-                  <span>choix ➔</span>
-                  <span className="opacity-30">|</span>
-                  <span>← meilleures</span>
-                </div>
-              </div>
-
-              {/* Colonne Droite : Trou du cul */}
-              <div className="flex items-center justify-end gap-2 min-w-0 flex-1 text-right">
-                <div className="min-w-0">
-                  <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
-                    {prevTrouPlayer.name}
-                  </span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-red-100 dark:bg-red-950/60 text-[#c83b3b] dark:text-red-300 inline-block">
-                    Trou du cul
-                  </span>
-                </div>
-                <Avatar player={prevTrouPlayer} size="xs" />
+              {/* Ligne des règles d'échange en dessous */}
+              <div className="flex items-center justify-between text-[9px] text-stone-500 dark:text-slate-400 pt-1 mt-1 border-t border-stone-200/50 dark:border-slate-800/60">
+                <span className="truncate">donne 2 cartes au choix ➔</span>
+                <span className="truncate text-right text-[#c83b3b] dark:text-red-400 font-medium">← donne ses 2 meilleures</span>
               </div>
             </div>
 
             {/* Petit échange : Vice-Président ⇄ Vice-Trou (1 carte) */}
             {prevVicePresPlayer && prevViceTrouPlayer && (
-              <div className="flex items-center justify-between gap-1.5 sm:gap-2 p-2 rounded-xl bg-stone-50/70 dark:bg-slate-800/40 border border-stone-200/70 dark:border-slate-800">
-                {/* Colonne Gauche : Vice-Président */}
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <Avatar player={prevVicePresPlayer} size="xs" />
-                  <div className="min-w-0">
-                    <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
-                      {prevVicePresPlayer.name}
+              <div className="p-2 sm:p-2.5 rounded-xl bg-stone-50/70 dark:bg-slate-800/40 border border-stone-200/70 dark:border-slate-800">
+                <div className="flex items-center justify-between gap-2">
+                  {/* Colonne Gauche : Vice-Président */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Avatar player={prevVicePresPlayer} size="xs" />
+                    <div className="min-w-0 flex-1">
+                      <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
+                        {prevVicePresPlayer.name}
+                      </span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 inline-block whitespace-nowrap mt-0.5">
+                        Vice-Président
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Badge central compact avec flèche */}
+                  <div
+                    className="flex items-center justify-center shrink-0 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-stone-200/90 dark:border-slate-700 shadow-2xs"
+                    title="Le Vice-Trou donne sa meilleure carte au Vice-Président ; le Vice-Président donne 1 carte au choix au Vice-Trou"
+                  >
+                    <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#c83b3b]">
+                      <ArrowLeftRight size={11} strokeWidth={2.5} />
+                      <span className="whitespace-nowrap">1 carte</span>
                     </span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 inline-block">
-                      Vice-Président
-                    </span>
+                  </div>
+
+                  {/* Colonne Droite : Vice-Trou */}
+                  <div className="flex items-center justify-end gap-2 min-w-0 flex-1 text-right">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
+                        {prevViceTrouPlayer.name}
+                      </span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-red-50 dark:bg-red-950/40 text-[#c83b3b] dark:text-red-300 inline-block whitespace-nowrap mt-0.5">
+                        Vice-Trou
+                      </span>
+                    </div>
+                    <Avatar player={prevViceTrouPlayer} size="xs" />
                   </div>
                 </div>
 
-                {/* Centre : Flèches et nombre de cartes */}
-                <div
-                  className="flex flex-col items-center shrink-0 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-stone-200/90 dark:border-slate-700 shadow-2xs"
-                  title="Le Vice-Trou donne sa meilleure carte au Vice-Président ; le Vice-Président donne 1 carte au choix au Vice-Trou"
-                >
-                  <span className="inline-flex items-center gap-1 text-[11px] font-black text-stone-800 dark:text-slate-100">
-                    <ArrowLeftRight size={11} className="text-[#c83b3b]" />
-                    <span>1 carte</span>
-                  </span>
-                  <div className="flex items-center gap-1 text-[9px] text-stone-500 dark:text-slate-400 mt-0.5 whitespace-nowrap">
-                    <span>choix ➔</span>
-                    <span className="opacity-30">|</span>
-                    <span>← meilleure</span>
-                  </div>
-                </div>
-
-                {/* Colonne Droite : Vice-Trou */}
-                <div className="flex items-center justify-end gap-2 min-w-0 flex-1 text-right">
-                  <div className="min-w-0">
-                    <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100">
-                      {prevViceTrouPlayer.name}
-                    </span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-red-50 dark:bg-red-950/40 text-[#c83b3b] dark:text-red-300 inline-block">
-                      Vice-Trou
-                    </span>
-                  </div>
-                  <Avatar player={prevViceTrouPlayer} size="xs" />
+                {/* Ligne des règles d'échange en dessous */}
+                <div className="flex items-center justify-between text-[9px] text-stone-500 dark:text-slate-400 pt-1 mt-1 border-t border-stone-200/50 dark:border-slate-800/60">
+                  <span className="truncate">donne 1 carte au choix ➔</span>
+                  <span className="truncate text-right text-[#c83b3b] dark:text-red-400 font-medium">← donne sa meilleure</span>
                 </div>
               </div>
             )}
