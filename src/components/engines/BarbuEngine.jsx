@@ -411,7 +411,7 @@ export function BarbuEngine({ game, onFinish }) {
                           </span>
                           <span className="text-[10px] text-stone-400 dark:text-slate-500 block">
                             {delta < 0 ? (
-                              <>Total : {currentTotal} <strong className="font-bold text-red-600 dark:text-red-400">➔ {projectedTotal} pts</strong></>
+                              <>Total : {currentTotal} <strong className="font-bold text-[#c83b3b] dark:text-red-300">➔ {projectedTotal} pts</strong></>
                             ) : (
                               `Total : ${currentTotal} pts`
                             )}
@@ -478,61 +478,61 @@ export function BarbuEngine({ game, onFinish }) {
                   return (
                     <div
                       key={p.id}
-                      className="px-3 py-2 rounded-xl border school-subtle hover:border-[#c83b3b]/40 transition-all"
+                      className="px-3 py-2.5 rounded-xl border school-subtle hover:border-[#c83b3b]/40 transition-all"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingPlayer(p)
-                            setPadConfig({
-                              min: 0,
-                              max: 12,
-                              presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-                              label: 'Nombre de Cœurs (hors As)',
-                              showPlus: false,
-                            })
-                            setOpenPad(true)
-                          }}
-                          className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer select-none active:opacity-80 transition-opacity"
-                        >
+                      {/* Ligne 1 : Nom et score total avec évolution (style Dame de Pique) */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingPlayer(p)
+                          setPadConfig({
+                            min: 0,
+                            max: 12,
+                            presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                            label: 'Nombre de Cœurs (hors As)',
+                            showPlus: false,
+                          })
+                          setOpenPad(true)
+                        }}
+                        className="w-full flex items-center justify-between gap-2 text-left cursor-pointer select-none active:opacity-80 transition-opacity mb-2"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
                           <Avatar player={p} size="xs" />
-                          <div className="min-w-0 flex-1">
-                            <span className="font-semibold text-xs truncate block text-stone-900 dark:text-slate-100">{p.name}</span>
-                            <span className="text-[10px] text-stone-400 dark:text-slate-500 block">
-                              {delta < 0 ? (
-                                <>Total : {currentTotal} <strong className="font-bold text-red-600 dark:text-red-400">➔ {projectedTotal} pts</strong></>
-                              ) : (
-                                `Total : ${currentTotal} pts`
-                              )}
+                          <span className="font-semibold text-xs truncate block text-stone-900 dark:text-slate-100">
+                            {p.name}
+                          </span>
+                        </div>
+
+                        <div className="text-right text-xs shrink-0 select-none">
+                          <span className="text-stone-500 dark:text-slate-400">Total : {currentTotal}</span>
+                          {delta < 0 ? (
+                            <span className="text-[#c83b3b] dark:text-red-300 font-bold ml-1.5">
+                              ➔ {projectedTotal} pts ({delta} pts)
                             </span>
-                          </div>
-                        </button>
+                          ) : (
+                            <span className="text-stone-400 dark:text-slate-500 ml-1.5">
+                              ➔ {projectedTotal} pts
+                            </span>
+                          )}
+                        </div>
+                      </button>
 
-                        <span className={`min-w-14 text-center px-2 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                          delta < 0
-                            ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300'
-                            : 'bg-stone-100 dark:bg-slate-800 text-stone-500'
-                        }`}>
-                          {delta} pts
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2 pt-1.5 mt-1.5 border-t border-stone-200/50 dark:border-slate-800/60">
-                        {/* Bouton As de Cœur */}
+                      {/* Ligne 2 : Actions rapides (As de Cœur + Roulette tactile) */}
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-stone-200/50 dark:border-slate-800/60">
+                        {/* Bouton As de Cœur en Rouge Ardoise (#c83b3b) */}
                         <button
                           type="button"
                           onClick={() => setAceOfHeartsPlayerId(prev => prev === p.id ? null : p.id)}
                           className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer select-none active:scale-95 ${
                             hasAce
-                              ? 'border-red-600 bg-red-600 text-white shadow-2xs'
-                              : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:border-red-400'
+                              ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                              : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:border-[#c83b3b]/60 hover:text-[#c83b3b]'
                           }`}
                         >
                           ♥ As (-6 pts)
                         </button>
 
-                        {/* Roulette tactile de Cœurs ordinaires */}
+                        {/* Roulette tactile de Cœurs ordinaires (sans sous-texte en doublon) */}
                         <QuickScoreBadge
                           value={hCount}
                           onChange={v => {
@@ -555,7 +555,6 @@ export function BarbuEngine({ game, onFinish }) {
                           step={1}
                           showPlus={false}
                           formatDisplay={v => `${v} ♥`}
-                          formatSub={v => `${v * -2} pts`}
                           formatBubble={v => {
                             const d = (v * -2) + (hasAce ? -6 : 0)
                             const proj = currentTotal + d
@@ -610,7 +609,7 @@ export function BarbuEngine({ game, onFinish }) {
 
                         <span className={`min-w-14 text-center px-2 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
                           delta < 0
-                            ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300'
+                            ? 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] dark:text-red-300'
                             : 'bg-stone-100 dark:bg-slate-800 text-stone-500'
                         }`}>
                           {delta} pts
@@ -651,7 +650,7 @@ export function BarbuEngine({ game, onFinish }) {
                 </span>
                 <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                   barbuTakerId
-                    ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300'
+                    ? 'bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300'
                     : 'bg-stone-100 text-stone-600 dark:bg-slate-800 dark:text-slate-400'
                 }`}>
                   {barbuTakerId ? 'Preneur désigné' : 'À désigner'}
@@ -671,8 +670,8 @@ export function BarbuEngine({ game, onFinish }) {
                       onClick={() => setBarbuTakerId(prev => prev === p.id ? null : p.id)}
                       className={`w-full px-3 py-2 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer select-none active:scale-[0.99] ${
                         isTaker
-                          ? 'border-red-600 bg-red-600/10 dark:bg-red-950/30 text-red-950 dark:text-red-200 ring-2 ring-red-500'
-                          : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-red-400'
+                          ? 'border-[#c83b3b] bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] dark:text-red-200 ring-2 ring-[#c83b3b]/30'
+                          : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/60'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -685,7 +684,7 @@ export function BarbuEngine({ game, onFinish }) {
                         </div>
                       </div>
                       <span className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
-                        isTaker ? 'bg-red-600 text-white shadow-2xs' : 'bg-stone-100 dark:bg-slate-800 text-stone-500'
+                        isTaker ? 'bg-[#c83b3b] text-white shadow-2xs' : 'bg-stone-100 dark:bg-slate-800 text-stone-500'
                       }`}>
                         {isTaker ? '♥ Le Barbu (-20)' : 'Évité (0 pt)'}
                       </span>
@@ -755,8 +754,8 @@ export function BarbuEngine({ game, onFinish }) {
                         onClick={() => setTrick13PlayerId(prev => prev === p.id ? null : p.id)}
                         className={`p-2 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                           isSelected
-                            ? 'border-red-600 bg-red-600 text-white shadow-2xs'
-                            : 'border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 text-stone-700 dark:text-slate-300'
+                            ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                            : 'border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/50'
                         }`}
                       >
                         <Avatar player={p} size="2xs" />
