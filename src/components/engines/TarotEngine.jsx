@@ -380,6 +380,10 @@ export function TarotEngine({ game }) {
             step={1}
             label="Points d'attaque"
             showPlus={false}
+            formatTotal={val => {
+              const d = val - threshold
+              return d >= 0 ? `+${d} pts (Contrat réussi)` : `${d} pts (Contrat chuté)`
+            }}
             customButtons={[
               { label: '36 (3 Bouts)', value: 36 },
               { label: '41 (2 Bouts)', value: 41 },

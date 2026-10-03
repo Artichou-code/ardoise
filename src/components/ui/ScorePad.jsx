@@ -140,10 +140,10 @@ export function ScorePad({
   }
 
   const dragStep = step || 1
-  const cur = currentValueRef.current
-  const totalScore = baseScore !== undefined ? baseScore + cur : null
+  const activeVal = isDragging ? currentValueRef.current : value
+  const totalScore = baseScore !== undefined ? baseScore + activeVal : null
   const totalText = formatTotal
-    ? formatTotal(cur)
+    ? formatTotal(activeVal)
     : totalScore !== null
     ? `Total : ${totalScore}`
     : null
@@ -180,7 +180,9 @@ export function ScorePad({
             <div className="flex flex-col items-center justify-center overflow-hidden py-0.5 w-full pointer-events-none">
               {/* Pastille minimaliste du score total pendant le glissement */}
               {totalText && (
-                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#c83b3b] text-white text-[11px] font-bold shadow-xs mb-1">
+                <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-white text-[11px] font-bold shadow-xs mb-1 ${
+                  String(totalText).startsWith('-') ? 'bg-[#c83b3b]' : 'bg-emerald-600'
+                }`}>
                   <span>{totalText}</span>
                 </div>
               )}
@@ -216,10 +218,22 @@ export function ScorePad({
               <span className="text-4xl font-black tabular-nums tracking-tight text-stone-900 dark:text-slate-100">
                 {displayVal(value)}
               </span>
-              {totalScore !== null ? (
-                <span className="text-xs font-bold text-stone-600 dark:text-slate-400">
-                  {formatTotal ? formatTotal(value) : `Total : ${baseScore + value}`}
-                </span>
+              {totalText !== null ? (
+                <div className="flex flex-col items-center">
+                  <span className={`text-xs font-bold ${
+                    String(totalText).startsWith('+')
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : String(totalText).startsWith('-')
+                      ? 'text-[#c83b3b]'
+                      : 'text-stone-600 dark:text-slate-400'
+                  }`}>
+                    {totalText}
+                  </span>
+                  <span className="text-[10px] text-stone-400 dark:text-slate-500 flex items-center gap-1 mt-0.5 opacity-70">
+                    <ArrowUpDown size={10} className="text-[#c83b3b]" />
+                    Maintenir & glisser pour faire tourner
+                  </span>
+                </div>
               ) : (
                 <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 flex items-center gap-1">
                   <ArrowUpDown size={11} className="text-[#c83b3b]" />
