@@ -106,13 +106,11 @@ export function DourakEngine({ game, onFinish }) {
   return (
     <div className="space-y-4 pt-2">
       {/* Bandeau d'information de manche & condition de fin */}
-      <div className="flex items-center justify-between px-1 text-xs text-stone-500 dark:text-slate-400">
-        <span>
-          {mode === 'defeats'
-            ? 'Mode classique : +1 défaite au Dourak'
-            : 'Variante aux cartes : cartes restantes en main'}
+      <div className="flex items-center justify-between gap-2 px-1 text-xs">
+        <span className="text-stone-500 dark:text-slate-400 font-medium truncate">
+          {mode === 'defeats' ? 'Mode classique' : 'Variante aux cartes'}
         </span>
-        <span className="font-bold text-stone-700 dark:text-slate-300">
+        <span className="font-bold text-stone-700 dark:text-slate-200 shrink-0 text-[11px] px-2 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800 border border-stone-200/80 dark:border-slate-700/80">
           {endCondition === 'rounds'
             ? `Manche ${currentRoundNumber} / ${limit}`
             : `Arrêt à ${limit} ${mode === 'cards' ? 'cartes' : 'défaites'}`}
@@ -125,18 +123,19 @@ export function DourakEngine({ game, onFinish }) {
           Qui est le Dourak de cette manche ?
         </p>
 
-        <div className={`grid gap-2 ${game.players.length === 3 ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-3'}`}>
-          {game.players.map(p => {
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {game.players.map((p, idx) => {
             const isSelected = loserId === p.id
             const wasLastDourak = lastLoserId === p.id
             const playerScore = game.scores[p.id] || 0
+            const colSpan = game.players.length === 3 && idx === 2 ? 'col-span-2 sm:col-span-1' : ''
 
             return (
               <button
                 key={p.id}
                 type="button"
                 onClick={() => handleSelectPlayer(p)}
-                className={`flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all active:scale-[0.98] text-left cursor-pointer min-h-[46px] ${
+                className={`flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all active:scale-[0.98] text-left cursor-pointer min-h-[46px] ${colSpan} ${
                   isSelected
                     ? 'border-[#c83b3b] bg-[#c83b3b]/10 ring-1 ring-[#c83b3b]/30 font-bold'
                     : wasLastDourak
