@@ -316,57 +316,136 @@ export function GameScreen() {
             })()}
           </div>
         ) : (
-          <div className={`grid ${
-            activeGame.players.length <= 2 ? 'grid-cols-2 gap-1.5' :
-            activeGame.players.length === 3 ? 'grid-cols-3 gap-1.5' :
-            activeGame.players.length === 4 ? 'grid-cols-4 gap-1.5' :
-            activeGame.players.length === 5 ? 'grid-cols-5 gap-1' :
-            activeGame.players.length === 6 ? 'grid-cols-6 gap-1' :
-            'grid-cols-4 gap-1'
-          }`}>
-            {ranking.map(({ id, score, rank }) => {
-              const player = activeGame.players.find(p => p.id === id)
-              if (!player) return null
-              const isLeader = id === leaderId
-              const isCrowded = activeGame.players.length >= 5
-              return (
-                <div
-                  key={id}
-                  className={`flex flex-col items-center rounded-xl transition-all ${
-                    isCrowded ? 'gap-0.5 py-1 px-1' : 'gap-0.5 py-1.5 px-1.5'
-                  } ${
-                    isLeader
-                      ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
-                      : 'school-card'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full px-0.5 leading-none">
-                    <span className={`text-[9px] font-bold uppercase ${
-                      isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
-                    }`}>
-                      {rank === 1 ? '1er' : `${rank}e`}
-                    </span>
-                    {isLeader && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
-                    )}
-                  </div>
-                  <Avatar player={player} size={isCrowded ? 'xs' : 'sm-compact'} leader={isLeader} />
-                  <span className="text-[11px] font-semibold truncate max-w-full text-center px-0.5 leading-tight">
-                    {player.name}
-                  </span>
-                  <span
-                    className={`font-black tabular-nums leading-none ${
-                      isCrowded ? 'text-sm' : 'text-base'
-                    } ${
-                      isLeader ? 'text-[#c83b3b]' : ''
-                    }`}
-                  >
-                    {score}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+          (() => {
+            const count = activeGame.players.length
+
+            // Détermination de la grille : 1 ligne pour 2-4 joueurs, 2 lignes au-delà
+            const gridClass =
+              count <= 2 ? 'grid grid-cols-2 gap-1.5' :
+              count === 3 ? 'grid grid-cols-3 gap-1.5' :
+              count === 4 ? 'grid grid-cols-4 gap-1' :
+              count === 5 ? 'grid grid-cols-6 gap-1' :
+              count === 6 ? 'grid grid-cols-3 gap-1' :
+              count === 7 ? 'grid grid-cols-12 gap-1' :
+              'grid grid-cols-4 gap-1'
+
+            return (
+              <div className={gridClass}>
+                {ranking.map(({ id, score, rank }, idx) => {
+                  const player = activeGame.players.find(p => p.id === id)
+                  if (!player) return null
+                  const isLeader = id === leaderId
+
+                  // 2 Joueurs : disposition horizontale ultra-compacte (~42px)
+                  if (count <= 2) {
+                    return (
+                      <div
+                        key={id}
+                        className={`flex items-center justify-between rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 transition-all min-h-[42px] ${
+                          isLeader
+                            ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
+                            : 'school-card'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <Avatar player={player} size="sm-compact" leader={isLeader} />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1 leading-none mb-0.5">
+                              <span className={`text-[9px] font-bold uppercase ${
+                                isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
+                              }`}>
+                                {rank === 1 ? '1er' : `${rank}e`}
+                              </span>
+                              {isLeader && <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b] shrink-0" />}
+                            </div>
+                            <span className="text-xs font-bold truncate block text-stone-900 dark:text-slate-100 leading-tight">
+                              {player.name}
+                            </span>
+                          </div>
+                        </div>
+                        <span className={`font-black tabular-nums text-xl sm:text-2xl shrink-0 leading-none pl-1.5 ${
+                          isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
+                        }`}>
+                          {score}
+                        </span>
+                      </div>
+                    )
+                  }
+
+                  // 3, 5 ou 6 Joueurs : disposition semi-horizontale compacte (~48px)
+                  // Avatar + Nom + Score sur la même rangée pour un gain de hauteur maximal
+                  if (count === 3 || count === 5 || count === 6) {
+                    const colSpan =
+                      count === 5 ? (idx < 3 ? 'col-span-2' : 'col-span-3') : ''
+
+                    return (
+                      <div
+                        key={id}
+                        className={`flex flex-col justify-between rounded-xl px-2 py-1 transition-all min-h-[48px] ${colSpan} ${
+                          isLeader
+                            ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
+                            : 'school-card'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full leading-none mb-1">
+                          <span className={`text-[9px] font-bold uppercase ${
+                            isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
+                          }`}>
+                            {rank === 1 ? '1er' : `${rank}e`}
+                          </span>
+                          {isLeader && <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b] shrink-0" />}
+                        </div>
+                        <div className="flex items-center gap-1.5 w-full min-w-0">
+                          <Avatar player={player} size="xs" leader={isLeader} />
+                          <span className="text-[11px] font-bold truncate flex-1 min-w-0 text-stone-900 dark:text-slate-100 leading-tight">
+                            {player.name}
+                          </span>
+                          <span className={`font-black tabular-nums text-sm shrink-0 leading-none pl-0.5 ${
+                            isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
+                          }`}>
+                            {score}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  // 4 Joueurs (1 ligne de 4) ou 7-8 Joueurs (2 lignes de 4) : disposition verticale compacte (~56px)
+                  const colSpan =
+                    count === 7 ? (idx < 4 ? 'col-span-3' : 'col-span-4') : ''
+
+                  return (
+                    <div
+                      key={id}
+                      className={`flex flex-col items-center justify-between rounded-xl px-1 py-1 transition-all min-h-[56px] ${colSpan} ${
+                        isLeader
+                          ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
+                          : 'school-card'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full px-0.5 leading-none">
+                        <span className={`text-[9px] font-bold uppercase ${
+                          isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
+                        }`}>
+                          {rank === 1 ? '1er' : `${rank}e`}
+                        </span>
+                        {isLeader && <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b] shrink-0" />}
+                      </div>
+                      <Avatar player={player} size="xs" leader={isLeader} />
+                      <span className="text-[10px] sm:text-[11px] font-semibold truncate max-w-full text-center px-0.5 leading-tight text-stone-900 dark:text-slate-100">
+                        {player.name}
+                      </span>
+                      <span className={`font-black tabular-nums leading-none text-sm ${
+                        isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
+                      }`}>
+                        {score}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })()
         )}
       </div>
 
