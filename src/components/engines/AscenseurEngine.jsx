@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Award, CheckCircle2, ChevronRight, AlertCircle, HelpCircle } from 'lucide-react'
+import { CheckCircle2, ChevronRight, AlertCircle } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
+import { Dialog } from '../ui/Dialog'
 
 export function AscenseurEngine({ game, onFinish }) {
   const { updateScores } = useGame()
@@ -42,6 +43,7 @@ export function AscenseurEngine({ game, onFinish }) {
   const [phase, setPhase] = useState(() => {
     return game.restoredRound?.phase || 'bids'
   })
+  const [showTricksErrorDialog, setShowTricksErrorDialog] = useState(false)
 
   // Sommes pour contrôle de cohérence
   const totalBids = Object.values(bids).reduce((a, b) => a + b, 0)
@@ -84,6 +86,18 @@ export function AscenseurEngine({ game, onFinish }) {
     setBids(Object.fromEntries(game.players.map(p => [p.id, 0])))
     setTricks(Object.fromEntries(game.players.map(p => [p.id, 0])))
     setPhase('bids')
+  }
+
+  const handleValidate = () => {
+    if (phase === 'bids') {
+      setPhase('tricks')
+      return
+    }
+    if (!isTricksExact) {
+      setShowTricksErrorDialog(true)
+      return
+    }
+    submitRound()
   }
 
   return (
@@ -307,17 +321,76 @@ export function AscenseurEngine({ game, onFinish }) {
           })}
         </div>
 
-        {/* Validation de la manche */}
+        {/* Validation de la manche ou passage de phase */}
         <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
-          <button
-            type="button"
-            onClick={submitRound}
-            className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
-          >
-            Valider la manche {roundNum}
-          </button>
+          {phase === 'bids' ? (
+            <button
+              type="button"
+              onClick={() => setPhase('tricks')}
+              className="w-full py-2.5 rounded-xl bg-stone-900 dark:bg-slate-100 hover:bg-stone-800 dark:hover:bg-white text-white dark:text-stone-900 font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span>Passer aux plis réalisés (Phase 2)</span>
+              <ChevronRight size={16} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleValidate}
+              className={`w-full py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer ${
+                isTricksExact
+                  ? 'bg-[#c83b3b] hover:bg-[#b03030] text-white'
+                  : 'bg-stone-200 dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:bg-stone-300 dark:hover:bg-slate-700'
+              }`}
+            >
+              {isTricksExact
+                ? `Valider la manche ${roundNum} (${totalTricks}/${cardsCount} plis)`
+                : `Valider la manche ${roundNum} (${totalTricks}/${cardsCount} plis)`}
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Dialog d'erreur si le nombre total de plis ne correspond pas aux cartes en jeu */}
+      <Dialog
+        open={showTricksErrorDialog}
+        onClose={() => setShowTricksErrorDialog(false)}
+        title="Total des plis incorrect"
+      >
+        <div className="space-y-3 text-xs">
+          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
+            Le nombre total de plis réalisés (<strong>{totalTricks}</strong>) doit être <strong>exactement égal au nombre de cartes en jeu</strong> ({cardsCount} {cardsCount > 1 ? 'cartes' : 'carte'}).
+          </p>
+
+          <div className="p-2.5 rounded-xl bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 space-y-1.5 font-medium">
+            <div className="flex justify-between items-center">
+              <span>Cartes distribuées :</span>
+              <strong className="text-stone-800 dark:text-slate-200">{cardsCount} plis en jeu</strong>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Plis attribués aux joueurs :</span>
+              <strong className="text-[#c83b3b]">{totalTricks} / {cardsCount} plis</strong>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Différence :</span>
+              <strong className="text-[#c83b3b]">
+                {totalTricks < cardsCount
+                  ? `${cardsCount - totalTricks} pli${cardsCount - totalTricks > 1 ? 's' : ''} manquant${cardsCount - totalTricks > 1 ? 's' : ''}`
+                  : `${totalTricks - cardsCount} pli${totalTricks - cardsCount > 1 ? 's' : ''} en trop`}
+              </strong>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setShowTricksErrorDialog(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white btn-margin-red cursor-pointer shadow-xs active:scale-[0.99] transition-all"
+            >
+              Vérifier la saisie des plis
+            </button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   )
 }

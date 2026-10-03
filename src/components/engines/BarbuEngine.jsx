@@ -7,7 +7,6 @@ import {
   Clock,
   Flame,
   Trophy,
-  Check,
   RotateCw,
   AlertCircle,
   HelpCircle,
@@ -17,6 +16,7 @@ import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
+import { Dialog } from '../ui/Dialog'
 import { BARBU_CONTRACTS } from '../../constants/games'
 
 export function BarbuEngine({ game, onFinish }) {
@@ -93,6 +93,7 @@ export function BarbuEngine({ game, onFinish }) {
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [openPad, setOpenPad] = useState(false)
   const [padConfig, setPadConfig] = useState({ min: -130, max: 45, presets: [] })
+  const [showBarbuErrorDialog, setShowBarbuErrorDialog] = useState(false)
 
   // Calcul du delta de manche pour chaque joueur selon le contrat actif
   const playerDeltas = useMemo(() => {
@@ -228,6 +229,14 @@ export function BarbuEngine({ game, onFinish }) {
       const winner = Object.entries(newScores).sort((a, b) => b[1] - a[1])[0][0]
       onFinish(winner)
     }
+  }
+
+  const handleValidate = () => {
+    if (!isContractTotalValid) {
+      setShowBarbuErrorDialog(true)
+      return
+    }
+    submitRound()
   }
 
   // Rendu de l'icône du contrat
@@ -874,14 +883,60 @@ export function BarbuEngine({ game, onFinish }) {
 
             <button
               type="button"
-              onClick={submitRound}
-              className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
+              onClick={handleValidate}
+              className={`w-full py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer ${
+                isContractTotalValid
+                  ? 'bg-[#c83b3b] hover:bg-[#b03030] text-white'
+                  : 'bg-stone-200 dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:bg-stone-300 dark:hover:bg-slate-700'
+              }`}
             >
-              Valider la donne {roundCount} ({targetContract?.name})
+              {isContractTotalValid
+                ? `Valider la donne ${roundCount} (${targetContract?.name})`
+                : `Valider la donne ${roundCount} (${currentTotalAllocated}/${targetContract?.totalPoints} pts)`}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Dialog d'avertissement total incorrect pour le contrat */}
+      <Dialog
+        open={showBarbuErrorDialog}
+        onClose={() => setShowBarbuErrorDialog(false)}
+        title={`Total incorrect (${targetContract?.name})`}
+      >
+        <div className="space-y-3 text-xs">
+          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
+            Le total des points saisis (<strong>{currentTotalAllocated} pts</strong>) ne correspond pas au total réglementaire du contrat <strong>{targetContract?.name}</strong> (<strong>{targetContract?.totalPoints} pts</strong>).
+          </p>
+
+          <div className="p-2.5 rounded-xl bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 space-y-1.5 font-medium">
+            <div className="flex justify-between items-center">
+              <span>Total attendu :</span>
+              <strong className="text-stone-800 dark:text-slate-200">{targetContract?.totalPoints} pts</strong>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Total saisi actuellement :</span>
+              <strong className="text-[#c83b3b]">{currentTotalAllocated} pts</strong>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Écart :</span>
+              <strong className="text-[#c83b3b]">
+                {Math.abs(currentTotalAllocated - (targetContract?.totalPoints || 0))} pts {currentTotalAllocated > (targetContract?.totalPoints || 0) ? 'en trop' : 'manquants'}
+              </strong>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setShowBarbuErrorDialog(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white btn-margin-red cursor-pointer shadow-xs active:scale-[0.99] transition-all"
+            >
+              Ajuster les points
+            </button>
+          </div>
+        </div>
+      </Dialog>
 
       {/* BottomSheet de saisie précise de points si besoin */}
       <BottomSheet

@@ -4,11 +4,13 @@ import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { Avatar } from '../ui/Avatar'
+import { Dialog } from '../ui/Dialog'
 import { useGame } from '../../context/GameContext'
 
 export function CaracoleEngine({ game, onFinish }) {
   const { updateScores } = useGame()
   const [open, setOpen] = useState(false)
+  const [showZeroConfirm, setShowZeroConfirm] = useState(false)
   const [roundPenalties, setRoundPenalties] = useState(() => {
     const initial = {}
     for (const p of game.players) {
@@ -27,6 +29,15 @@ export function CaracoleEngine({ game, onFinish }) {
 
   const setPenalty = (id, val) => {
     setRoundPenalties(prev => ({ ...prev, [id]: Math.max(0, val) }))
+  }
+
+  const handleValidate = () => {
+    const allZero = Object.values(roundPenalties).every(v => v === 0)
+    if (allZero) {
+      setShowZeroConfirm(true)
+      return
+    }
+    submitRound()
   }
 
   const submitRound = () => {
@@ -152,13 +163,13 @@ export function CaracoleEngine({ game, onFinish }) {
                       {pen > 0 ? (
                         isReprieve ? (
                           <span className="text-[#c83b3b] font-bold">
-                            {projected} → {sursisTarget} pts (sursis !)
+                            Total : {current} ➔ {sursisTarget} pts (sursis !)
                           </span>
                         ) : (
-                          `${current} + ${pen} = ${projected} pts`
+                          <>Total : {current} <strong className="text-[#c83b3b] font-bold">➔ {projected} pts</strong> (+{pen})</>
                         )
                       ) : (
-                        `${current} pts`
+                        `Total : ${current} pts`
                       )}
                     </span>
                   </div>
@@ -193,11 +204,36 @@ export function CaracoleEngine({ game, onFinish }) {
 
       <button
         type="button"
-        onClick={submitRound}
-        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red"
+        onClick={handleValidate}
+        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red cursor-pointer active:scale-[0.99] transition-all"
       >
         Valider la manche
       </button>
+
+      {/* Dialog d'avertissement 0 pénalité saisie */}
+      <Dialog
+        open={showZeroConfirm}
+        onClose={() => setShowZeroConfirm(false)}
+        title="Aucune pénalité saisie"
+      >
+        <div className="space-y-3 text-xs">
+          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
+            Tous les joueurs ont <strong>0 point de pénalité</strong> sur cette manche.
+          </p>
+          <p className="text-stone-500 dark:text-slate-400">
+            À la Caracole, les perdants de la manche additionnent les points des cartes restant dans leur main. Avez-vous bien renseigné les pénalités de chacun ?
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setShowZeroConfirm(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white btn-margin-red cursor-pointer shadow-xs active:scale-[0.99] transition-all"
+            >
+              Saisir les pénalités
+            </button>
+          </div>
+        </div>
+      </Dialog>
 
       {editingPlayer && (
         <BottomSheet

@@ -5,6 +5,7 @@ import { Avatar } from '../ui/Avatar'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
+import { Dialog } from '../ui/Dialog'
 
 export function SixQuiPrendEngine({ game, onFinish }) {
   const { updateScores } = useGame()
@@ -19,6 +20,7 @@ export function SixQuiPrendEngine({ game, onFinish }) {
   })
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [open, setOpen] = useState(false)
+  const [showZeroConfirm, setShowZeroConfirm] = useState(false)
 
   const ELIMINATION_SCORE = 66
 
@@ -38,6 +40,15 @@ export function SixQuiPrendEngine({ game, onFinish }) {
       const winner = Object.entries(newScores).sort((a, b) => a[1] - b[1])[0][0]
       onFinish(winner)
     }
+  }
+
+  const handleValidate = () => {
+    const totalHeads = Object.values(roundScores).reduce((a, b) => a + b, 0)
+    if (totalHeads === 0) {
+      setShowZeroConfirm(true)
+      return
+    }
+    submitRound()
   }
 
   return (
@@ -75,7 +86,11 @@ export function SixQuiPrendEngine({ game, onFinish }) {
                       {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
                     </div>
                     <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400 block mt-0.5">
-                      Cumul : {total}/66
+                      {heads > 0 ? (
+                        <>Total : {total} <strong className="text-[#c83b3b] font-bold">➔ {total + heads}</strong>/66 🐮</>
+                      ) : (
+                        `Cumul : ${total}/66 🐮`
+                      )}
                     </span>
                   </div>
                 </button>
@@ -102,11 +117,36 @@ export function SixQuiPrendEngine({ game, onFinish }) {
 
       <button
         type="button"
-        onClick={submitRound}
-        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red"
+        onClick={handleValidate}
+        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red cursor-pointer active:scale-[0.99] transition-all"
       >
         Valider la manche
       </button>
+
+      {/* Dialog d'avertissement si 0 tête saisie */}
+      <Dialog
+        open={showZeroConfirm}
+        onClose={() => setShowZeroConfirm(false)}
+        title="Aucune tête de bœuf saisie"
+      >
+        <div className="space-y-3 text-xs">
+          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
+            Tous les joueurs ont <strong>0 tête de bœuf</strong> sur cette manche.
+          </p>
+          <p className="text-stone-500 dark:text-slate-400">
+            À 6 qui prend !, les joueurs ramassent inévitablement des bœufs lors des défausses de rangée. Avez-vous bien comptabilisé les têtes de bœuf ramassées ?
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setShowZeroConfirm(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white btn-margin-red cursor-pointer shadow-xs active:scale-[0.99] transition-all"
+            >
+              Saisir les têtes de bœuf
+            </button>
+          </div>
+        </div>
+      </Dialog>
 
       {editingPlayer && (
         <BottomSheet

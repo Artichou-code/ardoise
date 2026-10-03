@@ -25,6 +25,7 @@ export function SkyjoEngine({ game, onFinish }) {
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [open, setOpen] = useState(false)
   const [alert, setAlert] = useState(null)
+  const [showZeroConfirm, setShowZeroConfirm] = useState(false)
 
   const submitRound = () => {
     if (!closerId) return
@@ -46,6 +47,16 @@ export function SkyjoEngine({ game, onFinish }) {
       setRoundScores(Object.fromEntries(game.players.map(p => [p.id, 0])))
       setCloserId(null)
     }
+  }
+
+  const handleValidate = () => {
+    if (!closerId) return
+    const allZero = Object.values(roundScores).every(v => v === 0)
+    if (allZero) {
+      setShowZeroConfirm(true)
+      return
+    }
+    submitRound()
   }
 
   const canSubmit = closerId !== null
@@ -131,7 +142,11 @@ export function SkyjoEngine({ game, onFinish }) {
                       )}
                     </div>
                     <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400 block mt-0.5">
-                      {pts !== 0 ? `${current} + ${pts} = ${projected} pts` : `${current} pts`}
+                      {pts !== 0 ? (
+                        <>Total : {current} <strong className="text-[#c83b3b] font-bold">➔ {projected} pts</strong> ({pts > 0 ? `+${pts}` : pts})</>
+                      ) : (
+                        `Total : ${current} pts`
+                      )}
                     </span>
                   </div>
                 </button>
@@ -156,12 +171,37 @@ export function SkyjoEngine({ game, onFinish }) {
 
       <button
         type="button"
-        onClick={submitRound}
+        onClick={handleValidate}
         disabled={!canSubmit}
-        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40"
+        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40 cursor-pointer active:scale-[0.99] transition-all"
       >
         Valider la manche
       </button>
+
+      {/* Dialog d'avertissement scores à 0 */}
+      <Dialog
+        open={showZeroConfirm}
+        onClose={() => setShowZeroConfirm(false)}
+        title="Scores à 0 point"
+      >
+        <div className="space-y-3 text-xs">
+          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
+            Tous les joueurs ont un score de <strong>0 point</strong> sur cette manche.
+          </p>
+          <p className="text-stone-500 dark:text-slate-400">
+            Au Skyjo, chaque joueur additionne la valeur de ses 12 cartes révélées. Avez-vous bien renseigné les scores de chacun avant de valider ?
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setShowZeroConfirm(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white btn-margin-red cursor-pointer shadow-xs active:scale-[0.99] transition-all"
+            >
+              Saisir les scores
+            </button>
+          </div>
+        </div>
+      </Dialog>
 
       {editingPlayer && (
         <BottomSheet

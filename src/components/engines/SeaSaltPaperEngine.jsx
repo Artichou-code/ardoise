@@ -5,6 +5,7 @@ import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
+import { Dialog } from '../ui/Dialog'
 
 export function SeaSaltPaperEngine({ game, onFinish }) {
   const { updateScores } = useGame()
@@ -35,6 +36,8 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
 
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [open, setOpen] = useState(false)
+  const [validationError, setValidationError] = useState(null)
+  const [sirensConfirmPlayer, setSirensConfirmPlayer] = useState(null)
 
   // Victoire immédiate des 4 sirènes
   const handleFourSirensVictory = (playerId) => {
@@ -75,6 +78,29 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
       const winner = Object.entries(newScores).sort((a, b) => b[1] - a[1])[0][0]
       onFinish(winner)
     }
+  }
+
+  const handleValidate = () => {
+    const allZero = Object.values(roundScores).every(v => v === 0)
+    if (allZero) {
+      setValidationError({
+        title: "Scores à 0 point",
+        message: "Tous les joueurs ont un score de 0 point sur cette manche. Avez-vous bien compté les points des cartes de chaque joueur ?",
+      })
+      return
+    }
+
+    const announcerPts = roundScores[announcerId] || 0
+    if (announcerPts < 7) {
+      const announcer = game.players.find(p => p.id === announcerId)
+      setValidationError({
+        title: "Annonce impossible (< 7 pts)",
+        message: `À Sea Salt & Paper, l'annonceur (${announcer?.name || 'sélectionné'}) doit posséder au moins 7 points dans sa main pour clore la manche (score actuel : ${announcerPts} pts).`,
+      })
+      return
+    }
+
+    submitRound()
   }
 
   return (
@@ -189,10 +215,10 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
                   </button>
 
                   <div className="flex items-center gap-1.5 shrink-0">
-                    {/* Bouton 4 Sirènes (victoire instantanée rare) */}
+                    {/* Bouton 4 Sirènes (victoire instantanée rare avec confirmation) */}
                     <button
                       type="button"
-                      onClick={() => handleFourSirensVictory(p.id)}
+                      onClick={() => setSirensConfirmPlayer(p)}
                       className="px-2 py-1 rounded-lg text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 transition-colors cursor-pointer"
                       title="Déclarer une victoire instantanée avec les 4 Sirènes"
                     >
@@ -224,13 +250,71 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
         <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
           <button
             type="button"
-            onClick={submitRound}
+            onClick={handleValidate}
             className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
           >
             Valider la manche
           </button>
         </div>
       </div>
+
+      {/* Dialog d'erreur de validation (score impossible ou < 7 pts) */}
+      <Dialog
+        open={!!validationError}
+        onClose={() => setValidationError(null)}
+        title={validationError?.title || "Score impossible"}
+      >
+        <div className="space-y-3 text-xs">
+          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
+            {validationError?.message}
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setValidationError(null)}
+              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white btn-margin-red cursor-pointer shadow-xs active:scale-[0.99] transition-all"
+            >
+              Ajuster les scores
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Dialog de confirmation pour la victoire des 4 Sirènes */}
+      <Dialog
+        open={!!sirensConfirmPlayer}
+        onClose={() => setSirensConfirmPlayer(null)}
+        title="Victoire immédiate des 4 Sirènes"
+      >
+        <div className="space-y-3 text-xs">
+          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
+            Confirmer que <strong>{sirensConfirmPlayer?.name}</strong> possède les <strong>4 cartes Sirènes</strong> ?
+          </p>
+          <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/50 text-amber-900 dark:text-amber-200">
+            Cette combinaison mythique met <strong>fin immédiatement à la partie</strong> et octroie la victoire à son détenteur !
+          </div>
+          <div className="flex items-center gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setSirensConfirmPlayer(null)}
+              className="flex-1 py-2 rounded-xl font-semibold border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 cursor-pointer"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const p = sirensConfirmPlayer
+                setSirensConfirmPlayer(null)
+                if (p) handleFourSirensVictory(p.id)
+              }}
+              className="flex-1 py-2 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-700 shadow-xs cursor-pointer"
+            >
+              Confirmer la victoire
+            </button>
+          </div>
+        </div>
+      </Dialog>
 
       {/* BottomSheet saisie de score */}
       <BottomSheet open={open} onClose={() => setOpen(false)}>

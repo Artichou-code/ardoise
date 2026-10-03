@@ -5,6 +5,7 @@ import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
+import { Dialog } from '../ui/Dialog'
 
 export function Flip7Engine({ game, onFinish }) {
   const { updateScores } = useGame()
@@ -32,6 +33,7 @@ export function Flip7Engine({ game, onFinish }) {
 
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [open, setOpen] = useState(false)
+  const [showZeroConfirm, setShowZeroConfirm] = useState(false)
 
   const toggleFlip7 = (playerId) => {
     setBustedPlayers(prev => ({ ...prev, [playerId]: false }))
@@ -95,6 +97,17 @@ export function Flip7Engine({ game, onFinish }) {
       const winner = Object.entries(newScores).sort((a, b) => b[1] - a[1])[0][0]
       onFinish(winner)
     }
+  }
+
+  const handleValidate = () => {
+    const allZero = Object.values(roundScores).every(v => v === 0)
+    const anyBust = Object.values(bustedPlayers).some(Boolean)
+    const anyFlip = Object.values(flip7BonusPlayers).some(Boolean)
+    if (allZero && !anyBust && !anyFlip) {
+      setShowZeroConfirm(true)
+      return
+    }
+    submitRound()
   }
 
   return (
@@ -208,13 +221,38 @@ export function Flip7Engine({ game, onFinish }) {
         <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
           <button
             type="button"
-            onClick={submitRound}
+            onClick={handleValidate}
             className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
           >
             Valider la manche
           </button>
         </div>
       </div>
+
+      {/* Dialog d'avertissement scores à 0 */}
+      <Dialog
+        open={showZeroConfirm}
+        onClose={() => setShowZeroConfirm(false)}
+        title="Aucun score saisi"
+      >
+        <div className="space-y-3 text-xs">
+          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
+            Tous les joueurs ont un score de <strong>0 point</strong> sur cette manche.
+          </p>
+          <p className="text-stone-500 dark:text-slate-400">
+            Au Flip 7, les joueurs qui ne sont pas éliminés (Bust) marquent la valeur des cartes de leur main. Avez-vous bien renseigné les scores ?
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setShowZeroConfirm(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white btn-margin-red cursor-pointer shadow-xs active:scale-[0.99] transition-all"
+            >
+              Saisir les scores
+            </button>
+          </div>
+        </div>
+      </Dialog>
 
       {/* BottomSheet de saisie précise */}
       <BottomSheet open={open} onClose={() => setOpen(false)}>
