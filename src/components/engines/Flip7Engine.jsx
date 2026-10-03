@@ -167,32 +167,65 @@ export function Flip7Engine({ game, onFinish }) {
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <button
-                    type="button"
-                    onClick={() => { setEditingPlayer(p); setOpen(true) }}
-                    className="flex items-center gap-2.5 flex-1 min-w-0 text-left cursor-pointer select-none"
-                  >
-                    <Avatar player={p} size="xs" leader={hasFlip7} leaderColor="#f59e0b" />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm truncate text-stone-900 dark:text-slate-100">{p.name}</span>
-                        {isNearWin && <Trophy size={13} className="text-emerald-600 shrink-0" />}
-                        {hasFlip7 && <Flame size={13} className="text-amber-500 shrink-0" />}
+                  {/* Colonne gauche : Infos joueur & Total cliquables, et actions rapides Bust / Flip 7 */}
+                  <div className="flex-1 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => { setEditingPlayer(p); setOpen(true) }}
+                      className="flex items-center gap-2.5 w-full text-left cursor-pointer select-none"
+                    >
+                      <Avatar player={p} size="xs" leader={hasFlip7} leaderColor="#f59e0b" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-sm truncate text-stone-900 dark:text-slate-100">{p.name}</span>
+                          {isNearWin && <Trophy size={13} className="text-emerald-600 shrink-0" />}
+                          {hasFlip7 && <Flame size={13} className="text-amber-500 shrink-0" />}
+                        </div>
+                        <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1 min-w-0 mt-0.5">
+                          {roundPts > 0 ? (
+                            <span className="truncate">
+                              Total : {currentTotal} <strong className="text-emerald-600 dark:text-emerald-400 font-bold whitespace-nowrap">➔ {projected} pts</strong>
+                            </span>
+                          ) : (
+                            <span className="truncate">Total : {currentTotal} pts</span>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1 min-w-0 mt-0.5">
-                        {roundPts > 0 ? (
-                          <span className="truncate">
-                            Total : {currentTotal} <strong className="text-emerald-600 dark:text-emerald-400 font-bold whitespace-nowrap">➔ {projected} pts</strong>
-                          </span>
-                        ) : (
-                          <span className="truncate">Total : {currentTotal} pts</span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
+                    </button>
 
-                  {/* Actions rapides à droite : Score en haut, Bust / Flip 7 en bas */}
-                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    {/* Actions rapides Bust et Flip 7 déplacées à gauche sous le total */}
+                    <div className="flex items-center gap-1.5 mt-2 pl-[34px]">
+                      <button
+                        type="button"
+                        onClick={() => toggleBust(p.id)}
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all border cursor-pointer select-none ${
+                          isBust
+                            ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                            : 'school-subtle text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-200 hover:border-stone-300'
+                        }`}
+                        title={isBust ? "Annuler le Bust" : "Marquer comme Bust (0 pt)"}
+                      >
+                        {isBust ? '✓ Bust' : 'Bust'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleFlip7(p.id)}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all border cursor-pointer select-none ${
+                          hasFlip7
+                            ? 'border-amber-600 bg-amber-600 text-white shadow-2xs'
+                            : 'school-subtle text-stone-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-300 hover:border-amber-400/60'
+                        }`}
+                        title={hasFlip7 ? "Désactiver le bonus Flip 7" : "Bonus Flip 7 (+15 pts)"}
+                      >
+                        <Flame size={10} className={hasFlip7 ? 'text-white' : 'text-amber-500'} />
+                        <span>{hasFlip7 ? '✓ Flip 7' : 'Flip 7'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Badge de score avec roulette centré verticalement à droite */}
+                  <div className="shrink-0 flex items-center">
                     <QuickScoreBadge
                       value={roundPts}
                       onChange={v => handleScoreChange(p.id, v)}
@@ -208,35 +241,6 @@ export function Flip7Engine({ game, onFinish }) {
                         return { text: `= ${proj} pts`, variant: 'default' }
                       }}
                     />
-
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => toggleBust(p.id)}
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all border cursor-pointer select-none ${
-                          isBust
-                            ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
-                            : 'border-stone-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 text-stone-600 dark:text-slate-400 hover:border-stone-300'
-                        }`}
-                        title={isBust ? "Annuler le Bust" : "Marquer comme Bust (0 pt)"}
-                      >
-                        {isBust ? '✓ Bust' : 'Bust'}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => toggleFlip7(p.id)}
-                        className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold transition-all border cursor-pointer select-none ${
-                          hasFlip7
-                            ? 'border-amber-600 bg-amber-600 text-white shadow-2xs'
-                            : 'border-stone-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 text-stone-600 dark:text-slate-400 hover:border-amber-400/60'
-                        }`}
-                        title={hasFlip7 ? "Désactiver le bonus Flip 7" : "Bonus Flip 7 (+15 pts)"}
-                      >
-                        <Flame size={10} className={hasFlip7 ? 'text-white' : 'text-amber-500'} />
-                        <span>{hasFlip7 ? '✓ Flip 7' : 'Flip 7'}</span>
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>
