@@ -284,10 +284,10 @@ export function AscenseurEngine({ game, onFinish }) {
                 <div className="flex items-center justify-between gap-2 pt-2 border-t border-stone-200/60 dark:border-slate-800">
                   {phase === 'bids' ? (
                     <>
-                      <span className="text-xs font-semibold text-stone-500 dark:text-slate-400 shrink-0">
+                      <span className="text-xs font-semibold text-stone-500 dark:text-slate-400 shrink-0 self-center">
                         Pari annoncé :
                       </span>
-                      <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-0.5 max-w-full justify-end">
+                      <div className="flex items-center gap-1 flex-wrap justify-end max-w-[200px] xs:max-w-[230px] sm:max-w-none py-0.5">
                         {Array.from({ length: cardsCount + 1 }).map((_, val) => (
                           <button
                             key={val}
@@ -306,7 +306,7 @@ export function AscenseurEngine({ game, onFinish }) {
                     </>
                   ) : (
                     <>
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-1.5 shrink-0 self-center">
                         <span className="text-xs font-semibold text-stone-500 dark:text-slate-400">
                           Parié :
                         </span>
@@ -315,11 +315,11 @@ export function AscenseurEngine({ game, onFinish }) {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 min-w-0 justify-end">
-                        <span className="text-xs font-semibold text-stone-500 dark:text-slate-400 hidden xs:inline shrink-0">
+                      <div className="flex items-center gap-1.5 min-w-0 justify-end self-center">
+                        <span className="text-xs font-semibold text-stone-500 dark:text-slate-400 hidden xs:inline shrink-0 self-center">
                           Fait :
                         </span>
-                        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-0.5 max-w-full justify-end">
+                        <div className="flex items-center gap-1 flex-wrap justify-end max-w-[200px] xs:max-w-[230px] sm:max-w-none py-0.5">
                           {Array.from({ length: cardsCount + 1 }).map((_, val) => (
                             <button
                               key={val}
