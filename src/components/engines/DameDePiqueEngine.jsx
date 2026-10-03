@@ -164,8 +164,8 @@ export function DameDePiqueEngine({ game, onFinish }) {
                   +26 aux rivaux
                 </span>
               </div>
-              <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate mt-0.5">
-                Un joueur ramasse les 13 Cœurs et la Dame de Pique
+              <span className="text-[10px] text-stone-500 dark:text-slate-400 block leading-tight mt-0.5">
+                13 Cœurs + Dame de Pique ramassés
               </span>
             </div>
           </div>
@@ -353,9 +353,17 @@ export function DameDePiqueEngine({ game, onFinish }) {
                 : 'bg-stone-200 dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:bg-stone-300 dark:hover:bg-slate-700'
             }`}
           >
-            {(isChelem && chelemWinnerId) || isNormalRoundComplete
-              ? 'Valider la manche (26/26 pts)'
-              : `Valider la manche (${totalAllocated}/26 pts)`}
+            {(isChelem && chelemWinnerId) || isNormalRoundComplete ? (
+              <span className="inline-flex items-center justify-center gap-1.5">
+                <span>Valider la manche</span>
+                <span className="text-xs font-normal opacity-85">(26/26 pts)</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center justify-center gap-1.5">
+                <span>Valider la manche</span>
+                <span className="text-xs font-normal opacity-85">({totalAllocated}/26 pts)</span>
+              </span>
+            )}
           </button>
         </div>
       </div>

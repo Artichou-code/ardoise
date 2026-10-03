@@ -20,18 +20,20 @@ import { SyncModal } from './components/SyncModal'
 import { ShareAppModal } from './components/ShareAppModal'
 import { ArtCreaUniverseModal } from './components/ArtCreaUniverseModal'
 import { LegalModal } from './components/LegalModal'
+import { RulesSheet } from './components/RulesSheet'
 
 // Modales volumineuses spécifiques : chargement différé (session en direct et import)
 const ImportGamesModal = lazy(() => import('./components/ImportGamesModal').then((m) => ({ default: m.ImportGamesModal })))
 const LiveSessionModal = lazy(() => import('./components/LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
 
 export default function App() {
-  const { screen, setScreen, reloadStorage } = useGame()
+  const { screen, setScreen, activeGame, reloadStorage } = useGame()
   const [sharedGames, setSharedGames] = useState(null)
   const [incomingSessionCode, setIncomingSessionCode] = useState(null)
 
   // États globaux du menu burger et de ses modales (accessibles depuis toutes les pages)
   const [isBurgerMenuOpen, setIsBurgerMenuOpen] = useState(false)
+  const [rulesGameType, setRulesGameType] = useState(null)
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
   const [isShareGamesModalOpen, setIsShareGamesModalOpen] = useState(false)
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
@@ -136,6 +138,7 @@ export default function App() {
         onOpenLiveSession={() => setIsLiveModalOpen(true)}
         onOpenShareGames={() => setIsShareGamesModalOpen(true)}
         onOpenSync={() => setIsSyncModalOpen(true)}
+        onOpenRules={() => setRulesGameType(activeGame?.type || 'belote')}
         onOpenLegal={(tab) => setLegalTab(tab || 'mentions')}
         onOpenArtCrea={() => setIsArtCreaModalOpen(true)}
         liveSession={liveSession}
@@ -205,6 +208,14 @@ export default function App() {
             games={sharedGames}
             onClose={handleCloseSharedModal}
             onImported={handleImportSharedGames}
+          />
+        )}
+
+        {/* Fiche des règles officielles */}
+        {rulesGameType && (
+          <RulesSheet
+            gameType={rulesGameType}
+            onClose={() => setRulesGameType(null)}
           />
         )}
       </Suspense>

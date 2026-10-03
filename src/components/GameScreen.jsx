@@ -132,8 +132,13 @@ export function GameScreen() {
 
   useEffect(() => {
     const handleSessionChanged = (e) => setLiveSession(e.detail)
+    const handleOpenRules = () => setShowRules(true)
     window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
-    return () => window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
+    window.addEventListener('ardoise-open-rules', handleOpenRules)
+    return () => {
+      window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
+      window.removeEventListener('ardoise-open-rules', handleOpenRules)
+    }
   }, [])
 
   const handleGoLive = async () => {
@@ -163,29 +168,20 @@ export function GameScreen() {
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
       {/* Header */}
-      <header className="flex items-center gap-2 px-4 header-safe pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
+      <header className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 header-safe pb-2.5 sm:pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
         <button
           type="button"
           onClick={() => setShowExitConfirm(true)}
-          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+          className="p-1.5 sm:p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors shrink-0"
           aria-label="Quitter la partie"
         >
-          <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
+          <ArrowLeft size={16} className="text-stone-700 dark:text-slate-300 sm:w-[18px] sm:h-[18px]" />
         </button>
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="font-serif-title font-bold text-base truncate">
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <span className="font-serif-title font-bold text-sm sm:text-base truncate">
             {getGameDisplayName(activeGame)}
           </span>
           <AnimatedRoundIndicator roundNumber={activeGame.rounds.length + 1} />
-          <button
-            type="button"
-            onClick={() => setShowRules(true)}
-            className="p-1.5 rounded-lg border border-stone-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-stone-600 dark:text-slate-400 hover:text-[#c83b3b] hover:border-[#c83b3b] transition-colors shrink-0 cursor-pointer"
-            title="Consulter les règles"
-            aria-label="Consulter les règles"
-          >
-            <BookOpen size={14} />
-          </button>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {/* Bouton discret Table en direct dans le header (rond) */}
@@ -204,7 +200,7 @@ export function GameScreen() {
               type="button"
               onClick={handleGoLive}
               disabled={isCreatingLive}
-              className="w-7 h-7 rounded-full border border-stone-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-600 dark:text-slate-400 hover:text-[#c83b3b] dark:hover:text-rose-400 transition-colors shrink-0 cursor-pointer flex items-center justify-center"
+              className="w-7 h-7 rounded-full border border-stone-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-600 dark:text-slate-400 hover:text-[#c83b3b] dark:hover:text-[#c83b3b] transition-colors shrink-0 cursor-pointer flex items-center justify-center"
               title="Passer cette partie sur une Table en direct (partager avec des amis)"
               aria-label="Passer en direct"
             >
@@ -284,7 +280,7 @@ export function GameScreen() {
                       <span className={`shrink-0 ${t.isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'}`}>
                         {t.rank === 1 ? '1er' : '2e'} ·
                       </span>
-                      <span className={`truncate font-extrabold ${t.id === 'nous' ? 'text-[#c83b3b] dark:text-rose-400' : 'text-[#1e3a5f] dark:text-sky-400'}`}>
+                      <span className={`truncate font-extrabold ${t.id === 'nous' ? 'text-[#c83b3b] dark:text-red-400' : 'text-[#1e3a5f] dark:text-sky-400'}`}>
                         {t.players.map(p => p.name).join(' & ')}
                       </span>
                     </span>
@@ -388,9 +384,9 @@ export function GameScreen() {
             <button
               type="button"
               onClick={() => setShowDeleteConfirm(true)}
-              className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-all active:scale-[0.98] shadow-2xs cursor-pointer whitespace-nowrap"
+              className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-stone-500 hover:text-[#c83b3b] dark:text-slate-400 dark:hover:text-[#c83b3b] border border-stone-200/90 dark:border-slate-800 hover:border-[#c83b3b]/40 dark:hover:border-[#c83b3b]/40 bg-white/70 dark:bg-slate-900/70 hover:bg-stone-50/60 dark:hover:bg-slate-800/60 transition-all active:scale-[0.98] shadow-2xs cursor-pointer whitespace-nowrap group"
             >
-              <Trash2 size={12} className="text-rose-600 dark:text-rose-400 shrink-0" />
+              <Trash2 size={12} className="text-stone-400 dark:text-slate-500 group-hover:text-[#c83b3b] shrink-0 transition-colors" />
               <span>Supprimer</span>
             </button>
             <button
