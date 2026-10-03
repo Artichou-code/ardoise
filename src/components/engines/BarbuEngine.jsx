@@ -3,9 +3,9 @@ import {
   Layers,
   Heart,
   Crown,
-  Shield,
+  ShieldUser,
   Clock,
-  Flame,
+  Leaf,
   Trophy,
   RotateCw,
   HelpCircle,
@@ -253,9 +253,9 @@ export function BarbuEngine({ game, onFinish }) {
       case 'plis': return <Layers size={size} />
       case 'coeurs': return <Heart size={size} />
       case 'dames': return <Crown size={size} />
-      case 'barbu': return <Shield size={size} />
+      case 'barbu': return <ShieldUser size={size} />
       case 'derniers': return <Clock size={size} />
-      case 'salade': return <Flame size={size} />
+      case 'salade': return <Leaf size={size} />
       case 'domino': return <Trophy size={size} />
       default: return <HelpCircle size={size} />
     }
