@@ -72,9 +72,9 @@ export function RamiEngine({ game, onFinish }) {
   }
 
   return (
-    <div className="space-y-4 pt-2">
-      <div className="school-card rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
+    <div className="space-y-2 pt-0">
+      <div className="school-card rounded-xl p-3 sm:p-4">
+        <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
             Résolution de la manche
           </p>
@@ -84,7 +84,7 @@ export function RamiEngine({ game, onFinish }) {
         </div>
 
         {/* Sélection du gagnant de la manche & Option Rami Sec */}
-        <div className="p-3 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200 dark:border-slate-700 mb-3.5 space-y-2.5">
+        <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200 dark:border-slate-700 mb-2 space-y-2">
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-bold text-stone-700 dark:text-slate-300">
               Vainqueur de la manche (0 pt) :
@@ -107,12 +107,12 @@ export function RamiEngine({ game, onFinish }) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-stone-200/80 dark:border-slate-700/80">
+          <div className="flex items-center justify-between pt-1.5 border-t border-stone-200/80 dark:border-slate-700/80">
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-semibold text-stone-700 dark:text-slate-300">
                 Rami Sec (posé d'un coup) :
               </span>
-              <span className="text-[10px] text-stone-400">Double les pénalités des adversaires</span>
+              <span className="text-[10px] text-stone-400 hidden xs:inline">Double les pénalités</span>
             </div>
             <button
               type="button"
@@ -123,13 +123,13 @@ export function RamiEngine({ game, onFinish }) {
                   : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-amber-400'
               }`}
             >
-              {isRamiSec ? '⚡ Rami Sec (x2 activé)' : 'Rami normal'}
+              {isRamiSec ? '⚡ Rami Sec (x2)' : 'Normal'}
             </button>
           </div>
         </div>
 
         {/* Liste des pénalités des autres joueurs */}
-        <div className="space-y-2.5">
+        <div className="space-y-1.5">
           {game.players.map(p => {
             const isWinner = winnerId === p.id
             const currentTotal = game.scores[p.id] || 0
@@ -141,7 +141,7 @@ export function RamiEngine({ game, onFinish }) {
             return (
               <div
                 key={p.id}
-                className={`p-3 rounded-xl border transition-all ${
+                className={`px-3 py-2 rounded-xl border transition-all ${
                   isWinner
                     ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20'
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
@@ -193,11 +193,11 @@ export function RamiEngine({ game, onFinish }) {
           })}
         </div>
 
-        <div className="mt-4 pt-3 border-t border-stone-200/80 dark:border-slate-800">
+        <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
           <button
             type="button"
             onClick={submitRound}
-            className="w-full py-3 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
+            className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
           >
             Valider la manche
           </button>

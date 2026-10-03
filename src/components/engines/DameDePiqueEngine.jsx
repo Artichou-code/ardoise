@@ -102,9 +102,9 @@ export function DameDePiqueEngine({ game, onFinish }) {
   }
 
   return (
-    <div className="space-y-4 pt-2">
+    <div className="space-y-2 pt-0">
       {/* Carte d'information et statut de manche */}
-      <div className="school-card rounded-xl p-4">
+      <div className="school-card rounded-xl p-3 sm:p-4">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
             Saisie de la manche
@@ -115,7 +115,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
         </div>
 
         {/* Indicateur de vérification des 26 points */}
-        <div className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-between ${
+        <div className={`p-2 rounded-xl border text-xs font-medium flex items-center justify-between ${
           chelemWinnerId
             ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200'
             : isNormalRoundComplete
@@ -143,7 +143,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
         </div>
 
         {/* Liste des joueurs */}
-        <div className="space-y-2.5 mt-3">
+        <div className="space-y-1.5 mt-2.5">
           {game.players.map(p => {
             const currentTotal = game.scores[p.id] || 0
             const roundDelta = computeRoundDelta(p.id)
@@ -156,7 +156,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
             return (
               <div
                 key={p.id}
-                className={`p-3 rounded-xl border transition-all ${
+                className={`p-2.5 sm:p-3 rounded-xl border transition-all ${
                   isChelem
                     ? 'border-amber-400 bg-amber-500/10'
                     : isQueen
@@ -164,7 +164,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between gap-3 mb-2">
+                <div className="flex items-center justify-between gap-3 mb-1.5">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Avatar player={p} size="xs" />
                     <div className="min-w-0">
@@ -195,12 +195,12 @@ export function DameDePiqueEngine({ game, onFinish }) {
 
                 {/* Commandes pénalités par joueur */}
                 {!chelemWinnerId && (
-                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-stone-100 dark:border-slate-800/80">
+                  <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-stone-100 dark:border-slate-800/80">
                     {/* Bouton Dame de Pique */}
                     <button
                       type="button"
                       onClick={() => toggleQueen(p.id)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
                         isQueen
                           ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
                           : 'bg-white dark:bg-slate-900 text-stone-600 dark:text-slate-400 border-stone-200 dark:border-slate-700 hover:border-[#c83b3b] hover:text-[#c83b3b]'
@@ -240,11 +240,11 @@ export function DameDePiqueEngine({ game, onFinish }) {
         </div>
 
         {/* Bouton Valider la manche */}
-        <div className="mt-4 pt-3 border-t border-stone-200/80 dark:border-slate-800">
+        <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
           <button
             type="button"
             onClick={submitRound}
-            className="w-full py-3 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
+            className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
           >
             Valider la manche
           </button>

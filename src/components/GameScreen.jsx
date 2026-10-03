@@ -295,7 +295,7 @@ export function GameScreen() {
 
       {/* Moteur de saisie de manche */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="px-4 pt-1.5 scroll-bottom-space">
+        <div className="px-4 pt-1 pb-2 pb-safe">
           <Engine
             key={`${activeGame.id}-r-${activeGame.rounds.length}-${activeGame.isCorrection ? 'corr' : 'norm'}`}
             game={activeGame}

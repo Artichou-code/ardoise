@@ -78,9 +78,9 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
   }
 
   return (
-    <div className="space-y-4 pt-2">
+    <div className="space-y-2 pt-0">
       {/* Sélecteur de clôture de manche */}
-      <div className="school-card rounded-xl p-4">
+      <div className="school-card rounded-xl p-3 sm:p-4">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5">
             <Waves size={14} className="text-sky-600 dark:text-sky-400" />
@@ -92,7 +92,7 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
         </div>
 
         {/* Choix du mode d'annonce */}
-        <div className="grid grid-cols-3 gap-1.5 mb-3">
+        <div className="grid grid-cols-3 gap-1.5 mb-2">
           {[
             { id: 'stop', label: 'STOP', desc: 'Comptage normal' },
             { id: 'last_chance_won', label: 'Dernière Chance réussie', desc: 'Auteur > Rivaux' },
@@ -116,7 +116,7 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
 
         {/* Si Dernière chance : sélection du joueur qui a annoncé */}
         {closingMode !== 'stop' && (
-          <div className="p-2.5 rounded-xl bg-sky-50/60 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800/50 mb-3 flex items-center justify-between gap-2">
+          <div className="p-2 rounded-xl bg-sky-50/60 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800/50 mb-2 flex items-center justify-between gap-2">
             <span className="text-xs font-semibold text-sky-900 dark:text-sky-300">
               Annonceur de la Dernière Chance :
             </span>
@@ -140,7 +140,7 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
         )}
 
         {/* Saisie des points par joueur */}
-        <div className="space-y-2.5">
+        <div className="space-y-1.5">
           {game.players.map(p => {
             const currentTotal = game.scores[p.id] || 0
             const roundPts = roundScores[p.id] || 0
@@ -151,7 +151,7 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
             return (
               <div
                 key={p.id}
-                className={`p-3 rounded-xl border transition-all ${
+                className={`px-3 py-2 rounded-xl border transition-all ${
                   isNearWin
                     ? 'border-emerald-400 bg-emerald-500/5'
                     : isAnnouncer
@@ -215,11 +215,11 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
           })}
         </div>
 
-        <div className="mt-4 pt-3 border-t border-stone-200/80 dark:border-slate-800">
+        <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
           <button
             type="button"
             onClick={submitRound}
-            className="w-full py-3 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
+            className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
           >
             Valider la manche
           </button>
