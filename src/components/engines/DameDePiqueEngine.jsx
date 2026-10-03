@@ -214,7 +214,15 @@ export function DameDePiqueEngine({ game, onFinish }) {
                     }`}
                   >
                     <div className="relative mb-0.5">
-                      <Avatar player={p} size="sm" leader={isWinner} leaderColor="#c83b3b" crown={isWinner} />
+                      <Avatar
+                        player={p}
+                        size="sm"
+                        leader={isWinner}
+                        leaderColor="#c83b3b"
+                        crown={isWinner}
+                        crownOffset="-top-4"
+                        crownSize={18}
+                      />
                     </div>
                     <span className={`text-xs font-bold truncate max-w-full text-center px-1 block leading-tight ${
                       isWinner ? 'text-white' : 'text-stone-800 dark:text-slate-100'
