@@ -835,18 +835,36 @@ export function BarbuEngine({ game, onFinish }) {
           {/* CAS 5 : DEUX DERNIERS PLIS */}
           {selectedContract === 'derniers' && (
             <div className="space-y-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 block mb-1">
-                Attribution des 2 derniers plis
-              </span>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+                  Attribution des 2 derniers plis
+                </span>
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                  trick12PlayerId && trick13PlayerId
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                    : 'bg-stone-100 text-stone-600 dark:bg-slate-800 dark:text-slate-400'
+                }`}>
+                  {[trick12PlayerId, trick13PlayerId].filter(Boolean).length} / 2 plis
+                </span>
+              </div>
 
               {/* 12e Pli (-10 pts) */}
               <div className="p-2.5 rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900/60">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-stone-800 dark:text-slate-200">
-                    12e Pli (avant-dernier) : -10 pts
-                  </span>
-                  <span className="text-[10px] text-stone-400 dark:text-slate-500 font-semibold">
-                    Sélectionner le preneur
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-xs font-bold text-stone-800 dark:text-slate-200 whitespace-nowrap">
+                      12ᵉ pli <span className="font-normal text-stone-500 dark:text-slate-400 text-[11px]">(avant-dernier)</span>
+                    </span>
+                    <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] dark:text-red-300 shrink-0 whitespace-nowrap">
+                      -10 pts
+                    </span>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 ${
+                    trick12PlayerId
+                      ? 'bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300'
+                      : 'bg-stone-100 text-stone-500 dark:bg-slate-800 dark:text-slate-400'
+                  }`}>
+                    {trick12PlayerId ? (game.players.find(p => p.id === trick12PlayerId)?.name || 'Désigné') : 'À désigner'}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
@@ -857,10 +875,10 @@ export function BarbuEngine({ game, onFinish }) {
                         key={p.id}
                         type="button"
                         onClick={() => setTrick12PlayerId(prev => prev === p.id ? null : p.id)}
-                        className={`p-2 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        className={`p-2 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none active:scale-95 ${
                           isSelected
-                            ? 'border-amber-600 bg-amber-600 text-white shadow-2xs'
-                            : 'border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 text-stone-700 dark:text-slate-300'
+                            ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                            : 'border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/50'
                         }`}
                       >
                         <Avatar player={p} size="2xs" />
@@ -873,12 +891,21 @@ export function BarbuEngine({ game, onFinish }) {
 
               {/* 13e Pli (-20 pts) */}
               <div className="p-2.5 rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900/60">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-stone-800 dark:text-slate-200">
-                    13e Pli (dernier) : -20 pts
-                  </span>
-                  <span className="text-[10px] text-stone-400 dark:text-slate-500 font-semibold">
-                    Sélectionner le preneur
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-xs font-bold text-stone-800 dark:text-slate-200 whitespace-nowrap">
+                      13ᵉ pli <span className="font-normal text-stone-500 dark:text-slate-400 text-[11px]">(dernier)</span>
+                    </span>
+                    <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] dark:text-red-300 shrink-0 whitespace-nowrap">
+                      -20 pts
+                    </span>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 ${
+                    trick13PlayerId
+                      ? 'bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300'
+                      : 'bg-stone-100 text-stone-500 dark:bg-slate-800 dark:text-slate-400'
+                  }`}>
+                    {trick13PlayerId ? (game.players.find(p => p.id === trick13PlayerId)?.name || 'Désigné') : 'À désigner'}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
@@ -889,7 +916,7 @@ export function BarbuEngine({ game, onFinish }) {
                         key={p.id}
                         type="button"
                         onClick={() => setTrick13PlayerId(prev => prev === p.id ? null : p.id)}
-                        className={`p-2 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        className={`p-2 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none active:scale-95 ${
                           isSelected
                             ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
                             : 'border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/50'
