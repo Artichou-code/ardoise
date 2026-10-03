@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Anchor, Trophy, AlertCircle, Waves } from 'lucide-react'
+import { Anchor, Trophy, AlertCircle, Waves, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -38,6 +38,25 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
   const [open, setOpen] = useState(false)
   const [validationError, setValidationError] = useState(null)
   const [sirensConfirmPlayer, setSirensConfirmPlayer] = useState(null)
+
+  // Navigation séquentielle entre joueurs dans le ScorePad
+  const currentEditingIndex = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
+  const hasPrevPlayer = currentEditingIndex > 0
+  const hasNextPlayer = currentEditingIndex >= 0 && currentEditingIndex < game.players.length - 1
+  const prevPlayer = hasPrevPlayer ? game.players[currentEditingIndex - 1] : null
+  const nextPlayer = hasNextPlayer ? game.players[currentEditingIndex + 1] : null
+
+  const handleConfirmPad = () => {
+    if (hasNextPlayer) {
+      setEditingPlayer(nextPlayer)
+    } else {
+      setOpen(false)
+    }
+  }
+
+  const confirmLabel = hasNextPlayer
+    ? `Valider & Suivant (${nextPlayer.name})`
+    : 'Valider et terminer'
 
   // Victoire immédiate des 4 sirènes
   const handleFourSirensVictory = (playerId) => {
@@ -319,30 +338,103 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
       {/* BottomSheet saisie de score */}
       <BottomSheet open={open} onClose={() => setOpen(false)}>
         {editingPlayer && (
-          <div className="p-4">
-            <h3 className="font-serif-title font-bold text-lg mb-1">
-              Points de {editingPlayer.name}
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-slate-400 mb-4">
-              Indiquez les points marqués lors de cette manche (cartes + bonus couleur).
-            </p>
+          <div className="px-4 pt-1 pb-6 space-y-3">
+            {/* Carte du joueur actif & Navigation Joueur précédent / Joueur suivant */}
+            <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Avatar
+                  player={editingPlayer}
+                  size="sm"
+                  leader={announcerId === editingPlayer.id}
+                  leaderColor="#0284c7"
+                />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-sm truncate text-stone-900 dark:text-slate-100">
+                      {editingPlayer.name}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
+                      {currentEditingIndex + 1}/{game.players.length}
+                    </span>
+                    {announcerId === editingPlayer.id && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-sky-500/15 text-sky-700 dark:text-sky-300 shrink-0">
+                        Annonceur (≥7 pts)
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-stone-500 dark:text-slate-400">
+                    Total actuel : {game.scores[editingPlayer.id] || 0} pts
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  disabled={!hasPrevPlayer}
+                  onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
+                  aria-label="Joueur précédent"
+                >
+                  <ChevronLeft size={17} />
+                </button>
+                <button
+                  type="button"
+                  disabled={!hasNextPlayer}
+                  onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
+                  aria-label="Joueur suivant"
+                >
+                  <ChevronRight size={17} />
+                </button>
+              </div>
+            </div>
+
+            {/* Sélecteur d'annonceur */}
+            <button
+              type="button"
+              onClick={() => setAnnouncerId(editingPlayer.id)}
+              className={`w-full p-2 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer select-none active:scale-[0.99] text-xs ${
+                announcerId === editingPlayer.id
+                  ? 'border-sky-500/60 bg-sky-500/10 text-sky-800 dark:text-sky-200 ring-1 ring-sky-500/30 font-semibold'
+                  : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-sky-400'
+              }`}
+            >
+              <span>{announcerId === editingPlayer.id ? '✓ Annonceur de la manche (STOP ou Dernière Chance)' : 'Désigner comme annonceur (≥ 7 pts requis)'}</span>
+              <span className="text-[10px] opacity-75">{announcerId === editingPlayer.id ? 'Min. 7 pts' : 'Cliquer pour définir'}</span>
+            </button>
+
             <ScorePad
+              key={editingPlayer.id}
               value={roundScores[editingPlayer.id] || 0}
               onChange={v => setRoundScores(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, v) }))}
-              onConfirm={() => setOpen(false)}
+              onConfirm={handleConfirmPad}
+              confirmLabel={confirmLabel}
               min={0}
               step={1}
               label="Points de la manche"
-              showPlus={true}
+              subLabel={`Objectif : ${TARGET_SCORE} pts (cartes + duos)`}
+              presets={[0, 7, 8, 9, 10, 11, 12, 13, 14, 15]}
+              formatDisplay={v => `${v} pts`}
+              formatTotal={val => {
+                const isAnnouncer = announcerId === editingPlayer.id
+                const cur = game.scores[editingPlayer.id] || 0
+                const proj = cur + val
+                const isWin = proj >= TARGET_SCORE
+                let warn = ''
+                if (isAnnouncer && val < 7) warn = ' (⚠️ Annonceur < 7 pts)'
+                return `+${val} pts${warn} · Nouveau total : ${proj}/${TARGET_SCORE} pts${isWin ? ' 🏆 Seuil atteint !' : ''}`
+              }}
+              baseScore={game.scores[editingPlayer.id] || 0}
+              showPlus={false}
               customButtons={[
-                { label: '0 pt', value: 0 },
-                { label: '+7 pts (Seuil)', value: 7 },
-                { label: '+8 pts', value: 8 },
-                { label: '+9 pts', value: 9 },
-                { label: '+10 pts', value: 10 },
-                { label: '+11 pts', value: 11 },
-                { label: '+12 pts', value: 12 },
-                { label: '+15 pts', value: 15 },
+                { label: '0', delta: -(roundScores[editingPlayer.id] || 0) },
+                { label: '+1', delta: 1 },
+                { label: '+5', delta: 5 },
+                { label: '+7 (Seuil)', delta: 7 },
+                { label: '+10', delta: 10 },
               ]}
             />
           </div>
