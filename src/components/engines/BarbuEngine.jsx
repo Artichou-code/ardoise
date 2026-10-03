@@ -382,52 +382,73 @@ export function BarbuEngine({ game, onFinish }) {
                 {game.players.map(p => {
                   const tricks = tricksCount[p.id] || 0
                   const delta = tricks * -2
-                  const total = (game.scores[p.id] || 0) + delta
+                  const currentTotal = game.scores[p.id] || 0
+                  const projectedTotal = currentTotal + delta
 
                   return (
                     <div
                       key={p.id}
-                      className="px-3 py-2.5 rounded-xl border school-subtle flex items-center justify-between gap-2"
+                      className="px-3 py-2.5 rounded-xl border school-subtle flex items-center justify-between gap-2 hover:border-[#c83b3b]/40 transition-all"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingPlayer(p)
+                          setPadConfig({
+                            min: 0,
+                            max: 13,
+                            presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+                            label: 'Nombre de plis',
+                            showPlus: false,
+                          })
+                          setOpenPad(true)
+                        }}
+                        className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer select-none active:opacity-80 transition-opacity"
+                      >
                         <Avatar player={p} size="xs" />
-                        <div className="min-w-0">
-                          <span className="font-semibold text-xs truncate block">{p.name}</span>
-                          <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                            Total : {total}
+                        <div className="min-w-0 flex-1">
+                          <span className="font-semibold text-xs truncate block text-stone-900 dark:text-slate-100">
+                            {p.name}
+                          </span>
+                          <span className="text-[10px] text-stone-400 dark:text-slate-500 block">
+                            {delta < 0 ? (
+                              <>Total : {currentTotal} <strong className="font-bold text-red-600 dark:text-red-400">➔ {projectedTotal} pts</strong></>
+                            ) : (
+                              `Total : ${currentTotal} pts`
+                            )}
                           </span>
                         </div>
-                      </div>
+                      </button>
 
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="flex items-center border border-stone-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
-                          <button
-                            type="button"
-                            onClick={() => setTricksCount(prev => ({ ...prev, [p.id]: Math.max(0, (prev[p.id] || 0) - 1) }))}
-                            className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 cursor-pointer"
-                          >
-                            -
-                          </button>
-                          <span className="w-8 text-center text-xs font-bold text-stone-900 dark:text-slate-100">
-                            {tricks}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setTricksCount(prev => ({ ...prev, [p.id]: Math.min(13, (prev[p.id] || 0) + 1) }))}
-                            className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 cursor-pointer"
-                          >
-                            +
-                          </button>
-                        </div>
-
-                        <span className={`min-w-14 text-center px-2 py-1 rounded-lg text-xs font-bold transition-all ${
-                          delta < 0
-                            ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300'
-                            : 'bg-stone-100 dark:bg-slate-800 text-stone-500'
-                        }`}>
-                          {delta} pts
-                        </span>
-                      </div>
+                      <QuickScoreBadge
+                        value={tricks}
+                        onChange={v => {
+                          const val = Math.max(0, Math.min(13, v))
+                          setTricksCount(prev => ({ ...prev, [p.id]: val }))
+                        }}
+                        onOpenPad={() => {
+                          setEditingPlayer(p)
+                          setPadConfig({
+                            min: 0,
+                            max: 13,
+                            presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+                            label: 'Nombre de plis',
+                            showPlus: false,
+                          })
+                          setOpenPad(true)
+                        }}
+                        min={0}
+                        max={13}
+                        step={1}
+                        showPlus={false}
+                        formatDisplay={v => `${v} pli${v > 1 ? 's' : ''}`}
+                        formatSub={v => `${v * -2} pts`}
+                        formatBubble={v => {
+                          const d = v * -2
+                          const proj = currentTotal + d
+                          return { text: `${d} pts (total ${proj})`, variant: v > 0 ? 'danger' : 'default' }
+                        }}
+                      />
                     </div>
                   )
                 })}
@@ -452,23 +473,42 @@ export function BarbuEngine({ game, onFinish }) {
                   const hCount = heartsCount[p.id] || 0
                   const hasAce = aceOfHeartsPlayerId === p.id
                   const delta = (hCount * -2) + (hasAce ? -6 : 0)
-                  const total = (game.scores[p.id] || 0) + delta
+                  const currentTotal = game.scores[p.id] || 0
+                  const projectedTotal = currentTotal + delta
 
                   return (
                     <div
                       key={p.id}
-                      className="px-3 py-2 rounded-xl border school-subtle"
+                      className="px-3 py-2 rounded-xl border school-subtle hover:border-[#c83b3b]/40 transition-all"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2.5 min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingPlayer(p)
+                            setPadConfig({
+                              min: 0,
+                              max: 12,
+                              presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                              label: 'Nombre de Cœurs (hors As)',
+                              showPlus: false,
+                            })
+                            setOpenPad(true)
+                          }}
+                          className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer select-none active:opacity-80 transition-opacity"
+                        >
                           <Avatar player={p} size="xs" />
-                          <div className="min-w-0">
-                            <span className="font-semibold text-xs truncate block">{p.name}</span>
-                            <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                              Total : {total}
+                          <div className="min-w-0 flex-1">
+                            <span className="font-semibold text-xs truncate block text-stone-900 dark:text-slate-100">{p.name}</span>
+                            <span className="text-[10px] text-stone-400 dark:text-slate-500 block">
+                              {delta < 0 ? (
+                                <>Total : {currentTotal} <strong className="font-bold text-red-600 dark:text-red-400">➔ {projectedTotal} pts</strong></>
+                              ) : (
+                                `Total : ${currentTotal} pts`
+                              )}
                             </span>
                           </div>
-                        </div>
+                        </button>
 
                         <span className={`min-w-14 text-center px-2 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
                           delta < 0
@@ -484,7 +524,7 @@ export function BarbuEngine({ game, onFinish }) {
                         <button
                           type="button"
                           onClick={() => setAceOfHeartsPlayerId(prev => prev === p.id ? null : p.id)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer select-none active:scale-95 ${
+                          className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer select-none active:scale-95 ${
                             hasAce
                               ? 'border-red-600 bg-red-600 text-white shadow-2xs'
                               : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:border-red-400'
@@ -493,31 +533,36 @@ export function BarbuEngine({ game, onFinish }) {
                           ♥ As (-6 pts)
                         </button>
 
-                        {/* Compteur de Cœurs ordinaires */}
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] text-stone-500 dark:text-slate-400 font-medium">
-                            {hCount} cœur{hCount > 1 ? 's' : ''}
-                          </span>
-                          <div className="flex items-center border border-stone-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
-                            <button
-                              type="button"
-                              onClick={() => setHeartsCount(prev => ({ ...prev, [p.id]: Math.max(0, (prev[p.id] || 0) - 1) }))}
-                              className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 cursor-pointer"
-                            >
-                              -
-                            </button>
-                            <span className="w-8 text-center text-xs font-bold text-stone-900 dark:text-slate-100">
-                              {hCount}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setHeartsCount(prev => ({ ...prev, [p.id]: Math.min(12, (prev[p.id] || 0) + 1) }))}
-                              className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 cursor-pointer"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
+                        {/* Roulette tactile de Cœurs ordinaires */}
+                        <QuickScoreBadge
+                          value={hCount}
+                          onChange={v => {
+                            const val = Math.max(0, Math.min(12, v))
+                            setHeartsCount(prev => ({ ...prev, [p.id]: val }))
+                          }}
+                          onOpenPad={() => {
+                            setEditingPlayer(p)
+                            setPadConfig({
+                              min: 0,
+                              max: 12,
+                              presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                              label: 'Nombre de Cœurs (hors As)',
+                              showPlus: false,
+                            })
+                            setOpenPad(true)
+                          }}
+                          min={0}
+                          max={12}
+                          step={1}
+                          showPlus={false}
+                          formatDisplay={v => `${v} ♥`}
+                          formatSub={v => `${v * -2} pts`}
+                          formatBubble={v => {
+                            const d = (v * -2) + (hasAce ? -6 : 0)
+                            const proj = currentTotal + d
+                            return { text: `${d} pts (total ${proj})`, variant: d < 0 ? 'danger' : 'default' }
+                          }}
+                        />
                       </div>
                     </div>
                   )
@@ -935,11 +980,11 @@ export function BarbuEngine({ game, onFinish }) {
       <Dialog
         open={showBarbuErrorDialog}
         onClose={() => setShowBarbuErrorDialog(false)}
-        title={`Total incorrect (${targetContract?.name})`}
+        title={`Total incorrect (${targetContract?.label})`}
       >
         <div className="space-y-3 text-xs">
           <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
-            Le total des points saisis (<strong>{currentTotalAllocated} pts</strong>) ne correspond pas au total réglementaire du contrat <strong>{targetContract?.name}</strong> (<strong>{targetContract?.totalPoints} pts</strong>).
+            Le total des points saisis (<strong>{currentTotalAllocated} pts</strong>) ne correspond pas au total réglementaire du contrat <strong>{targetContract?.label}</strong> (<strong>{targetContract?.totalPoints} pts</strong>).
           </p>
 
           <div className="p-2.5 rounded-xl bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 space-y-1.5 font-medium">
@@ -971,12 +1016,12 @@ export function BarbuEngine({ game, onFinish }) {
         </div>
       </Dialog>
 
-      {/* BottomSheet de saisie précise de points si besoin */}
+      {/* BottomSheet de saisie précise de points via ScorePad */}
       <BottomSheet
         open={openPad}
         onClose={() => setOpenPad(false)}
-        title={editingPlayer ? `Pénalité de ${editingPlayer.name}` : 'Saisie du score'}
-        subtitle={`Contrat : ${targetContract?.name}`}
+        title={editingPlayer ? `Saisie pour ${editingPlayer.name}` : 'Saisie du score'}
+        subtitle={`Contrat : ${targetContract?.label || ''}`}
       >
         {editingPlayer && (
           <div className="p-4 space-y-3">
@@ -991,9 +1036,21 @@ export function BarbuEngine({ game, onFinish }) {
             </div>
 
             <ScorePad
-              value={playerDeltas[editingPlayer.id] || 0}
+              value={
+                selectedContract === 'plis'
+                  ? (tricksCount[editingPlayer.id] || 0)
+                  : selectedContract === 'coeurs'
+                  ? (heartsCount[editingPlayer.id] || 0)
+                  : selectedContract === 'salade'
+                  ? (saladeScores[editingPlayer.id] || 0)
+                  : (playerDeltas[editingPlayer.id] || 0)
+              }
               onChange={val => {
-                if (selectedContract === 'salade') {
+                if (selectedContract === 'plis') {
+                  setTricksCount(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, Math.min(13, val)) }))
+                } else if (selectedContract === 'coeurs') {
+                  setHeartsCount(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, Math.min(12, val)) }))
+                } else if (selectedContract === 'salade') {
                   setSaladeScores(prev => ({ ...prev, [editingPlayer.id]: val }))
                 }
               }}
@@ -1001,6 +1058,8 @@ export function BarbuEngine({ game, onFinish }) {
               min={padConfig.min}
               max={padConfig.max}
               presets={padConfig.presets}
+              label={padConfig.label || 'Score'}
+              showPlus={padConfig.showPlus ?? false}
             />
           </div>
         )}
