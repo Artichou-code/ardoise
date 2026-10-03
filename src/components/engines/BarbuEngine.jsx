@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import {
   Layers,
   Heart,
@@ -53,6 +53,15 @@ export function BarbuEngine({ game, onFinish }) {
     const available = BARBU_CONTRACTS.find(c => !played.has(c.id))
     return available ? available.id : 'plis'
   })
+
+  const contractButtonRefs = useRef({})
+  const handleSelectContract = (id) => {
+    setSelectedContract(id)
+    const el = contractButtonRefs.current[id]
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    }
+  }
 
   // Saisie spécifique par contrat :
   // 1. Plis : nombre de plis (0..13) par joueur
@@ -281,10 +290,10 @@ export function BarbuEngine({ game, onFinish }) {
           </button>
         </div>
 
-        {/* Sélecteur des 7 Contrats */}
-        <div className="mb-3">
+        {/* Sélecteur des 7 Contrats en pastilles défilantes (Slider / Scroll horizontal façon statistiques) */}
+        <div className="mb-2.5">
           <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate">
               Choix du Contrat ({contractsPlayedByDealer[currentDealer?.id]?.size || 0}/7)
             </span>
             {targetContract && (
@@ -294,53 +303,66 @@ export function BarbuEngine({ game, onFinish }) {
             )}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-            {BARBU_CONTRACTS.map((contract, index) => {
-              const isSelected = selectedContract === contract.id
-              const hasBeenPlayedByDealer = contractsPlayedByDealer[currentDealer?.id]?.has(contract.id)
-              const isLast = index === BARBU_CONTRACTS.length - 1
+          {/* Pastilles avec scroll horizontal (façon statistiques) */}
+          <div className="overflow-x-auto scrollbar-hide py-1 -mx-3 px-3 sm:-mx-4 sm:px-4">
+            <div className="flex items-center gap-1.5 w-max">
+              {BARBU_CONTRACTS.map(contract => {
+                const isSelected = selectedContract === contract.id
+                const hasBeenPlayedByDealer = contractsPlayedByDealer[currentDealer?.id]?.has(contract.id)
 
-              return (
-                <button
-                  key={contract.id}
-                  type="button"
-                  onClick={() => setSelectedContract(contract.id)}
-                  className={`p-2 rounded-xl border text-left transition-all cursor-pointer relative active:scale-[0.98] ${
-                    isLast ? 'col-span-2' : ''
-                  } ${
-                    isSelected
-                      ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
-                      : hasBeenPlayedByDealer
-                      ? 'school-subtle opacity-50 border-dashed text-stone-500 dark:text-slate-500'
-                      : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-stone-400'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className={isSelected ? 'text-white' : 'text-[#c83b3b]'}>
-                        {renderContractIcon(contract.id, 14)}
-                      </span>
-                      <span className="font-bold text-xs truncate">
-                        {contract.short}
-                      </span>
-                    </div>
+                return (
+                  <button
+                    key={contract.id}
+                    ref={el => { if (el) contractButtonRefs.current[contract.id] = el }}
+                    type="button"
+                    onClick={() => handleSelectContract(contract.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer select-none active:scale-95 ${
+                      isSelected
+                        ? 'btn-margin-red text-white shadow-xs'
+                        : hasBeenPlayedByDealer
+                        ? 'bg-stone-100/60 dark:bg-slate-800/40 opacity-60 text-stone-400 dark:text-slate-500 border border-dashed border-stone-200/80 dark:border-slate-700/60'
+                        : 'bg-white dark:bg-slate-800 text-stone-700 dark:text-slate-300 hover:text-stone-900 dark:hover:text-white border border-stone-200 dark:border-slate-700 hover:border-stone-400 shadow-2xs'
+                    }`}
+                  >
+                    <span className={isSelected ? 'text-white' : 'text-[#c83b3b]'}>
+                      {renderContractIcon(contract.id, 13)}
+                    </span>
+                    <span>{contract.short}</span>
                     {hasBeenPlayedByDealer && !isSelected && (
-                      <span className="text-[9px] px-1 rounded bg-stone-200/70 dark:bg-slate-700 text-stone-600 dark:text-slate-400 font-semibold">
+                      <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-500 dark:text-slate-400 font-bold">
                         Fait
                       </span>
                     )}
-                  </div>
-                  <span className={`text-[10px] block mt-0.5 ${
-                    isLast ? '' : 'truncate'
-                  } ${
-                    isSelected ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'
-                  }`}>
-                    {contract.rule}
-                  </span>
-                </button>
-              )
-            })}
+                    {isSelected && (
+                      <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 text-white font-bold">
+                        {contract.totalPoints > 0 ? `+${contract.totalPoints}` : contract.totalPoints}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
           </div>
+
+          {/* Règle et description du contrat sélectionné */}
+          {targetContract && (
+            <div className="flex items-center justify-between gap-2 mt-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/60 dark:border-slate-700/50 text-[11px]">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-[#c83b3b] shrink-0">
+                  {renderContractIcon(targetContract.id, 13)}
+                </span>
+                <span className="font-bold text-stone-800 dark:text-slate-200 whitespace-nowrap">
+                  {targetContract.label} :
+                </span>
+                <span className="text-stone-500 dark:text-slate-400 truncate">
+                  {targetContract.rule}
+                </span>
+              </div>
+              <span className="font-bold text-[#c83b3b] whitespace-nowrap shrink-0">
+                {targetContract.totalPoints > 0 ? `+${targetContract.totalPoints}` : targetContract.totalPoints} pts
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Formulaire de saisie spécifique selon le contrat sélectionné */}
