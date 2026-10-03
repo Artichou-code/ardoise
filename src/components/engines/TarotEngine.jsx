@@ -228,12 +228,8 @@ export function TarotEngine({ game }) {
                   onClick={() => setPetitAuBout(opt.id)}
                   className={`py-1.5 px-1 rounded-xl text-center border font-semibold text-xs transition-all cursor-pointer ${
                     isSelected
-                      ? opt.id === 'attack'
-                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-2xs'
-                        : opt.id === 'defense'
-                        ? 'border-rose-600 bg-rose-600 text-white shadow-2xs'
-                        : 'border-stone-800 bg-stone-800 dark:border-slate-200 dark:bg-slate-200 text-white dark:text-stone-900 shadow-2xs'
-                      : 'school-subtle text-stone-700 dark:text-slate-300'
+                      ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                      : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/40'
                   }`}
                 >
                   <span className="block font-bold leading-tight">{opt.label}</span>
@@ -321,8 +317,8 @@ export function TarotEngine({ game }) {
                   onClick={() => setPoints(shortcut.val)}
                   className={`py-1 px-0.5 rounded-lg text-[10px] font-bold border text-center transition-colors cursor-pointer truncate ${
                     points === shortcut.val
-                      ? 'bg-stone-800 text-white border-stone-800 dark:bg-slate-200 dark:text-stone-900 shadow-2xs'
-                      : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-stone-400'
+                      ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                      : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-[#c83b3b]/40'
                   }`}
                 >
                   {shortcut.label}
