@@ -152,16 +152,24 @@ export function ScorePad({
     ? `Total : ${totalScore}`
     : null
 
-  const displayVal = (v, clamp = true) => {
-    if (!clamp) {
-      if (min !== undefined && v < min) return ''
-      if (max !== undefined && v > max) return ''
-    }
+  const displayVal = (v) => {
     const clamped = clampValue(v)
     if (formatDisplay) return formatDisplay(clamped)
     const sign = showPlus && clamped > 0 ? '+' : ''
     return `${sign}${clamped}`
   }
+
+  const valAbove2 = cur + dragStep * 2
+  const isAbove2Valid = (min === undefined || valAbove2 >= min) && (max === undefined || valAbove2 <= max)
+
+  const valAbove1 = cur + dragStep
+  const isAbove1Valid = (min === undefined || valAbove1 >= min) && (max === undefined || valAbove1 <= max)
+
+  const valBelow1 = cur - dragStep
+  const isBelow1Valid = (min === undefined || valBelow1 >= min) && (max === undefined || valBelow1 <= max)
+
+  const valBelow2 = cur - dragStep * 2
+  const isBelow2Valid = (min === undefined || valBelow2 >= min) && (max === undefined || valBelow2 <= max)
 
   return (
     <div className="flex flex-col gap-3 pt-2">
@@ -188,34 +196,36 @@ export function ScorePad({
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}
           style={{ touchAction: 'none' }}
-          className={`relative select-none cursor-grab active:cursor-grabbing flex flex-col items-center justify-center transition-colors duration-150 rounded-2xl border-2 ${
+          className={`relative select-none cursor-grab active:cursor-grabbing flex flex-col items-center justify-center transition-colors duration-150 rounded-2xl border-2 h-[178px] ${
             isDragging
-              ? 'py-3 bg-[#c83b3b]/10 dark:bg-[#c83b3b]/15 border-[#c83b3b] shadow-xs ring-2 ring-[#c83b3b]/30'
-              : 'py-3 bg-stone-50/80 dark:bg-slate-800/40 border-stone-200 dark:border-slate-800 hover:border-[#c83b3b]/40'
+              ? 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/15 border-[#c83b3b] shadow-xs ring-2 ring-[#c83b3b]/30'
+              : 'bg-stone-50/80 dark:bg-slate-800/40 border-stone-200 dark:border-slate-800 hover:border-[#c83b3b]/40'
           }`}
         >
           {isDragging ? (
-            <div className="flex flex-col items-center justify-center overflow-hidden py-0.5 w-full pointer-events-none">
+            <div className="flex flex-col items-center justify-center overflow-hidden w-full h-full pointer-events-none py-1">
               {/* Pastille minimaliste du score total pendant le glissement */}
-              {totalText && (
-                <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-white text-[11px] font-bold shadow-xs mb-1 max-w-full truncate ${
-                  String(totalText).startsWith('-') ? 'bg-[#c83b3b]' : 'bg-emerald-600'
-                }`}>
-                  <span className="truncate">{totalText}</span>
-                </div>
-              )}
+              <div className="h-6 shrink-0 flex items-center justify-center mb-1">
+                {totalText ? (
+                  <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-white text-[11px] font-bold shadow-xs max-w-full truncate ${
+                    String(totalText).startsWith('-') ? 'bg-[#c83b3b]' : 'bg-emerald-600'
+                  }`}>
+                    <span className="truncate">{totalText}</span>
+                  </div>
+                ) : null}
+              </div>
 
               {/* Cylindre de roulette */}
               <div className="flex flex-col items-center leading-none">
-                <span className="text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums min-h-[1rem] flex items-center justify-center">
-                  {displayVal(cur + dragStep * 2, false)}
+                <span className={`h-4 shrink-0 flex items-center justify-center text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums ${isAbove2Valid ? '' : 'invisible select-none'}`}>
+                  {isAbove2Valid ? displayVal(valAbove2) : '\u00A0'}
                 </span>
-                <span className="text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 my-1 tabular-nums min-h-[1.25rem] flex items-center justify-center">
-                  {displayVal(cur + dragStep, false)}
+                <span className={`h-6 shrink-0 my-0.5 flex items-center justify-center text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 tabular-nums ${isAbove1Valid ? '' : 'invisible select-none'}`}>
+                  {isAbove1Valid ? displayVal(valAbove1) : '\u00A0'}
                 </span>
 
                 {/* Mire centrale */}
-                <div className="relative flex items-center justify-center px-6 py-1 my-0.5 rounded-xl bg-white dark:bg-slate-900 border border-[#c83b3b]/40 shadow-xs">
+                <div className="h-12 shrink-0 my-0.5 relative flex items-center justify-center px-6 rounded-xl bg-white dark:bg-slate-900 border border-[#c83b3b]/40 shadow-xs">
                   <span className="absolute left-2 text-[#c83b3b] font-mono text-xs font-black">▶</span>
                   <span className={`font-black text-[#c83b3b] dark:text-red-400 tabular-nums tracking-tight ${
                     String(displayVal(cur)).length > 8 ? 'text-2xl sm:text-3xl' : String(displayVal(cur)).length > 5 ? 'text-3xl sm:text-4xl' : 'text-4xl'
@@ -225,16 +235,16 @@ export function ScorePad({
                   <span className="absolute right-2 text-[#c83b3b] font-mono text-xs font-black">◀</span>
                 </div>
 
-                <span className="text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 my-1 tabular-nums min-h-[1.25rem] flex items-center justify-center">
-                  {displayVal(cur - dragStep, false)}
+                <span className={`h-6 shrink-0 my-0.5 flex items-center justify-center text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 tabular-nums ${isBelow1Valid ? '' : 'invisible select-none'}`}>
+                  {isBelow1Valid ? displayVal(valBelow1) : '\u00A0'}
                 </span>
-                <span className="text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums min-h-[1rem] flex items-center justify-center">
-                  {displayVal(cur - dragStep * 2, false)}
+                <span className={`h-4 shrink-0 flex items-center justify-center text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums ${isBelow2Valid ? '' : 'invisible select-none'}`}>
+                  {isBelow2Valid ? displayVal(valBelow2) : '\u00A0'}
                 </span>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-0.5 py-1">
+            <div className="flex flex-col items-center justify-center gap-1 h-full w-full py-2">
               <span className={`font-black tabular-nums tracking-tight text-stone-900 dark:text-slate-100 ${
                 String(displayVal(value)).length > 8 ? 'text-2xl sm:text-3xl' : String(displayVal(value)).length > 5 ? 'text-3xl sm:text-4xl' : 'text-4xl'
               }`}>
