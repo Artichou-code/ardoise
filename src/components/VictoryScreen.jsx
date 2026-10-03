@@ -74,7 +74,10 @@ export function VictoryScreen() {
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-safe pt-5 pb-4 pb-safe">
+      <div
+        className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-8 pb-safe"
+        style={{ paddingTop: 'calc(2.5rem + env(safe-area-inset-top, 0px))' }}
+      >
         {/* Lauréat & Grand Dourak (si jeu Dourak) */}
         {isDourak ? (
           <div className="grid grid-cols-2 gap-2.5 mt-2 mb-3">
