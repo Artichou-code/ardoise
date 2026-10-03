@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
-import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen, Radio, Trash2, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen, Radio, Trash2 } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { getActiveSession } from '../store/liveSession'
 import { BurgerMenuButton } from './BurgerMenu'
@@ -44,6 +44,44 @@ const ENGINE_MAP = {
   [GAMES.UNIVERSEL]: UniverselEngine,
 }
 
+function AnimatedRoundIndicator({ roundNumber }) {
+  const [current, setCurrent] = useState(roundNumber)
+  const [prev, setPrev] = useState(null)
+  const [animating, setAnimating] = useState(false)
+
+  useEffect(() => {
+    if (roundNumber !== current) {
+      setPrev(current)
+      setCurrent(roundNumber)
+      setAnimating(true)
+      const timer = setTimeout(() => {
+        setAnimating(false)
+        setPrev(null)
+      }, 520)
+      return () => clearTimeout(timer)
+    }
+  }, [roundNumber, current])
+
+  if (!animating || prev === null) {
+    return (
+      <span className="text-xs font-semibold text-[#c83b3b] shrink-0 whitespace-nowrap">
+        M.{current}
+      </span>
+    )
+  }
+
+  return (
+    <span className="relative inline-flex items-center h-4.5 overflow-hidden shrink-0 whitespace-nowrap align-middle">
+      <span className="inline-block text-xs font-semibold text-stone-400 dark:text-slate-500 animate-round-roll-out">
+        M.{prev}
+      </span>
+      <span className="absolute inset-0 inline-flex items-center text-xs font-bold text-[#c83b3b] animate-round-roll-in">
+        M.{current}
+      </span>
+    </span>
+  )
+}
+
 export function GameScreen() {
   const { activeGame, exitGame, undoLastRound, cancelCorrection, canUndo, finishGame, startLiveSessionForGame, removeGame } = useGame()
   const [showHistory, setShowHistory] = useState(false)
@@ -55,22 +93,15 @@ export function GameScreen() {
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
   const [isCreatingLive, setIsCreatingLive] = useState(false)
-  const [roundJustSaved, setRoundJustSaved] = useState(null)
   const prevRoundsLengthRef = useRef(activeGame?.rounds?.length ?? 0)
 
   useEffect(() => {
     if (!activeGame) return
     const currentLength = activeGame.rounds?.length ?? 0
     if (currentLength > prevRoundsLengthRef.current) {
-      setRoundJustSaved(currentLength)
       try {
         navigator.vibrate?.([25, 35, 25])
       } catch {}
-      const timer = setTimeout(() => {
-        setRoundJustSaved(null)
-      }, 1800)
-      prevRoundsLengthRef.current = currentLength
-      return () => clearTimeout(timer)
     }
     prevRoundsLengthRef.current = currentLength
   }, [activeGame?.rounds?.length])
@@ -121,18 +152,7 @@ export function GameScreen() {
           <span className="font-serif-title font-bold text-base truncate">
             {getGameDisplayName(activeGame)}
           </span>
-          <span
-            key={activeGame.rounds.length}
-            className="text-xs font-semibold text-[#c83b3b] shrink-0 whitespace-nowrap animate-round-bump"
-          >
-            M.{activeGame.rounds.length + 1}
-          </span>
-          {roundJustSaved && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 dark:bg-emerald-950/40 border border-emerald-500/25 px-2 py-0.5 rounded-full animate-fade-in shrink-0">
-              <CheckCircle2 size={11} className="text-emerald-600 dark:text-emerald-400" />
-              <span>M.{roundJustSaved} validée</span>
-            </span>
-          )}
+          <AnimatedRoundIndicator roundNumber={activeGame.rounds.length + 1} />
           <button
             type="button"
             onClick={() => setShowRules(true)}
