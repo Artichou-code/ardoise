@@ -189,29 +189,35 @@ export function HomeScreen() {
                   key={game.id}
                   type="button"
                   onClick={() => resumeGame(game.id)}
-                  className="w-full flex items-center justify-between gap-3 p-3.5 rounded-xl bg-[#c83b3b]/[0.04] dark:bg-[#c83b3b]/[0.08] border border-[#c83b3b]/35 dark:border-[#c83b3b]/45 hover:border-[#c83b3b] transition-all active:scale-[0.99] text-left shadow-2xs group cursor-pointer"
+                  className="w-full flex flex-col gap-2 p-3.5 rounded-xl bg-[#c83b3b]/[0.04] dark:bg-[#c83b3b]/[0.08] border border-[#c83b3b]/35 dark:border-[#c83b3b]/45 hover:border-[#c83b3b] transition-all active:scale-[0.99] text-left shadow-2xs group cursor-pointer"
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <p className="font-serif-title font-bold text-base leading-tight truncate">
-                        {getGameDisplayName(game)}
-                      </p>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300 whitespace-nowrap shrink-0">
-                        Manche {game.rounds.length + 1}
-                      </span>
-                    </div>
-                    <p className="text-xs text-stone-500 dark:text-slate-400 truncate mt-1">
-                      {game.players.map(p => p.name).join(' · ')}
+                  {/* Ligne supérieure pleine largeur : Titre et Pastille */}
+                  <div className="flex items-center gap-2 min-w-0 w-full">
+                    <p className="font-serif-title font-bold text-base leading-tight truncate">
+                      {getGameDisplayName(game)}
                     </p>
-                    {game.startedAt && (
-                      <p className="text-[11px] text-stone-400 dark:text-slate-500 flex items-center gap-1 mt-1 truncate">
-                        <Clock size={11} className="opacity-70 shrink-0" />
-                        <span className="truncate whitespace-nowrap">Lancée {formatGameStart(game.startedAt)}</span>
-                      </p>
-                    )}
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300 whitespace-nowrap shrink-0">
+                      Manche {game.rounds.length + 1}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white shrink-0 group-hover:bg-[#b03030] transition-colors shadow-2xs">
-                    <Play size={12} fill="currentColor" /> Reprendre
+
+                  {/* Ligne inférieure : Joueurs, heure de lancement & Bouton Reprendre légèrement plus bas */}
+                  <div className="flex items-center justify-between gap-3 w-full">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-stone-500 dark:text-slate-400 truncate">
+                        {game.players.map(p => p.name).join(' · ')}
+                      </p>
+                      {game.startedAt && (
+                        <p className="text-[11px] text-stone-400 dark:text-slate-500 flex items-center gap-1 mt-0.5 truncate">
+                          <Clock size={11} className="opacity-70 shrink-0" />
+                          <span className="truncate whitespace-nowrap">Lancée {formatGameStart(game.startedAt)}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#c83b3b] text-white shrink-0 group-hover:bg-[#b03030] transition-colors shadow-2xs">
+                      <Play size={12} fill="currentColor" /> Reprendre
+                    </div>
                   </div>
                 </button>
               ))}
