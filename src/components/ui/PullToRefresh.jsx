@@ -6,7 +6,7 @@ import { RefreshCw } from 'lucide-react'
  * Permet de glisser vers le bas depuis le haut de l'écran pour actualiser l'application.
  * Totalement invisible et rétracté hors écran au repos pour éviter tout texte fantôme.
  */
-export function PullToRefreshIndicator() {
+export function PullToRefreshIndicator({ disabled = false }) {
   const [pullY, setPullY] = useState(0)
   const [refreshing, setRefreshing] = useState(false)
 
@@ -14,6 +14,7 @@ export function PullToRefreshIndicator() {
   const activeRef = useRef(false)
   const pullYRef = useRef(0)
   const refreshingRef = useRef(false)
+  const disabledRef = useRef(disabled)
 
   // Synchronise les refs pour les écouteurs d'événements stables
   useEffect(() => {
@@ -21,8 +22,25 @@ export function PullToRefreshIndicator() {
   }, [refreshing])
 
   useEffect(() => {
+    disabledRef.current = disabled
+    if (disabled && !refreshingRef.current) {
+      activeRef.current = false
+      startYRef.current = null
+      pullYRef.current = 0
+      setPullY(0)
+    }
+  }, [disabled])
+
+  useEffect(() => {
     const handleTouchStart = (e) => {
-      if (refreshingRef.current) return
+      if (disabledRef.current || refreshingRef.current) return
+      
+      // Ne jamais déclencher si le toucher commence sur un bouton ou élément interactif
+      if (e.target.closest('button, [role="button"], input, select, textarea, [data-interactive], a, .quick-score, .score-pad')) {
+        activeRef.current = false
+        return
+      }
+
       // Ne déclencher que si le conteneur scrollable actif est tout en haut
       const scrollable = e.target.closest('.overflow-y-auto')
       const scrollTop = scrollable ? scrollable.scrollTop : window.scrollY
@@ -35,16 +53,16 @@ export function PullToRefreshIndicator() {
     }
 
     const handleTouchMove = (e) => {
-      if (!activeRef.current || startYRef.current === null || refreshingRef.current) return
+      if (disabledRef.current || !activeRef.current || startYRef.current === null || refreshingRef.current) return
       const currentY = e.touches[0].clientY
       const dy = currentY - startYRef.current
 
-      if (dy > 0) {
-        // Amortissement élastique
-        const damped = Math.min(dy * 0.4, 80)
+      if (dy > 12) {
+        // Amortissement élastique avec seuil de départ minimal pour éviter tout micro-glissement
+        const damped = Math.min((dy - 12) * 0.35, 80)
         pullYRef.current = damped
         setPullY(damped)
-      } else {
+      } else if (dy <= 0) {
         activeRef.current = false
         startYRef.current = null
         pullYRef.current = 0
@@ -53,14 +71,14 @@ export function PullToRefreshIndicator() {
     }
 
     const handleTouchEnd = () => {
-      if (!activeRef.current || refreshingRef.current) return
+      if (disabledRef.current || !activeRef.current || refreshingRef.current) return
       const finalY = pullYRef.current
       activeRef.current = false
       startYRef.current = null
       pullYRef.current = 0
 
-      // Si le glissement a dépassé le seuil (55px), on déclenche l'actualisation
-      if (finalY >= 55) {
+      // Si le glissement a dépassé le seuil sécurisé (65px), on déclenche l'actualisation
+      if (finalY >= 65) {
         setRefreshing(true)
         setPullY(50)
         setTimeout(() => {

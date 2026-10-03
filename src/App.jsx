@@ -111,7 +111,7 @@ export default function App() {
 
   return (
     <>
-      <PullToRefreshIndicator />
+      <PullToRefreshIndicator disabled={screen === 'game' || screen === 'victory'} />
       {screen === 'game' ? (
           <GameScreen />
         ) : screen === 'victory' ? (

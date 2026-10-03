@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle2, Sparkles, Heart } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Trophy, Heart } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -125,7 +125,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
           <div className="flex items-center gap-1.5 truncate">
             {chelemWinnerId ? (
               <>
-                <Sparkles size={14} className="text-amber-600 shrink-0" />
+                <Trophy size={14} className="text-amber-600 shrink-0" />
                 <span className="font-bold">Grand Chelem actif (+26 pts aux rivaux)</span>
               </>
             ) : isNormalRoundComplete ? (
@@ -211,10 +211,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
                     </button>
 
                     {/* Sélecteur de cœurs */}
-                    <div className="flex items-center gap-1.5 ml-auto">
-                      <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-0.5">
-                        <Heart size={11} className="fill-rose-500 text-rose-500" /> Cœurs :
-                      </span>
+                    <div className="ml-auto">
                       <QuickScoreBadge
                         value={hearts}
                         onChange={v => {
