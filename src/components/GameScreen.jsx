@@ -352,19 +352,21 @@ export function GameScreen() {
                       {/* Zone gauche : Avatar centré par rapport au nom */}
                       <div className="flex-1 flex flex-col items-center justify-center min-w-0 pr-1">
                         <div className="relative inline-flex items-center justify-center">
-                          {/* Rang 2e, 3e, etc. juste à gauche de l'avatar (sans point, bien rapproché) */}
-                          {rank > 1 && (
-                            <span className="absolute right-full mr-1 top-1/2 -translate-y-1/2 text-[9px] font-extrabold uppercase leading-none select-none text-stone-400 dark:text-slate-500 whitespace-nowrap">
-                              {rank}e
-                            </span>
-                          )}
-
                           <Avatar
                             player={player}
                             size={count <= 2 ? 'sm-compact' : 'xs'}
                             leader={isLeader}
                             crown={isLeader || rank === 1}
                           />
+
+                          {/* Pastille de rang 2e, 3e, etc. (reprise de l'Historique, en haut à gauche de l'avatar) */}
+                          {rank > 1 && (
+                            <span
+                              className="absolute -top-1.5 -left-1 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-10 pointer-events-none select-none"
+                            >
+                              {rank}e
+                            </span>
+                          )}
                         </div>
 
                         <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center leading-tight mt-0.5 text-stone-900 dark:text-slate-100 block">
