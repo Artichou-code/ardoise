@@ -202,17 +202,15 @@ export function AscenseurEngine({ game, onFinish }) {
               )}
               <span className="whitespace-nowrap truncate">
                 {isDealerRestricted
-                  ? `Total = ${cardsCount} : le donneur doit faire varier`
-                  : `Total des annonces : ${totalBids}/${cardsCount} plis`}
+                  ? `Total = ${cardsCount} : interdit pour le donneur`
+                  : `Total des annonces : ${totalBids} / ${cardsCount} plis`}
               </span>
             </div>
-            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
-              isDealerRestricted
-                ? 'bg-amber-200/60 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300'
-                : 'bg-stone-200/60 dark:bg-slate-700 text-stone-600 dark:text-slate-300'
-            }`}>
-              {isDealerRestricted ? 'Interdit' : `${totalBids}/${cardsCount}`}
-            </span>
+            {isDealerRestricted && (
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-200/60 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 shrink-0">
+                Interdit
+              </span>
+            )}
           </div>
         ) : (
           <div className={`px-3 py-2 rounded-xl border text-xs font-medium flex items-center justify-between gap-2 mb-2 ${
