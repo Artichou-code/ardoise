@@ -458,51 +458,34 @@ export function AscenseurEngine({ game, onFinish }) {
         </div>
       </Dialog>
 
-      {/* Dialogue explicatif de la règle d'or du donneur */}
+      {/* Dialogue explicatif de la règle du donneur (concis) */}
       <Dialog
         open={showDealerRuleDialog}
         onClose={() => setShowDealerRuleDialog(false)}
-        title="Règle d'or du Donneur"
-        subtitle="Règle officielle de l'Ascenseur (Rikiki)"
-        icon={<AlertCircle size={22} className="text-amber-600 dark:text-amber-400" />}
+        title="Règle du Donneur"
+        icon={<AlertCircle size={20} className="text-amber-600 dark:text-amber-400" />}
       >
         <div className="space-y-3 text-xs">
-          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 text-amber-900 dark:text-amber-200 space-y-1">
-            <p className="font-bold text-xs flex items-center gap-1.5">
-              <span>Pourquoi ce total est-il interdit ?</span>
-            </p>
-            <p className="text-[11px] leading-relaxed opacity-95">
-              À l'Ascenseur, le total des paris annoncés par l'ensemble des joueurs ne doit <strong>jamais être égal au nombre de cartes en jeu</strong> ({cardsCount}&nbsp;{cardsCount > 1 ? 'plis' : 'pli'}).
-            </p>
+          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
+            Le <strong>donneur</strong> (dernier à parler) n'a pas le droit d'annoncer un pari qui rend le total égal au nombre de cartes ({cardsCount} {cardsCount > 1 ? 'plis' : 'pli'}).
+          </p>
+
+          <p className="text-stone-500 dark:text-slate-400 text-[11px] leading-relaxed">
+            Cette règle force un déséquilibre pour qu'il y ait toujours au moins un perdant sur la manche.
+          </p>
+
+          <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 flex justify-between items-center text-xs font-medium">
+            <span>Total des paris :</span>
+            <strong className="text-amber-700 dark:text-amber-300 font-bold">
+              {totalBids} / {cardsCount} plis {isDealerRestricted ? '(interdit)' : ''}
+            </strong>
           </div>
 
-          <div className="space-y-2 text-stone-600 dark:text-slate-300 leading-relaxed text-[11px]">
-            <p>
-              Le <strong>donneur</strong> (qui annonce son pari en dernier) n'a pas le droit d'annoncer un chiffre qui ferait tomber la somme exacte sur {cardsCount}.
-            </p>
-            <p>
-              Cette règle garantit qu'il y aura <strong>obligatoirement des perdants</strong> sur chaque manche (trop ou pas assez de plis réalisés pour satisfaire tout le monde).
-            </p>
-          </div>
-
-          <div className="p-2.5 rounded-xl bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 space-y-1 font-medium text-[11px]">
-            <div className="flex justify-between items-center">
-              <span>Cartes / plis en jeu :</span>
-              <strong className="text-stone-900 dark:text-slate-100">{cardsCount} {cardsCount > 1 ? 'plis' : 'pli'}</strong>
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Total actuel des paris :</span>
-              <strong className={isDealerRestricted ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-stone-900 dark:text-slate-100'}>
-                {totalBids} pli{totalBids > 1 ? 's' : ''} {isDealerRestricted ? '(interdit !)' : ''}
-              </strong>
-            </div>
-          </div>
-
-          <div className="pt-2">
+          <div className="pt-1">
             <button
               type="button"
               onClick={() => setShowDealerRuleDialog(false)}
-              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-stone-800 dark:text-stone-100 bg-stone-200/80 hover:bg-stone-300 dark:bg-slate-700 dark:hover:bg-slate-600 cursor-pointer shadow-xs active:scale-[0.99] transition-all"
+              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-stone-800 dark:text-stone-100 bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 dark:hover:bg-slate-700 cursor-pointer shadow-xs active:scale-[0.99] transition-all"
             >
               Compris !
             </button>
