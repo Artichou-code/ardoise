@@ -326,15 +326,23 @@ export function YanivEngine({ game, onFinish }) {
                     key={p.id}
                     type="button"
                     onClick={() => setAssafRivalId(p.id)}
-                    className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer select-none active:scale-[0.98] min-w-0 ${
+                    className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border text-xs font-bold transition-all cursor-pointer select-none active:scale-[0.98] min-w-0 ${
                       isRival
                         ? 'border-amber-600 bg-amber-600 text-white shadow-2xs ring-1 ring-amber-600/40'
-                        : 'border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-700 dark:text-slate-300 hover:border-amber-500'
+                        : 'school-card text-stone-700 dark:text-slate-300 hover:border-amber-500'
                     }`}
                   >
-                    <Avatar player={p} size="xs" leader={isRival} crown={isRival} />
-                    <span className="truncate">{p.name}</span>
-                    {isRival && <Check size={13} className="text-white shrink-0 ml-0.5" />}
+                    <div className="relative mb-0.5">
+                      <Avatar player={p} size="xs" leader={isRival} crown={isRival} />
+                    </div>
+                    <span className={`truncate w-full text-center px-0.5 leading-tight ${isRival ? 'text-white' : ''}`}>
+                      {p.name}
+                    </span>
+                    <span className={`text-[10px] font-semibold mt-0.5 px-1.5 py-0.2 rounded-full inline-block leading-tight ${
+                      isRival ? 'bg-white/20 text-white' : 'text-stone-400 dark:text-slate-500'
+                    }`}>
+                      0 pt
+                    </span>
                   </button>
                 )
               })}
@@ -344,11 +352,11 @@ export function YanivEngine({ game, onFinish }) {
 
         {/* Liste des points de main par joueur */}
         <div className="pt-2 border-t border-stone-200/80 dark:border-slate-800">
-          <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-baseline justify-between gap-2 mb-2">
             <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 shrink-0">
-              Valeur des cartes en main
+              Valeur des mains
             </p>
-            <span className="text-[10px] text-stone-400 dark:text-slate-500 truncate text-right">
+            <span className="text-[10px] text-stone-400 dark:text-slate-500 text-right shrink-0">
               Joker 0 · As 1 · Figures 10
             </span>
           </div>
@@ -376,9 +384,12 @@ export function YanivEngine({ game, onFinish }) {
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="font-semibold text-sm truncate">{p.name}</span>
+                          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-600/10 dark:bg-emerald-500/20 px-1.5 py-0.2 rounded shrink-0">
+                            {isAssaf ? 'Contreur' : 'Yaniv'}
+                          </span>
                         </div>
-                        <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium truncate block">
-                          Total : {currentTotal} pts {isAssaf ? '· Contreur gagnant' : '· Annonceur gagnant'}
+                        <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium truncate block whitespace-nowrap">
+                          Total : {currentTotal} pts
                         </span>
                       </div>
                     </div>
@@ -402,15 +413,17 @@ export function YanivEngine({ game, onFinish }) {
                       className="flex items-center gap-2.5 flex-1 min-w-0 text-left cursor-pointer select-none"
                     >
                       <Avatar player={p} size="xs" />
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="font-semibold text-sm truncate">{p.name}</span>
+                          <span className="text-[10px] font-bold text-[#c83b3b] bg-[#c83b3b]/15 dark:bg-[#c83b3b]/25 px-1.5 py-0.2 rounded shrink-0">
+                            Assaf
+                          </span>
                           {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
                         </div>
-                        <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
-                          <span className="truncate">
+                        <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0 mt-0.5">
+                          <span className="truncate whitespace-nowrap block">
                             Total : {currentTotal} <strong className="text-[#c83b3b] font-bold">➔ {sursisVal !== null ? sursisVal : projected} pts</strong>
-                            <span className="text-[#c83b3b] font-semibold ml-1">· Assaf (+30)</span>
                           </span>
                           {sursisVal !== null && (
                             <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded whitespace-nowrap shrink-0">
