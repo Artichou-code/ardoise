@@ -289,45 +289,25 @@ export function TarotEngine({ game }) {
                   <button
                     key={n}
                     type="button"
-                    onClick={() => setBouts(n)}
-                    className={`py-1 px-0.5 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
+                    onClick={() => {
+                      setBouts(n)
+                      if (points === threshold) {
+                        setPoints(th)
+                      }
+                    }}
+                    className={`py-1.5 px-0.5 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
                       isSelected
                         ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
                         : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
                     }`}
                   >
                     <span className="text-xs font-black leading-none">{n} {n > 1 ? 'Bouts' : 'Bout'}</span>
-                    <span className={`text-[9px] mt-0.5 ${isSelected ? 'text-white/80' : 'text-stone-400 dark:text-slate-500'}`}>
+                    <span className={`text-[10px] font-semibold mt-0.5 ${isSelected ? 'text-white/90' : 'text-stone-400 dark:text-slate-500'}`}>
                       {th} pts
                     </span>
                   </button>
                 )
               })}
-            </div>
-          </div>
-
-          {/* Raccourcis points fréquents */}
-          <div>
-            <div className="grid grid-cols-4 gap-1 pt-0.5">
-              {[
-                { val: threshold, label: `${threshold} pts` },
-                { val: 41, label: '41' },
-                { val: 51, label: '51' },
-                { val: 56, label: '56' },
-              ].map(shortcut => (
-                <button
-                  key={shortcut.val}
-                  type="button"
-                  onClick={() => setPoints(shortcut.val)}
-                  className={`py-1 px-0.5 rounded-lg text-[10px] font-bold border text-center transition-colors cursor-pointer truncate ${
-                    points === shortcut.val
-                      ? 'bg-stone-800 text-white border-stone-800 dark:bg-slate-200 dark:text-stone-900 shadow-2xs'
-                      : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-stone-400'
-                  }`}
-                >
-                  {shortcut.label}
-                </button>
-              ))}
             </div>
           </div>
         </div>
