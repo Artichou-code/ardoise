@@ -139,31 +139,38 @@ export function DourakEngine({ game, onFinish }) {
                 className={`flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all active:scale-[0.98] text-left cursor-pointer min-h-[46px] ${
                   isSelected
                     ? 'border-[#c83b3b] bg-[#c83b3b]/10 ring-1 ring-[#c83b3b]/30 font-bold'
+                    : wasLastDourak
+                    ? 'border-amber-500/40 bg-amber-500/5 hover:border-amber-500/60'
                     : 'school-subtle hover:border-[#c83b3b]/60'
                 }`}
               >
-                <Avatar player={p} size="xs" leader={isSelected} />
+                <Avatar
+                  player={p}
+                  size="xs"
+                  leader={isSelected}
+                  ringColor={isSelected ? '#c83b3b' : wasLastDourak ? '#f59e0b' : undefined}
+                />
                 <div className="flex-1 min-w-0">
-                  {/* Ligne 1 : Nom du joueur à gauche, Badge Sortant à droite */}
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="font-semibold text-xs truncate">
-                      {p.name}
-                    </span>
-                    {wasLastDourak && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-200 shrink-0 leading-none">
-                        Sortant
-                      </span>
-                    )}
-                  </div>
+                  {/* Ligne 1 : Nom du joueur sur 100% de la largeur (zéro troncature) */}
+                  <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100 leading-tight">
+                    {p.name}
+                  </span>
 
-                  {/* Ligne 2 : Décompte/Bâtons à gauche, Badge +1 ou cercle de sélection à droite */}
+                  {/* Ligne 2 : Décompte/Bâtons + Badge Sortant à gauche, Radio / +1 à droite */}
                   <div className="flex items-center justify-between gap-1 mt-0.5 min-h-[16px]">
-                    <div className="min-w-0 truncate">
-                      {mode === 'defeats' ? (
-                        <SchoolTally count={playerScore} />
-                      ) : (
-                        <span className="text-[10px] text-stone-500 dark:text-slate-400 tabular-nums truncate block">
-                          {playerScore} carte{playerScore > 1 ? 's' : ''}
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <div className="min-w-0 truncate shrink-0">
+                        {mode === 'defeats' ? (
+                          <SchoolTally count={playerScore} />
+                        ) : (
+                          <span className="text-[10px] text-stone-500 dark:text-slate-400 tabular-nums truncate block">
+                            {playerScore} carte{playerScore > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
+                      {wasLastDourak && (
+                        <span className="text-[8px] font-black uppercase tracking-wider px-1 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-200 shrink-0 leading-none">
+                          Sortant
                         </span>
                       )}
                     </div>

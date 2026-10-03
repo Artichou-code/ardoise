@@ -380,25 +380,34 @@ export function GameScreen() {
                   return (
                     <div
                       key={id}
-                      className={`flex flex-col items-center justify-between rounded-xl px-1 py-1 transition-all min-h-[58px] ${colSpan} ${
+                      className={`relative flex flex-col items-center justify-between rounded-xl px-1 pt-1 pb-1 transition-all min-h-[50px] ${colSpan} ${
                         isLeader
                           ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
                           : 'school-card'
                       }`}
                     >
-                      <div className="flex items-center justify-between w-full px-0.5 leading-none">
-                        <span className={`text-[9px] font-bold uppercase ${
-                          isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
-                        }`}>
-                          {rank === 1 ? '1er' : `${rank}e`}
-                        </span>
-                        {isLeader && <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b] shrink-0" />}
-                      </div>
+                      {/* Rang en haut à gauche */}
+                      <span className={`absolute top-1 left-1.5 text-[9px] font-extrabold uppercase leading-none select-none ${
+                        isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
+                      }`}>
+                        {rank === 1 ? '1er' : `${rank}e`}
+                      </span>
+
+                      {/* Indicateur leader en haut à droite */}
+                      {isLeader && (
+                        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
+                      )}
+
+                      {/* Avatar remonté tout en haut */}
                       <Avatar player={player} size="xs" leader={isLeader} />
-                      <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center px-0.5 leading-tight text-stone-900 dark:text-slate-100 block">
+
+                      {/* Nom centré pleine largeur */}
+                      <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center px-0.5 leading-tight text-stone-900 dark:text-slate-100 block mt-0.5">
                         {player.name}
                       </span>
-                      <span className={`font-black tabular-nums leading-none text-xs sm:text-sm ${
+
+                      {/* Score centré */}
+                      <span className={`font-black tabular-nums leading-none text-xs sm:text-sm mt-0.5 ${
                         isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
                       }`}>
                         {score}
