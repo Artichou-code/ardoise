@@ -1,18 +1,52 @@
 import { useState } from 'react'
+import { ChevronRight } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { computeTarotScore } from '../../engines/gameEngines'
 import { TAROT_CONTRACTS, TAROT_BOUTS_THRESHOLDS } from '../../constants/games'
 import { Avatar } from '../ui/Avatar'
+import { QuickScoreBadge } from '../ui/QuickScoreBadge'
+import { BottomSheet } from '../ui/BottomSheet'
+import { ScorePad } from '../ui/ScorePad'
 
 export function TarotEngine({ game }) {
   const { updateScores } = useGame()
   const playerCount = game.players.length
-  const [attackerId, setAttackerId] = useState(null)
-  const [partnerId, setPartnerId] = useState(null)
-  const [contract, setContract] = useState('petite')
-  const [bouts, setBouts] = useState(0)
-  const [points, setPoints] = useState(41)
-  const [petitAuBout, setPetitAuBout] = useState('none')
+
+  const [attackerId, setAttackerId] = useState(() => game.restoredRound?.attackerId || null)
+  const [partnerId, setPartnerId] = useState(() => game.restoredRound?.partnerId || null)
+  const [contract, setContract] = useState(() => game.restoredRound?.contract || 'garde')
+  const [bouts, setBouts] = useState(() => game.restoredRound?.bouts ?? 2)
+  const [points, setPoints] = useState(() => game.restoredRound?.points ?? 41)
+  const [petitAuBout, setPetitAuBout] = useState(() => game.restoredRound?.petitAuBout || 'none')
+
+  const [openPointsSheet, setOpenPointsSheet] = useState(false)
+
+  const contractMeta = TAROT_CONTRACTS.find(c => c.id === contract) || TAROT_CONTRACTS[0]
+  const threshold = TAROT_BOUTS_THRESHOLDS[bouts]
+  const diff = points - threshold
+  const won = diff >= 0
+
+  let petitBonus = 0
+  if (petitAuBout === 'attack') petitBonus = 10
+  else if (petitAuBout === 'defense') petitBonus = -10
+
+  const signedBase = (won ? 25 + Math.abs(diff) : -(25 + Math.abs(diff))) + petitBonus
+  const unitScore = signedBase * contractMeta.multiplier
+
+  // Calcul prévisionnel des points pour l'affichage en direct
+  let previewAttacker = 0
+  let previewPartner = 0
+  let previewDefense = 0
+  if (attackerId) {
+    if (playerCount === 5 && partnerId && partnerId !== attackerId) {
+      previewAttacker = unitScore * 2
+      previewPartner = unitScore
+      previewDefense = -unitScore
+    } else {
+      previewAttacker = unitScore * (playerCount - 1)
+      previewDefense = -unitScore
+    }
+  }
 
   const submitRound = () => {
     if (!attackerId) return
@@ -32,25 +66,41 @@ export function TarotEngine({ game }) {
       delta[p.id] = result.scores[p.id] || 0
       newScores[p.id] = (game.scores[p.id] || 0) + (result.scores[p.id] || 0)
     }
-    updateScores({ scores: newScores, delta, result, type: 'tarot' })
+    updateScores({
+      scores: newScores,
+      delta,
+      result,
+      attackerId,
+      partnerId,
+      contract,
+      bouts,
+      points,
+      petitAuBout,
+      type: 'tarot',
+    })
     setAttackerId(null)
     setPartnerId(null)
-    setContract('petite')
-    setBouts(0)
+    setContract('garde')
+    setBouts(2)
     setPoints(41)
     setPetitAuBout('none')
   }
 
-  const threshold = TAROT_BOUTS_THRESHOLDS[bouts]
-
   return (
-    <div className="space-y-4 pt-2">
-      {/* Preneur */}
-      <div className="school-card rounded-xl p-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
-          Preneur (Attaque)
-        </p>
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+    <div className="space-y-2.5 pt-0 select-none">
+      {/* 1. Preneur (& Partenaire à 5 joueurs) */}
+      <div className="school-card rounded-xl p-3 sm:p-3.5 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+            Preneur (Attaque)
+          </p>
+          <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500">
+            {playerCount} joueurs
+          </span>
+        </div>
+
+        {/* Grille compacte des joueurs */}
+        <div className={`grid ${playerCount <= 4 ? 'grid-cols-4' : 'grid-cols-5'} gap-1.5`}>
           {game.players.map(p => {
             const isSelected = attackerId === p.id
             return (
@@ -61,169 +111,305 @@ export function TarotEngine({ game }) {
                   setAttackerId(p.id)
                   if (partnerId === p.id) setPartnerId(null)
                 }}
-                className={`flex-shrink-0 flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all ${
-                  isSelected ? 'border-[#c83b3b] bg-[#c83b3b]/10' : 'school-subtle'
+                className={`py-2 px-1 rounded-xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-200'
                 }`}
               >
                 <Avatar player={p} size="xs" leader={isSelected} />
-                <span className="text-[11px] font-semibold truncate max-w-[54px]">{p.name}</span>
+                <span className={`text-[11px] font-semibold truncate max-w-full text-center ${isSelected ? 'text-white' : ''}`}>
+                  {p.name}
+                </span>
               </button>
             )
           })}
         </div>
+
+        {/* Si 5 joueurs : sélection intégrée du partenaire appelé au Roi */}
+        {playerCount === 5 && (
+          <div className="pt-2 border-t border-stone-200/80 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-stone-600 dark:text-slate-300">
+                Partenaire appelé (au Roi) :
+              </span>
+              <span className="text-[10px] text-stone-400">
+                {partnerId ? '2 contre 3' : 'Seul contre 4'}
+              </span>
+            </div>
+            <div className="grid grid-cols-5 gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPartnerId(null)}
+                className={`py-1.5 px-1 rounded-lg border text-center text-xs font-bold transition-all cursor-pointer ${
+                  !partnerId
+                    ? 'border-stone-800 bg-stone-800 text-white dark:border-slate-200 dark:bg-slate-200 dark:text-stone-900 shadow-2xs'
+                    : 'school-subtle text-stone-600 dark:text-slate-400'
+                }`}
+              >
+                Seul
+              </button>
+              {game.players.map(p => {
+                if (p.id === attackerId) return null
+                const isPartner = partnerId === p.id
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setPartnerId(p.id)}
+                    className={`py-1.5 px-1 rounded-lg border text-center text-xs font-bold transition-all cursor-pointer truncate ${
+                      isPartner
+                        ? 'border-amber-600 bg-amber-600 text-white shadow-2xs'
+                        : 'school-subtle text-stone-700 dark:text-slate-300'
+                    }`}
+                  >
+                    {p.name}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Partenaire (5 joueurs) */}
-      {playerCount === 5 && (
-        <div className="school-card rounded-xl p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
-            Partenaire appelé au Roi
+      {/* 2. Contrat & Petit au bout (inspiré du bloc Enchère/Coinche de Belote) */}
+      <div className="school-card rounded-xl p-3 sm:p-3.5 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+            Contrat & Enchère
           </p>
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-            {game.players.filter(p => p.id !== attackerId).map(p => {
-              const isSelected = partnerId === p.id
+          <span className="text-[11px] font-bold text-[#c83b3b]">
+            Multiplicateur : ×{contractMeta.multiplier}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-4 gap-1.5">
+          {TAROT_CONTRACTS.map(c => {
+            const isSelected = contract === c.id
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setContract(c.id)}
+                className={`py-2 px-1 rounded-xl text-center border font-bold text-xs transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
+                }`}
+              >
+                <span className="block leading-tight truncate">{c.label}</span>
+                <span className={`block text-[10px] font-normal mt-0.5 ${isSelected ? 'text-white/80' : 'text-stone-400 dark:text-slate-500'}`}>
+                  ×{c.multiplier}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Petit au bout */}
+        <div className="pt-2 border-t border-stone-200/80 dark:border-slate-800">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-bold text-stone-600 dark:text-slate-300">
+              Petit au bout :
+            </span>
+            <span className="text-[10px] text-stone-400">±10 pts × {contractMeta.multiplier}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-1.5">
+            {[
+              { id: 'none', label: 'Aucun', sub: '0 pt' },
+              { id: 'attack', label: 'Attaque', sub: `+${10 * contractMeta.multiplier}` },
+              { id: 'defense', label: 'Défense', sub: `-${10 * contractMeta.multiplier}` },
+            ].map(opt => {
+              const isSelected = petitAuBout === opt.id
               return (
                 <button
-                  key={p.id}
+                  key={opt.id}
                   type="button"
-                  onClick={() => setPartnerId(prev => (prev === p.id ? null : p.id))}
-                  className={`flex-shrink-0 flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all ${
-                    isSelected ? 'border-[#c83b3b] bg-[#c83b3b]/10' : 'school-subtle'
+                  onClick={() => setPetitAuBout(opt.id)}
+                  className={`py-1.5 px-1 rounded-xl text-center border font-semibold text-xs transition-all cursor-pointer ${
+                    isSelected
+                      ? opt.id === 'attack'
+                        ? 'border-emerald-600 bg-emerald-600 text-white shadow-2xs'
+                        : opt.id === 'defense'
+                        ? 'border-rose-600 bg-rose-600 text-white shadow-2xs'
+                        : 'border-stone-800 bg-stone-800 dark:border-slate-200 dark:bg-slate-200 text-white dark:text-stone-900 shadow-2xs'
+                      : 'school-subtle text-stone-700 dark:text-slate-300'
                   }`}
                 >
-                  <Avatar player={p} size="xs" leader={isSelected} />
-                  <span className="text-[11px] font-semibold truncate max-w-[54px]">{p.name}</span>
+                  <span className="block font-bold leading-tight">{opt.label}</span>
+                  <span className={`block text-[10px] ${isSelected ? 'text-white/80' : 'text-stone-400 dark:text-slate-500'}`}>
+                    {opt.sub}
+                  </span>
                 </button>
               )
             })}
           </div>
         </div>
-      )}
-
-      {/* Contrat */}
-      <div className="school-card rounded-xl p-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
-          Contrat
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {TAROT_CONTRACTS.map(c => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setContract(c.id)}
-              className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-colors ${
-                contract === c.id
-                  ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
-                  : 'school-subtle'
-              }`}
-            >
-              {c.label} (×{c.multiplier})
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* Bouts */}
-      <div className="school-card rounded-xl p-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
-          Nombre de Bouts (seuil : {threshold} pts)
-        </p>
-        <div className="grid grid-cols-4 gap-2">
-          {[0, 1, 2, 3].map(n => (
-            <button
-              key={n}
-              type="button"
-              onClick={() => setBouts(n)}
-              className={`py-2.5 rounded-xl font-black text-base border transition-colors ${
-                bouts === n
-                  ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
-                  : 'school-subtle'
-              }`}
-            >
-              {n}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* 3. Points réalisés & Bouts (modèle 2 colonnes Belote avec QuickScoreBadge tall) */}
+      <div className="school-card rounded-xl p-3 sm:p-3.5 flex items-stretch gap-3">
+        {/* Colonne gauche : Titre, sous-titre, sélecteur de bouts et raccourcis */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => setOpenPointsSheet(true)}
+            className="text-left cursor-pointer focus:outline-none group/title"
+          >
+            <div className="flex items-center gap-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 leading-tight group-hover/title:text-[#c83b3b] transition-colors">
+                Points de l'attaque (/ 91)
+              </p>
+              <ChevronRight size={12} className="opacity-40 group-hover/title:opacity-100 group-hover/title:translate-x-0.5 transition-all text-stone-400 group-hover/title:text-[#c83b3b]" />
+            </div>
 
-      {/* Points réalisés */}
-      <div className="school-card rounded-xl p-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2">
-          Points réalisés par l'attaque (seuil : {threshold})
-        </p>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setPoints(v => Math.max(0, v - 1))}
-            className="w-10 h-10 rounded-xl school-subtle text-xl font-bold"
-          >
-            -
+            {/* Statut dynamique Réussi / Chuté avec score */}
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              <span className={`text-[11px] font-bold ${
+                won ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#c83b3b]'
+              }`}>
+                {won ? `Contrat réussi (+${diff} pts)` : `Contrat chuté (${diff} pts)`}
+              </span>
+              <span className="text-[10px] text-stone-400 dark:text-slate-500">
+                · Défense : {91 - points} pts
+              </span>
+            </div>
           </button>
-          <span
-            className={`flex-1 text-center text-3xl font-black tabular-nums ${
-              points >= threshold ? 'text-emerald-700 dark:text-emerald-400' : 'text-[#c83b3b]'
-            }`}
-          >
-            {points}
-          </span>
-          <button
-            type="button"
-            onClick={() => setPoints(v => Math.min(91, v + 1))}
-            className="w-10 h-10 rounded-xl school-subtle text-xl font-bold"
-          >
-            +
-          </button>
+
+          {/* Sélecteur de Bouts direct */}
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 block mb-1">
+              Bouts possédés (Seuil : {threshold} pts) :
+            </span>
+            <div className="grid grid-cols-4 gap-1">
+              {[0, 1, 2, 3].map(n => {
+                const isSelected = bouts === n
+                const th = TAROT_BOUTS_THRESHOLDS[n]
+                return (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setBouts(n)}
+                    className={`py-1 px-0.5 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
+                      isSelected
+                        ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                        : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <span className="text-xs font-black leading-none">{n} {n > 1 ? 'Bouts' : 'Bout'}</span>
+                    <span className={`text-[9px] mt-0.5 ${isSelected ? 'text-white/80' : 'text-stone-400 dark:text-slate-500'}`}>
+                      {th} pts
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Raccourcis points fréquents */}
+          <div>
+            <div className="grid grid-cols-4 gap-1 pt-0.5">
+              {[
+                { val: threshold, label: `${threshold} (Exact)` },
+                { val: 41, label: '41' },
+                { val: 51, label: '51' },
+                { val: 56, label: '56' },
+              ].map(shortcut => (
+                <button
+                  key={shortcut.val}
+                  type="button"
+                  onClick={() => setPoints(shortcut.val)}
+                  className={`py-1 px-0.5 rounded-lg text-[10px] font-bold border text-center transition-colors cursor-pointer truncate ${
+                    points === shortcut.val
+                      ? 'bg-stone-800 text-white border-stone-800 dark:bg-slate-200 dark:text-stone-900 shadow-2xs'
+                      : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-stone-400'
+                  }`}
+                >
+                  {shortcut.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-        <input
-          type="range"
+
+        {/* Colonne droite : QuickScoreBadge tactile pleine hauteur */}
+        <QuickScoreBadge
+          value={points}
+          onChange={setPoints}
+          onOpenPad={() => setOpenPointsSheet(true)}
           min={0}
           max={91}
-          value={points}
-          onChange={e => setPoints(Number(e.target.value))}
-          className="w-full mt-3 accent-[#c83b3b]"
+          step={1}
+          showPlus={false}
+          tall={true}
+          formatDisplay={val => val}
+          formatSub={val => (val >= threshold ? `+${val - threshold}` : `${val - threshold}`)}
         />
-        <p className="text-center text-xs font-semibold text-stone-500 dark:text-slate-400 mt-1">
-          {points >= threshold
-            ? `Contrat réussi (+${points - threshold} pts)`
-            : `Contrat chuté (-${threshold - points} pts)`}
-        </p>
       </div>
 
-      {/* Petit au bout */}
-      <div className="school-card rounded-xl p-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
-          Petit au bout (±10 pts × coeff.)
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { id: 'none', label: 'Aucun' },
-            { id: 'attack', label: 'Attaque (+10)' },
-            { id: 'defense', label: 'Défense (-10)' },
-          ].map(opt => (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => setPetitAuBout(opt.id)}
-              className={`py-2 px-2 rounded-xl text-xs font-bold border transition-colors ${
-                petitAuBout === opt.id
-                  ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
-                  : 'school-subtle'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
+      {/* 4. Encart prévisionnel en direct (si preneur sélectionné) */}
+      {attackerId && (
+        <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200 dark:border-slate-700 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="font-bold text-stone-700 dark:text-slate-300 truncate">
+              {won ? '🎯 Réussi' : '💥 Chuté'} :
+            </span>
+            <span className={`font-bold ${won ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#c83b3b]'}`}>
+              Preneur ({previewAttacker > 0 ? `+${previewAttacker}` : previewAttacker} pts)
+            </span>
+            {playerCount === 5 && partnerId && (
+              <span className="text-amber-600 dark:text-amber-400 font-bold truncate">
+                · Partenaire ({previewPartner > 0 ? `+${previewPartner}` : previewPartner})
+              </span>
+            )}
+          </div>
+          <span className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 shrink-0 ml-2">
+            Défense : {previewDefense > 0 ? `+${previewDefense}` : previewDefense} ch.
+          </span>
         </div>
-      </div>
+      )}
 
+      {/* 5. Bouton de validation */}
       <button
         type="button"
         onClick={submitRound}
         disabled={!attackerId}
-        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40"
+        className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] disabled:opacity-40 cursor-pointer"
       >
-        Valider la donne
+        {attackerId ? 'Valider la donne' : 'Sélectionnez le preneur'}
       </button>
+
+      {/* BottomSheet saisie précise de points */}
+      <BottomSheet open={openPointsSheet} onClose={() => setOpenPointsSheet(false)}>
+        <div className="p-4">
+          <h3 className="font-serif-title font-bold text-lg mb-1">
+            Points réalisés par l'attaque
+          </h3>
+          <p className="text-xs text-stone-500 dark:text-slate-400 mb-4">
+            Total sur 91 points (la défense marquera les {91 - points} restants).
+          </p>
+          <ScorePad
+            value={points}
+            onChange={v => setPoints(Math.max(0, Math.min(91, v)))}
+            onConfirm={() => setOpenPointsSheet(false)}
+            min={0}
+            max={91}
+            step={1}
+            label="Points d'attaque"
+            showPlus={false}
+            customButtons={[
+              { label: '36 (3 Bouts)', value: 36 },
+              { label: '41 (2 Bouts)', value: 41 },
+              { label: '46 (Moitié)', value: 46 },
+              { label: '51 (1 Bout)', value: 51 },
+              { label: '56 (0 Bout)', value: 56 },
+              { label: '60', value: 60 },
+              { label: '70', value: 70 },
+              { label: '91 (Capot)', value: 91 },
+            ]}
+          />
+        </div>
+      </BottomSheet>
     </div>
   )
 }
