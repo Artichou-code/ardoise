@@ -15,6 +15,11 @@ import { PresidentEngine } from './engines/PresidentEngine'
 import { BeloteEngine } from './engines/BeloteEngine'
 import { TarotEngine } from './engines/TarotEngine'
 import { SixQuiPrendEngine } from './engines/SixQuiPrendEngine'
+import { DameDePiqueEngine } from './engines/DameDePiqueEngine'
+import { Flip7Engine } from './engines/Flip7Engine'
+import { SeaSaltPaperEngine } from './engines/SeaSaltPaperEngine'
+import { AscenseurEngine } from './engines/AscenseurEngine'
+import { RamiEngine } from './engines/RamiEngine'
 import { UniverselEngine } from './engines/UniverselEngine'
 
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
@@ -27,6 +32,11 @@ const ENGINE_MAP = {
   [GAMES.BELOTE]: BeloteEngine,
   [GAMES.TAROT]: TarotEngine,
   [GAMES.SIX_QUI_PREND]: SixQuiPrendEngine,
+  [GAMES.DAME_DE_PIQUE]: DameDePiqueEngine,
+  [GAMES.FLIP_7]: Flip7Engine,
+  [GAMES.SEA_SALT_PAPER]: SeaSaltPaperEngine,
+  [GAMES.ASCENSEUR]: AscenseurEngine,
+  [GAMES.RAMI]: RamiEngine,
   [GAMES.UNIVERSEL]: UniverselEngine,
 }
 

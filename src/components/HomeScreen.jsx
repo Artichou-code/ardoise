@@ -55,6 +55,12 @@ export function HomeScreen() {
         tarot: 'tarot',
         president: 'president',
         '6-qui-prend': 'six_qui_prend',
+        'dame-de-pique': 'dame_de_pique',
+        'flip-7': 'flip_7',
+        'sea-salt-paper': 'sea_salt_paper',
+        ascenseur: 'ascenseur',
+        rikiki: 'ascenseur',
+        rami: 'rami',
         'compteur-universel': 'universel',
       }
       const targetGameId = slugToGameId[slug]

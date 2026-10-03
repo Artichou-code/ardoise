@@ -8,6 +8,11 @@ export const GAMES = {
   BELOTE: 'belote',
   TAROT: 'tarot',
   SIX_QUI_PREND: 'six_qui_prend',
+  DAME_DE_PIQUE: 'dame_de_pique',
+  FLIP_7: 'flip_7',
+  SEA_SALT_PAPER: 'sea_salt_paper',
+  ASCENSEUR: 'ascenseur',
+  RAMI: 'rami',
   UNIVERSEL: 'universel',
 }
 
@@ -547,6 +552,337 @@ export const GAME_META = {
         { item: 'Multiples de 5 (5, 15…)', value: '2 têtes' },
         { item: 'Autres cartes', value: '1 tête' },
         { item: 'Seuil de fin de partie', value: '66 têtes (le plus bas gagne)' },
+      ],
+    },
+  },
+  [GAMES.DAME_DE_PIQUE]: {
+    id: GAMES.DAME_DE_PIQUE,
+    deckType: 'classic',
+    name: 'Dame de Pique',
+    playersBadge: '3 à 5 j.',
+    categoryBadge: '52 cartes',
+    description:
+      "Évitez les Cœurs et la redoutable Dame de Pique, ou tentez le spectaculaire Grand Chelem pour infliger 26 points à tous vos adversaires !",
+    minPlayers: 3,
+    maxPlayers: 5,
+    scoreDir: 'low',
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & But du jeu',
+          items: [
+            'Nombre de joueurs : 4 joueurs idéalement (variantes à 3 ou 5 joueurs possibles).',
+            'Matériel : Un jeu classique de 52 cartes (sans jokers). L’ordre des cartes est décroissant : As, Roi, Dame, Valet, 10... jusqu’au 2.',
+            'Objectif : Avoir le score le plus faible possible en évitant d’encaisser des plis contenant des Cœurs ou la Dame de Pique.',
+          ],
+        },
+        {
+          title: 'Valeur des pénalités',
+          items: [
+            'Chaque carte de Cœur ramassée : 1 point de pénalité (soit 13 points de Cœur au total).',
+            'La Dame de Pique (Q♠) : 13 points de pénalité à elle seule.',
+            'Total d’une manche normale : 13 + 13 = 26 points de pénalité répartis entre les joueurs.',
+          ],
+        },
+        {
+          title: 'Le Grand Chelem (Déménagement / Shoot the Moon)',
+          items: [
+            'Si un joueur réussit l’exploit de ramasser TOUS les 13 Cœurs ET la Dame de Pique lors de la même manche (les 26 points complets) :',
+            'Il marque 0 point, et TOUS les autres joueurs reçoivent immédiatement 26 points de pénalité chacun !',
+          ],
+        },
+        {
+          title: 'Déroulement de la manche & Plis',
+          items: [
+            'Échange initial : En début de manche, chaque joueur choisit 3 cartes de sa main et les transmet à son voisin (1re manche à gauche, 2e à droite, 3e en face, 4e manche sans échange).',
+            'Entame : Le joueur qui possède le 2 de Trèfle pose obligatoirement cette carte pour lancer le premier pli.',
+            'Fournir la couleur : Chaque joueur doit obligatoirement fournir la couleur demandée. S’il n’en a pas, il peut défausser n’importe quelle carte.',
+            'Règle du premier pli : Il est formellement interdit de se défausser d’un Cœur ou de la Dame de Pique lors du tout premier pli.',
+            'Casser le Cœur : Il est interdit d’entamer un pli avec un Cœur tant qu’aucun Cœur n’a encore été défaussé au cours de la manche.',
+          ],
+        },
+        {
+          title: 'Fin de partie & Vainqueur',
+          items: [
+            'Dès qu’un joueur atteint ou dépasse le seuil éliminatoire (100 points en partie standard, ou 50 points en partie express) :',
+            'La partie s’arrête immédiatement. Le joueur affichant le score le plus bas est sacré vainqueur !',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Chaque carte de Cœur', value: '1 pt de pénalité' },
+        { item: 'Dame de Pique', value: '13 pts de pénalité' },
+        { item: 'Total par manche normale', value: '26 points' },
+        { item: 'Grand Chelem (26 pts raflés)', value: '0 pt et +26 pts à tous les autres' },
+        { item: 'Seuil d’élimination', value: '100 points (le plus bas gagne)' },
+      ],
+    },
+  },
+  [GAMES.FLIP_7]: {
+    id: GAMES.FLIP_7,
+    deckType: 'dedicated',
+    name: 'Flip 7',
+    playersBadge: '2 à 10 j.',
+    categoryBadge: 'Jeu Flip 7',
+    description:
+      "Tirez des cartes et constituez votre série sans jamais répéter de valeur. Encaissez vos points au bon moment ou tentez le mythique Flip 7 !",
+    minPlayers: 2,
+    maxPlayers: 10,
+    scoreDir: 'high',
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & But du jeu',
+          items: [
+            'Nombre de joueurs : 2 à 10 joueurs.',
+            'Matériel : Jeu de cartes Flip 7 composé de cartes numérotées de 0 à 12, de cartes d’actions et de cartes modificateurs.',
+            'Objectif : Être le premier joueur à franchir le cap des 200 points en accumulant le plus de points manche après manche.',
+          ],
+        },
+        {
+          title: 'Déroulement du tour : Tirer ou S’arrêter',
+          items: [
+            'À chaque tour, le joueur actif a le choix :',
+            '1. Tirer (Flip) : Révéler la première carte de la pioche et l’ajouter face visible dans sa ligne.',
+            '2. S’arrêter (Stay / Bank) : Sécuriser sa main pour la manche en cours. Le joueur ne piochera plus et comptera ses points à la fin du tour.',
+          ],
+        },
+        {
+          title: 'Doublon & Élimination (Bust)',
+          items: [
+            'Si un joueur tire une carte numérique dont la valeur est DÉJÀ présente dans sa ligne en cours, il fait « Bust » !',
+            'Il perd immédiatement toutes ses cartes de la manche et marque un score de 0 point.',
+            'Exception : Si le joueur possède une carte Seconde Chance devant lui, celle-ci s’active pour défausser le doublon et lui sauver la mise.',
+          ],
+        },
+        {
+          title: 'Cartes spéciales & Modificateurs',
+          items: [
+            'Cartes d’action : « Freeze » (gèle un adversaire pour le forcer à s’arrêter), « Flip Three » (oblige à révéler 3 cartes consécutives).',
+            'Modificateurs : Les cartes bonus (+2, +4, +6) s’ajoutent au total de la main, tandis que la carte x2 double l’ensemble des points de la manche.',
+          ],
+        },
+        {
+          title: 'Le Grand Coup « Flip 7 ! »',
+          items: [
+            'Si un joueur réussit à aligner 7 cartes numériques différentes dans sa ligne sans jamais faire de doublon :',
+            'La manche prend fin instantanément pour tous les joueurs !',
+            'Le réalisateur valide l’ensemble de ses points et reçoit un bonus exceptionnel de +15 points.',
+          ],
+        },
+        {
+          title: 'Fin de partie',
+          items: [
+            'La partie se termine à l’issue de la manche où un joueur atteint ou dépasse 200 points.',
+            'Le joueur ayant cumulé le score le plus élevé l’emporte !',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Arrêt volontaire', value: 'Cumul des cartes et bonus validé' },
+        { item: 'Doublon pioché (Bust)', value: '0 pt pour la manche' },
+        { item: 'Flip 7 (7 cartes uniques)', value: 'Fin immédiate + 15 pts bonus' },
+        { item: 'Seuil de victoire', value: '200 points (le plus haut gagne)' },
+      ],
+    },
+  },
+  [GAMES.SEA_SALT_PAPER]: {
+    id: GAMES.SEA_SALT_PAPER,
+    deckType: 'dedicated',
+    name: 'Sea Salt & Paper',
+    playersBadge: '2 à 4 j.',
+    categoryBadge: 'Jeu Bombyx',
+    description:
+      "Plongez dans l'origami marin, activez des effets de duos et pariez sur votre avance avec la Dernière Chance pour rafler les bonus !",
+    minPlayers: 2,
+    maxPlayers: 4,
+    scoreDir: 'high',
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & But du jeu',
+          items: [
+            'Nombre de joueurs : 2 à 4 joueurs.',
+            'Matériel : 64 cartes origami maritimes (duos d’action, collections, multiplicateurs et cartes Sirène).',
+            'Objectif : Atteindre le premier le seuil de points requis (40 pts à 2 j., 35 pts à 3 j., 30 pts à 4 j.) en optimisant ses combinaisons.',
+          ],
+        },
+        {
+          title: 'Tour de jeu & Duos',
+          items: [
+            'À son tour, on commence par piocher 2 cartes et en garder 1 (l’autre va à la défausse), OU prendre la carte du sommet de l’une des 2 défausses.',
+            'On peut ensuite poser devant soi une ou plusieurs paires de cartes « Duo » pour activer leur effet : Crabe (fouiller une défausse), Bateau (rejouer immédiatement), Poisson (piocher 1 carte), Nageur + Requin (voler 1 carte au hasard dans la main d’un rival).',
+          ],
+        },
+        {
+          title: 'Clôture de la manche : STOP ou DERNIÈRE CHANCE',
+          items: [
+            'Dès qu’un joueur totalise au moins 7 points (cartes posées + cartes en main) :',
+            '1. Annoncer STOP : La manche s’arrête immédiatement. Tous les joueurs comptabilisent leurs points (sans bonus de couleur).',
+            '2. Annoncer DERNIÈRE CHANCE : Chaque adversaire dispose d’un tout dernier tour de jeu. Le pari commence !',
+          ],
+        },
+        {
+          title: 'Résolution de la Dernière Chance',
+          items: [
+            'Pari réussi : Si le joueur qui a annoncé Dernière Chance a STRICTEMENT plus de points que chaque autre joueur :',
+            'Il marque l’intégralité de ses points + son Bonus de Couleur (1 pt par carte de sa couleur majoritaire). Ses adversaires ne marquent QUE leur bonus de couleur respectif !',
+            'Pari échoué : Si un adversaire a un total supérieur ou égal :',
+            'Le déclencheur ne marque QUE son bonus de couleur ! Tous les autres joueurs marquent la totalité de leurs points normaux.',
+          ],
+        },
+        {
+          title: 'Victoire instantanée des 4 Sirènes',
+          items: [
+            'Chaque carte Sirène rapporte 1 pt par carte de la couleur la plus représentée dans votre jeu.',
+            'Un joueur qui réussit à rassembler les 4 cartes Sirène remporte IMMÉDIATEMENT la partie, sans tenir compte des points !',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Condition d’annonce', value: 'Minimum 7 points' },
+        { item: 'Annonce Stop', value: 'Tous comptent leurs points normaux' },
+        { item: 'Dernière Chance réussie', value: 'Auteur = Total + Couleur / Rivaux = Couleur seule' },
+        { item: 'Dernière Chance échouée', value: 'Auteur = Couleur seule / Rivaux = Total' },
+        { item: '4 Sirènes réunies', value: 'Victoire instantanée' },
+        { item: 'Seuil 2 joueurs', value: '40 points' },
+        { item: 'Seuil 3 joueurs', value: '35 points' },
+        { item: 'Seuil 4 joueurs', value: '30 points' },
+      ],
+    },
+  },
+  [GAMES.ASCENSEUR]: {
+    id: GAMES.ASCENSEUR,
+    deckType: 'classic',
+    name: "L'Ascenseur (Rikiki)",
+    playersBadge: '3 à 8 j.',
+    categoryBadge: '52 cartes',
+    description:
+      "Prédisez au pli près votre résultat lors de manches à nombre de cartes variable. Bonus de 10 points si le pari est respecté !",
+    minPlayers: 3,
+    maxPlayers: 8,
+    scoreDir: 'high',
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & Principe',
+          items: [
+            'Nombre de joueurs : 3 à 8 joueurs.',
+            'Matériel : Un paquet classique de 52 cartes (sans jokers).',
+            'Mécanique : La partie suit une montée puis une descente du nombre de cartes distribuées (ex. : de 1 à 10 cartes, puis de 10 à 1 carte).',
+            'Objectif : Prédire avec une précision chirurgicale le nombre exact de plis que l’on va réaliser à chaque manche.',
+          ],
+        },
+        {
+          title: 'Distribution & Atout',
+          items: [
+            'À chaque manche, on distribue le nombre de cartes prévu par le palier.',
+            'La carte suivante du talon est retournée : sa couleur fixe l’Atout pour toute la manche (aux manches où toutes les cartes sont distribuées, on joue sans atout).',
+          ],
+        },
+        {
+          title: 'Les Annonces (les paris)',
+          items: [
+            'Chaque joueur, à tour de rôle en commençant à gauche du donneur, annonce le nombre de plis qu’il pense remporter (de 0 jusqu’au nombre de cartes en main).',
+            'Règle d’or du Donneur : Le donneur (dernier à parler) n’a PAS le droit d’annoncer un chiffre qui rendrait la somme des annonces égale au nombre total de cartes de la manche. Il y a donc obligatoirement un ou plusieurs déçus à chaque manche !',
+          ],
+        },
+        {
+          title: 'Le Jeu de la carte',
+          items: [
+            'On doit obligatoirement fournir à la couleur demandée.',
+            'Si l’on ne possède pas de carte de la couleur demandée, on peut couper à l’atout ou se défausser.',
+            'Le plus fort atout joué, ou à défaut la plus forte carte dans la couleur d’entame, remporte le pli.',
+          ],
+        },
+        {
+          title: 'Décompte des points',
+          items: [
+            'Contrat exact respecté (plis faits = annonce) : 10 points de prime de réussite + 1 point par pli réalisé (ex. : annonce 0 et fait 0 = 10 pts ; annonce 3 et fait 3 = 13 pts).',
+            'Contrat manqué : 0 point marqué pour la manche.',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Contrat exact respecté', value: '10 pts + 1 pt par pli' },
+        { item: 'Pari 0 pli réussi', value: '10 points' },
+        { item: 'Contrat non respecté', value: '0 point' },
+        { item: 'Règle du donneur', value: 'Somme des paris ≠ nombre de cartes' },
+        { item: 'Vainqueur', value: 'Score le plus élevé à la fin du cycle' },
+      ],
+    },
+  },
+  [GAMES.RAMI]: {
+    id: GAMES.RAMI,
+    deckType: 'classic',
+    name: 'Rami',
+    playersBadge: '2 à 6 j.',
+    categoryBadge: '52/104 cartes',
+    description:
+      "Formez tierces, suites et brelans pour vous débarrasser de vos cartes. Attention aux pénalités restantes et au redoutable Rami Sec !",
+    minPlayers: 2,
+    maxPlayers: 6,
+    scoreDir: 'low',
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & But du jeu',
+          items: [
+            'Nombre de joueurs : 2 à 6 joueurs.',
+            'Matériel : 2 jeux de 54 cartes (avec jokers) ou 1 jeu de 52 cartes pour les parties à 2 joueurs.',
+            'Objectif : Poser l’ensemble de ses cartes en combinaisons valides et défausser sa dernière carte pour marquer 0 pt et infliger des pénalités aux adversaires.',
+          ],
+        },
+        {
+          title: 'Combinaisons autorisées',
+          items: [
+            'Brelan : 3 cartes de même valeur faciale et de couleurs différentes (ex. : 8♠ 8♥ 8♦).',
+            'Carré : 4 cartes de même valeur faciale de couleurs distinctes.',
+            'Séquence (ou tierce) : Au moins 3 cartes consécutives de la même couleur (ex. : 5♥ 6♥ 7♥). L’As peut valoir 1 (avant le 2) ou après le Roi.',
+          ],
+        },
+        {
+          title: 'Déroulement du tour',
+          items: [
+            '1. Piocher la première carte du talon OU la dernière carte de la défausse.',
+            '2. Poser des combinaisons sur la table (au moins 51 points avec tierce franche sans joker lors de la toute première pose).',
+            '3. Jeter obligatoirement 1 carte sur la défausse pour clore son tour.',
+          ],
+        },
+        {
+          title: 'Comptage des pénalités',
+          items: [
+            'Le joueur qui clôt la manche marque 0 point.',
+            'Tous les autres joueurs additionnent la valeur des cartes restantes dans leur main :',
+            'Cartes de 2 à 10 : Leur valeur numérique (2 à 10 pts).',
+            'Valet, Dame, Roi : 10 points chacun.',
+            'As : 11 points (ou 1 point s’il était combinable en début de suite).',
+            'Joker non posé : 20 points de pénalité.',
+          ],
+        },
+        {
+          title: 'Coup de maître : Rami Sec',
+          items: [
+            'Si un joueur pose l’intégralité de son jeu en un seul tour sans avoir jamais rien posé auparavant :',
+            'Il réalise un « Rami Sec » : les pénalités de TOUS ses adversaires sont doublées pour cette manche !',
+          ],
+        },
+        {
+          title: 'Fin de partie',
+          items: [
+            'Dès qu’un joueur franchit le seuil éliminatoire (100, 250 ou 500 points selon configuration) :',
+            'La partie prend fin. Le joueur avec le plus faible total de pénalités est déclaré vainqueur !',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Vainqueur de la manche', value: '0 point' },
+        { item: 'Cartes 2 à 10', value: 'Valeur faciale' },
+        { item: 'Figures (V, D, R)', value: '10 points' },
+        { item: 'As', value: '11 points' },
+        { item: 'Joker en main', value: '20 points' },
+        { item: 'Rami Sec', value: 'Pénalités des adversaires doublées (x2)' },
+        { item: 'Seuil d’élimination', value: '100 / 250 / 500 pts (le plus bas gagne)' },
       ],
     },
   },

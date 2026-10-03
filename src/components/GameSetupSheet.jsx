@@ -221,6 +221,18 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
     } else if (gameType === 'caracole') {
       setConfig({ limit: 100, sursis: true, sursisType: 'half' })
       setCustomGameName('')
+    } else if (gameType === 'dame_de_pique') {
+      setConfig({ limit: 100 })
+      setCustomGameName('')
+    } else if (gameType === 'flip_7') {
+      setConfig({ limit: 200 })
+      setCustomGameName('')
+    } else if (gameType === 'sea_salt_paper') {
+      setConfig({ limit: 30 })
+      setCustomGameName('')
+    } else if (gameType === 'rami') {
+      setConfig({ limit: 100 })
+      setCustomGameName('')
     } else if (gameType === 'universel') {
       setConfig({
         scoreDir: 'high',
@@ -1096,6 +1108,133 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                       } pts au lieu d'être éliminé.`
                     : "Aucun sursis : atteindre ou dépasser le seuil élimine le joueur."}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* Config spécifique Dame de Pique */}
+          {gameType === 'dame_de_pique' && (
+            <div className="space-y-4 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+                  Seuil éliminatoire
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { val: 50, title: '50 points', sub: 'Partie express' },
+                    { val: 100, title: '100 points', sub: 'Partie standard' },
+                  ].map(({ val, title, sub }) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                      className={`py-2 px-1 rounded-xl text-center border transition-colors focus:outline-none cursor-pointer ${
+                        (config.limit || 100) === val
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      <span className="block font-bold text-xs">{title}</span>
+                      <span className="block text-[10px] font-semibold opacity-85 mt-0.5">{sub}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Config spécifique Flip 7 */}
+          {gameType === 'flip_7' && (
+            <div className="space-y-4 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+                  Objectif de victoire
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { val: 100, title: '100 pts', sub: 'Courte' },
+                    { val: 150, title: '150 pts', sub: 'Moyenne' },
+                    { val: 200, title: '200 pts', sub: 'Officielle' },
+                  ].map(({ val, title, sub }) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                      className={`py-2 px-1 rounded-xl text-center border transition-colors focus:outline-none cursor-pointer ${
+                        (config.limit || 200) === val
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      <span className="block font-bold text-xs">{title}</span>
+                      <span className="block text-[10px] font-semibold opacity-85 mt-0.5">{sub}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Config spécifique Sea Salt & Paper */}
+          {gameType === 'sea_salt_paper' && (
+            <div className="space-y-4 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+                  Seuil de fin de partie
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { val: 30, title: '30 pts', sub: 'Standard 4 j.' },
+                    { val: 35, title: '35 pts', sub: 'Standard 3 j.' },
+                    { val: 40, title: '40 pts', sub: 'Standard 2 j.' },
+                  ].map(({ val, title, sub }) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                      className={`py-2 px-1 rounded-xl text-center border transition-colors focus:outline-none cursor-pointer ${
+                        (config.limit || 30) === val
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      <span className="block font-bold text-xs">{title}</span>
+                      <span className="block text-[10px] font-semibold opacity-85 mt-0.5">{sub}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Config spécifique Rami */}
+          {gameType === 'rami' && (
+            <div className="space-y-4 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+                  Seuil éliminatoire
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { val: 100, title: '100 pts', sub: 'Express' },
+                    { val: 250, title: '250 pts', sub: 'Standard' },
+                    { val: 500, title: '500 pts', sub: 'Longue' },
+                  ].map(({ val, title, sub }) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                      className={`py-2 px-1 rounded-xl text-center border transition-colors focus:outline-none cursor-pointer ${
+                        (config.limit || 100) === val
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      <span className="block font-bold text-xs">{title}</span>
+                      <span className="block text-[10px] font-semibold opacity-85 mt-0.5">{sub}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}

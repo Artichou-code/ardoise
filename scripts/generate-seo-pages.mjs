@@ -67,6 +67,46 @@ export const SEO_PAGES = [
     h1: '6 qui prend ! — Compteur de Têtes de Bœuf (Seuil 66 pts) & Règles Officielles',
   },
   {
+    slug: 'dame-de-pique',
+    gameId: GAMES.DAME_DE_PIQUE,
+    title: 'Dame de Pique : Compteur de Points en Ligne & Règles Officielles — Ardoise',
+    description:
+      'Compteur gratuit et sans pub pour la Dame de Pique : vérification des 26 points par manche, Cœurs (1 pt), Dame de Pique (13 pts), gestion automatique du Grand Chelem (+26 pts) et seuil à 100 points.',
+    h1: 'Dame de Pique — Compteur de Points Gratuit, Grand Chelem & Règles Officielles',
+  },
+  {
+    slug: 'flip-7',
+    gameId: GAMES.FLIP_7,
+    title: 'Flip 7 : Compteur de Points en Ligne & Règles du Jeu — Ardoise',
+    description:
+      'Feuille de score gratuite pour Flip 7 : suivi des manches vers les 200 points, gestion des éliminations (Bust) et bonus de manche Flip 7 (+15 pts).',
+    h1: 'Flip 7 — Compteur de Points en Ligne Gratuit & Règles Officielles',
+  },
+  {
+    slug: 'sea-salt-paper',
+    gameId: GAMES.SEA_SALT_PAPER,
+    title: 'Sea Salt & Paper : Feuille de Score en Ligne & Règles Complètes — Ardoise',
+    description:
+      'Compteur de points en ligne pour Sea Salt & Paper : seuils officiels (40 pts à 2j, 35 pts à 3j, 30 pts à 4j), résolution Stop et Dernière Chance, et victoire instantanée aux 4 Sirènes.',
+    h1: 'Sea Salt & Paper — Compteur de Points en Ligne Gratuit & Règles Officielles',
+  },
+  {
+    slug: 'ascenseur',
+    gameId: GAMES.ASCENSEUR,
+    title: "L'Ascenseur (Rikiki) : Grille de Score en Ligne & Règles du Jeu de Plis — Ardoise",
+    description:
+      "Feuille de score complète pour l'Ascenseur (Rikiki, Oh Hell) : calcul automatique selon le nombre de cartes en main, paris, plis réalisés, bonus de 10 points et contrôle de la règle du donneur.",
+    h1: "L'Ascenseur (Rikiki) — Grille de Score en Ligne Gratuite & Règles des Paris",
+  },
+  {
+    slug: 'rami',
+    gameId: GAMES.RAMI,
+    title: 'Compteur de Points Rami Gratuit & Règles Officielles — Ardoise',
+    description:
+      'Ardoise de score pour le Rami : calcul des pénalités de main (Figures 10, As 11, Joker 20), gestion du Rami Sec (pénalités x2) et seuil éliminatoire à 100, 250 ou 500 points.',
+    h1: 'Rami — Compteur de Points Gratuit en Ligne, Rami Sec & Règles Officielles',
+  },
+  {
     slug: 'compteur-universel',
     gameId: GAMES.UNIVERSEL,
     title: 'Compteur de Points Universel pour Jeux de Société (Uno, Rami, Mölkky) — Ardoise',
