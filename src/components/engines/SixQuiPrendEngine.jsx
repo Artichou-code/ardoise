@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { BottomSheet } from '../ui/BottomSheet'
@@ -23,6 +23,25 @@ export function SixQuiPrendEngine({ game, onFinish }) {
   const [showZeroConfirm, setShowZeroConfirm] = useState(false)
 
   const ELIMINATION_SCORE = 66
+
+  // Navigation séquentielle entre joueurs dans le ScorePad
+  const currentEditingIndex = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
+  const hasPrevPlayer = currentEditingIndex > 0
+  const hasNextPlayer = currentEditingIndex >= 0 && currentEditingIndex < game.players.length - 1
+  const prevPlayer = hasPrevPlayer ? game.players[currentEditingIndex - 1] : null
+  const nextPlayer = hasNextPlayer ? game.players[currentEditingIndex + 1] : null
+
+  const handleConfirmPad = () => {
+    if (hasNextPlayer) {
+      setEditingPlayer(nextPlayer)
+    } else {
+      setOpen(false)
+    }
+  }
+
+  const confirmLabel = hasNextPlayer
+    ? `Valider & Suivant (${nextPlayer.name})`
+    : 'Valider et terminer'
 
   const submitRound = () => {
     const newScores = {}
@@ -152,16 +171,76 @@ export function SixQuiPrendEngine({ game, onFinish }) {
         <BottomSheet
           open={open}
           onClose={() => setOpen(false)}
-          title={`${editingPlayer.name} — Têtes ramassées`}
         >
-          <div className="px-5 pt-2 pb-6">
+          <div className="px-4 pt-1 pb-6 space-y-3">
+            {/* Carte du joueur actif & Navigation Joueur précédent / Joueur suivant */}
+            <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Avatar player={editingPlayer} size="sm" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-sm truncate text-stone-900 dark:text-slate-100">
+                      {editingPlayer.name}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
+                      {currentEditingIndex + 1}/{game.players.length}
+                    </span>
+                    {(game.scores[editingPlayer.id] || 0) >= 50 && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 shrink-0">
+                        En danger
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-stone-500 dark:text-slate-400">
+                    Cumul actuel : {game.scores[editingPlayer.id] || 0} / 66 🐮
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  disabled={!hasPrevPlayer}
+                  onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
+                  aria-label="Joueur précédent"
+                >
+                  <ChevronLeft size={17} />
+                </button>
+                <button
+                  type="button"
+                  disabled={!hasNextPlayer}
+                  onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
+                  aria-label="Joueur suivant"
+                >
+                  <ChevronRight size={17} />
+                </button>
+              </div>
+            </div>
+
             <ScorePad
+              key={editingPlayer.id}
               value={roundScores[editingPlayer.id] || 0}
               onChange={v => setRoundScores(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, v) }))}
-              onConfirm={() => setOpen(false)}
+              onConfirm={handleConfirmPad}
+              confirmLabel={confirmLabel}
               min={0}
+              max={66}
+              step={1}
+              label="Têtes de bœuf ramassées"
+              subLabel="Seuil d'élimination : 66 🐮"
+              presets={[0, 1, 2, 3, 5, 7, 10, 14, 20]}
+              formatDisplay={v => `${v} 🐮`}
+              formatTotal={(val) => {
+                const cur = game.scores[editingPlayer.id] || 0
+                const proj = cur + val
+                return `+${val} 🐮 · Nouveau cumul : ${proj}/66 🐮${proj >= 66 ? ' 💥 Éliminé' : proj >= 50 ? ' ⚠️ En danger' : ''}`
+              }}
               baseScore={game.scores[editingPlayer.id] || 0}
-              formatTotal={(val) => `Total : ${(game.scores[editingPlayer.id] || 0) + val}/66 🐮`}
+              showPlus={false}
             />
           </div>
         </BottomSheet>
