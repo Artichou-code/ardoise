@@ -22,7 +22,7 @@ export const GAME_META = {
   [GAMES.DOURAK]: {
     id: GAMES.DOURAK,
     deckType: 'classic',
-    name: "Dourak (l'idiot)",
+    name: 'Dourak',
     playersBadge: '2 à 6 j.',
     categoryBadge: '36 cartes',
     description:
@@ -756,7 +756,7 @@ export const GAME_META = {
   [GAMES.ASCENSEUR]: {
     id: GAMES.ASCENSEUR,
     deckType: 'classic',
-    name: "L'Ascenseur (Rikiki)",
+    name: 'Ascenseur',
     playersBadge: '3 à 8 j.',
     categoryBadge: '52 cartes',
     description:
@@ -891,7 +891,7 @@ export const GAME_META = {
   [GAMES.YANIV]: {
     id: GAMES.YANIV,
     deckType: 'classic',
-    name: 'Le Yaniv',
+    name: 'Yaniv',
     playersBadge: '2 à 6 j.',
     categoryBadge: '54 cartes',
     description:
@@ -963,7 +963,7 @@ export const GAME_META = {
   [GAMES.BARBU]: {
     id: GAMES.BARBU,
     deckType: 'classic',
-    name: 'Le Barbu (Le Tonton)',
+    name: 'Barbu',
     playersBadge: '4 j.',
     categoryBadge: '52 cartes',
     description:
@@ -1164,6 +1164,18 @@ export function getGameDisplayName(game) {
   const typeLower = (game.type || '').toLowerCase()
   const nameLower = (game.name || '').toLowerCase()
 
+  if (typeLower === GAMES.ASCENSEUR || nameLower.includes('ascenseur') || nameLower.includes('rikiki')) {
+    return 'Ascenseur'
+  }
+  if (typeLower === GAMES.DOURAK || nameLower.includes('dourak')) {
+    return 'Dourak'
+  }
+  if (typeLower === GAMES.BARBU || nameLower.includes('barbu') || nameLower.includes('tonton')) {
+    return 'Barbu'
+  }
+  if (typeLower === GAMES.YANIV || nameLower.includes('yaniv')) {
+    return 'Yaniv'
+  }
   if (typeLower === GAMES.PRESIDENT || nameLower.includes('trou du cul') || nameLower.includes('président') || nameLower.includes('president')) {
     return 'Trou du cul'
   }
@@ -1173,6 +1185,11 @@ export function getGameDisplayName(game) {
     }
     return 'Belote'
   }
-  return game.name
+  // Pour tout jeu, ne garder qu'un seul nom sans parenthèses alternatives ni slashs (ex: "Nom (Alias)" -> "Nom")
+  if (game.name) {
+    const cleaned = game.name.replace(/\s*\([^)]*\)/g, '').replace(/\s*\/.*$/, '').trim()
+    return cleaned || game.name
+  }
+  return game.name || ''
 }
 
