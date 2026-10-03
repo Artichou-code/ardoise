@@ -248,15 +248,15 @@ export function BarbuEngine({ game, onFinish }) {
     <div className="space-y-2 pt-0 select-none">
       <div className="school-card rounded-xl p-3 sm:p-4">
         {/* Bandeau Donneur & Progression des donnes */}
-        <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-stone-200/80 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-              Donne {roundCount} / {TOTAL_ROUNDS}
+        <div className="flex items-center justify-between gap-2 pb-2.5 mb-3 border-b border-stone-200/80 dark:border-slate-800">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 whitespace-nowrap shrink-0">
+              Donne {roundCount}/{TOTAL_ROUNDS}
             </span>
-            <span className="text-stone-300 dark:text-slate-700">·</span>
-            <div className="flex items-center gap-1.5">
+            <span className="text-stone-300 dark:text-slate-700 select-none">·</span>
+            <div className="flex items-center gap-1.5 min-w-0">
               <Avatar player={currentDealer} size="2xs" />
-              <span className="text-xs font-bold text-stone-800 dark:text-slate-200">
+              <span className="text-xs font-bold text-stone-800 dark:text-slate-200 truncate">
                 Donneur : {currentDealer.name}
               </span>
             </div>
@@ -264,7 +264,7 @@ export function BarbuEngine({ game, onFinish }) {
           <button
             type="button"
             onClick={() => setDealerIndex(idx => (idx + 1) % game.players.length)}
-            className="p-1 rounded-lg hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-400 hover:text-stone-600 dark:hover:text-slate-300 transition-colors"
+            className="p-1 rounded-lg hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-400 hover:text-stone-600 dark:hover:text-slate-300 transition-colors shrink-0"
             title="Changer de donneur manuellement"
             aria-label="Changer de donneur"
           >
@@ -274,13 +274,13 @@ export function BarbuEngine({ game, onFinish }) {
 
         {/* Sélecteur des 7 Contrats */}
         <div className="mb-3">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-              Choix du Contrat ({contractsPlayedByDealer[currentDealer?.id]?.size || 0}/7 joués)
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <span className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate">
+              Choix du Contrat ({contractsPlayedByDealer[currentDealer?.id]?.size || 0}/7)
             </span>
             {targetContract && (
-              <span className="text-[11px] font-semibold text-[#c83b3b]">
-                {targetContract.totalPoints > 0 ? `+${targetContract.totalPoints}` : targetContract.totalPoints} pts au total
+              <span className="text-[11px] font-semibold text-[#c83b3b] whitespace-nowrap shrink-0">
+                {targetContract.totalPoints > 0 ? `+${targetContract.totalPoints}` : targetContract.totalPoints} pts total
               </span>
             )}
           </div>

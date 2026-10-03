@@ -156,12 +156,12 @@ export function YanivEngine({ game, onFinish }) {
 
       <div className="school-card rounded-xl p-3 sm:p-4">
         {/* En-tête */}
-        <div className="flex items-center justify-between mb-2.5">
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5">
-            <Trophy size={14} className="text-emerald-600 dark:text-emerald-400" />
-            Qui a annoncé « Yaniv » (≤ 5 pts) ?
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
+            <Trophy size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span className="truncate">Annonceur « Yaniv » (≤ 5 pts)</span>
           </p>
-          <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500">
+          <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 whitespace-nowrap shrink-0">
             Seuil : {LIMIT} pts
           </span>
         </div>
@@ -196,7 +196,7 @@ export function YanivEngine({ game, onFinish }) {
                   <span className={`text-xs font-bold truncate block ${isCaller ? 'text-white' : ''}`}>
                     {p.name}
                   </span>
-                  <span className={`text-[10px] block font-medium ${isCaller ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
+                  <span className={`text-[10px] block font-medium truncate ${isCaller ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
                     {isCaller ? 'A dit « Yaniv »' : 'Joueur'}
                   </span>
                 </div>
@@ -221,7 +221,7 @@ export function YanivEngine({ game, onFinish }) {
               <Flame size={14} className={isAssaf ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'} />
               <span className="font-bold text-xs leading-tight">Contre « ASSAF ! » (adversaire ≤ annonceur)</span>
             </div>
-            <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5 pl-[20px]">
+            <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5 pl-[20px] truncate">
               {isAssaf
                 ? 'Annonceur subit +30 pts de malus · Le contreur marque 0 pt'
                 : 'Activer si un adversaire a égalé ou battu l’annonceur'}
@@ -267,12 +267,12 @@ export function YanivEngine({ game, onFinish }) {
 
         {/* Liste des points de main par joueur */}
         <div className="pt-2 border-t border-stone-200/80 dark:border-slate-800">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 shrink-0">
               Valeur des cartes en main
             </p>
-            <span className="text-[10px] text-stone-400 dark:text-slate-500">
-              Joker = 0 · As = 1 · Figures = 10
+            <span className="text-[10px] text-stone-400 dark:text-slate-500 truncate text-right">
+              Joker 0 · As 1 · Figures 10
             </span>
           </div>
 
@@ -289,22 +289,28 @@ export function YanivEngine({ game, onFinish }) {
 
               // Cas 1 : Gagnant à 0 pt (Yaniv réussi ou Contreur Assaf)
               if ((!isAssaf && isCaller) || isRival) {
+                const label = !isAssaf ? 'Yaniv' : 'Assaf'
                 return (
                   <div
                     key={p.id}
-                    className="px-3 py-2 rounded-xl border border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 flex items-center justify-between"
+                    className="px-3 py-2 rounded-xl border border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 flex items-center justify-between gap-2"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Avatar player={p} size="xs" leader />
                       <div className="min-w-0">
-                        <span className="font-semibold text-sm truncate block">{p.name}</span>
-                        <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
-                          Total : {currentTotal} pts (inchangé)
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-sm truncate">{p.name}</span>
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white whitespace-nowrap">
+                            {label}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium truncate block">
+                          Total : {currentTotal} pts
                         </span>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-2xs">
-                      0 pt ({!isAssaf ? 'Yaniv réussi' : 'Assaf réussi'})
+                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600/15 text-emerald-800 dark:text-emerald-300 border border-emerald-600/30 whitespace-nowrap shrink-0">
+                      0 pt
                     </span>
                   </div>
                 )
@@ -326,13 +332,13 @@ export function YanivEngine({ game, onFinish }) {
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="font-semibold text-sm truncate">{p.name}</span>
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#c83b3b] text-white">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#c83b3b] text-white whitespace-nowrap">
                             Assaf (+30)
                           </span>
                           {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
                         </div>
-                        <span className="text-[11px] text-stone-500 dark:text-slate-400 block">
-                          Total : {currentTotal} pts · <strong className="text-[#c83b3b]">+{delta} pts</strong> ({rawPts} + 30 = {projected})
+                        <span className="text-[11px] text-stone-500 dark:text-slate-400 block truncate">
+                          Total : {currentTotal} pts · <strong className="text-[#c83b3b]">+{delta} pts</strong> ({rawPts}+30)
                           {sursisVal !== null && (
                             <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold">
                               ➔ Sursis : {sursisVal} pts !
@@ -381,7 +387,7 @@ export function YanivEngine({ game, onFinish }) {
                         <span className="font-semibold text-sm truncate">{p.name}</span>
                         {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
                       </div>
-                      <span className="text-[11px] text-stone-500 dark:text-slate-400 block">
+                      <span className="text-[11px] text-stone-500 dark:text-slate-400 block truncate">
                         Total : {currentTotal} pts {delta > 0 && (
                           <span className="text-[#c83b3b] font-bold">
                             (+{delta} = {projected})

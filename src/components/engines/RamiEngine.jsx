@@ -75,12 +75,12 @@ export function RamiEngine({ game, onFinish }) {
     <div className="space-y-2 pt-0">
       <div className="school-card rounded-xl p-3 sm:p-4">
         {/* En-tête */}
-        <div className="flex items-center justify-between mb-2.5">
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5">
-            <Trophy size={14} className="text-emerald-600 dark:text-emerald-400" />
-            Vainqueur de la manche (0 pt)
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
+            <Trophy size={14} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span className="truncate">Vainqueur (0 pt)</span>
           </p>
-          <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500">
+          <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 whitespace-nowrap shrink-0">
             Seuil : {LIMIT} pts
           </span>
         </div>
@@ -109,7 +109,7 @@ export function RamiEngine({ game, onFinish }) {
                   <span className={`text-xs font-bold truncate block ${isWinner ? 'text-white' : ''}`}>
                     {p.name}
                   </span>
-                  <span className={`text-[10px] block font-medium ${isWinner ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
+                  <span className={`text-[10px] block font-medium truncate ${isWinner ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
                     {isWinner ? 'A posé (0 pt)' : 'Adversaire'}
                   </span>
                 </div>
@@ -134,7 +134,7 @@ export function RamiEngine({ game, onFinish }) {
               <Zap size={13} className={isRamiSec ? 'text-amber-600 dark:text-amber-400' : 'text-stone-400 dark:text-slate-500'} />
               <span className="font-bold text-xs leading-tight">Rami Sec (posé d'un coup)</span>
             </div>
-            <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5 pl-[19px]">
+            <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5 pl-[19px] truncate">
               Pénalités des adversaires doublées (×2)
             </span>
           </div>
@@ -147,12 +147,12 @@ export function RamiEngine({ game, onFinish }) {
 
         {/* Liste des pénalités des adversaires */}
         <div className="pt-2 border-t border-stone-200/80 dark:border-slate-800">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 shrink-0">
               Pénalités de manche
             </p>
-            <span className="text-[10px] text-stone-400 dark:text-slate-500">
-              Figures = 10 · As = 11 · Joker = 20
+            <span className="text-[10px] text-stone-400 dark:text-slate-500 truncate text-right">
+              Figures 10 · As 11 · Joker 20
             </span>
           </div>
 
@@ -169,19 +169,24 @@ export function RamiEngine({ game, onFinish }) {
                 return (
                   <div
                     key={p.id}
-                    className="px-3 py-2 rounded-xl border border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 flex items-center justify-between"
+                    className="px-3 py-2 rounded-xl border border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 flex items-center justify-between gap-2"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Avatar player={p} size="xs" leader />
                       <div className="min-w-0">
-                        <span className="font-semibold text-sm truncate block">{p.name}</span>
-                        <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
-                          Total : {currentTotal} pts (inchangé)
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-sm truncate">{p.name}</span>
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white whitespace-nowrap">
+                            Vainqueur
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium truncate block">
+                          Total : {currentTotal} pts
                         </span>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-2xs">
-                      0 pt (Vainqueur)
+                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600/15 text-emerald-800 dark:text-emerald-300 border border-emerald-600/30 whitespace-nowrap shrink-0">
+                      0 pt
                     </span>
                   </div>
                 )
@@ -203,7 +208,7 @@ export function RamiEngine({ game, onFinish }) {
                         <span className="font-semibold text-sm truncate">{p.name}</span>
                         {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
                       </div>
-                      <span className="text-[11px] text-stone-500 dark:text-slate-400 block">
+                      <span className="text-[11px] text-stone-500 dark:text-slate-400 block truncate">
                         Total : {currentTotal} pts {delta > 0 && (
                           <span className="text-[#c83b3b] font-bold">
                             (+{delta} = {projected}) {isRamiSec && <span className="text-amber-600 font-normal">(×2)</span>}
