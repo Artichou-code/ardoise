@@ -228,29 +228,52 @@ export function YanivEngine({ game, onFinish }) {
         {/* Toggle Contre « ASSAF ! » */}
         <button
           type="button"
+          role="switch"
+          aria-checked={isAssaf}
           onClick={() => setIsAssaf(v => !v)}
-          className={`w-full p-2.5 px-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer mb-3 select-none active:scale-[0.99] ${
+          className={`w-full p-2.5 px-3 rounded-xl border flex items-center justify-between gap-3 transition-all cursor-pointer mb-3 select-none active:scale-[0.99] ${
             isAssaf
-              ? 'border-[#c83b3b] bg-[#c83b3b]/10 text-stone-900 dark:text-slate-100 ring-1 ring-[#c83b3b]/30'
-              : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-[#c83b3b]/50'
+              ? 'border-[#c83b3b]/60 bg-[#c83b3b]/8 dark:bg-[#c83b3b]/15 ring-1 ring-[#c83b3b]/30'
+              : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/50'
           }`}
         >
-          <div className="text-left min-w-0 pr-2">
-            <div className="flex items-center gap-1.5">
-              <Flame size={14} className={isAssaf ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'} />
-              <span className="font-bold text-xs leading-tight">Contre « ASSAF ! » (adversaire ≤ annonceur)</span>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+              isAssaf
+                ? 'bg-[#c83b3b] text-white shadow-2xs'
+                : 'bg-stone-200/80 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
+            }`}>
+              <Flame size={14} className={isAssaf ? 'fill-current' : ''} />
             </div>
-            <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5 pl-5 leading-snug">
-              {isAssaf
-                ? 'Annonceur subit +30 pts de malus · Le contreur marque 0 pt'
-                : 'Activer si un adversaire a égalé ou battu l’annonceur'}
-            </span>
+            <div className="text-left min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-xs leading-tight">Contre « ASSAF ! »</span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded transition-colors ${
+                  isAssaf
+                    ? 'bg-[#c83b3b]/20 text-[#c83b3b] dark:text-rose-300'
+                    : 'bg-stone-200/70 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
+                }`}>
+                  +30 pts
+                </span>
+              </div>
+              <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate mt-0.5">
+                {isAssaf ? 'Annonceur malus +30 · Contreur 0 pt' : 'Un adversaire a un score ≤ à l’annonceur'}
+              </span>
+            </div>
           </div>
-          <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all shrink-0 ${
-            isAssaf ? 'bg-[#c83b3b] text-white shadow-2xs' : 'bg-stone-200/80 dark:bg-slate-700/80 text-stone-600 dark:text-slate-300'
-          }`}>
-            {isAssaf ? 'ASSAF ! (+30)' : 'Non'}
-          </span>
+
+          {/* Interrupteur Switch style iOS */}
+          <div
+            className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+              isAssaf ? 'bg-[#c83b3b]' : 'bg-stone-300 dark:bg-slate-700'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition-transform duration-200 ease-in-out ${
+                isAssaf ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            />
+          </div>
         </button>
 
         {/* Si ASSAF : Sélecteur du contreur qui a le score le plus bas et marque 0 pt */}

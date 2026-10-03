@@ -138,27 +138,52 @@ export function RamiEngine({ game, onFinish }) {
         {/* Option Rami Sec (posé d'un coup) */}
         <button
           type="button"
+          role="switch"
+          aria-checked={isRamiSec}
           onClick={() => setIsRamiSec(v => !v)}
-          className={`w-full p-2.5 px-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer mb-3 select-none active:scale-[0.99] ${
+          className={`w-full p-2.5 px-3 rounded-xl border flex items-center justify-between gap-3 transition-all cursor-pointer mb-3 select-none active:scale-[0.99] ${
             isRamiSec
-              ? 'border-amber-500 bg-amber-500/10 text-amber-950 dark:text-amber-200 ring-1 ring-amber-400/40'
-              : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-amber-400/60'
+              ? 'border-amber-500/50 bg-amber-500/8 dark:bg-amber-500/15 ring-1 ring-amber-400/30'
+              : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-amber-400/50'
           }`}
         >
-          <div className="text-left min-w-0 pr-2">
-            <div className="flex items-center gap-1.5">
-              <Zap size={13} className={isRamiSec ? 'text-amber-600 dark:text-amber-400' : 'text-stone-400 dark:text-slate-500'} />
-              <span className="font-bold text-xs leading-tight">Rami Sec (posé d'un coup)</span>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+              isRamiSec
+                ? 'bg-amber-500 text-white shadow-2xs'
+                : 'bg-stone-200/80 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
+            }`}>
+              <Zap size={14} className={isRamiSec ? 'fill-current' : ''} />
             </div>
-            <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5 pl-4.5 leading-snug">
-              Pénalités des adversaires doublées (×2)
-            </span>
+            <div className="text-left min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-xs leading-tight">Rami Sec (posé d'un coup)</span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded transition-colors ${
+                  isRamiSec
+                    ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+                    : 'bg-stone-200/70 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
+                }`}>
+                  ×2
+                </span>
+              </div>
+              <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate mt-0.5">
+                Pénalités des adversaires doublées
+              </span>
+            </div>
           </div>
-          <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all shrink-0 ${
-            isRamiSec ? 'bg-amber-600 text-white shadow-2xs' : 'bg-stone-200/80 dark:bg-slate-700/80 text-stone-600 dark:text-slate-300'
-          }`}>
-            {isRamiSec ? 'Actif (×2)' : 'Non'}
-          </span>
+
+          {/* Interrupteur Switch style iOS */}
+          <div
+            className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+              isRamiSec ? 'bg-amber-600' : 'bg-stone-300 dark:bg-slate-700'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition-transform duration-200 ease-in-out ${
+                isRamiSec ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            />
+          </div>
         </button>
 
         {/* Liste des pénalités des adversaires */}
