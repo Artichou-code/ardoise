@@ -243,24 +243,13 @@ export function AscenseurEngine({ game, onFinish }) {
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
                 }`}
               >
-                {/* Ligne 1 : Identité joueur, gain manche et score cumulé */}
-                <div className="flex items-center justify-between gap-2 mb-2">
+                {/* Ligne 1 : Identité joueur et total cumulé */}
+                <div className="flex items-center justify-between gap-2 mb-1.5">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <Avatar player={p} size="xs" />
                     <span className="font-semibold text-sm truncate text-stone-900 dark:text-slate-100">
                       {p.name}
                     </span>
-                    {phase === 'tricks' && (
-                      won ? (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 shrink-0">
-                          +{roundPts} pts
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400 shrink-0">
-                          +0 pt
-                        </span>
-                      )
-                    )}
                   </div>
 
                   {/* Total des points projeté */}
@@ -280,66 +269,74 @@ export function AscenseurEngine({ game, onFinish }) {
                   </div>
                 </div>
 
-                {/* Ligne 2 : Saisie tactile (paris ou plis avec rappel) */}
-                <div className="flex items-center justify-between gap-2 pt-2 border-t border-stone-200/60 dark:border-slate-800">
+                {/* Ligne 2 : Résumé des paris & résultat de la manche */}
+                <div className="flex items-center justify-between gap-2 mb-2 text-xs">
                   {phase === 'bids' ? (
                     <>
-                      <span className="text-xs font-semibold text-stone-500 dark:text-slate-400 shrink-0 self-center">
+                      <span className="font-medium text-stone-500 dark:text-slate-400">
                         Pari annoncé :
                       </span>
-                      <div className="flex items-center gap-1 flex-wrap justify-end max-w-[200px] xs:max-w-[230px] sm:max-w-none py-0.5">
-                        {Array.from({ length: cardsCount + 1 }).map((_, val) => (
-                          <button
-                            key={val}
-                            type="button"
-                            onClick={() => setBids(prev => ({ ...prev, [p.id]: val }))}
-                            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-bold transition-all border shrink-0 cursor-pointer ${
-                              b === val
-                                ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs scale-105'
-                                : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-[#c83b3b]'
-                            }`}
-                          >
-                            {val}
-                          </button>
-                        ))}
-                      </div>
+                      <span className="font-bold px-2 py-0.5 rounded-md bg-[#c83b3b]/10 text-[#c83b3b] border border-[#c83b3b]/20">
+                        {b} {b > 1 ? 'plis' : 'pli'}
+                      </span>
                     </>
                   ) : (
                     <>
-                      <div className="flex items-center gap-1.5 shrink-0 self-center">
-                        <span className="text-xs font-semibold text-stone-500 dark:text-slate-400">
-                          Parié :
-                        </span>
-                        <span className="text-xs font-black px-2 py-0.5 rounded-md bg-stone-100 dark:bg-slate-800 text-stone-800 dark:text-slate-200 border border-stone-200/80 dark:border-slate-700">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-medium text-stone-500 dark:text-slate-400">Parié :</span>
+                        <span className="font-black px-2 py-0.5 rounded-md bg-stone-100 dark:bg-slate-800 text-stone-800 dark:text-slate-200 border border-stone-200/80 dark:border-slate-700">
                           {b} {b > 1 ? 'plis' : 'pli'}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 min-w-0 justify-end self-center">
-                        <span className="text-xs font-semibold text-stone-500 dark:text-slate-400 hidden xs:inline shrink-0 self-center">
-                          Fait :
+                      <div className="flex items-center gap-2">
+                        <span className="text-stone-500 dark:text-slate-400">
+                          Fait : <strong className="font-bold text-stone-800 dark:text-slate-200">{t} {t > 1 ? 'plis' : 'pli'}</strong>
                         </span>
-                        <div className="flex items-center gap-1 flex-wrap justify-end max-w-[200px] xs:max-w-[230px] sm:max-w-none py-0.5">
-                          {Array.from({ length: cardsCount + 1 }).map((_, val) => (
-                            <button
-                              key={val}
-                              type="button"
-                              onClick={() => setTricks(prev => ({ ...prev, [p.id]: val }))}
-                              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-bold transition-all border shrink-0 cursor-pointer ${
-                                t === val
-                                  ? b === val
-                                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs scale-105'
-                                    : 'bg-stone-800 text-white dark:bg-slate-200 dark:text-stone-900 border-stone-800 scale-105'
-                                  : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-[#c83b3b]'
-                              }`}
-                            >
-                              {val}
-                            </button>
-                          ))}
-                        </div>
+                        {won ? (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 shrink-0">
+                            +{roundPts} pts
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400 shrink-0">
+                            +0 pt
+                          </span>
+                        )}
                       </div>
                     </>
                   )}
+                </div>
+
+                {/* Ligne 3 : Tous les chiffres sur UNE SEULE ligne pleine largeur (aucun retour à la ligne) */}
+                <div className="flex items-center gap-1 sm:gap-1.5 w-full pt-2 border-t border-stone-200/60 dark:border-slate-800 overflow-x-auto scrollbar-hide flex-nowrap">
+                  {Array.from({ length: cardsCount + 1 }).map((_, val) => {
+                    const isSelected = phase === 'bids' ? b === val : t === val
+                    const isMatch = phase === 'tricks' && b === val
+                    return (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => {
+                          if (phase === 'bids') {
+                            setBids(prev => ({ ...prev, [p.id]: val }))
+                          } else {
+                            setTricks(prev => ({ ...prev, [p.id]: val }))
+                          }
+                        }}
+                        className={`flex-1 min-w-[24px] max-w-[38px] h-8 rounded-lg text-xs font-bold transition-all border flex items-center justify-center shrink-0 cursor-pointer select-none active:scale-95 ${
+                          isSelected
+                            ? phase === 'bids'
+                              ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs scale-105'
+                              : isMatch
+                              ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs scale-105'
+                              : 'bg-stone-800 text-white dark:bg-slate-200 dark:text-stone-900 border-stone-800 scale-105'
+                            : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-[#c83b3b]'
+                        }`}
+                      >
+                        {val}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             )
