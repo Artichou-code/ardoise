@@ -359,10 +359,10 @@ export function GameScreen() {
                             crown={isLeader || rank === 1}
                           />
 
-                          {/* Pastille de rang 2e, 3e, etc. (ajustée plus bas et plus à gauche pour ne pas déborder de la carte) */}
+                          {/* Pastille de rang 2e, 3e, etc. (décalée de 2-3px vers la gauche pour dégager l'avatar) */}
                           {rank > 1 && (
                             <span
-                              className="absolute top-0.5 -left-2 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-10 pointer-events-none select-none"
+                              className="absolute top-0.5 -left-2.5 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-10 pointer-events-none select-none"
                             >
                               {rank}e
                             </span>
