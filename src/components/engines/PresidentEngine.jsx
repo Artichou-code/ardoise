@@ -71,9 +71,9 @@ export function PresidentEngine({ game }) {
           <div className="space-y-1.5">
             {/* Grand échange : Président ⇄ Trou du cul (2 cartes) */}
             <div className="p-2 sm:p-2.5 rounded-xl bg-stone-50/70 dark:bg-slate-800/40 border border-stone-200/70 dark:border-slate-800">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-1 sm:gap-2">
                 {/* Colonne Gauche : Président */}
-                <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
                   <Avatar player={prevPresPlayer} size="xs" crown={true} leader={true} leaderColor="#10b981" />
                   <div className="min-w-0 flex-1">
                     <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100 leading-none">
@@ -85,19 +85,20 @@ export function PresidentEngine({ game }) {
                   </div>
                 </div>
 
-                {/* Badge central compact avec flèche */}
+                {/* Badge central ultra-compact */}
                 <div
-                  className="flex items-center justify-center shrink-0 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-stone-200/90 dark:border-slate-700 shadow-2xs"
+                  className="flex items-center justify-center shrink-0 px-1.5 py-0.5 rounded-md bg-stone-100/90 dark:bg-slate-800 text-[#c83b3b] border border-stone-200/80 dark:border-slate-700"
                   title="Le Trou donne ses 2 meilleures cartes au Président ; le Président donne 2 cartes au choix au Trou"
                 >
-                  <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#c83b3b]">
-                    <ArrowLeftRight size={11} strokeWidth={2.5} />
-                    <span className="whitespace-nowrap">2 cartes</span>
+                  <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold whitespace-nowrap">
+                    <ArrowLeftRight size={9} strokeWidth={2.2} />
+                    <span className="sm:hidden">2 c.</span>
+                    <span className="hidden sm:inline">2 cartes</span>
                   </span>
                 </div>
 
                 {/* Colonne Droite : Trou du cul */}
-                <div className="flex items-center justify-end gap-2 min-w-0 flex-1 text-right">
+                <div className="flex items-center justify-end gap-1.5 min-w-0 flex-1 text-right">
                   <div className="min-w-0 flex-1">
                     <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100 leading-none">
                       {prevTrouPlayer.name}
@@ -120,9 +121,9 @@ export function PresidentEngine({ game }) {
             {/* Petit échange : Vice-Président ⇄ Vice-Trou (1 carte) */}
             {prevVicePresPlayer && prevViceTrouPlayer && (
               <div className="p-2 sm:p-2.5 rounded-xl bg-stone-50/70 dark:bg-slate-800/40 border border-stone-200/70 dark:border-slate-800">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center justify-between gap-1 sm:gap-2">
                   {/* Colonne Gauche : Vice-Président */}
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
                     <Avatar player={prevVicePresPlayer} size="xs" />
                     <div className="min-w-0 flex-1">
                       <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100 leading-none">
@@ -134,19 +135,20 @@ export function PresidentEngine({ game }) {
                     </div>
                   </div>
 
-                  {/* Badge central compact avec flèche */}
+                  {/* Badge central ultra-compact */}
                   <div
-                    className="flex items-center justify-center shrink-0 px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-stone-200/90 dark:border-slate-700 shadow-2xs"
+                    className="flex items-center justify-center shrink-0 px-1.5 py-0.5 rounded-md bg-stone-100/90 dark:bg-slate-800 text-[#c83b3b] border border-stone-200/80 dark:border-slate-700"
                     title="Le Vice-Trou donne sa meilleure carte au Vice-Président ; le Vice-Président donne 1 carte au choix au Vice-Trou"
                   >
-                    <span className="inline-flex items-center gap-1 text-[11px] font-black text-[#c83b3b]">
-                      <ArrowLeftRight size={11} strokeWidth={2.5} />
-                      <span className="whitespace-nowrap">1 carte</span>
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold whitespace-nowrap">
+                      <ArrowLeftRight size={9} strokeWidth={2.2} />
+                      <span className="sm:hidden">1 c.</span>
+                      <span className="hidden sm:inline">1 carte</span>
                     </span>
                   </div>
 
                   {/* Colonne Droite : Vice-Trou */}
-                  <div className="flex items-center justify-end gap-2 min-w-0 flex-1 text-right">
+                  <div className="flex items-center justify-end gap-1.5 min-w-0 flex-1 text-right">
                     <div className="min-w-0 flex-1">
                       <span className="font-bold text-xs truncate block text-stone-900 dark:text-slate-100 leading-none">
                         {prevViceTrouPlayer.name}
