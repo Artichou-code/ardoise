@@ -1725,24 +1725,26 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
       {/* Modale de remplacement quand les équipes sont complètes */}
       {playerToReplaceCandidate && (
         <div
-          className="fixed inset-0 z-70 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-70 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in"
           onClick={() => setPlayerToReplaceCandidate(null)}
         >
           <div
-            className="w-full max-w-sm rounded-2xl bg-[#faf9f5] dark:bg-[#1d2024] border border-stone-200 dark:border-slate-800 shadow-2xl p-4 sm:p-5 space-y-4"
+            className="relative w-full max-w-sm sm:max-w-md max-h-[85dvh] sm:max-h-[88dvh] rounded-2xl bg-[#faf9f5] dark:bg-[#1d2024] border border-stone-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150"
+            role="dialog"
+            aria-modal="true"
             onClick={e => e.stopPropagation()}
           >
             {/* En-tête */}
-            <div className="flex items-center justify-between pb-1 border-b border-stone-200/80 dark:border-slate-800/80">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-[#c83b3b]/10 flex items-center justify-center text-[#c83b3b]">
+            <div className="flex items-center justify-between p-3.5 sm:p-4 pb-2.5 sm:pb-3 border-b border-stone-200/80 dark:border-slate-800/80 shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-full bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 flex items-center justify-center text-[#c83b3b] shrink-0">
                   <ArrowLeftRight size={15} />
                 </div>
-                <div>
-                  <h3 className="font-serif-title text-base font-bold text-stone-900 dark:text-slate-100 leading-tight">
+                <div className="min-w-0">
+                  <h3 className="font-serif-title text-sm sm:text-base font-bold text-stone-900 dark:text-slate-100 leading-tight truncate">
                     {gameType === 'belote' ? 'Équipes complètes' : 'Nombre max atteint'}
                   </h3>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400">
+                  <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
                     Qui voulez-vous remplacer ?
                   </p>
                 </div>
@@ -1750,51 +1752,118 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
               <button
                 type="button"
                 onClick={() => setPlayerToReplaceCandidate(null)}
-                className="p-1 rounded-full text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                className="p-1.5 rounded-full text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
                 aria-label="Fermer"
               >
                 <X size={16} />
               </button>
             </div>
 
-            {/* Nouveau joueur entrant */}
-            <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-stone-200 dark:border-slate-700/60 shadow-2xs">
-              <Avatar player={playerToReplaceCandidate} size="sm" />
-              <div className="flex-1 min-w-0">
-                <span className="text-[9px] font-extrabold uppercase tracking-wider text-stone-400 dark:text-slate-500 block">
-                  Nouveau joueur entrant
-                </span>
-                <span className="text-xs sm:text-sm font-bold text-stone-900 dark:text-slate-100 truncate block">
-                  {playerToReplaceCandidate.name}
-                </span>
+            {/* Corps défilable */}
+            <div className="p-3.5 sm:p-4 overflow-y-auto space-y-3 flex-1 min-h-0 scrollbar-hide">
+              {/* Nouveau joueur entrant */}
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-800/80 border border-stone-200/90 dark:border-slate-700/60 shadow-2xs">
+                <Avatar player={playerToReplaceCandidate} size="sm-compact" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                      Nouveau joueur entrant
+                    </span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-bold text-stone-900 dark:text-slate-100 truncate block">
+                    {playerToReplaceCandidate.name}
+                  </span>
+                </div>
               </div>
-            </div>
 
-            {/* Choix du joueur à remplacer */}
-            {gameType === 'belote' ? (
-              <div className="space-y-3">
-                {/* Équipe 1 (Rouge) */}
+              {/* Choix du joueur à remplacer */}
+              {gameType === 'belote' ? (
+                <div className="space-y-3">
+                  {/* Équipe 1 (Rouge) */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#c83b3b] dark:text-rose-400 flex items-center gap-1">
+                        Équipe 1 (Rouge)
+                      </span>
+                      <span className="text-[10px] text-stone-400">2 joueurs</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                      {team1Players.map(p => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => handleReplacePlayer(p, playerToReplaceCandidate)}
+                          className="flex items-center gap-2 px-2.5 py-1.5 sm:py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/90 dark:bg-slate-800/60 hover:border-[#c83b3b] hover:bg-[#c83b3b]/10 text-stone-900 dark:text-slate-100 text-left transition-all cursor-pointer group active:scale-95 shadow-2xs min-h-[40px]"
+                        >
+                          <Avatar player={p} size="xs" />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs font-bold truncate block group-hover:text-[#c83b3b] dark:group-hover:text-rose-400">
+                              {p.name}
+                            </span>
+                            <span className="text-[9px] text-stone-400 dark:text-slate-500 group-hover:text-[#c83b3b]/80 dark:group-hover:text-rose-400/80 leading-tight block">
+                              Remplacer
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Équipe 2 (Bleu) */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#1e3a5f] dark:text-sky-400 flex items-center gap-1">
+                        Équipe 2 (Bleu)
+                      </span>
+                      <span className="text-[10px] text-stone-400">2 joueurs</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                      {team2Players.map(p => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => handleReplacePlayer(p, playerToReplaceCandidate)}
+                          className="flex items-center gap-2 px-2.5 py-1.5 sm:py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/90 dark:bg-slate-800/60 hover:border-[#1e3a5f] hover:bg-[#1e3a5f]/10 text-stone-900 dark:text-slate-100 text-left transition-all cursor-pointer group active:scale-95 shadow-2xs min-h-[40px]"
+                        >
+                          <Avatar player={p} size="xs" />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-xs font-bold truncate block group-hover:text-[#1e3a5f] dark:group-hover:text-sky-400">
+                              {p.name}
+                            </span>
+                            <span className="text-[9px] text-stone-400 dark:text-slate-500 group-hover:text-[#1e3a5f]/80 dark:group-hover:text-sky-400/80 leading-tight block">
+                              Remplacer
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#c83b3b] dark:text-rose-400 flex items-center gap-1">
-                      Équipe 1 (Rouge)
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-stone-400 dark:text-slate-500">
+                      Joueur à remplacer
                     </span>
-                    <span className="text-[10px] text-stone-400">2 joueurs</span>
+                    <span className="text-[10px] text-stone-400 dark:text-slate-500">
+                      {selectedPlayers.length} joueurs
+                    </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {team1Players.map(p => (
+                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2 p-0.5">
+                    {selectedPlayers.map(p => (
                       <button
                         key={p.id}
                         type="button"
                         onClick={() => handleReplacePlayer(p, playerToReplaceCandidate)}
-                        className="flex items-center gap-2 p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/90 dark:bg-slate-800/60 hover:border-[#c83b3b] hover:bg-[#c83b3b]/10 text-stone-900 dark:text-slate-100 text-left transition-all cursor-pointer group active:scale-95 shadow-2xs"
+                        className="flex items-center gap-2 px-2.5 py-1.5 sm:py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/90 dark:bg-slate-800/60 hover:border-[#c83b3b] hover:bg-[#c83b3b]/10 text-stone-900 dark:text-slate-100 text-left transition-all cursor-pointer group active:scale-95 shadow-2xs min-h-[40px]"
                       >
                         <Avatar player={p} size="xs" />
                         <div className="flex-1 min-w-0">
                           <span className="text-xs font-bold truncate block group-hover:text-[#c83b3b] dark:group-hover:text-rose-400">
                             {p.name}
                           </span>
-                          <span className="text-[9px] text-stone-400 group-hover:text-[#c83b3b]/80">
+                          <span className="text-[9px] text-stone-400 dark:text-slate-500 group-hover:text-[#c83b3b]/80 dark:group-hover:text-rose-400/80 leading-tight block">
                             Remplacer
                           </span>
                         </div>
@@ -1802,71 +1871,15 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                     ))}
                   </div>
                 </div>
-
-                {/* Équipe 2 (Bleu) */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#1e3a5f] dark:text-sky-400 flex items-center gap-1">
-                      Équipe 2 (Bleu)
-                    </span>
-                    <span className="text-[10px] text-stone-400">2 joueurs</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {team2Players.map(p => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => handleReplacePlayer(p, playerToReplaceCandidate)}
-                        className="flex items-center gap-2 p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/90 dark:bg-slate-800/60 hover:border-[#1e3a5f] hover:bg-[#1e3a5f]/10 text-stone-900 dark:text-slate-100 text-left transition-all cursor-pointer group active:scale-95 shadow-2xs"
-                      >
-                        <Avatar player={p} size="xs" />
-                        <div className="flex-1 min-w-0">
-                          <span className="text-xs font-bold truncate block group-hover:text-[#1e3a5f] dark:group-hover:text-sky-400">
-                            {p.name}
-                          </span>
-                          <span className="text-[9px] text-stone-400 group-hover:text-[#1e3a5f]/80">
-                            Remplacer
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-stone-400 dark:text-slate-500">
-                  Joueur à remplacer
-                </span>
-                <div className="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto scrollbar-hide p-0.5">
-                  {selectedPlayers.map(p => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => handleReplacePlayer(p, playerToReplaceCandidate)}
-                      className="flex items-center gap-2 p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/90 dark:bg-slate-800/60 hover:border-[#c83b3b] hover:bg-[#c83b3b]/10 text-stone-900 dark:text-slate-100 text-left transition-all cursor-pointer group active:scale-95 shadow-2xs"
-                    >
-                      <Avatar player={p} size="xs" />
-                      <div className="flex-1 min-w-0">
-                        <span className="text-xs font-bold truncate block group-hover:text-[#c83b3b]">
-                          {p.name}
-                        </span>
-                        <span className="text-[9px] text-stone-400 group-hover:text-[#c83b3b]/80">
-                          Remplacer
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Bouton Annuler */}
-            <div className="pt-1">
+            <div className="p-3 sm:p-4 pt-2.5 border-t border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5] dark:bg-[#1d2024] shrink-0">
               <button
                 type="button"
                 onClick={() => setPlayerToReplaceCandidate(null)}
-                className="w-full py-2.5 rounded-xl border border-stone-300 dark:border-slate-700 text-xs font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                className="w-full py-2 sm:py-2.5 rounded-xl border border-stone-300 dark:border-slate-700 text-xs font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Annuler
               </button>
