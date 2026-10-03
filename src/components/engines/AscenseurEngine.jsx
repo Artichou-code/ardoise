@@ -209,7 +209,7 @@ export function AscenseurEngine({ game, onFinish }) {
         )}
 
         {/* Liste des joueurs avec saisie des paris / plis */}
-        <div className="space-y-2.5">
+        <div className="space-y-1.5">
           {game.players.map(p => {
             const currentTotal = game.scores[p.id] || 0
             const b = bids[p.id] ?? 0
@@ -221,7 +221,7 @@ export function AscenseurEngine({ game, onFinish }) {
             return (
               <div
                 key={p.id}
-                className={`p-3 rounded-xl border transition-all ${
+                className={`px-3 py-2 rounded-xl border transition-all ${
                   phase === 'tricks' && won
                     ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/20'
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
