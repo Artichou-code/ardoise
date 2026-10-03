@@ -310,7 +310,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
                 }`}
               >
-                {/* Ligne 1 : Nom complet et score projeté */}
+                {/* Ligne 1 : Nom du joueur à gauche + Dame de Pique à droite */}
                 <div className={`flex items-center justify-between gap-2 ${isChelem ? '' : 'mb-2'}`}>
                   <button
                     type="button"
@@ -320,35 +320,19 @@ export function DameDePiqueEngine({ game, onFinish }) {
                         setOpen(true)
                       }
                     }}
-                    className="flex items-center gap-2 min-w-0 text-left cursor-pointer select-none"
+                    className="flex items-center gap-2 min-w-0 text-left cursor-pointer select-none active:opacity-80 transition-opacity"
                   >
                     <Avatar player={p} size="xs" />
                     <span className="font-semibold text-sm truncate">{p.name}</span>
                     {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
                   </button>
 
-                  <div className="text-right text-xs shrink-0 select-none">
-                    <span className="text-stone-500 dark:text-slate-400">Total : {currentTotal}</span>
-                    {roundDelta > 0 ? (
-                      <span className="text-[#c83b3b] font-bold ml-1.5">
-                        ➔ {projected} pts (+{roundDelta})
-                      </span>
-                    ) : (
-                      <span className="text-stone-400 dark:text-slate-500 ml-1.5">
-                        ➔ {projected} pts
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Ligne 2 : Actions rapides (masquées si Chelem global actif) */}
-                {!isChelem && (
-                  <div className="flex items-center justify-between gap-2">
-                    {/* Bouton Dame de Pique (+13) */}
+                  {!isChelem ? (
+                    /* Bouton Dame de Pique (+13) */
                     <button
                       type="button"
                       onClick={() => toggleQueen(p.id)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer select-none active:scale-[0.98] ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer select-none active:scale-95 shrink-0 ${
                         isQueen
                           ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
                           : 'bg-white dark:bg-slate-900 text-stone-600 dark:text-slate-400 border-stone-200 dark:border-slate-700 hover:border-[#c83b3b]/60 hover:text-[#c83b3b]'
@@ -357,6 +341,44 @@ export function DameDePiqueEngine({ game, onFinish }) {
                     >
                       <span className="text-sm leading-none">♠</span>
                       <span>Dame (+13)</span>
+                    </button>
+                  ) : (
+                    <div className="text-right text-xs shrink-0 select-none">
+                      <span className="text-stone-500 dark:text-slate-400">Total : {currentTotal}</span>
+                      {roundDelta !== 0 ? (
+                        <span className="text-[#c83b3b] font-bold ml-1.5">
+                          ➔ {projected} pts ({roundDelta > 0 ? `+${roundDelta}` : roundDelta})
+                        </span>
+                      ) : (
+                        <span className="text-stone-400 dark:text-slate-500 ml-1.5">
+                          ➔ {projected} pts
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Ligne 2 : Total avec évolution à gauche + Roulette tactile de Cœurs à droite */}
+                {!isChelem && (
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingPlayer(p)
+                        setOpen(true)
+                      }}
+                      className="text-left text-xs select-none cursor-pointer active:opacity-80 transition-opacity min-w-0 truncate"
+                    >
+                      <span className="text-stone-500 dark:text-slate-400">Total : {currentTotal}</span>
+                      {roundDelta > 0 ? (
+                        <span className="text-[#c83b3b] font-bold ml-1.5">
+                          ➔ {projected} pts (+{roundDelta})
+                        </span>
+                      ) : (
+                        <span className="text-stone-400 dark:text-slate-500 ml-1.5">
+                          ➔ {projected} pts
+                        </span>
+                      )}
                     </button>
 
                     {/* Roulette tactile de Cœurs */}
