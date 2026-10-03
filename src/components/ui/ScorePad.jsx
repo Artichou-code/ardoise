@@ -278,10 +278,11 @@ export function ScorePad({
         </div>
       </div>
 
-      {/* Raccourcis prédéfinis sur une seule ligne (défilement horizontal fluide si débordement) */}
-      {presets && presets.length > 0 && (
-        <div className="overflow-x-auto scrollbar-hide py-1 -mx-2 px-2 overscroll-x-contain">
-          <div className={`flex items-center gap-1.5 w-max min-w-full ${presets.length <= 8 ? 'justify-center' : 'justify-start sm:justify-center'}`}>
+      {/* Raccourcis prédéfinis sur une seule ligne fixe (sans scroll) */}
+      {presets && presets.length > 0 && (() => {
+        const isDense = presets.length > 8
+        return (
+          <div className={`flex items-center justify-center w-full py-0.5 ${isDense ? 'gap-0.5 sm:gap-1' : 'gap-1 sm:gap-1.5'}`}>
             {presets.map(p => {
               const pVal = typeof p === 'object' ? p.value : p
               const pLabel = typeof p === 'object' ? p.label : `${showPlus && pVal > 0 ? '+' : ''}${pVal}`
@@ -294,19 +295,23 @@ export function ScorePad({
                     onChange(pVal)
                     try { navigator.vibrate?.(10) } catch {}
                   }}
-                  className={`px-2.5 py-1.5 rounded-xl text-xs font-bold border whitespace-nowrap shrink-0 transition-all cursor-pointer select-none active:scale-95 ${
+                  className={`flex-1 min-w-0 text-center rounded-lg font-bold border transition-all cursor-pointer select-none active:scale-95 ${
+                    isDense
+                      ? 'py-1 px-0.5 text-[9.5px] sm:text-[10.5px]'
+                      : 'py-1 px-1 max-w-[52px] text-[11px] sm:text-xs'
+                  } ${
                     isSelected
                       ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
                       : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
                   }`}
                 >
-                  {pLabel}
+                  <span className="truncate block leading-tight">{pLabel}</span>
                 </button>
               )
             })}
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Boutons incrémentaux ou raccourcis personnalisés */}
       {buttons && buttons.length > 0 && (
