@@ -208,48 +208,42 @@ export function ScorePad({
           }`}
         >
           {isDragging ? (
-            <div className="flex flex-col items-center justify-center overflow-hidden w-full h-full pointer-events-none py-1">
-              {/* Pastille minimaliste du score total pendant le glissement */}
-              <div className="h-6 shrink-0 flex items-center justify-center mb-1">
+            <div className="flex flex-col items-center justify-between overflow-hidden w-full h-full pointer-events-none pt-2.5 pb-2">
+              {/* Pastille décollée du haut avec marge nette */}
+              <div className="shrink-0 flex items-center justify-center">
                 {totalText ? (
-                  <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-white text-[11px] font-bold shadow-xs max-w-full truncate ${
+                  <div className={`inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-white text-[11px] font-bold shadow-xs max-w-full truncate ${
                     String(totalText).startsWith('-') ? 'bg-[#c83b3b]' : 'bg-emerald-600'
                   }`}>
                     <span className="truncate">{totalText}</span>
                   </div>
-                ) : null}
+                ) : <div className="h-4" />}
               </div>
 
-              {/* Cylindre de roulette */}
-              <div className="flex flex-col items-center leading-none">
-                <span className={`h-4 shrink-0 flex items-center justify-center text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums ${isAbove2Valid ? '' : 'invisible select-none'}`}>
-                  {isAbove2Valid ? displayVal(valAbove2) : '\u00A0'}
-                </span>
-                <span className={`h-6 shrink-0 my-0.5 flex items-center justify-center text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 tabular-nums ${isAbove1Valid ? '' : 'invisible select-none'}`}>
+              {/* Cylindre de roulette centré et aéré */}
+              <div className="flex flex-col items-center leading-none my-auto">
+                <span className={`h-5 shrink-0 flex items-center justify-center text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-50 tabular-nums ${isAbove1Valid ? '' : 'invisible select-none'}`}>
                   {isAbove1Valid ? displayVal(valAbove1) : '\u00A0'}
                 </span>
 
                 {/* Mire centrale */}
-                <div className="h-12 shrink-0 my-0.5 relative flex items-center justify-center px-6 rounded-xl bg-white dark:bg-slate-900 border border-[#c83b3b]/40 shadow-xs">
-                  <span className="absolute left-2 text-[#c83b3b] font-mono text-xs font-black">▶</span>
+                <div className="h-11 shrink-0 my-1 relative flex items-center justify-center px-6 rounded-xl bg-white dark:bg-slate-900 border border-[#c83b3b]/40 shadow-xs">
+                  <span className="absolute left-2.5 text-[#c83b3b] font-mono text-xs font-black">▶</span>
                   <span className={`font-black text-[#c83b3b] dark:text-red-400 tabular-nums tracking-tight ${
-                    String(displayVal(cur)).length > 8 ? 'text-2xl sm:text-3xl' : String(displayVal(cur)).length > 5 ? 'text-3xl sm:text-4xl' : 'text-4xl'
+                    String(displayVal(cur)).length > 8 ? 'text-2xl sm:text-3xl' : String(displayVal(cur)).length > 5 ? 'text-3xl sm:text-4xl' : 'text-3xl sm:text-4xl'
                   }`}>
                     {displayVal(cur)}
                   </span>
-                  <span className="absolute right-2 text-[#c83b3b] font-mono text-xs font-black">◀</span>
+                  <span className="absolute right-2.5 text-[#c83b3b] font-mono text-xs font-black">◀</span>
                 </div>
 
-                <span className={`h-6 shrink-0 my-0.5 flex items-center justify-center text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 tabular-nums ${isBelow1Valid ? '' : 'invisible select-none'}`}>
+                <span className={`h-5 shrink-0 flex items-center justify-center text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-50 tabular-nums ${isBelow1Valid ? '' : 'invisible select-none'}`}>
                   {isBelow1Valid ? displayVal(valBelow1) : '\u00A0'}
-                </span>
-                <span className={`h-4 shrink-0 flex items-center justify-center text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums ${isBelow2Valid ? '' : 'invisible select-none'}`}>
-                  {isBelow2Valid ? displayVal(valBelow2) : '\u00A0'}
                 </span>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-1 h-full w-full py-2">
+            <div className="flex flex-col items-center justify-center gap-1.5 h-full w-full py-2">
               <span className={`font-black tabular-nums tracking-tight text-stone-900 dark:text-slate-100 ${
                 String(displayVal(value)).length > 8 ? 'text-2xl sm:text-3xl' : String(displayVal(value)).length > 5 ? 'text-3xl sm:text-4xl' : 'text-4xl'
               }`}>
@@ -266,15 +260,15 @@ export function ScorePad({
                   }`}>
                     {totalText}
                   </span>
-                  <span className="text-[10px] text-stone-400 dark:text-slate-500 flex items-center gap-1 mt-0.5 opacity-70">
-                    <ArrowUpDown size={10} className="text-[#c83b3b]" />
-                    Maintenir & glisser pour faire tourner
+                  <span className="animate-breathe text-[10.5px] text-stone-400 dark:text-slate-500 flex items-center gap-1.5 mt-2.5 font-medium select-none">
+                    <ArrowUpDown size={11} className="text-[#c83b3b] shrink-0" />
+                    <span>Maintenir & glisser pour faire tourner</span>
                   </span>
                 </div>
               ) : (
-                <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 flex items-center gap-1">
-                  <ArrowUpDown size={11} className="text-[#c83b3b]" />
-                  Maintenir & glisser pour faire tourner
+                <span className="animate-breathe text-[11px] font-medium text-stone-400 dark:text-slate-500 flex items-center gap-1.5 mt-2.5 select-none">
+                  <ArrowUpDown size={11} className="text-[#c83b3b] shrink-0" />
+                  <span>Maintenir & glisser pour faire tourner</span>
                 </span>
               )}
             </div>

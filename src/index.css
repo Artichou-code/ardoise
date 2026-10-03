@@ -176,6 +176,21 @@ html.dark input, html.dark button, html.dark select, html.dark textarea {
   animation: fadeIn 0.2s ease-out forwards;
 }
 
+@keyframes breathe {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.02);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 2.8s ease-in-out infinite;
+}
+
 /* Tiroir Burger & Panneaux coulissants fluides (Ouverture & Fermeture) */
 .drawer-overlay {
   transition: visibility 0.3s;
