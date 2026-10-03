@@ -86,7 +86,7 @@ export function BottomSheet({
             ref={sheetRef}
             className={`relative w-full max-w-lg school-surface rounded-2xl shadow-2xl border border-stone-200 dark:border-slate-800 transition-all duration-150 max-h-[calc(100dvh-4rem)] flex flex-col mb-auto ${className}`}
           >
-            {title && (
+            {title ? (
               <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-200/80 dark:border-slate-800/80 bg-[#faf9f5]/90 dark:bg-[#151719]/90 rounded-t-2xl flex-shrink-0">
                 <div>
                   <h2 className="font-serif-title text-lg font-bold leading-tight">{title}</h2>
@@ -105,6 +105,18 @@ export function BottomSheet({
                     <X size={18} className="text-stone-500 dark:text-slate-400" />
                   </button>
                 </div>
+              </div>
+            ) : (
+              <div className="absolute top-2.5 right-3 z-10 flex items-center gap-1">
+                {headerAction}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+                  aria-label="Fermer"
+                >
+                  <X size={18} className="text-stone-500 dark:text-slate-400" />
+                </button>
               </div>
             )}
             <div className="overflow-y-auto flex-1 scrollbar-hide overscroll-contain">
@@ -126,30 +138,55 @@ export function BottomSheet({
           ref={sheetRef}
           className={`relative w-full max-w-lg school-surface rounded-t-2xl shadow-2xl border-t border-stone-200 dark:border-slate-800 transition-transform duration-200 max-h-[88dvh] flex flex-col ${className}`}
         >
-          {/* Zone tactile de glissement pour fermer (Poignée tactile + Titre) */}
-          <div ref={headerRef} className="touch-none select-none flex-shrink-0 cursor-grab active:cursor-grabbing bg-[#faf9f5]/90 dark:bg-[#151719]/90 rounded-t-2xl">
-            {/* Poignée tactile */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-stone-300 dark:bg-slate-700" />
-            </div>
-            {/* Header */}
-            {title && (
-              <div className="flex items-start justify-between px-5 pt-1 pb-2 border-b border-stone-200/80 dark:border-slate-800/80">
-                <div>
-                  <h2 className="font-serif-title text-xl font-bold leading-snug">{title}</h2>
-                  {subtitle && (
-                    <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
-                  )}
+          {/* Zone tactile de glissement pour fermer (Poignée tactile + Titre ou bouton X) */}
+          <div ref={headerRef} className="touch-none select-none flex-shrink-0 cursor-grab active:cursor-grabbing bg-[#faf9f5]/90 dark:bg-[#151719]/90 rounded-t-2xl relative">
+            {title ? (
+              <>
+                {/* Poignée tactile */}
+                <div className="flex justify-center pt-3 pb-1">
+                  <div className="w-10 h-1 rounded-full bg-stone-300 dark:bg-slate-700" />
                 </div>
-                <div className="flex items-center gap-1 -mr-1">
+                {/* Header */}
+                <div className="flex items-start justify-between px-5 pt-1 pb-2 border-b border-stone-200/80 dark:border-slate-800/80">
+                  <div>
+                    <h2 className="font-serif-title text-xl font-bold leading-snug">{title}</h2>
+                    {subtitle && (
+                      <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 -mr-1">
+                    {headerAction}
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+                      aria-label="Fermer"
+                    >
+                      <X size={18} className="text-stone-500 dark:text-slate-400" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* En-tête compact sans titre : poignée tactile centrée + bouton X accessible */
+              <div className="relative flex items-center justify-between px-4 pt-2.5 pb-1 min-h-[38px]">
+                {/* Poignée tactile centrée */}
+                <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-10 h-1 rounded-full bg-stone-300 dark:bg-slate-700 pointer-events-none" />
+                
+                {/* Espace gauche pour équilibrer */}
+                <div className="w-8 shrink-0" />
+
+                {/* Actions & bouton X à droite */}
+                <div className="flex items-center justify-end gap-1 ml-auto z-10">
                   {headerAction}
                   <button
                     type="button"
                     onClick={onClose}
-                    className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+                    onTouchStart={(e) => e.stopPropagation()}
+                    className="p-2 -mr-1 rounded-full hover:bg-stone-200/70 dark:hover:bg-slate-800 text-stone-500 hover:text-stone-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
                     aria-label="Fermer"
                   >
-                    <X size={18} className="text-stone-500 dark:text-slate-400" />
+                    <X size={18} />
                   </button>
                 </div>
               </div>
