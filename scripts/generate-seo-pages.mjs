@@ -146,10 +146,6 @@ function escapeHtml(str = '') {
  * sans aucun décalage (CLS = 0) lors de l'hydratation par React.
  */
 function renderVisualGameCard(meta) {
-  const deckIcon = meta.deckType === 'classic'
-    ? '<span class="inline-block leading-none select-none text-[13px] text-stone-700 dark:text-slate-300" aria-hidden="true">🂱</span>'
-    : '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-stone-500 dark:text-slate-400" aria-hidden="true"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3.16l-4.76-4.76a2.24 2.24 0 0 0-3.16 0L10 6.08"/><path d="M6 14h.01"/><path d="M10 18h.01"/><path d="M14 14h.01"/><path d="M18 18h.01"/><path d="m15 6-.01.01"/></svg>'
-
   return `
             <div class="relative flex flex-col justify-between p-4 rounded-xl school-card border-l-4 border-l-[#c83b3b]/80 shadow-2xs">
               <div>
@@ -163,7 +159,7 @@ function renderVisualGameCard(meta) {
               </div>
               <div class="flex items-center gap-1.5 mt-3 pt-2.5 border-t border-stone-100 dark:border-slate-800/70">
                 <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300">${escapeHtml(meta.playersBadge)}</span>
-                <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded border border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400">${deckIcon}<span>${escapeHtml(meta.categoryBadge)}</span></span>
+                <span class="text-[11px] font-medium px-2 py-0.5 rounded border border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400">${escapeHtml(meta.categoryBadge)}</span>
                 <span class="ml-auto text-xs font-bold text-[#c83b3b] flex items-center gap-0.5">Jouer ›</span>
               </div>
             </div>`

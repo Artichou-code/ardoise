@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react'
 import { Plus, X, Check, BookOpen, Bookmark, BookmarkPlus, Flame, ArrowLeftRight, Search, ChevronDown, ChevronUp, Radio } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
 import { Avatar, AvatarPicker } from './ui/Avatar'
-import { DeckTypeIcon } from './ui/DeckTypeIcon'
 import { useGame } from '../context/GameContext'
 import { GAME_META, AVATAR_COLORS, PRESET_AVATARS } from '../constants/games'
 import { createPlayer } from '../utils/gameUtils'
@@ -507,26 +506,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
   const sheetSubtitle = gameType === 'universel' && customGameName.trim()
     ? `Modèle personnalisé · ${meta.playersBadge}`
     : gameType === 'belote'
-    ? (
-        <span className="inline-flex items-center gap-1.5 flex-wrap">
-          <span>2 éq. (4 j.)</span>
-          <span className="text-stone-300 dark:text-slate-600 select-none">·</span>
-          <span className="inline-flex items-center gap-1">
-            <DeckTypeIcon deckType={meta.deckType} size={12} />
-            <span>{beloteVariant === 'coinche' ? 'Enchères & Coinche (32 cartes)' : 'Prise classique (32 cartes)'}</span>
-          </span>
-        </span>
-      )
-    : (
-        <span className="inline-flex items-center gap-1.5 flex-wrap">
-          <span>{meta.playersBadge}</span>
-          <span className="text-stone-300 dark:text-slate-600 select-none">·</span>
-          <span className="inline-flex items-center gap-1">
-            <DeckTypeIcon deckType={meta.deckType} size={12} />
-            <span>{meta.categoryBadge}</span>
-          </span>
-        </span>
-      )
+    ? (beloteVariant === 'coinche' ? '2 éq. (4 j.) · Enchères & Coinche' : '2 éq. (4 j.) · Prise classique 32 cartes')
+    : `${meta.playersBadge} · ${meta.categoryBadge}`
 
   return (
     <>
