@@ -391,8 +391,8 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
               </button>
             ))}
           </div>
-          <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-[11px] leading-relaxed">
-            Met <strong>fin immédiatement à la partie</strong> et donne la victoire !
+          <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-xs text-center font-medium">
+            Donne la <strong>victoire immédiate</strong> !
           </div>
         </div>
       </Dialog>
@@ -407,8 +407,8 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
           <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
             Confirmer que <strong>{sirensConfirmPlayer?.name}</strong> possède les <strong>4 cartes Sirènes</strong> ?
           </p>
-          <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/50 text-amber-900 dark:text-amber-200">
-            Met <strong>fin immédiatement à la partie</strong> et donne la victoire !
+          <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-xs text-center font-medium">
+            Donne la <strong>victoire immédiate</strong> !
           </div>
           <div className="flex items-center gap-2 pt-2">
             <button
