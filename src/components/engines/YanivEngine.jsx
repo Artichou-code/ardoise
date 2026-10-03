@@ -352,14 +352,16 @@ export function YanivEngine({ game, onFinish }) {
                           </span>
                           {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
                         </div>
-                        <span className="text-[11px] text-stone-500 dark:text-slate-400 block truncate">
-                          Total : {currentTotal} pts · <strong className="text-[#c83b3b]">+{delta} pts</strong> ({rawPts}+30)
+                        <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
+                          <span className="truncate">
+                            Total : {currentTotal} <strong className="text-[#c83b3b] font-bold">➔ {sursisVal !== null ? sursisVal : projected} pts</strong>
+                          </span>
                           {sursisVal !== null && (
-                            <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold">
-                              ➔ Sursis : {sursisVal} pts !
+                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded whitespace-nowrap shrink-0">
+                              Sursis {sursisVal}
                             </span>
                           )}
-                        </span>
+                        </div>
                       </div>
                     </button>
 
@@ -402,18 +404,22 @@ export function YanivEngine({ game, onFinish }) {
                         <span className="font-semibold text-sm truncate">{p.name}</span>
                         {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
                       </div>
-                      <span className="text-[11px] text-stone-500 dark:text-slate-400 block truncate">
-                        Total : {currentTotal} pts {delta > 0 && (
-                          <span className="text-[#c83b3b] font-bold">
-                            (+{delta} = {projected})
+                      <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
+                        {delta > 0 ? (
+                          <>
+                            <span className="truncate">
+                              Total : {currentTotal} <strong className="text-[#c83b3b] font-bold">➔ {sursisVal !== null ? sursisVal : projected} pts</strong>
+                            </span>
                             {sursisVal !== null && (
-                              <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-bold">
-                                ➔ Sursis : {sursisVal} pts !
+                              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded whitespace-nowrap shrink-0">
+                                Sursis {sursisVal}
                               </span>
                             )}
-                          </span>
+                          </>
+                        ) : (
+                          <span className="truncate">Total : {currentTotal} pts</span>
                         )}
-                      </span>
+                      </div>
                     </div>
                   </button>
 

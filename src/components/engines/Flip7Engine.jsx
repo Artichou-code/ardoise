@@ -142,9 +142,15 @@ export function Flip7Engine({ game, onFinish }) {
                         {isNearWin && <Trophy size={13} className="text-emerald-600 shrink-0" />}
                         {hasFlip7 && <Flame size={13} className="text-amber-500 shrink-0" />}
                       </div>
-                      <span className="text-[11px] text-stone-500 dark:text-slate-400 block">
-                        Total : {currentTotal} pts {roundPts > 0 && <span className="text-emerald-600 dark:text-emerald-400 font-bold">(+{roundPts} = {projected})</span>}
-                      </span>
+                      <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
+                        {roundPts > 0 ? (
+                          <span className="truncate">
+                            Total : {currentTotal} <strong className="text-emerald-600 dark:text-emerald-400 font-bold">➔ {projected} pts</strong>
+                          </span>
+                        ) : (
+                          <span className="truncate">Total : {currentTotal} pts</span>
+                        )}
+                      </div>
                     </div>
                   </button>
 

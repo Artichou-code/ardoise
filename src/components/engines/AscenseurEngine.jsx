@@ -239,9 +239,15 @@ export function AscenseurEngine({ game, onFinish }) {
                           </span>
                         )}
                       </div>
-                      <span className="text-[11px] text-stone-500 dark:text-slate-400 block truncate">
-                        Total : {currentTotal} pts {phase === 'tricks' && <span className="font-semibold text-stone-700 dark:text-slate-300">(= {projected})</span>}
-                      </span>
+                      <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
+                        {phase === 'tricks' ? (
+                          <span className="truncate">
+                            Total : {currentTotal} <strong className="font-semibold text-stone-700 dark:text-slate-300">➔ {projected} pts</strong>
+                          </span>
+                        ) : (
+                          <span className="truncate">Total : {currentTotal} pts</span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
