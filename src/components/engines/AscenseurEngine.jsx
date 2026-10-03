@@ -90,59 +90,77 @@ export function AscenseurEngine({ game, onFinish }) {
     <div className="space-y-4 pt-2">
       {/* En-tête de la manche de l'Ascenseur */}
       <div className="school-card rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-              Manche {roundNum} · Palier de cartes
-            </p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="font-serif-title font-bold text-lg text-[#c83b3b]">
-                {cardsCount} carte{cardsCount > 1 ? 's' : ''} en main
-              </span>
-              <div className="inline-flex rounded-lg border border-stone-200 dark:border-slate-700 p-0.5 bg-stone-50 dark:bg-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setCardsCount(c => Math.max(1, c - 1))}
-                  className="px-2 py-0.5 text-xs font-bold text-stone-600 dark:text-slate-300 hover:text-[#c83b3b] cursor-pointer"
-                >
-                  -
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCardsCount(c => Math.min(maxCardsPossible, c + 1))}
-                  className="px-2 py-0.5 text-xs font-bold text-stone-600 dark:text-slate-300 hover:text-[#c83b3b] cursor-pointer"
-                >
-                  +
-                </button>
-              </div>
-            </div>
+        {/* Ligne 1 : Titre de manche & Nombre de cartes avec stepper */}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="min-w-0">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 block truncate">
+              Manche {roundNum} · Palier
+            </span>
+            <span className="font-serif-title font-bold text-base sm:text-lg text-[#c83b3b] block truncate">
+              {cardsCount} carte{cardsCount > 1 ? 's' : ''} en main
+            </span>
           </div>
 
-          {/* Bascule de phase : Annonces (Paris) / Plis réalisés */}
-          <div className="flex rounded-xl p-1 bg-stone-100 dark:bg-slate-800 border border-stone-200 dark:border-slate-700">
-            <button
-              type="button"
-              onClick={() => setPhase('bids')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                phase === 'bids'
-                  ? 'bg-white dark:bg-slate-900 text-stone-900 dark:text-white shadow-2xs'
-                  : 'text-stone-500 dark:text-slate-400 hover:text-stone-800'
-              }`}
-            >
-              1. Paris ({totalBids}/{cardsCount})
-            </button>
-            <button
-              type="button"
-              onClick={() => setPhase('tricks')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                phase === 'tricks'
-                  ? 'bg-white dark:bg-slate-900 text-stone-900 dark:text-white shadow-2xs'
-                  : 'text-stone-500 dark:text-slate-400 hover:text-stone-800'
-              }`}
-            >
-              2. Plis ({totalTricks}/{cardsCount})
-            </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[11px] text-stone-400 dark:text-slate-500 font-medium hidden xs:inline">
+              Ajuster :
+            </span>
+            <div className="inline-flex rounded-xl border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 p-0.5 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setCardsCount(c => Math.max(1, c - 1))}
+                className="w-8 h-8 flex items-center justify-center text-sm font-bold text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] active:scale-95 transition-transform cursor-pointer"
+                title="Diminuer d'une carte"
+              >
+                -
+              </button>
+              <div className="w-px h-4 bg-stone-200 dark:bg-slate-700 self-center" />
+              <button
+                type="button"
+                onClick={() => setCardsCount(c => Math.min(maxCardsPossible, c + 1))}
+                className="w-8 h-8 flex items-center justify-center text-sm font-bold text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] active:scale-95 transition-transform cursor-pointer"
+                title="Augmenter d'une carte"
+              >
+                +
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* Ligne 2 : Onglets de phase en pleine largeur (très confortable sur mobile) */}
+        <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-stone-100 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 mb-3">
+          <button
+            type="button"
+            onClick={() => setPhase('bids')}
+            className={`py-2 px-2 rounded-lg text-xs font-bold transition-all text-center cursor-pointer flex items-center justify-center gap-1.5 ${
+              phase === 'bids'
+                ? 'bg-white dark:bg-slate-900 text-stone-900 dark:text-white shadow-2xs'
+                : 'text-stone-500 dark:text-slate-400 hover:text-stone-800'
+            }`}
+          >
+            <span>1. Annonces / Paris</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+              phase === 'bids' ? 'bg-[#c83b3b]/10 text-[#c83b3b]' : 'bg-stone-200/60 dark:bg-slate-700 text-stone-500'
+            }`}>
+              {totalBids}/{cardsCount}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setPhase('tricks')}
+            className={`py-2 px-2 rounded-lg text-xs font-bold transition-all text-center cursor-pointer flex items-center justify-center gap-1.5 ${
+              phase === 'tricks'
+                ? 'bg-white dark:bg-slate-900 text-stone-900 dark:text-white shadow-2xs'
+                : 'text-stone-500 dark:text-slate-400 hover:text-stone-800'
+            }`}
+          >
+            <span>2. Plis réalisés</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+              phase === 'tricks' ? 'bg-emerald-600/10 text-emerald-700 dark:text-emerald-400' : 'bg-stone-200/60 dark:bg-slate-700 text-stone-500'
+            }`}>
+              {totalTricks}/{cardsCount}
+            </span>
+          </button>
         </div>
 
         {/* Message d'aide contextuel selon la phase */}
@@ -209,31 +227,39 @@ export function AscenseurEngine({ game, onFinish }) {
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Avatar player={p} size="xs" />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm truncate">{p.name}</span>
-                        {phase === 'tricks' && won && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
-                            +{roundPts} pts
-                          </span>
-                        )}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex items-center justify-between gap-2.5 min-w-0">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Avatar player={p} size="xs" />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-sm truncate">{p.name}</span>
+                          {phase === 'tricks' && won && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
+                              +{roundPts} pts
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-stone-500 dark:text-slate-400 block">
+                          Total : {currentTotal} pts {phase === 'tricks' && <span className="font-semibold">(= {projected})</span>}
+                        </span>
                       </div>
-                      <span className="text-[11px] text-stone-500 dark:text-slate-400 block">
-                        Total : {currentTotal} pts {phase === 'tricks' && <span className="font-semibold">(= {projected})</span>}
-                      </span>
                     </div>
+
+                    {phase === 'tricks' && (
+                      <span className="text-[11px] text-stone-500 dark:text-slate-400 sm:hidden">
+                        Parié : <strong className="text-stone-800 dark:text-slate-200">{b}</strong>
+                      </span>
+                    )}
                   </div>
 
                   {/* Boutons sélecteurs selon la phase active */}
                   {phase === 'bids' ? (
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 mr-1">
+                    <div className="flex items-center gap-1 flex-wrap sm:justify-end">
+                      <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 mr-0.5">
                         Pari :
                       </span>
-                      {Array.from({ length: Math.min(cardsCount + 1, 8) }).map((_, val) => (
+                      {Array.from({ length: Math.min(cardsCount + 1, 11) }).map((_, val) => (
                         <button
                           key={val}
                           type="button"
@@ -249,15 +275,15 @@ export function AscenseurEngine({ game, onFinish }) {
                       ))}
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[11px] text-stone-400 dark:text-slate-500 font-medium">
+                    <div className="flex items-center gap-1.5 flex-wrap sm:justify-end">
+                      <span className="text-[11px] text-stone-400 dark:text-slate-500 font-medium hidden sm:inline mr-1">
                         Parié : <strong className="text-stone-800 dark:text-slate-200">{b}</strong>
                       </span>
-                      <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500">
+                      <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 mr-0.5">
                         Fait :
                       </span>
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: Math.min(cardsCount + 1, 8) }).map((_, val) => (
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {Array.from({ length: Math.min(cardsCount + 1, 11) }).map((_, val) => (
                           <button
                             key={val}
                             type="button"
