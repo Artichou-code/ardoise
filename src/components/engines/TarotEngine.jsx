@@ -366,11 +366,14 @@ export function TarotEngine({ game }) {
             Points réalisés par l'attaque
           </h3>
           <p className="text-xs text-stone-500 dark:text-slate-400 mb-4">
-            Total sur 91 points (la défense marquera les {91 - points} restants).
+            Total sur 91 points (la défense marquera les {91 - (Number.isFinite(points) ? points : threshold)} restants).
           </p>
           <ScorePad
-            value={points}
-            onChange={v => setPoints(Math.max(0, Math.min(91, v)))}
+            value={Number.isFinite(points) ? points : threshold}
+            onChange={v => {
+              const num = Number(v)
+              setPoints(Number.isFinite(num) ? Math.max(0, Math.min(91, num)) : threshold)
+            }}
             onConfirm={() => setOpenPointsSheet(false)}
             min={0}
             max={91}

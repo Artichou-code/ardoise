@@ -38,10 +38,15 @@ export function ScorePad({
   }, [value])
 
   const clampValue = (val) => {
-    let res = val
-    if (min !== undefined && res < min) res = min
-    if (max !== undefined && res > max) res = max
-    return res
+    let num = Number(val)
+    if (isNaN(num)) num = min !== undefined ? min : 0
+    if (values && values.length > 0) {
+      if (values.includes(num)) return num
+      return values.reduce((prev, curr) => Math.abs(curr - num) < Math.abs(prev - num) ? curr : prev)
+    }
+    if (min !== undefined && num < min) num = min
+    if (max !== undefined && num > max) num = max
+    return num
   }
 
   // Déclinaison monochrome rouge Ardoise avec transparences graduées
@@ -258,21 +263,25 @@ export function ScorePad({
         </div>
       )}
 
-      {/* Boutons incrémentaux aux nuances de rouge avec transparences */}
+      {/* Boutons incrémentaux ou raccourcis personnalisés */}
       <div className={`grid gap-2 pt-1 ${buttons.length === 5 ? 'grid-cols-5' : 'grid-cols-4 sm:grid-cols-5'}`}>
-        {buttons.map(({ label: lbl, delta, colorClass }) => (
+        {buttons.map((btn) => (
           <button
-            key={lbl}
+            key={btn.label}
             type="button"
             onPointerDown={(e) => {
               e.preventDefault()
-              const next = clampValue(value + delta)
+              const next = btn.value !== undefined
+                ? clampValue(btn.value)
+                : clampValue((Number(value) || 0) + (btn.delta || 0))
               onChange(next)
               try { navigator.vibrate?.(10) } catch {}
             }}
-            className={`h-12 rounded-xl font-black text-sm select-none transition-all active:scale-90 flex items-center justify-center ${colorClass}`}
+            className={`h-12 rounded-xl font-black text-sm select-none transition-all active:scale-90 flex items-center justify-center ${
+              btn.colorClass || 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
+            }`}
           >
-            {lbl}
+            {btn.label}
           </button>
         ))}
       </div>
