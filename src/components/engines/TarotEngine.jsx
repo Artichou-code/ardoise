@@ -263,14 +263,14 @@ export function TarotEngine({ game }) {
               <ChevronRight size={12} className="opacity-40 group-hover/title:opacity-100 group-hover/title:translate-x-0.5 transition-all text-stone-400 group-hover/title:text-[#c83b3b]" />
             </div>
 
-            {/* Statut dynamique Réussi / Chuté avec score */}
-            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-              <span className={`text-[11px] font-bold ${
+            {/* Statut dynamique Réussi / Chuté avec score - strictement sur 1 ligne fixe sans wrap pour éviter tout saut de hauteur */}
+            <div className="flex items-center gap-1.5 mt-0.5 whitespace-nowrap overflow-hidden min-h-[1.125rem]">
+              <span className={`text-[11px] font-bold shrink-0 ${
                 won ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#c83b3b]'
               }`}>
-                {won ? `Contrat réussi (+${diff} pts)` : `Contrat chuté (${diff} pts)`}
+                {won ? `Réussi (+${diff} pts)` : `Chuté (${diff} pts)`}
               </span>
-              <span className="text-[10px] text-stone-400 dark:text-slate-500">
+              <span className="text-[10px] text-stone-400 dark:text-slate-500 truncate">
                 · Défense : {91 - points} pts
               </span>
             </div>
@@ -329,7 +329,7 @@ export function TarotEngine({ game }) {
 
       {/* 4. Encart prévisionnel en direct (si preneur sélectionné) */}
       {attackerId && (
-        <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200 dark:border-slate-700 flex items-center justify-between text-xs">
+        <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200 dark:border-slate-700 flex items-center justify-between text-xs whitespace-nowrap overflow-hidden min-h-[38px]">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="font-bold text-stone-700 dark:text-slate-300 truncate">
               {won ? '🎯 Réussi' : '💥 Chuté'} :
