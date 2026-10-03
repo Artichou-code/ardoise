@@ -349,23 +349,24 @@ export function GameScreen() {
                           : 'school-card'
                       }`}
                     >
-                      {/* Rang en haut à gauche de l'avatar */}
-                      <div className="absolute top-1 left-1.5 flex items-center gap-0.5 leading-none select-none">
-                        <span className={`text-[8.5px] font-extrabold uppercase ${
-                          isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
-                        }`}>
-                          {rank === 1 ? '1er' : `${rank}e`}
-                        </span>
-                        {isLeader && <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />}
-                      </div>
-
                       {/* Zone gauche : Avatar centré par rapport au nom */}
                       <div className="flex-1 flex flex-col items-center justify-center min-w-0 pr-1">
-                        <Avatar
-                          player={player}
-                          size={count <= 2 ? 'sm-compact' : 'xs'}
-                          leader={isLeader}
-                        />
+                        <div className="relative inline-flex items-center justify-center">
+                          {/* Rang 2e, 3e, etc. juste à gauche de l'avatar (sans point, bien rapproché) */}
+                          {rank > 1 && (
+                            <span className="absolute right-full mr-1 top-1/2 -translate-y-1/2 text-[9px] font-extrabold uppercase leading-none select-none text-stone-400 dark:text-slate-500 whitespace-nowrap">
+                              {rank}e
+                            </span>
+                          )}
+
+                          <Avatar
+                            player={player}
+                            size={count <= 2 ? 'sm-compact' : 'xs'}
+                            leader={isLeader}
+                            crown={isLeader || rank === 1}
+                          />
+                        </div>
+
                         <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center leading-tight mt-0.5 text-stone-900 dark:text-slate-100 block">
                           {player.name}
                         </span>
