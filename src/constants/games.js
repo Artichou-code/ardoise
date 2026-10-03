@@ -14,6 +14,7 @@ export const GAMES = {
 export const GAME_META = {
   [GAMES.DOURAK]: {
     id: GAMES.DOURAK,
+    deckType: 'classic',
     name: "Dourak (l'idiot)",
     playersBadge: '2 à 6 j.',
     categoryBadge: '36 cartes',
@@ -84,6 +85,7 @@ export const GAME_META = {
   },
   [GAMES.CARACOLE]: {
     id: GAMES.CARACOLE,
+    deckType: 'classic',
     name: 'Caracole',
     playersBadge: '2 à 6 j.',
     categoryBadge: '52 cartes',
@@ -183,6 +185,7 @@ export const GAME_META = {
   },
   [GAMES.PRESIDENT]: {
     id: GAMES.PRESIDENT,
+    deckType: 'classic',
     name: 'Trou du cul',
     playersBadge: '3–8 j.',
     categoryBadge: '54 cartes',
@@ -257,6 +260,7 @@ export const GAME_META = {
   },
   [GAMES.SKYJO]: {
     id: GAMES.SKYJO,
+    deckType: 'dedicated',
     name: 'Skyjo',
     playersBadge: '2–8 j.',
     categoryBadge: 'Jeu Skyjo',
@@ -328,6 +332,7 @@ export const GAME_META = {
   },
   [GAMES.BELOTE]: {
     id: GAMES.BELOTE,
+    deckType: 'classic',
     name: 'Belote / Coinche',
     playersBadge: '2 éq. (4 j.)',
     categoryBadge: '32 cartes',
@@ -406,6 +411,7 @@ export const GAME_META = {
   },
   [GAMES.TAROT]: {
     id: GAMES.TAROT,
+    deckType: 'dedicated',
     name: 'Tarot',
     playersBadge: '3–5 j.',
     categoryBadge: '78 cartes',
@@ -472,6 +478,7 @@ export const GAME_META = {
   },
   [GAMES.SIX_QUI_PREND]: {
     id: GAMES.SIX_QUI_PREND,
+    deckType: 'dedicated',
     name: '6 qui prend !',
     playersBadge: '2–10 j.',
     categoryBadge: 'Jeu 6 qui prend',
@@ -545,6 +552,7 @@ export const GAME_META = {
   },
   [GAMES.UNIVERSEL]: {
     id: GAMES.UNIVERSEL,
+    deckType: 'any',
     name: 'Compteur Universel',
     playersBadge: '2–12 j.',
     categoryBadge: 'Tous jeux',

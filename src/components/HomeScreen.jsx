@@ -33,6 +33,7 @@ export function HomeScreen() {
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
   const [isShareGamesModalOpen, setIsShareGamesModalOpen] = useState(false)
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
+  const [deckFilter, setDeckFilter] = useState(null) // null = tous, 'classic', 'dedicated'
 
 
 
@@ -87,13 +88,16 @@ export function HomeScreen() {
       return acc
     }, {})
 
-    return [...list].sort((a, b) => {
+    const sorted = [...list].sort((a, b) => {
       const countA = gamePlayCounts[a.id] || 0
       const countB = gamePlayCounts[b.id] || 0
       if (countB !== countA) return countB - countA
       return initialIndex[a.id] - initialIndex[b.id]
     })
-  }, [gamePlayCounts])
+
+    if (!deckFilter) return sorted
+    return sorted.filter(m => m.deckType === deckFilter || m.deckType === 'any')
+  }, [gamePlayCounts, deckFilter])
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
@@ -302,8 +306,30 @@ export function HomeScreen() {
               </h2>
             </div>
             <span className="text-[11px] text-stone-400 dark:text-slate-500">
-              {Object.keys(GAME_META).length} jeux disponibles
+              {sortedGames.length} jeu{sortedGames.length > 1 ? 'x' : ''} disponible{sortedGames.length > 1 ? 's' : ''}
             </span>
+          </div>
+
+          {/* Filtres par type de matériel */}
+          <div className="flex items-center gap-1.5 mb-2.5">
+            {[
+              { key: null, label: 'Tous' },
+              { key: 'classic', label: '🃏 Cartes classiques' },
+              { key: 'dedicated', label: '📦 Jeu dédié' },
+            ].map(({ key, label }) => (
+              <button
+                key={String(key)}
+                type="button"
+                onClick={() => setDeckFilter(prev => prev === key ? null : key)}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border whitespace-nowrap ${
+                  deckFilter === key
+                    ? 'bg-[#c83b3b] text-white border-[#c83b3b]'
+                    : 'bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400 border-stone-200 dark:border-slate-700 hover:border-[#c83b3b] hover:text-[#c83b3b]'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
