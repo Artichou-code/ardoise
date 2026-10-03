@@ -189,7 +189,7 @@ export function ScorePad({
             </p>
           )}
           {subLabel && (
-            <span className="text-[11px] font-bold text-[#c83b3b] dark:text-red-400 shrink-0">
+            <span className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 shrink-0">
               {subLabel}
             </span>
           )}
@@ -217,10 +217,12 @@ export function ScorePad({
           {isDragging ? (
             <div className="flex flex-col items-center justify-between overflow-hidden w-full h-full pointer-events-none pt-2.5 pb-2">
               {/* Pastille décollée du haut avec marge nette */}
-              <div className="shrink-0 flex items-center justify-center">
+              <div className="shrink-0 flex items-center justify-center w-full px-3">
                 {totalText ? (
-                  <div className={`inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-white text-[11px] font-bold shadow-xs max-w-full truncate ${
-                    String(totalText).startsWith('-') ? 'bg-[#c83b3b]' : 'bg-emerald-600'
+                  <div className={`inline-flex items-center justify-center gap-1 px-3 py-0.5 rounded-full text-white text-[11px] font-bold shadow-xs max-w-full truncate ${
+                    String(totalText).includes('Élimin') || String(totalText).includes('danger') || String(totalText).startsWith('-')
+                      ? 'bg-[#c83b3b]'
+                      : 'bg-emerald-600'
                   }`}>
                     <span className="truncate">{totalText}</span>
                   </div>
@@ -257,12 +259,10 @@ export function ScorePad({
                 {displayVal(value)}
               </span>
               {totalText !== null ? (
-                <div className="flex flex-col items-center">
-                  <span className={`text-xs font-bold ${
-                    String(totalText).startsWith('+')
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : String(totalText).startsWith('-')
-                      ? 'text-[#c83b3b] dark:text-red-300'
+                <div className="flex flex-col items-center max-w-full px-3">
+                  <span className={`text-xs font-bold text-center truncate max-w-full ${
+                    String(totalText).includes('Élimin')
+                      ? 'text-[#c83b3b] dark:text-red-400'
                       : 'text-stone-600 dark:text-slate-400'
                   }`}>
                     {totalText}

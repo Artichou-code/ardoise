@@ -588,20 +588,20 @@ export function YanivEngine({ game, onFinish }) {
                     <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
                       {currentEditingIndex + 1}/{game.players.length}
                     </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-slate-400 mt-0.5">
+                    <span>Total actuel : {game.scores[editingPlayer.id] || 0} pts</span>
                     {callerId === editingPlayer.id && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 shrink-0">
-                        Annonceur Yaniv
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 shrink-0">
+                        Annonceur
                       </span>
                     )}
                     {isAssaf && assafRivalId === editingPlayer.id && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shrink-0">
-                        Contreur Assaf
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shrink-0">
+                        Contreur
                       </span>
                     )}
                   </div>
-                  <span className="text-xs text-stone-500 dark:text-slate-400">
-                    Total actuel : {game.scores[editingPlayer.id] || 0} pts
-                  </span>
                 </div>
               </div>
 
@@ -645,24 +645,27 @@ export function YanivEngine({ game, onFinish }) {
                 const isCaller = callerId === editingPlayer.id
                 const isContreur = isAssaf && assafRivalId === editingPlayer.id
                 let roundPts = v
-                let note = ''
                 if (!isAssaf && isCaller) {
                   roundPts = 0
-                  note = ' (0 pt Yaniv réussi)'
                 } else if (isAssaf && isCaller) {
                   roundPts = v + 30
-                  note = ' (avec pénalité Assaf +30)'
                 } else if (isAssaf && isContreur) {
                   roundPts = 0
-                  note = ' (0 pt Contreur vainqueur)'
                 }
 
                 const cur = game.scores[editingPlayer.id] || 0
                 const proj = cur + roundPts
                 const sursis = checkSursis(proj)
                 const finalProj = sursis !== null ? sursis : proj
+                const isEliminated = finalProj >= LIMIT
 
-                return `+${roundPts} pts${note} · Total : ${finalProj}/${LIMIT} pts${sursis !== null ? ` (Sursis retombe à ${sursis}!)` : ''}${finalProj >= LIMIT ? ' 💥 Éliminé' : ''}`
+                if (sursis !== null) {
+                  return `+${roundPts} pts · Total : ${finalProj}/${LIMIT} pts (Sursis ${sursis})`
+                }
+                if (isEliminated) {
+                  return `+${roundPts} pts · Total : ${finalProj}/${LIMIT} pts (Éliminé)`
+                }
+                return `+${roundPts} pts · Total : ${finalProj}/${LIMIT} pts`
               }}
               baseScore={game.scores[editingPlayer.id] || 0}
               showPlus={false}
