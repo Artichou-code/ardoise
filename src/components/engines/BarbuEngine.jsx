@@ -600,40 +600,24 @@ export function BarbuEngine({ game, onFinish }) {
                       key={p.id}
                       className="px-3 py-2.5 rounded-xl border school-subtle hover:border-[#c83b3b]/40 transition-all"
                     >
-                      {/* Ligne 1 : Nom et score total avec évolution (style Dame de Pique) */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenPad(p)}
-                        className="w-full flex items-center justify-between gap-2 text-left cursor-pointer select-none active:opacity-80 transition-opacity mb-2"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
+                      {/* Ligne 1 : Nom du joueur à gauche + Pastille As de Cœur à droite */}
+                      <div className="flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenPad(p)}
+                          className="flex items-center gap-2 min-w-0 text-left cursor-pointer select-none active:opacity-80 transition-opacity"
+                        >
                           <Avatar player={p} size="xs" />
-                          <span className="font-semibold text-xs truncate block text-stone-900 dark:text-slate-100">
+                          <span className="font-semibold text-xs truncate text-stone-900 dark:text-slate-100">
                             {p.name}
                           </span>
-                        </div>
+                        </button>
 
-                        <div className="text-right text-xs shrink-0 select-none">
-                          <span className="text-stone-500 dark:text-slate-400">Total : {currentTotal}</span>
-                          {delta < 0 ? (
-                            <span className="text-[#c83b3b] dark:text-red-300 font-bold ml-1.5">
-                              ➔ {projectedTotal} pts ({delta} pts)
-                            </span>
-                          ) : (
-                            <span className="text-stone-400 dark:text-slate-500 ml-1.5">
-                              ➔ {projectedTotal} pts
-                            </span>
-                          )}
-                        </div>
-                      </button>
-
-                      {/* Ligne 2 : Actions rapides (As de Cœur + Roulette tactile) */}
-                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-stone-200/50 dark:border-slate-800/60">
-                        {/* Bouton As de Cœur en Rouge Ardoise (#c83b3b) */}
+                        {/* Pastille As de Cœur à sa place en haut à droite */}
                         <button
                           type="button"
                           onClick={() => setAceOfHeartsPlayerId(prev => prev === p.id ? null : p.id)}
-                          className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer select-none active:scale-95 ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer select-none active:scale-95 shrink-0 ${
                             hasAce
                               ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
                               : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:border-[#c83b3b]/60 hover:text-[#c83b3b]'
@@ -641,8 +625,28 @@ export function BarbuEngine({ game, onFinish }) {
                         >
                           ♥ As (-6 pts)
                         </button>
+                      </div>
 
-                        {/* Roulette tactile de Cœurs ordinaires (sans sous-texte en doublon) */}
+                      {/* Ligne 2 : Total avec évolution en bas à gauche + Roulette tactile de Cœurs à droite */}
+                      <div className="flex items-center justify-between gap-2 pt-2 mt-2 border-t border-stone-200/50 dark:border-slate-800/60">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenPad(p)}
+                          className="text-left text-xs shrink-0 select-none cursor-pointer active:opacity-80 transition-opacity min-w-0 truncate"
+                        >
+                          <span className="text-stone-500 dark:text-slate-400">Total : {currentTotal}</span>
+                          {delta < 0 ? (
+                            <span className="text-[#c83b3b] dark:text-red-300 font-bold ml-1.5">
+                              ➔ {projectedTotal} pts <span className="opacity-75">({delta} pts)</span>
+                            </span>
+                          ) : (
+                            <span className="text-stone-400 dark:text-slate-500 ml-1.5">
+                              ➔ {projectedTotal} pts
+                            </span>
+                          )}
+                        </button>
+
+                        {/* Roulette tactile de Cœurs ordinaires */}
                         <QuickScoreBadge
                           value={hCount}
                           onChange={v => {
