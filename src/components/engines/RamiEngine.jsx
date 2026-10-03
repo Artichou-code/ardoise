@@ -74,123 +74,170 @@ export function RamiEngine({ game, onFinish }) {
   return (
     <div className="space-y-2 pt-0">
       <div className="school-card rounded-xl p-3 sm:p-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-            Résolution de la manche
+        {/* En-tête */}
+        <div className="flex items-center justify-between mb-2.5">
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5">
+            <Trophy size={14} className="text-emerald-600 dark:text-emerald-400" />
+            Vainqueur de la manche (0 pt)
           </p>
           <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500">
-            Seuil éliminatoire : {LIMIT} pts
+            Seuil : {LIMIT} pts
           </span>
         </div>
 
-        {/* Sélection du gagnant de la manche & Option Rami Sec */}
-        <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200 dark:border-slate-700 mb-2 space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-bold text-stone-700 dark:text-slate-300">
-              Vainqueur de la manche (0 pt) :
-            </span>
-            <div className="flex gap-1 overflow-x-auto py-0.5">
-              {game.players.map(p => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setWinnerId(p.id)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
-                    winnerId === p.id
-                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-                      : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400'
-                  }`}
-                >
-                  {p.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-1.5 border-t border-stone-200/80 dark:border-slate-700/80">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-semibold text-stone-700 dark:text-slate-300">
-                Rami Sec (posé d'un coup) :
-              </span>
-              <span className="text-[10px] text-stone-400 hidden xs:inline">Double les pénalités</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsRamiSec(v => !v)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
-                isRamiSec
-                  ? 'bg-amber-600 text-white border-amber-600 shadow-2xs'
-                  : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-amber-400'
-              }`}
-            >
-              {isRamiSec ? '⚡ Rami Sec (x2)' : 'Normal'}
-            </button>
-          </div>
-        </div>
-
-        {/* Liste des pénalités des autres joueurs */}
-        <div className="space-y-1.5">
+        {/* Grille sélecteur de vainqueur (celui qui a posé toutes ses cartes) */}
+        <div className={`grid gap-2 mb-3 ${
+          game.players.length === 2 ? 'grid-cols-2' :
+          game.players.length === 3 ? 'grid-cols-3' :
+          'grid-cols-2 sm:grid-cols-4'
+        }`}>
           {game.players.map(p => {
             const isWinner = winnerId === p.id
-            const currentTotal = game.scores[p.id] || 0
-            const delta = computePlayerDelta(p.id)
-            const projected = currentTotal + delta
-            const danger = currentTotal >= LIMIT - 20
-            const rawPts = handPenalties[p.id] || 0
-
             return (
-              <div
+              <button
                 key={p.id}
-                className={`px-3 py-2 rounded-xl border transition-all ${
+                type="button"
+                onClick={() => setWinnerId(p.id)}
+                className={`flex items-center gap-2 p-2 rounded-xl border transition-all cursor-pointer select-none active:scale-[0.98] ${
                   isWinner
-                    ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20'
-                    : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
+                    ? 'border-emerald-600 bg-emerald-600 text-white shadow-2xs ring-1 ring-emerald-600/40'
+                    : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-stone-400'
                 }`}
               >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
+                <Avatar player={p} size="xs" leader={isWinner} />
+                <div className="text-left min-w-0 flex-1">
+                  <span className={`text-xs font-bold truncate block ${isWinner ? 'text-white' : ''}`}>
+                    {p.name}
+                  </span>
+                  <span className={`text-[10px] block font-medium ${isWinner ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
+                    {isWinner ? 'A posé (0 pt)' : 'Adversaire'}
+                  </span>
+                </div>
+                {isWinner && <Check size={14} className="text-white shrink-0" />}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Option Rami Sec (posé d'un coup) */}
+        <button
+          type="button"
+          onClick={() => setIsRamiSec(v => !v)}
+          className={`w-full p-2.5 rounded-xl border flex items-center justify-between transition-all cursor-pointer mb-3 select-none active:scale-[0.99] ${
+            isRamiSec
+              ? 'border-amber-500 bg-amber-500/10 text-amber-950 dark:text-amber-200 ring-1 ring-amber-400/40'
+              : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-amber-400/60'
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+              isRamiSec ? 'bg-amber-600 text-white shadow-2xs' : 'bg-stone-200 dark:bg-slate-700 text-stone-500 dark:text-slate-400'
+            }`}>
+              <Sparkles size={15} />
+            </div>
+            <div className="text-left min-w-0">
+              <span className="font-bold text-xs block leading-tight">Rami Sec (posé d'un coup)</span>
+              <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate">
+                Pénalités des adversaires doublées (×2)
+              </span>
+            </div>
+          </div>
+          <span className={`text-[11px] font-bold px-2 py-1 rounded-md transition-all shrink-0 ${
+            isRamiSec ? 'bg-amber-600 text-white shadow-2xs' : 'bg-stone-200 dark:bg-slate-700 text-stone-600 dark:text-slate-300'
+          }`}>
+            {isRamiSec ? '⚡ Actif (×2)' : 'Non'}
+          </span>
+        </button>
+
+        {/* Liste des pénalités des adversaires */}
+        <div className="pt-2 border-t border-stone-200/80 dark:border-slate-800">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+              Pénalités de manche
+            </p>
+            <span className="text-[10px] text-stone-400 dark:text-slate-500">
+              Figures = 10 · As = 11 · Joker = 20
+            </span>
+          </div>
+
+          <div className="space-y-1.5">
+            {game.players.map(p => {
+              const isWinner = winnerId === p.id
+              const currentTotal = game.scores[p.id] || 0
+              const delta = computePlayerDelta(p.id)
+              const projected = currentTotal + delta
+              const danger = projected >= LIMIT
+              const rawPts = handPenalties[p.id] || 0
+
+              if (isWinner) {
+                return (
+                  <div
+                    key={p.id}
+                    className="px-3 py-2 rounded-xl border border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Avatar player={p} size="xs" leader />
+                      <div className="min-w-0">
+                        <span className="font-semibold text-sm truncate block">{p.name}</span>
+                        <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+                          Total : {currentTotal} pts (inchangé)
+                        </span>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-2xs">
+                      0 pt (Vainqueur)
+                    </span>
+                  </div>
+                )
+              }
+
+              return (
+                <div
+                  key={p.id}
+                  className="px-3 py-2 rounded-xl border school-subtle hover:border-stone-300 dark:hover:border-slate-700 flex items-center justify-between gap-3"
+                >
+                  <button
+                    type="button"
+                    onClick={() => { setEditingPlayer(p); setOpen(true) }}
+                    className="flex items-center gap-2.5 flex-1 min-w-0 text-left cursor-pointer select-none"
+                  >
                     <Avatar player={p} size="xs" />
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-sm truncate">{p.name}</span>
-                        {isWinner && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
-                            Vainqueur (0 pt)
-                          </span>
-                        )}
-                        {danger && !isWinner && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
+                        {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
                       </div>
                       <span className="text-[11px] text-stone-500 dark:text-slate-400 block">
-                        Pénalités : {currentTotal} pts {!isWinner && delta > 0 && <span className="text-[#c83b3b] font-bold">(+{delta} = {projected})</span>}
+                        Total : {currentTotal} pts {delta > 0 && (
+                          <span className="text-[#c83b3b] font-bold">
+                            (+{delta} = {projected}) {isRamiSec && <span className="text-amber-600 font-normal">(×2)</span>}
+                          </span>
+                        )}
                       </span>
                     </div>
-                  </div>
+                  </button>
 
-                  {!isWinner && (
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <QuickScoreBadge
-                        value={rawPts}
-                        onChange={v => setHandPenalties(prev => ({ ...prev, [p.id]: Math.max(0, v) }))}
-                        onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
-                        min={0}
-                        step={1}
-                        showPlus={true}
-                        formatDisplay={(v) => `${isRamiSec ? v * 2 : v} pts`}
-                        formatBubble={(v) => {
-                          const d = isRamiSec ? v * 2 : v
-                          const proj = currentTotal + d
-                          return {
-                            text: `+${d} pts (total ${proj})`,
-                            variant: proj >= LIMIT ? 'danger' : 'default',
-                          }
-                        }}
-                      />
-                    </div>
-                  )}
+                  <QuickScoreBadge
+                    value={rawPts}
+                    onChange={v => setHandPenalties(prev => ({ ...prev, [p.id]: Math.max(0, v) }))}
+                    onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
+                    min={0}
+                    step={1}
+                    showPlus={true}
+                    formatDisplay={(v) => `${isRamiSec ? v * 2 : v} pts`}
+                    formatBubble={(v) => {
+                      const d = isRamiSec ? v * 2 : v
+                      const proj = currentTotal + d
+                      return {
+                        text: `+${d} pts (total ${proj})`,
+                        variant: proj >= LIMIT ? 'danger' : 'default',
+                      }
+                    }}
+                  />
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
 
         <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
@@ -211,9 +258,15 @@ export function RamiEngine({ game, onFinish }) {
             <h3 className="font-serif-title font-bold text-lg mb-1">
               Cartes en main de {editingPlayer.name}
             </h3>
-            <p className="text-xs text-stone-500 dark:text-slate-400 mb-4">
+            <p className="text-xs text-stone-500 dark:text-slate-400 mb-3">
               Additionnez les points des cartes restantes (Figures = 10, As = 11, Joker = 20).
             </p>
+            {isRamiSec && (
+              <div className="mb-3 px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-400/50 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center gap-1.5">
+                <Sparkles size={13} className="text-amber-600 shrink-0" />
+                <span>Rami Sec actif : ces pénalités seront doublées (×2).</span>
+              </div>
+            )}
             <ScorePad
               value={handPenalties[editingPlayer.id] || 0}
               onChange={v => setHandPenalties(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, v) }))}
