@@ -84,7 +84,7 @@ export function VictoryScreen() {
             {/* Meilleur joueur (0 défaite / invaincu) */}
             {winner && (
               <div className="school-card rounded-xl p-3 flex flex-col items-center justify-center text-center border-t-4 border-t-emerald-700 dark:border-t-emerald-500">
-                <Avatar player={winner} size="md" />
+                <Avatar player={winner} size="md" crown />
                 <span className="mt-1.5 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 w-full text-center">
                   Meilleur joueur
                 </span>
@@ -119,7 +119,7 @@ export function VictoryScreen() {
             <div className="inline-flex flex-col items-center">
               <div className="flex items-center justify-center -space-x-2">
                 {winningPlayers.map(p => (
-                  <Avatar key={p.id} player={p} size="lg" leader />
+                  <Avatar key={p.id} player={p} size="lg" leader crown />
                 ))}
               </div>
               <span className="mt-2 inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-[#c83b3b] text-white text-[11px] font-bold uppercase tracking-wider">
@@ -138,7 +138,7 @@ export function VictoryScreen() {
           winner && (
             <div className="text-center mt-2 mb-3">
               <div className="inline-flex flex-col items-center">
-                <Avatar player={winner} size="lg" leader />
+                <Avatar player={winner} size="lg" leader crown />
                 <span className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#c83b3b] text-white text-[10px] font-bold uppercase tracking-wider">
                   <Award size={12} /> Vainqueur
                 </span>
@@ -204,7 +204,7 @@ export function VictoryScreen() {
                 const isFirst = r.rank === 1
                 return (
                   <div key={r.id} className="flex flex-col items-center gap-1 w-24">
-                    <Avatar player={player} size="sm" leader={isFirst} />
+                    <Avatar player={player} size="sm" leader={isFirst} crown={isFirst} />
                     <span className="text-xs font-semibold truncate w-full text-center px-1">
                       {player.name}
                     </span>

@@ -104,7 +104,7 @@ export function RamiEngine({ game, onFinish }) {
                     : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-stone-400'
                 }`}
               >
-                <Avatar player={p} size="xs" leader={isWinner} />
+                <Avatar player={p} size="xs" leader={isWinner} leaderColor="#10b981" crown={isWinner} />
                 <div className="text-left min-w-0 flex-1">
                   <span className={`text-xs font-bold truncate block ${isWinner ? 'text-white' : ''}`}>
                     {p.name}
@@ -172,13 +172,10 @@ export function RamiEngine({ game, onFinish }) {
                     className="px-3 py-2 rounded-xl border border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 flex items-center justify-between gap-2"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <Avatar player={p} size="xs" leader />
+                      <Avatar player={p} size="xs" leader leaderColor="#059669" crown />
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="font-semibold text-sm truncate">{p.name}</span>
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white whitespace-nowrap">
-                            Vainqueur
-                          </span>
                         </div>
                         <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium truncate block">
                           Total : {currentTotal} pts

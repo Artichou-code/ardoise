@@ -1,8 +1,15 @@
 import { AVATAR_COLORS, AVATAR_COLOR_NAMES, PRESET_AVATARS } from '../../constants/games'
 import { getPlayerInitial, getPlayerAvatarUrl } from '../../utils/gameUtils'
-import { Check } from 'lucide-react'
+import { Check, Crown } from 'lucide-react'
 
-export function Avatar({ player, size = 'md', leader = false, leaderColor, ringColor: customRingColor }) {
+export function Avatar({
+  player,
+  size = 'md',
+  leader = false,
+  leaderColor,
+  ringColor: customRingColor,
+  crown = false,
+}) {
   const sizeClass = {
     '2xs': 'w-5 h-5 text-[10px] m-[2.5px]',
     xs: 'w-6 h-6 text-[11px] m-[3px]',
@@ -28,6 +35,25 @@ export function Avatar({ player, size = 'md', leader = false, leaderColor, ringC
       : `0 0 0 2px var(--bg-card, #ffffff), 0 0 0 4px ${ringColor}`,
   }
 
+  const crownConfig = {
+    '2xs': { size: 10, offset: '-top-2' },
+    xs: { size: 12, offset: '-top-2.5' },
+    'sm-compact': { size: 13, offset: '-top-2.5' },
+    sm: { size: 15, offset: '-top-3' },
+    md: { size: 18, offset: '-top-3.5' },
+    lg: { size: 22, offset: '-top-4.5' },
+    xl: { size: 26, offset: '-top-5.5' },
+  }[size] || { size: 15, offset: '-top-3' }
+
+  const crownElement = crown ? (
+    <Crown
+      size={crownConfig.size}
+      className={`absolute ${crownConfig.offset} left-1/2 -translate-x-1/2 -rotate-6 origin-bottom text-amber-500 fill-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] z-10 pointer-events-none`}
+      strokeWidth={2.2}
+      aria-hidden="true"
+    />
+  ) : null
+
   if (avatarUrl) {
     return (
       <div
@@ -40,19 +66,21 @@ export function Avatar({ player, size = 'md', leader = false, leaderColor, ringC
           className="w-full h-full object-cover rounded-full block"
           draggable={false}
         />
+        {crownElement}
       </div>
     )
   }
 
   return (
     <div
-      className={`${sizeClass} rounded-full flex items-center justify-center flex-shrink-0 font-bold tracking-tight text-white select-none transition-all`}
+      className={`${sizeClass} rounded-full flex items-center justify-center flex-shrink-0 font-bold tracking-tight text-white select-none transition-all relative`}
       style={{
         backgroundColor: ringColor,
         ...floatingRingStyle,
       }}
     >
       <span>{initial}</span>
+      {crownElement}
     </div>
   )
 }
