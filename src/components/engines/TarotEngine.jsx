@@ -183,7 +183,7 @@ export function TarotEngine({ game }) {
           </span>
         </div>
 
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-2 gap-1.5">
           {TAROT_CONTRACTS.map(c => {
             const isSelected = contract === c.id
             return (
@@ -191,14 +191,14 @@ export function TarotEngine({ game }) {
                 key={c.id}
                 type="button"
                 onClick={() => setContract(c.id)}
-                className={`py-2 px-1 rounded-xl text-center border font-bold text-xs transition-all cursor-pointer ${
+                className={`py-2 px-2.5 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
                   isSelected
                     ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
                     : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
                 }`}
               >
-                <span className="block leading-tight truncate">{c.label}</span>
-                <span className={`block text-[10px] font-normal mt-0.5 ${isSelected ? 'text-white/80' : 'text-stone-400 dark:text-slate-500'}`}>
+                <span className="font-bold text-xs leading-none">{c.label}</span>
+                <span className={`text-[11px] font-bold ${isSelected ? 'text-white/90' : 'text-[#c83b3b] dark:text-rose-400'}`}>
                   ×{c.multiplier}
                 </span>
               </button>
@@ -310,7 +310,7 @@ export function TarotEngine({ game }) {
           <div>
             <div className="grid grid-cols-4 gap-1 pt-0.5">
               {[
-                { val: threshold, label: `${threshold} (Exact)` },
+                { val: threshold, label: `${threshold} pts` },
                 { val: 41, label: '41' },
                 { val: 51, label: '51' },
                 { val: 56, label: '56' },
