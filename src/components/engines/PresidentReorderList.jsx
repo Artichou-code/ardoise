@@ -295,13 +295,13 @@ export function PresidentReorderList({
 
               <div className="min-w-0 flex-1">
                 {/* Ligne 1 : Nom complet du joueur */}
-                <span className="font-semibold text-xs sm:text-sm truncate block text-stone-900 dark:text-slate-100 leading-tight">
+                <span className="font-semibold text-xs sm:text-sm truncate block text-stone-900 dark:text-slate-100 leading-none">
                   {p.name}
                 </span>
 
-                {/* Ligne 2 : Badge du rôle officiel */}
-                <div className="mt-1 min-w-0">
-                  <span className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                {/* Ligne 2 : Badge du rôle officiel (plus proche du nom) */}
+                <div className="mt-0.5 min-w-0">
+                  <span className={`inline-block text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0 leading-tight ${
                     isPresident
                       ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                       : isVicePresident
