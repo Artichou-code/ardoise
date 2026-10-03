@@ -392,7 +392,7 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
             ))}
           </div>
           <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-[11px] leading-relaxed">
-            Cette combinaison mythique met <strong>fin immédiatement à la partie</strong> et octroie la victoire à son détenteur !
+            Met <strong>fin immédiatement à la partie</strong> et donne la victoire !
           </div>
         </div>
       </Dialog>
@@ -408,7 +408,7 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
             Confirmer que <strong>{sirensConfirmPlayer?.name}</strong> possède les <strong>4 cartes Sirènes</strong> ?
           </p>
           <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/50 text-amber-900 dark:text-amber-200">
-            Cette combinaison mythique met <strong>fin immédiatement à la partie</strong> et octroie la victoire à son détenteur !
+            Met <strong>fin immédiatement à la partie</strong> et donne la victoire !
           </div>
           <div className="flex items-center gap-2 pt-2">
             <button
