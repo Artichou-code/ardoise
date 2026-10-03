@@ -87,11 +87,11 @@ export function AscenseurEngine({ game, onFinish }) {
   }
 
   return (
-    <div className="space-y-4 pt-2">
+    <div className="space-y-2 pt-0">
       {/* En-tête de la manche de l'Ascenseur */}
-      <div className="school-card rounded-xl p-4">
+      <div className="school-card rounded-xl p-3 sm:p-4">
         {/* Ligne 1 : Titre de manche & Nombre de cartes avec stepper */}
-        <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center justify-between gap-2 mb-2">
           <div className="min-w-0">
             <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 block truncate">
               Manche {roundNum} · Palier
@@ -128,11 +128,11 @@ export function AscenseurEngine({ game, onFinish }) {
         </div>
 
         {/* Ligne 2 : Onglets de phase en pleine largeur (très confortable sur mobile) */}
-        <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-stone-100 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 mb-3">
+        <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-stone-100 dark:bg-slate-800 border border-stone-200 dark:border-slate-700 mb-2">
           <button
             type="button"
             onClick={() => setPhase('bids')}
-            className={`py-2 px-2 rounded-lg text-xs font-bold transition-all text-center cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all text-center cursor-pointer flex items-center justify-center gap-1.5 ${
               phase === 'bids'
                 ? 'bg-white dark:bg-slate-900 text-stone-900 dark:text-white shadow-2xs'
                 : 'text-stone-500 dark:text-slate-400 hover:text-stone-800'
@@ -148,7 +148,7 @@ export function AscenseurEngine({ game, onFinish }) {
           <button
             type="button"
             onClick={() => setPhase('tricks')}
-            className={`py-2 px-2 rounded-lg text-xs font-bold transition-all text-center cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`py-1.5 px-2 rounded-lg text-xs font-bold transition-all text-center cursor-pointer flex items-center justify-center gap-1.5 ${
               phase === 'tricks'
                 ? 'bg-white dark:bg-slate-900 text-stone-900 dark:text-white shadow-2xs'
                 : 'text-stone-500 dark:text-slate-400 hover:text-stone-800'
@@ -165,7 +165,7 @@ export function AscenseurEngine({ game, onFinish }) {
 
         {/* Message d'aide contextuel selon la phase */}
         {phase === 'bids' ? (
-          <div className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-between mb-3 ${
+          <div className={`p-2 rounded-xl border text-xs font-medium flex items-center justify-between mb-2 ${
             isDealerRestricted
               ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200'
               : 'bg-stone-50 dark:bg-slate-800/60 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400'
@@ -184,7 +184,7 @@ export function AscenseurEngine({ game, onFinish }) {
             </button>
           </div>
         ) : (
-          <div className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-between mb-3 ${
+          <div className={`p-2 rounded-xl border text-xs font-medium flex items-center justify-between mb-2 ${
             isTricksExact
               ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700/60 text-emerald-900 dark:text-emerald-200'
               : 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200'
@@ -302,11 +302,11 @@ export function AscenseurEngine({ game, onFinish }) {
         </div>
 
         {/* Validation de la manche */}
-        <div className="mt-4 pt-3 border-t border-stone-200/80 dark:border-slate-800">
+        <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
           <button
             type="button"
             onClick={submitRound}
-            className="w-full py-3 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
+            className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
           >
             Valider la manche {roundNum}
           </button>

@@ -295,7 +295,7 @@ export function GameScreen() {
 
       {/* Moteur de saisie de manche */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="px-4 pt-3 scroll-bottom-space">
+        <div className="px-4 pt-1.5 scroll-bottom-space">
           <Engine
             key={`${activeGame.id}-r-${activeGame.rounds.length}-${activeGame.isCorrection ? 'corr' : 'norm'}`}
             game={activeGame}
@@ -304,7 +304,7 @@ export function GameScreen() {
           />
 
           {/* Actions secondaires sur la même ligne (espace ajusté pour éviter le retour à la ligne) */}
-          <div className="flex items-center gap-2 pt-3 pb-2 w-full max-w-sm mx-auto px-1">
+          <div className="flex items-center gap-2 pt-2 pb-1 w-full max-w-sm mx-auto px-1">
             <button
               type="button"
               onClick={() => setShowDeleteConfirm(true)}
