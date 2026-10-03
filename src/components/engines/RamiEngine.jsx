@@ -5,6 +5,7 @@ import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
+import { Dialog } from '../ui/Dialog'
 
 export function RamiEngine({ game, onFinish }) {
   const { updateScores } = useGame()
@@ -33,6 +34,7 @@ export function RamiEngine({ game, onFinish }) {
 
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [open, setOpen] = useState(false)
+  const [showZeroConfirm, setShowZeroConfirm] = useState(false)
 
   // Calcul du delta de manche pour chaque joueur
   const computePlayerDelta = (playerId) => {
@@ -69,6 +71,20 @@ export function RamiEngine({ game, onFinish }) {
       const finalWinner = Object.entries(newScores).sort((a, b) => a[1] - b[1])[0][0]
       onFinish(finalWinner)
     }
+  }
+
+  const handleValidate = () => {
+    // Calcul des pénalités des adversaires
+    const totalOpponentPts = game.players
+      .filter(p => p.id !== winnerId)
+      .reduce((sum, p) => sum + (handPenalties[p.id] || 0), 0)
+
+    if (totalOpponentPts === 0) {
+      setShowZeroConfirm(true)
+      return
+    }
+
+    submitRound()
   }
 
   return (
@@ -241,13 +257,48 @@ export function RamiEngine({ game, onFinish }) {
         <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
           <button
             type="button"
-            onClick={submitRound}
+            onClick={handleValidate}
             className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
           >
             Valider la manche
           </button>
         </div>
       </div>
+
+      {/* Dialogue de confirmation si aucun adversaire n'a de pénalité */}
+      <Dialog
+        open={showZeroConfirm}
+        onClose={() => setShowZeroConfirm(false)}
+        title="Aucun point saisi pour les adversaires"
+      >
+        <div className="space-y-4">
+          <p className="text-xs sm:text-sm text-stone-600 dark:text-slate-400 leading-relaxed">
+            Tous les adversaires sont à <strong>0 pt</strong>. Au Rami, le gagnant pose toutes ses cartes, mais les autres joueurs comptent les cartes qui leur restent en main (Figures = 10, As = 11, Joker = 20...).
+          </p>
+          <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold">
+            Avez-vous oublié de compter leurs cartes en main ?
+          </p>
+          <div className="flex flex-col gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowZeroConfirm(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-sm text-white btn-margin-red cursor-pointer"
+            >
+              Saisir les cartes des adversaires
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowZeroConfirm(false)
+                submitRound()
+              }}
+              className="w-full py-2 rounded-xl text-xs font-semibold text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer"
+            >
+              Valider quand même la manche (0 pt)
+            </button>
+          </div>
+        </div>
+      </Dialog>
 
       {/* BottomSheet saisie de pénalités de main */}
       <BottomSheet open={open} onClose={() => setOpen(false)}>

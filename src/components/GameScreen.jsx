@@ -1,5 +1,5 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
-import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen, Radio, Trash2 } from 'lucide-react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen, Radio, Trash2, CheckCircle2 } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { getActiveSession } from '../store/liveSession'
 import { BurgerMenuButton } from './BurgerMenu'
@@ -55,6 +55,25 @@ export function GameScreen() {
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
   const [isCreatingLive, setIsCreatingLive] = useState(false)
+  const [roundJustSaved, setRoundJustSaved] = useState(null)
+  const prevRoundsLengthRef = useRef(activeGame?.rounds?.length ?? 0)
+
+  useEffect(() => {
+    if (!activeGame) return
+    const currentLength = activeGame.rounds?.length ?? 0
+    if (currentLength > prevRoundsLengthRef.current) {
+      setRoundJustSaved(currentLength)
+      try {
+        navigator.vibrate?.([25, 35, 25])
+      } catch {}
+      const timer = setTimeout(() => {
+        setRoundJustSaved(null)
+      }, 1800)
+      prevRoundsLengthRef.current = currentLength
+      return () => clearTimeout(timer)
+    }
+    prevRoundsLengthRef.current = currentLength
+  }, [activeGame?.rounds?.length])
 
   useEffect(() => {
     const handleSessionChanged = (e) => setLiveSession(e.detail)
@@ -102,7 +121,10 @@ export function GameScreen() {
           <span className="font-serif-title font-bold text-base truncate">
             {getGameDisplayName(activeGame)}
           </span>
-          <span className="text-xs font-semibold text-[#c83b3b] shrink-0 whitespace-nowrap">
+          <span
+            key={activeGame.rounds.length}
+            className="text-xs font-semibold text-[#c83b3b] shrink-0 whitespace-nowrap animate-round-bump"
+          >
             M.{activeGame.rounds.length + 1}
           </span>
           <button
@@ -297,15 +319,29 @@ export function GameScreen() {
         )}
       </div>
 
+      {/* Toast flottant de transition entre deux manches */}
+      {roundJustSaved && (
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-toast-pop">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-950/25 border border-emerald-400/40">
+            <CheckCircle2 size={14} className="shrink-0" />
+            <span>Manche {roundJustSaved} enregistrée !</span>
+          </div>
+        </div>
+      )}
+
       {/* Moteur de saisie de manche */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         <div className="px-4 pt-1 pb-8 pb-safe">
-          <Engine
+          <div
             key={`${activeGame.id}-r-${activeGame.rounds.length}-${activeGame.isCorrection ? 'corr' : 'norm'}`}
-            game={activeGame}
-            leaderId={leaderId}
-            onFinish={finishGame}
-          />
+            className="animate-round-slide-in"
+          >
+            <Engine
+              game={activeGame}
+              leaderId={leaderId}
+              onFinish={finishGame}
+            />
+          </div>
 
           {/* Actions secondaires sur la même ligne (espacement généreux avec le bas) */}
           <div className="flex items-center gap-2 pt-3 pb-3 mb-2 w-full max-w-sm mx-auto px-1">
