@@ -206,21 +206,37 @@ export function DominoReorderList({
         // Déplacement CSS (transform translateY)
         const h = itemHeightRef.current || 54
         let translateY = 0
-        let transition = 'none'
+        let transition = 'background-color 200ms ease, border-color 200ms ease'
 
         if (isBeingDragged) {
           translateY = dragOffsetY
           transition = isDropping
-            ? 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease, border-color 220ms ease'
-            : 'none'
+            ? 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease, background-color 200ms ease, border-color 200ms ease'
+            : 'box-shadow 150ms ease, background-color 200ms ease, border-color 200ms ease'
         } else if (isDragActive && overIndex !== null) {
-          transition = 'transform 200ms cubic-bezier(0.2, 0, 0, 1)'
+          transition = 'transform 200ms cubic-bezier(0.2, 0, 0, 1), background-color 200ms ease, border-color 200ms ease'
           if (draggingIndex < overIndex && index > draggingIndex && index <= overIndex) {
             translateY = -h
           } else if (draggingIndex > overIndex && index >= overIndex && index < draggingIndex) {
             translateY = h
           }
         }
+
+        // Thème dynamique du rang projeté (sans forcer de fond blanc artificiel)
+        const isTargetFirst = effectiveIndex === 0
+        const isTargetLast = effectiveIndex === dominoRanks.length - 1
+
+        const themeClass = isTargetFirst
+          ? 'border-emerald-500/80 bg-emerald-50/60 dark:bg-emerald-950/25'
+          : isTargetLast
+          ? 'border-[#c83b3b]/60 bg-[#c83b3b]/8 dark:bg-[#c83b3b]/15'
+          : 'school-subtle'
+
+        const elevationClass = isBeingDragged
+          ? isDropping
+            ? 'shadow-md z-30 ring-1 ring-stone-900/10 dark:ring-white/15'
+            : 'shadow-2xl z-40 ring-1 ring-stone-900/15 dark:ring-white/20'
+          : ''
 
         return (
           <div
@@ -235,17 +251,7 @@ export function DominoReorderList({
               transition,
               zIndex: isBeingDragged ? 40 : 1,
             }}
-            className={`px-2 sm:px-3 py-2 rounded-xl border flex items-center justify-between gap-1.5 sm:gap-2 touch-none cursor-grab active:cursor-grabbing ${
-              isBeingDragged
-                ? isDropping
-                  ? 'shadow-sm bg-white dark:bg-slate-900 border-[#c83b3b]/40 ring-1 ring-[#c83b3b]/15 opacity-100'
-                  : 'shadow-xl bg-white dark:bg-slate-900 border-[#c83b3b]/70 ring-2 ring-[#c83b3b]/25 opacity-98'
-                : effectiveIndex === 0
-                ? 'border-emerald-500/80 bg-emerald-50/50 dark:bg-emerald-950/20'
-                : effectiveIndex === dominoRanks.length - 1
-                ? 'border-[#c83b3b]/60 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/15'
-                : 'school-subtle'
-            }`}
+            className={`px-2 sm:px-3 py-2 rounded-xl border flex items-center justify-between gap-1.5 sm:gap-2 touch-none cursor-grab active:cursor-grabbing ${themeClass} ${elevationClass}`}
           >
             {/* Poignée de drag & drop visuelle */}
             <div
