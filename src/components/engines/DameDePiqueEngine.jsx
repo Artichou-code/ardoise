@@ -139,8 +139,8 @@ export function DameDePiqueEngine({ game, onFinish }) {
           }}
           className={`w-full p-2.5 px-3 rounded-xl border flex items-center justify-between gap-3 transition-all cursor-pointer mb-2.5 select-none active:scale-[0.99] ${
             isChelem
-              ? 'border-amber-600/60 bg-amber-500/10 dark:bg-amber-950/20 ring-1 ring-amber-600/30'
-              : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-amber-500/50'
+              ? 'border-[#c83b3b]/60 bg-[#c83b3b]/6 dark:bg-[#c83b3b]/15 ring-1 ring-[#c83b3b]/30'
+              : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/40'
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
@@ -149,7 +149,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
               strokeWidth={2}
               className={`shrink-0 transition-colors ${
                 isChelem
-                  ? 'text-amber-600 dark:text-amber-400'
+                  ? 'text-[#c83b3b] dark:text-red-400'
                   : 'text-stone-400 dark:text-slate-500'
               }`}
             />
@@ -158,7 +158,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
                 <span className="font-bold text-xs leading-tight">Grand Chelem</span>
                 <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded transition-colors ${
                   isChelem
-                    ? 'bg-amber-600/15 text-amber-700 dark:text-amber-300'
+                    ? 'bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300'
                     : 'bg-stone-200/70 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
                 }`}>
                   +26 aux rivaux
@@ -173,7 +173,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
           {/* Interrupteur Switch style iOS */}
           <div
             className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-              isChelem ? 'bg-amber-600' : 'bg-stone-300 dark:bg-slate-700'
+              isChelem ? 'bg-[#c83b3b]' : 'bg-stone-300 dark:bg-slate-700'
             }`}
           >
             <span
@@ -186,10 +186,15 @@ export function DameDePiqueEngine({ game, onFinish }) {
 
         {/* Si Grand Chelem : Sélecteur du joueur qui a réussi */}
         {isChelem ? (
-          <div className="mb-2 p-2.5 rounded-xl bg-amber-500/8 dark:bg-amber-950/20 border border-amber-500/30">
-            <p className="text-[11px] font-bold text-amber-900 dark:text-amber-200 uppercase tracking-wider mb-2">
-              Auteur du Grand Chelem (0 pt · +26 pts aux autres) :
-            </p>
+          <div className="mb-2 p-2.5 rounded-xl bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10 border border-[#c83b3b]/25">
+            <div className="flex items-center justify-between gap-1 flex-wrap mb-2">
+              <p className="text-[11px] font-bold text-[#c83b3b] dark:text-red-400 uppercase tracking-wider">
+                Auteur du Grand Chelem
+              </p>
+              <span className="text-[10px] font-medium text-stone-500 dark:text-slate-400">
+                0 pt auteur · +26 pts autres
+              </span>
+            </div>
             <div className={`grid gap-2 ${
               game.players.length === 2 ? 'grid-cols-2' :
               game.players.length === 3 ? 'grid-cols-3' :
@@ -202,21 +207,27 @@ export function DameDePiqueEngine({ game, onFinish }) {
                     key={p.id}
                     type="button"
                     onClick={() => setChelemWinnerId(p.id)}
-                    className={`flex items-center gap-2 p-2 rounded-xl border transition-all cursor-pointer select-none active:scale-[0.98] ${
+                    className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all cursor-pointer select-none active:scale-[0.98] ${
                       isWinner
-                        ? 'border-amber-600 bg-amber-600 text-white shadow-2xs ring-1 ring-amber-600/40'
-                        : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-amber-400'
+                        ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs ring-1 ring-[#c83b3b]/30'
+                        : 'school-card text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/40'
                     }`}
                   >
-                    <Avatar player={p} size="xs" leader={isWinner} leaderColor="#d97706" crown={isWinner} />
-                    <div className="text-left min-w-0 flex-1">
-                      <span className={`text-xs font-bold truncate block ${isWinner ? 'text-white' : ''}`}>
-                        {p.name}
-                      </span>
-                      <span className={`text-[10px] block font-medium truncate ${isWinner ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
-                        {isWinner ? '0 pt (Chelem)' : '+26 pts'}
-                      </span>
+                    <div className="relative mb-1">
+                      <Avatar player={p} size="sm" leader={isWinner} leaderColor="#c83b3b" crown={isWinner} />
                     </div>
+                    <span className={`text-xs font-bold truncate max-w-full text-center px-1 block ${
+                      isWinner ? 'text-white' : 'text-stone-800 dark:text-slate-100'
+                    }`}>
+                      {p.name}
+                    </span>
+                    <span className={`text-[10px] font-semibold mt-1 px-1.5 py-0.5 rounded-full inline-block ${
+                      isWinner
+                        ? 'bg-white/20 text-white'
+                        : 'bg-stone-200/80 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
+                    }`}>
+                      {isWinner ? '0 pt' : '+26 pts'}
+                    </span>
                   </button>
                 )
               })}
@@ -261,7 +272,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
                 key={p.id}
                 className={`px-3 py-2.5 rounded-xl border transition-all ${
                   isChelemWinner
-                    ? 'border-amber-400/80 bg-amber-50/40 dark:bg-amber-950/20'
+                    ? 'border-[#c83b3b]/60 bg-[#c83b3b]/6 dark:bg-[#c83b3b]/15'
                     : isQueen && !isChelem
                     ? 'border-[#c83b3b]/60 bg-[#c83b3b]/5'
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'

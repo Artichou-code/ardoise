@@ -182,6 +182,16 @@ export function GameScreen() {
             {getGameDisplayName(activeGame)}
           </span>
           <AnimatedRoundIndicator roundNumber={activeGame.rounds.length + 1} />
+          {/* Bouton Règles du jeu sur le côté gauche */}
+          <button
+            type="button"
+            onClick={() => setShowRules(true)}
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg border border-stone-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-stone-600 dark:text-slate-400 hover:text-[#c83b3b] hover:border-[#c83b3b] transition-colors shrink-0 cursor-pointer flex items-center justify-center"
+            title="Consulter les règles"
+            aria-label="Consulter les règles"
+          >
+            <BookOpen size={12} className="sm:w-[13px] sm:h-[13px]" />
+          </button>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {/* Bouton discret Table en direct dans le header (rond) */}
