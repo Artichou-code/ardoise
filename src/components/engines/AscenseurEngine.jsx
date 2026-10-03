@@ -179,26 +179,24 @@ export function AscenseurEngine({ game, onFinish }) {
 
         {/* Message d'aide contextuel selon la phase */}
         {phase === 'bids' ? (
-          <div className={`p-2 rounded-xl border text-xs font-medium flex items-center justify-between mb-2 ${
+          <div className={`p-2.5 rounded-xl border text-xs font-medium flex items-center gap-2 mb-2 ${
             isDealerRestricted
               ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200'
               : 'bg-stone-50 dark:bg-slate-800/60 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400'
           }`}>
-            <span>
+            {isDealerRestricted ? (
+              <AlertCircle size={15} className="text-amber-600 dark:text-amber-400 shrink-0" />
+            ) : (
+              <span className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-slate-500 shrink-0" />
+            )}
+            <span className="leading-snug flex-1">
               {isDealerRestricted
                 ? `Attention : Total des paris = ${cardsCount} (le donneur doit faire varier le total !)`
                 : `Total des annonces : ${totalBids} plis pour ${cardsCount} cartes en jeu`}
             </span>
-            <button
-              type="button"
-              onClick={() => setPhase('tricks')}
-              className="font-bold text-[#c83b3b] hover:underline flex items-center gap-0.5 ml-2 shrink-0 cursor-pointer"
-            >
-              Passer aux plis <ChevronRight size={13} />
-            </button>
           </div>
         ) : (
-          <div className={`p-2 rounded-xl border text-xs font-medium flex items-center justify-between mb-2 ${
+          <div className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-between mb-2 ${
             isTricksExact
               ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700/60 text-emerald-900 dark:text-emerald-200'
               : 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200'
@@ -206,24 +204,28 @@ export function AscenseurEngine({ game, onFinish }) {
             <div className="flex items-center gap-1.5">
               {isTricksExact ? (
                 <>
-                  <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                  <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Exactement {totalTricks}/{cardsCount} plis distribués</span>
                 </>
               ) : (
                 <>
-                  <AlertCircle size={14} className="text-amber-600 shrink-0" />
+                  <AlertCircle size={15} className="text-amber-600 dark:text-amber-400 shrink-0" />
                   <span>Total saisi : {totalTricks}/{cardsCount} plis</span>
                 </>
               )}
             </div>
-            <span className="font-bold text-[11px]">
+            <span className={`font-bold text-[11px] px-2 py-0.5 rounded-full ${
+              isTricksExact
+                ? 'bg-emerald-200/60 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300'
+                : 'bg-amber-200/60 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300'
+            }`}>
               {isTricksExact ? 'Complet' : 'À vérifier'}
             </span>
           </div>
         )}
 
         {/* Liste des joueurs avec saisie des paris / plis */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {game.players.map(p => {
             const currentTotal = game.scores[p.id] || 0
             const b = bids[p.id] ?? 0
@@ -235,51 +237,65 @@ export function AscenseurEngine({ game, onFinish }) {
             return (
               <div
                 key={p.id}
-                className={`px-3 py-2 rounded-xl border transition-all ${
+                className={`p-2.5 sm:p-3 rounded-xl border transition-all ${
                   phase === 'tricks' && won
                     ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/20'
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2.5">
-                  <div className="flex items-center gap-2.5 min-w-0">
+                {/* Ligne 1 : Identité joueur, gain manche et score cumulé */}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     <Avatar player={p} size="xs" />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm truncate">{p.name}</span>
-                        {phase === 'tricks' && won && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
-                            +{roundPts} pts
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
-                        {phase === 'tricks' ? (
-                          <span className="truncate">
-                            Total : {currentTotal} <strong className="font-semibold text-stone-700 dark:text-slate-300">➔ {projected} pts</strong>
-                          </span>
-                        ) : (
-                          <span className="truncate">Total : {currentTotal} pts</span>
-                        )}
-                      </div>
-                    </div>
+                    <span className="font-semibold text-sm truncate text-stone-900 dark:text-slate-100">
+                      {p.name}
+                    </span>
+                    {phase === 'tricks' && (
+                      won ? (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 shrink-0">
+                          +{roundPts} pts
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400 shrink-0">
+                          +0 pt
+                        </span>
+                      )
+                    )}
                   </div>
 
-                  {/* Boutons sélecteurs alignés à droite */}
-                  {phase === 'bids' ? (
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 hidden xs:inline">
-                        Pari :
+                  {/* Total des points projeté */}
+                  <div className="text-xs text-right shrink-0 select-none">
+                    {phase === 'tricks' ? (
+                      <span className="text-stone-500 dark:text-slate-400">
+                        Total : {currentTotal}{' '}
+                        <strong className={`font-bold ${won ? 'text-emerald-700 dark:text-emerald-400' : 'text-stone-800 dark:text-slate-200'}`}>
+                          ➔ {projected} pts
+                        </strong>
                       </span>
-                      <div className="flex items-center gap-1 overflow-x-auto max-w-[170px] sm:max-w-none scrollbar-hide py-0.5">
+                    ) : (
+                      <span className="text-stone-500 dark:text-slate-400">
+                        Total : <strong className="font-bold text-stone-800 dark:text-slate-200">{currentTotal} pts</strong>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Ligne 2 : Saisie tactile (paris ou plis avec rappel) */}
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-stone-200/60 dark:border-slate-800">
+                  {phase === 'bids' ? (
+                    <>
+                      <span className="text-xs font-semibold text-stone-500 dark:text-slate-400 shrink-0">
+                        Pari annoncé :
+                      </span>
+                      <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-0.5 max-w-full justify-end">
                         {Array.from({ length: cardsCount + 1 }).map((_, val) => (
                           <button
                             key={val}
                             type="button"
                             onClick={() => setBids(prev => ({ ...prev, [p.id]: val }))}
-                            className={`w-7 h-7 rounded-lg text-xs font-bold transition-all border shrink-0 cursor-pointer ${
+                            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-bold transition-all border shrink-0 cursor-pointer ${
                               b === val
-                                ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                                ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs scale-105'
                                 : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-[#c83b3b]'
                             }`}
                           >
@@ -287,33 +303,42 @@ export function AscenseurEngine({ game, onFinish }) {
                           </button>
                         ))}
                       </div>
-                    </div>
+                    </>
                   ) : (
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="text-right leading-none shrink-0">
-                        <span className="text-[10px] text-stone-400 dark:text-slate-500 block">Parié</span>
-                        <strong className="text-xs text-stone-800 dark:text-slate-200">{b}</strong>
+                    <>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-xs font-semibold text-stone-500 dark:text-slate-400">
+                          Parié :
+                        </span>
+                        <span className="text-xs font-black px-2 py-0.5 rounded-md bg-stone-100 dark:bg-slate-800 text-stone-800 dark:text-slate-200 border border-stone-200/80 dark:border-slate-700">
+                          {b} {b > 1 ? 'plis' : 'pli'}
+                        </span>
                       </div>
-                      <div className="h-6 w-px bg-stone-200 dark:bg-slate-700 shrink-0" />
-                      <div className="flex items-center gap-1 overflow-x-auto max-w-[150px] sm:max-w-none scrollbar-hide py-0.5">
-                        {Array.from({ length: cardsCount + 1 }).map((_, val) => (
-                          <button
-                            key={val}
-                            type="button"
-                            onClick={() => setTricks(prev => ({ ...prev, [p.id]: val }))}
-                            className={`w-7 h-7 rounded-lg text-xs font-bold transition-all border shrink-0 cursor-pointer ${
-                              t === val
-                                ? b === val
-                                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-                                  : 'bg-stone-800 text-white dark:bg-slate-200 dark:text-stone-900 border-stone-800'
-                                : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-[#c83b3b]'
-                            }`}
-                          >
-                            {val}
-                          </button>
-                        ))}
+
+                      <div className="flex items-center gap-1.5 min-w-0 justify-end">
+                        <span className="text-xs font-semibold text-stone-500 dark:text-slate-400 hidden xs:inline shrink-0">
+                          Fait :
+                        </span>
+                        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-0.5 max-w-full justify-end">
+                          {Array.from({ length: cardsCount + 1 }).map((_, val) => (
+                            <button
+                              key={val}
+                              type="button"
+                              onClick={() => setTricks(prev => ({ ...prev, [p.id]: val }))}
+                              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs font-bold transition-all border shrink-0 cursor-pointer ${
+                                t === val
+                                  ? b === val
+                                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs scale-105'
+                                    : 'bg-stone-800 text-white dark:bg-slate-200 dark:text-stone-900 border-stone-800 scale-105'
+                                  : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-[#c83b3b]'
+                              }`}
+                            >
+                              {val}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
