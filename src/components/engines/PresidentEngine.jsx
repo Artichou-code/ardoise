@@ -74,7 +74,7 @@ export function PresidentEngine({ game }) {
 
       {/* Classement interactif par Glisser - Déposer (Drag & Drop) */}
       <div className="school-card rounded-xl p-3 sm:p-4">
-        <div className="flex items-center justify-between gap-2 mb-1.5">
+        <div className="flex items-center justify-between gap-2 mb-2">
           <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
             Ordre de sortie des joueurs
           </p>
@@ -88,10 +88,6 @@ export function PresidentEngine({ game }) {
             <span>Réinitialiser</span>
           </button>
         </div>
-
-        <p className="text-xs text-stone-500 dark:text-slate-400 mb-3 leading-relaxed">
-          Glissez-déposez les cartes au doigt ou utilisez les flèches pour classer les joueurs selon leur ordre de sortie.
-        </p>
 
         <PresidentReorderList
           order={order}
