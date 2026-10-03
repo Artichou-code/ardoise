@@ -336,7 +336,7 @@ export function ScorePad({
                   onChange(next)
                   try { navigator.vibrate?.(10) } catch {}
                 }}
-                className={`h-12 rounded-xl select-none transition-all active:scale-95 flex flex-col items-center justify-center p-1 border cursor-pointer ${
+                className={`h-12 rounded-xl select-none transition-all active:scale-95 flex flex-col items-center justify-center px-0.5 py-1 border cursor-pointer ${
                   btn.colorClass
                     ? btn.colorClass
                     : isSelected
@@ -348,12 +348,12 @@ export function ScorePad({
                   {main}
                 </span>
                 {sub && (
-                  <span className={`text-[9px] font-semibold leading-none mt-0.5 truncate max-w-full ${
+                  <span className={`text-[8px] sm:text-[9px] font-semibold tracking-tighter leading-none mt-0.5 truncate max-w-full text-center ${
                     isSelected && !btn.colorClass
                       ? 'text-white/85'
                       : 'text-stone-400 dark:text-slate-500'
                   }`}>
-                    ({sub})
+                    {sub}
                   </span>
                 )}
               </button>

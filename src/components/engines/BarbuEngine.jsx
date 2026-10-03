@@ -128,9 +128,14 @@ export function BarbuEngine({ game, onFinish }) {
     }
   }
 
-  const confirmLabel = hasNextPlayer && nextPlayer
-    ? `Valider & Suivant (${nextPlayer.name})`
-    : 'Valider et terminer'
+  const confirmLabel = hasNextPlayer && nextPlayer ? (
+    <span className="inline-flex items-center justify-center gap-1.5 truncate max-w-full">
+      <span>Valider & Suivant</span>
+      <span className="text-xs font-medium opacity-85 truncate">({nextPlayer.name})</span>
+    </span>
+  ) : (
+    <span>Valider et terminer</span>
+  )
 
   // Calcul du delta de manche pour chaque joueur selon le contrat actif
   const playerDeltas = useMemo(() => {
