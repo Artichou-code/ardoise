@@ -122,8 +122,13 @@ export function AscenseurEngine({ game, onFinish }) {
             <div className="inline-flex rounded-xl border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 p-0.5 shadow-2xs">
               <button
                 type="button"
+                disabled={cardsCount <= 1}
                 onClick={() => setCardsCount(c => Math.max(1, c - 1))}
-                className="w-8 h-8 flex items-center justify-center text-sm font-bold text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] active:scale-95 transition-transform cursor-pointer"
+                className={`w-8 h-8 flex items-center justify-center text-sm font-bold transition-all ${
+                  cardsCount <= 1
+                    ? 'opacity-25 text-stone-400 dark:text-slate-600 cursor-not-allowed'
+                    : 'text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] active:scale-95 cursor-pointer'
+                }`}
                 title="Diminuer d'une carte"
               >
                 -
@@ -131,8 +136,13 @@ export function AscenseurEngine({ game, onFinish }) {
               <div className="w-px h-4 bg-stone-200 dark:bg-slate-700 self-center" />
               <button
                 type="button"
+                disabled={cardsCount >= maxCardsPossible}
                 onClick={() => setCardsCount(c => Math.min(maxCardsPossible, c + 1))}
-                className="w-8 h-8 flex items-center justify-center text-sm font-bold text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] active:scale-95 transition-transform cursor-pointer"
+                className={`w-8 h-8 flex items-center justify-center text-sm font-bold transition-all ${
+                  cardsCount >= maxCardsPossible
+                    ? 'opacity-25 text-stone-400 dark:text-slate-600 cursor-not-allowed'
+                    : 'text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] active:scale-95 cursor-pointer'
+                }`}
                 title="Augmenter d'une carte"
               >
                 +
