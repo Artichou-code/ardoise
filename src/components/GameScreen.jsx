@@ -319,11 +319,11 @@ export function GameScreen() {
           (() => {
             const count = activeGame.players.length
 
-            // Détermination de la grille : 1 ligne pour 2-4 joueurs, 2 lignes au-delà
+            // Détermination de la grille : 1 ligne pour 2-3 joueurs, 2 lignes au-delà (4 joueurs = 2x2, 6 joueurs = 2x3)
             const gridClass =
               count <= 2 ? 'grid grid-cols-2 gap-1.5' :
               count === 3 ? 'grid grid-cols-3 gap-1' :
-              count === 4 ? 'grid grid-cols-4 gap-1' :
+              count === 4 ? 'grid grid-cols-2 gap-1.5' :
               count === 5 ? 'grid grid-cols-6 gap-1' :
               count === 6 ? 'grid grid-cols-3 gap-1' :
               count === 7 ? 'grid grid-cols-12 gap-1' :
@@ -340,11 +340,14 @@ export function GameScreen() {
                     count === 5 ? (idx < 3 ? 'col-span-2' : 'col-span-3') :
                     count === 7 ? (idx < 4 ? 'col-span-3' : 'col-span-4') : ''
 
+                  // Cartes larges (50% de largeur) : 2 joueurs, 4 joueurs (grille 2x2) ou 2e ligne de 5 joueurs
+                  const isCardWide = count <= 2 || count === 4 || (count === 5 && idx >= 3)
+
                   return (
                     <div
                       key={id}
                       className={`relative flex items-center justify-between rounded-xl ${
-                        count <= 2 ? 'px-3 py-2' : 'px-2 py-1.5'
+                        isCardWide ? (count <= 2 ? 'px-3 py-2' : 'px-3 py-1.5') : 'px-2 py-1.5'
                       } transition-all min-h-[48px] ${colSpan} ${
                         isLeader
                           ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
@@ -353,7 +356,7 @@ export function GameScreen() {
                     >
                       {/* Zone gauche : Avatar centré par rapport au nom */}
                       <div className={`${
-                        count <= 2 ? 'flex-1' : 'flex-1 pr-1'
+                        isCardWide ? 'flex-1' : 'flex-1 pr-1'
                       } flex flex-col items-center justify-center min-w-0`}>
                         <div className="relative inline-flex items-center justify-center">
                           <Avatar
@@ -380,10 +383,10 @@ export function GameScreen() {
 
                       {/* Zone droite restante : Score centré et équilibré */}
                       <div className={`${
-                        count <= 2 ? 'flex-1 min-w-0' : 'w-8 sm:w-9 shrink-0'
+                        isCardWide ? 'flex-1 min-w-0' : 'w-8 sm:w-9 shrink-0'
                       } flex items-center justify-center`}>
                         <span className={`font-black tabular-nums leading-none ${
-                          count <= 2 ? 'text-2xl sm:text-3xl' : 'text-lg sm:text-xl'
+                          count <= 2 ? 'text-2xl sm:text-3xl' : (count === 4 ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl')
                         } ${
                           isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
                         }`}>
