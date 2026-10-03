@@ -385,14 +385,14 @@ export function TarotEngine({ game }) {
               return d >= 0 ? `+${d} pts (Contrat réussi)` : `${d} pts (Contrat chuté)`
             }}
             customButtons={[
-              { label: '36 (3 Bouts)', value: 36 },
-              { label: '41 (2 Bouts)', value: 41 },
-              { label: '46 (Moitié)', value: 46 },
-              { label: '51 (1 Bout)', value: 51 },
-              { label: '56 (0 Bout)', value: 56 },
-              { label: '60', value: 60 },
-              { label: '70', value: 70 },
-              { label: '91 (Capot)', value: 91 },
+              { main: '36', sub: '3 Bouts', value: 36 },
+              { main: '41', sub: '2 Bouts', value: 41 },
+              { main: '46', sub: 'Moitié', value: 46 },
+              { main: '51', sub: '1 Bout', value: 51 },
+              { main: '56', sub: '0 Bout', value: 56 },
+              { main: '60', value: 60 },
+              { main: '70', value: 70 },
+              { main: '91', sub: 'Capot', value: 91 },
             ]}
           />
         </div>

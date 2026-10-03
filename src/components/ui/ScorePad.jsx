@@ -275,25 +275,56 @@ export function ScorePad({
 
       {/* Boutons incrémentaux ou raccourcis personnalisés */}
       <div className={`grid gap-2 pt-1 ${buttons.length === 5 ? 'grid-cols-5' : 'grid-cols-4 sm:grid-cols-5'}`}>
-        {buttons.map((btn) => (
-          <button
-            key={btn.label}
-            type="button"
-            onPointerDown={(e) => {
-              e.preventDefault()
-              const next = btn.value !== undefined
-                ? clampValue(btn.value)
-                : clampValue((Number(value) || 0) + (btn.delta || 0))
-              onChange(next)
-              try { navigator.vibrate?.(10) } catch {}
-            }}
-            className={`h-12 rounded-xl font-black text-sm select-none transition-all active:scale-90 flex items-center justify-center ${
-              btn.colorClass || 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
-            }`}
-          >
-            {btn.label}
-          </button>
-        ))}
+        {buttons.map((btn, idx) => {
+          let main = btn.main
+          let sub = btn.sub
+          if (!main && btn.label) {
+            const match = btn.label.match(/^(.*?)\s*\((.*?)\)$/)
+            if (match) {
+              main = match[1]
+              sub = match[2]
+            } else {
+              main = btn.label
+            }
+          }
+
+          const isSelected = btn.value !== undefined && value === btn.value
+
+          return (
+            <button
+              key={btn.label || btn.main || idx}
+              type="button"
+              onPointerDown={(e) => {
+                e.preventDefault()
+                const next = btn.value !== undefined
+                  ? clampValue(btn.value)
+                  : clampValue((Number(value) || 0) + (btn.delta || 0))
+                onChange(next)
+                try { navigator.vibrate?.(10) } catch {}
+              }}
+              className={`h-12 rounded-xl select-none transition-all active:scale-95 flex flex-col items-center justify-center p-1 border cursor-pointer ${
+                btn.colorClass
+                  ? btn.colorClass
+                  : isSelected
+                  ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                  : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
+              }`}
+            >
+              <span className={`font-black text-sm leading-tight ${isSelected && !btn.colorClass ? 'text-white' : ''}`}>
+                {main}
+              </span>
+              {sub && (
+                <span className={`text-[9px] font-semibold leading-none mt-0.5 truncate max-w-full ${
+                  isSelected && !btn.colorClass
+                    ? 'text-white/85'
+                    : 'text-stone-400 dark:text-slate-500'
+                }`}>
+                  ({sub})
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
       {/* Bouton valider final */}
