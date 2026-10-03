@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, Shield, Check, Flame, Trophy, X } from 'lucide-react'
+import { AlertTriangle, Shield, Check, Flame, Trophy, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -42,6 +42,25 @@ export function YanivEngine({ game, onFinish }) {
   const [open, setOpen] = useState(false)
   const [showZeroConfirm, setShowZeroConfirm] = useState(false)
   const [reprieveNotice, setReprieveNotice] = useState(null)
+
+  // Navigation séquentielle entre joueurs dans le ScorePad
+  const currentEditingIndex = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
+  const hasPrevPlayer = currentEditingIndex > 0
+  const hasNextPlayer = currentEditingIndex >= 0 && currentEditingIndex < game.players.length - 1
+  const prevPlayer = hasPrevPlayer ? game.players[currentEditingIndex - 1] : null
+  const nextPlayer = hasNextPlayer ? game.players[currentEditingIndex + 1] : null
+
+  const handleConfirmPad = () => {
+    if (hasNextPlayer) {
+      setEditingPlayer(nextPlayer)
+    } else {
+      setOpen(false)
+    }
+  }
+
+  const confirmLabel = hasNextPlayer
+    ? `Valider & Suivant (${nextPlayer.name})`
+    : 'Valider et terminer'
 
   // Calcul du delta de points de manche pour un joueur
   const computeDelta = (playerId) => {
@@ -525,28 +544,103 @@ export function YanivEngine({ game, onFinish }) {
       <BottomSheet
         open={open}
         onClose={() => setOpen(false)}
-        title={editingPlayer ? `Points en main de ${editingPlayer.name}` : 'Points en main'}
-        subtitle="Joker (0 pt) · As (1 pt) · 2 à 10 (valeur faciale) · Figures (10 pts)"
       >
         {editingPlayer && (
-          <div className="p-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <Avatar player={editingPlayer} size="md" />
-              <div>
-                <span className="font-bold text-base block">{editingPlayer.name}</span>
-                <span className="text-xs text-stone-500 dark:text-slate-400">
-                  Total actuel : {game.scores[editingPlayer.id] || 0} pts
-                </span>
+          <div className="px-4 pt-1 pb-6 space-y-3">
+            {/* Carte du joueur actif & Navigation Joueur précédent / Joueur suivant */}
+            <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Avatar
+                  player={editingPlayer}
+                  size="sm"
+                  leader={callerId === editingPlayer.id || (isAssaf && assafRivalId === editingPlayer.id)}
+                />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-sm truncate text-stone-900 dark:text-slate-100">
+                      {editingPlayer.name}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
+                      {currentEditingIndex + 1}/{game.players.length}
+                    </span>
+                    {callerId === editingPlayer.id && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 shrink-0">
+                        Annonceur Yaniv
+                      </span>
+                    )}
+                    {isAssaf && assafRivalId === editingPlayer.id && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shrink-0">
+                        Contreur Assaf
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-stone-500 dark:text-slate-400">
+                    Total actuel : {game.scores[editingPlayer.id] || 0} pts
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  disabled={!hasPrevPlayer}
+                  onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
+                  aria-label="Joueur précédent"
+                >
+                  <ChevronLeft size={17} />
+                </button>
+                <button
+                  type="button"
+                  disabled={!hasNextPlayer}
+                  onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
+                  aria-label="Joueur suivant"
+                >
+                  <ChevronRight size={17} />
+                </button>
               </div>
             </div>
 
             <ScorePad
+              key={editingPlayer.id}
               value={handPoints[editingPlayer.id] || 0}
               onChange={v => setHandPoints(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, v) }))}
-              onConfirm={() => setOpen(false)}
+              onConfirm={handleConfirmPad}
+              confirmLabel={confirmLabel}
               min={0}
               max={100}
+              label="Points de la main"
+              subLabel="Joker 0 · As 1 · Figures 10"
               presets={[0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30]}
+              formatDisplay={v => `${v} pts`}
+              formatTotal={v => {
+                const isCaller = callerId === editingPlayer.id
+                const isContreur = isAssaf && assafRivalId === editingPlayer.id
+                let roundPts = v
+                let note = ''
+                if (!isAssaf && isCaller) {
+                  roundPts = 0
+                  note = ' (0 pt Yaniv réussi)'
+                } else if (isAssaf && isCaller) {
+                  roundPts = v + 30
+                  note = ' (avec pénalité Assaf +30)'
+                } else if (isAssaf && isContreur) {
+                  roundPts = 0
+                  note = ' (0 pt Contreur vainqueur)'
+                }
+
+                const cur = game.scores[editingPlayer.id] || 0
+                const proj = cur + roundPts
+                const sursis = checkSursis(proj)
+                const finalProj = sursis !== null ? sursis : proj
+
+                return `+${roundPts} pts${note} · Total : ${finalProj}/${LIMIT} pts${sursis !== null ? ` (Sursis retombe à ${sursis}!)` : ''}${finalProj >= LIMIT ? ' 💥 Éliminé' : ''}`
+              }}
+              baseScore={game.scores[editingPlayer.id] || 0}
+              showPlus={false}
             />
           </div>
         )}
