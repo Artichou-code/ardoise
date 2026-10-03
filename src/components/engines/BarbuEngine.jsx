@@ -8,7 +8,6 @@ import {
   Flame,
   Trophy,
   RotateCw,
-  AlertCircle,
   HelpCircle,
 } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
@@ -942,15 +941,6 @@ export function BarbuEngine({ game, onFinish }) {
 
           {/* Récapitulatif & Bouton de validation */}
           <div className="pt-2 border-t border-stone-200/80 dark:border-slate-800">
-            {!isContractTotalValid && (
-              <div className="flex items-center gap-1.5 text-xs text-[#c83b3b] font-medium mb-2 p-2 rounded-lg bg-[#c83b3b]/10 border border-[#c83b3b]/20">
-                <AlertCircle size={14} className="shrink-0" />
-                <span>
-                  Attention : le total des points saisis ({currentTotalAllocated} pts) ne correspond pas au total théorique du contrat ({targetContract?.totalPoints} pts).
-                </span>
-              </div>
-            )}
-
             <button
               type="button"
               onClick={handleValidate}
