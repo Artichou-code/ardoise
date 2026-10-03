@@ -372,8 +372,8 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
         title="Victoire immédiate des 4 Sirènes"
       >
         <div className="space-y-3 text-xs">
-          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
-            Quel joueur possède les <strong>4 cartes Sirènes</strong> en main ?
+          <p className="text-stone-600 dark:text-slate-300">
+            Qui possède les <strong>4 Sirènes</strong> ?
           </p>
           <div className="grid grid-cols-2 gap-2 pt-1">
             {game.players.map(p => (
@@ -404,8 +404,8 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
         title="Victoire immédiate des 4 Sirènes"
       >
         <div className="space-y-3 text-xs">
-          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
-            Confirmer que <strong>{sirensConfirmPlayer?.name}</strong> possède les <strong>4 cartes Sirènes</strong> ?
+          <p className="text-stone-600 dark:text-slate-300 truncate">
+            Confirmer les <strong>4 Sirènes</strong> pour <strong>{sirensConfirmPlayer?.name}</strong> ?
           </p>
           <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-xs text-center font-medium">
             Donne la <strong>victoire immédiate</strong> !
