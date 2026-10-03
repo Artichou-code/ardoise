@@ -127,6 +127,12 @@ export function GameScreen() {
           >
             M.{activeGame.rounds.length + 1}
           </span>
+          {roundJustSaved && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 dark:bg-emerald-950/40 border border-emerald-500/25 px-2 py-0.5 rounded-full animate-fade-in shrink-0">
+              <CheckCircle2 size={11} className="text-emerald-600 dark:text-emerald-400" />
+              <span>M.{roundJustSaved} validée</span>
+            </span>
+          )}
           <button
             type="button"
             onClick={() => setShowRules(true)}
@@ -318,16 +324,6 @@ export function GameScreen() {
           </div>
         )}
       </div>
-
-      {/* Toast flottant de transition entre deux manches */}
-      {roundJustSaved && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-toast-pop">
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-600 text-white font-bold text-xs shadow-lg shadow-emerald-950/25 border border-emerald-400/40">
-            <CheckCircle2 size={14} className="shrink-0" />
-            <span>Manche {roundJustSaved} enregistrée !</span>
-          </div>
-        </div>
-      )}
 
       {/* Moteur de saisie de manche */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
