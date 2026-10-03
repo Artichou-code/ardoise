@@ -346,20 +346,15 @@ export function BarbuEngine({ game, onFinish }) {
 
           {/* Règle et description du contrat sélectionné */}
           {targetContract && (
-            <div className="flex items-center justify-between gap-2 mt-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/60 dark:border-slate-700/50 text-[11px]">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-[#c83b3b] shrink-0">
-                  {renderContractIcon(targetContract.id, 13)}
-                </span>
-                <span className="font-bold text-stone-800 dark:text-slate-200 whitespace-nowrap">
-                  {targetContract.label} :
-                </span>
-                <span className="text-stone-500 dark:text-slate-400 truncate">
-                  {targetContract.rule}
-                </span>
-              </div>
-              <span className="font-bold text-[#c83b3b] whitespace-nowrap shrink-0">
-                {targetContract.totalPoints > 0 ? `+${targetContract.totalPoints}` : targetContract.totalPoints} pts
+            <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/60 dark:border-slate-700/50 text-[11px] leading-snug">
+              <span className="text-[#c83b3b] shrink-0">
+                {renderContractIcon(targetContract.id, 13)}
+              </span>
+              <span className="font-bold text-stone-800 dark:text-slate-200 shrink-0">
+                {targetContract.label} :
+              </span>
+              <span className="text-stone-600 dark:text-slate-300 min-w-0 flex-1">
+                {targetContract.rule}
               </span>
             </div>
           )}
