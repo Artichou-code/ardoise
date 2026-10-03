@@ -206,32 +206,52 @@ export function DourakEngine({ game, onFinish }) {
         <BottomSheet
           open={sheetOpen}
           onClose={() => setSheetOpen(false)}
-          title={`${selectedPlayer.name} — Cartes restantes`}
-          subtitle="Nombre de cartes en main en fin de manche"
         >
-          <div className="px-5 pb-6 space-y-4">
-            <div className="grid grid-cols-6 gap-1.5 pt-2">
-              {[2, 4, 6, 8, 10, 12].map(n => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setCardsLeft(n)}
-                  className={`py-2 rounded-lg text-xs font-bold border transition-colors ${
-                    cardsLeft === n
-                      ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
-                      : 'school-subtle'
-                  }`}
-                >
-                  {n} c.
-                </button>
-              ))}
+          <div className="px-4 pt-1 pb-6 space-y-3">
+            {/* Carte du joueur actif désigné Dourak */}
+            <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
+              <Avatar player={selectedPlayer} size="sm" leader={true} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-sm truncate text-stone-900 dark:text-slate-100">
+                    {selectedPlayer.name}
+                  </span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 shrink-0">
+                    Dourak de la manche
+                  </span>
+                </div>
+                <span className="text-xs text-stone-500 dark:text-slate-400">
+                  Total actuel : {game.scores[selectedPlayer.id] || 0} cartes
+                </span>
+              </div>
             </div>
+
             <ScorePad
               value={cardsLeft}
               onChange={v => setCardsLeft(Math.max(1, v))}
               onConfirm={() => setSheetOpen(false)}
+              confirmLabel="Valider les cartes"
               min={1}
-              baseScore={loserId ? (game.scores[loserId] || 0) : 0}
+              max={36}
+              step={1}
+              label="Cartes restantes en main"
+              subLabel={`Seuil d'arrêt : ${limit} cartes`}
+              presets={[1, 2, 3, 4, 5, 6, 8, 10, 12]}
+              formatDisplay={v => `${v} c.`}
+              formatTotal={val => {
+                const cur = game.scores[selectedPlayer.id] || 0
+                const proj = cur + val
+                return `+${val} cartes · Nouveau cumul : ${proj}/${limit} cartes${proj >= limit ? ' 💥 Arrêt atteint' : ''}`
+              }}
+              baseScore={game.scores[selectedPlayer.id] || 0}
+              showPlus={false}
+              customButtons={[
+                { label: '1 c.', value: 1 },
+                { label: '2 c.', value: 2 },
+                { label: '4 c.', value: 4 },
+                { label: '6 c.', value: 6 },
+                { label: '8 c.', value: 8 },
+              ]}
             />
           </div>
         </BottomSheet>

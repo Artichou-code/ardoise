@@ -361,13 +361,29 @@ export function TarotEngine({ game }) {
 
       {/* BottomSheet saisie précise de points */}
       <BottomSheet open={openPointsSheet} onClose={() => setOpenPointsSheet(false)}>
-        <div className="p-4">
-          <h3 className="font-serif-title font-bold text-lg mb-1">
-            Points réalisés par l'attaque
-          </h3>
-          <p className="text-xs text-stone-500 dark:text-slate-400 mb-4">
-            Total sur 91 points (la défense marquera les {91 - (Number.isFinite(points) ? points : threshold)} restants).
-          </p>
+        <div className="px-4 pt-1 pb-6 space-y-3">
+          {attackerId && (() => {
+            const attacker = game.players.find(p => p.id === attackerId)
+            return (
+              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
+                <Avatar player={attacker} size="sm" leader={true} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-sm truncate text-stone-900 dark:text-slate-100">
+                      {attacker?.name}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 shrink-0">
+                      Preneur ({contractMeta.label})
+                    </span>
+                  </div>
+                  <span className="text-xs text-stone-500 dark:text-slate-400">
+                    Objectif : {threshold} pts ({bouts} bout{bouts > 1 ? 's' : ''})
+                  </span>
+                </div>
+              </div>
+            )
+          })()}
+
           <ScorePad
             value={Number.isFinite(points) ? points : threshold}
             onChange={v => {
@@ -375,14 +391,20 @@ export function TarotEngine({ game }) {
               setPoints(Number.isFinite(num) ? Math.max(0, Math.min(91, num)) : threshold)
             }}
             onConfirm={() => setOpenPointsSheet(false)}
+            confirmLabel="Valider les points"
             min={0}
             max={91}
             step={1}
-            label="Points d'attaque"
+            label="Points réalisés par l'attaque (sur 91)"
+            subLabel={`Défense : ${91 - (Number.isFinite(points) ? points : threshold)} pts`}
+            presets={[36, 41, 46, 51, 56, 91]}
             showPlus={false}
+            formatDisplay={v => `${v} pts`}
             formatTotal={val => {
               const d = val - threshold
-              return d >= 0 ? `+${d} pts (Contrat réussi)` : `${d} pts (Contrat chuté)`
+              return d >= 0
+                ? `+${d} pts au contrat (Contrat réussi !)`
+                : `${d} pts au contrat (Contrat chuté)`
             }}
             customButtons={[
               { main: '36', sub: '3 Bouts', value: 36 },
