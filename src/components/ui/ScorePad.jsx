@@ -278,31 +278,33 @@ export function ScorePad({
         </div>
       </div>
 
-      {/* Raccourcis prédéfinis si fournis */}
+      {/* Raccourcis prédéfinis sur une seule ligne (défilement horizontal fluide si débordement) */}
       {presets && presets.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 justify-center pt-0.5">
-          {presets.map(p => {
-            const pVal = typeof p === 'object' ? p.value : p
-            const pLabel = typeof p === 'object' ? p.label : `${showPlus && pVal > 0 ? '+' : ''}${pVal}`
-            const isSelected = value === pVal
-            return (
-              <button
-                key={pVal}
-                type="button"
-                onClick={() => {
-                  onChange(pVal)
-                  try { navigator.vibrate?.(10) } catch {}
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
-                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
-                }`}
-              >
-                {pLabel}
-              </button>
-            )
-          })}
+        <div className="overflow-x-auto scrollbar-hide py-1 -mx-2 px-2 overscroll-x-contain">
+          <div className={`flex items-center gap-1.5 w-max min-w-full ${presets.length <= 8 ? 'justify-center' : 'justify-start sm:justify-center'}`}>
+            {presets.map(p => {
+              const pVal = typeof p === 'object' ? p.value : p
+              const pLabel = typeof p === 'object' ? p.label : `${showPlus && pVal > 0 ? '+' : ''}${pVal}`
+              const isSelected = value === pVal
+              return (
+                <button
+                  key={pVal}
+                  type="button"
+                  onClick={() => {
+                    onChange(pVal)
+                    try { navigator.vibrate?.(10) } catch {}
+                  }}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-bold border whitespace-nowrap shrink-0 transition-all cursor-pointer select-none active:scale-95 ${
+                    isSelected
+                      ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                      : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
+                  }`}
+                >
+                  {pLabel}
+                </button>
+              )
+            })}
+          </div>
         </div>
       )}
 
