@@ -114,14 +114,25 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
       return
     }
 
-    const announcerPts = roundScores[announcerId] || 0
-    if (announcerPts < 7) {
-      const announcer = game.players.find(p => p.id === announcerId)
-      setValidationError({
-        title: "Annonce impossible (< 7 pts)",
-        message: `À Sea Salt & Paper, l'annonceur (${announcer?.name || 'sélectionné'}) doit posséder au moins 7 points dans sa main pour clore la manche (score actuel : ${announcerPts} pts).`,
-      })
-      return
+    if (closingMode !== 'stop') {
+      const announcerPts = roundScores[announcerId] || 0
+      if (announcerPts < 7) {
+        const announcer = game.players.find(p => p.id === announcerId)
+        setValidationError({
+          title: "Annonce impossible (< 7 pts)",
+          message: `À Sea Salt & Paper, l'annonceur (${announcer?.name || 'sélectionné'}) doit posséder au moins 7 points dans sa main pour tenter une Dernière Chance (score actuel : ${announcerPts} pts).`,
+        })
+        return
+      }
+    } else {
+      const maxPts = Math.max(...Object.values(roundScores))
+      if (maxPts < 7) {
+        setValidationError({
+          title: "Clôture impossible (< 7 pts)",
+          message: "Pour clore la manche (STOP), au moins un joueur doit posséder au moins 7 points dans sa main.",
+        })
+        return
+      }
     }
 
     submitRound()
@@ -396,55 +407,53 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
                     <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
                       {currentEditingIndex + 1}/{game.players.length}
                     </span>
-                    {announcerId === editingPlayer.id && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-sky-500/15 text-sky-700 dark:text-sky-300 shrink-0">
-                        Annonceur (≥7 pts)
-                      </span>
-                    )}
                   </div>
-                  <span className="text-xs text-stone-500 dark:text-slate-400">
+                  <span className="text-xs text-stone-500 dark:text-slate-400 block whitespace-nowrap truncate mt-0.5">
                     Total actuel : {game.scores[editingPlayer.id] || 0} pts
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  disabled={!hasPrevPlayer}
-                  onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
-                  title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
-                  aria-label="Joueur précédent"
-                >
-                  <ChevronLeft size={17} />
-                </button>
-                <button
-                  type="button"
-                  disabled={!hasNextPlayer}
-                  onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
-                  title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
-                  aria-label="Joueur suivant"
-                >
-                  <ChevronRight size={17} />
-                </button>
+              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                {announcerId === editingPlayer.id ? (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-400/30">
+                    Annonceur (≥ 7 pts)
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setAnnouncerId(editingPlayer.id)}
+                    className="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-sky-300 dark:border-sky-700 bg-sky-50/50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-300 hover:bg-sky-100 transition-colors cursor-pointer whitespace-nowrap"
+                    title="Désigner ce joueur comme annonceur"
+                  >
+                    Définir annonceur
+                  </button>
+                )}
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={!hasPrevPlayer}
+                    onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                    title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
+                    aria-label="Joueur précédent"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!hasNextPlayer}
+                    onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                    title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
+                    aria-label="Joueur suivant"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
               </div>
             </div>
-
-            {/* Sélecteur d'annonceur */}
-            <button
-              type="button"
-              onClick={() => setAnnouncerId(editingPlayer.id)}
-              className={`w-full p-2 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer select-none active:scale-[0.99] text-xs ${
-                announcerId === editingPlayer.id
-                  ? 'border-sky-500/60 bg-sky-500/10 text-sky-800 dark:text-sky-200 ring-1 ring-sky-500/30 font-semibold'
-                  : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-sky-400'
-              }`}
-            >
-              <span>{announcerId === editingPlayer.id ? '✓ Annonceur de la manche (STOP ou Dernière Chance)' : 'Désigner comme annonceur (≥ 7 pts requis)'}</span>
-              <span className="text-[10px] opacity-75">{announcerId === editingPlayer.id ? 'Min. 7 pts' : 'Cliquer pour définir'}</span>
-            </button>
 
             <ScorePad
               key={editingPlayer.id}
@@ -455,7 +464,7 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
               min={0}
               step={1}
               label="Points de la manche"
-              subLabel={`Objectif : ${TARGET_SCORE} pts (cartes + duos)`}
+              subLabel={`Objectif : ${TARGET_SCORE} pts`}
               presets={[0, 7, 8, 9, 10, 11, 12, 13, 14, 15]}
               formatDisplay={v => `${v} pts`}
               formatTotal={val => {
@@ -463,9 +472,16 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
                 const cur = game.scores[editingPlayer.id] || 0
                 const proj = cur + val
                 const isWin = proj >= TARGET_SCORE
-                let warn = ''
-                if (isAnnouncer && val < 7) warn = ' (⚠️ Annonceur < 7 pts)'
-                return `+${val} pts${warn} · Nouveau total : ${proj}/${TARGET_SCORE} pts${isWin ? ' 🏆 Seuil atteint !' : ''}`
+                if (isAnnouncer && val < 7) {
+                  return {
+                    text: `+${val} pts (Min. 7 pts) · Total : ${proj}/${TARGET_SCORE} pts`,
+                    variant: 'danger',
+                  }
+                }
+                return {
+                  text: `+${val} pts · Total : ${proj}/${TARGET_SCORE} pts${isWin ? ' (Gagné !)' : ''}`,
+                  variant: 'default',
+                }
               }}
               baseScore={game.scores[editingPlayer.id] || 0}
               showPlus={false}

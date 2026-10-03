@@ -146,12 +146,24 @@ export function ScorePad({
 
   const dragStep = step || 1
   const cur = isDragging ? currentValueRef.current : value
-  const totalScore = baseScore !== undefined ? baseScore + cur : null
-  const totalText = formatTotal
-    ? formatTotal(cur)
+  const totalObj = formatTotal
+    ? (typeof formatTotal(cur) === 'object' && formatTotal(cur) !== null
+        ? formatTotal(cur)
+        : { text: formatTotal(cur), variant: undefined })
     : totalScore !== null
-    ? `Total : ${totalScore}`
+    ? { text: `Total : ${totalScore}`, variant: undefined }
     : null
+
+  const totalText = totalObj?.text ?? null
+  const totalVariant = totalObj?.variant || (
+    totalText && (
+      String(totalText).includes('Élimin') ||
+      String(totalText).includes('danger') ||
+      String(totalText).includes('⚠️') ||
+      String(totalText).includes('Min.') ||
+      String(totalText).startsWith('-')
+    ) ? 'danger' : 'default'
+  )
 
   const displayVal = (v) => {
     const clamped = clampValue(v)
@@ -220,7 +232,7 @@ export function ScorePad({
               <div className="shrink-0 flex items-center justify-center w-full px-3">
                 {totalText ? (
                   <div className={`inline-flex items-center justify-center gap-1 px-3 py-0.5 rounded-full text-white text-[11px] font-bold shadow-xs max-w-full truncate ${
-                    String(totalText).includes('Élimin') || String(totalText).includes('danger') || String(totalText).startsWith('-')
+                    totalVariant === 'danger'
                       ? 'bg-[#c83b3b]'
                       : 'bg-emerald-600'
                   }`}>
@@ -261,7 +273,7 @@ export function ScorePad({
               {totalText !== null ? (
                 <div className="flex flex-col items-center max-w-full px-3">
                   <span className={`text-xs font-bold text-center truncate max-w-full ${
-                    String(totalText).includes('Élimin')
+                    totalVariant === 'danger'
                       ? 'text-[#c83b3b] dark:text-red-400'
                       : 'text-stone-600 dark:text-slate-400'
                   }`}>
