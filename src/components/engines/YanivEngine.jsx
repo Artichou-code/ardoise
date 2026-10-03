@@ -305,11 +305,20 @@ export function YanivEngine({ game, onFinish }) {
         {/* Si ASSAF : Sélecteur du contreur qui a le score le plus bas et marque 0 pt */}
         {isAssaf && (
           <div className="mb-3 p-2.5 rounded-xl border border-amber-300/80 dark:border-amber-800/60 bg-amber-50/40 dark:bg-amber-950/20">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 mb-2 flex items-center gap-1.5">
-              <Check size={13} className="text-amber-600 dark:text-amber-400" />
-              Qui a contré avec le score le plus bas (marque 0 pt) ?
-            </p>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex items-center justify-between gap-1.5 mb-2">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 flex items-center gap-1.5 min-w-0">
+                <Check size={13} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                <span className="truncate">Contreur gagnant</span>
+              </p>
+              <span className="text-[10px] text-amber-700 dark:text-amber-300 font-semibold shrink-0">
+                Score le plus bas · 0 pt
+              </span>
+            </div>
+            <div className={`grid gap-1.5 ${
+              game.players.length === 3 ? 'grid-cols-2' :
+              game.players.length === 4 ? 'grid-cols-3' :
+              'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
+            }`}>
               {game.players.filter(p => p.id !== callerId).map(p => {
                 const isRival = assafRivalId === p.id
                 return (
@@ -317,15 +326,15 @@ export function YanivEngine({ game, onFinish }) {
                     key={p.id}
                     type="button"
                     onClick={() => setAssafRivalId(p.id)}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                    className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer select-none active:scale-[0.98] min-w-0 ${
                       isRival
-                        ? 'border-amber-600 bg-amber-600 text-white shadow-2xs'
+                        ? 'border-amber-600 bg-amber-600 text-white shadow-2xs ring-1 ring-amber-600/40'
                         : 'border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-700 dark:text-slate-300 hover:border-amber-500'
                     }`}
                   >
-                    <Avatar player={p} size="2xs" leader={isRival} crown={isRival} />
-                    <span>{p.name}</span>
-                    {isRival && <Check size={12} className="text-white ml-0.5" />}
+                    <Avatar player={p} size="xs" leader={isRival} crown={isRival} />
+                    <span className="truncate">{p.name}</span>
+                    {isRival && <Check size={13} className="text-white shrink-0 ml-0.5" />}
                   </button>
                 )
               })}
@@ -396,14 +405,12 @@ export function YanivEngine({ game, onFinish }) {
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="font-semibold text-sm truncate">{p.name}</span>
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#c83b3b] text-white whitespace-nowrap">
-                            Assaf (+30)
-                          </span>
                           {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
                         </div>
                         <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
                           <span className="truncate">
                             Total : {currentTotal} <strong className="text-[#c83b3b] font-bold">➔ {sursisVal !== null ? sursisVal : projected} pts</strong>
+                            <span className="text-[#c83b3b] font-semibold ml-1">· Assaf (+30)</span>
                           </span>
                           {sursisVal !== null && (
                             <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded whitespace-nowrap shrink-0">
