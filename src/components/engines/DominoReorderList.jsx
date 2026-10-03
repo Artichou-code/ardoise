@@ -30,10 +30,13 @@ export function DominoReorderList({
   const itemHeightRef = useRef(54)
   const isDraggingRef = useRef(false)
 
+  const dropTimeoutRef = useRef(null)
+
   // Nettoyage au démontage
   useEffect(() => {
     return () => {
       isDraggingRef.current = false
+      if (dropTimeoutRef.current) clearTimeout(dropTimeoutRef.current)
     }
   }, [])
 
@@ -42,15 +45,18 @@ export function DominoReorderList({
     if (cardRefs.current[0] && cardRefs.current[1]) {
       const r0 = cardRefs.current[0].getBoundingClientRect()
       const r1 = cardRefs.current[1].getBoundingClientRect()
-      return r1.top - r0.top
+      const diff = r1.top - r0.top
+      if (diff > 20 && diff < 150) return diff
     }
     if (cardRefs.current[0]) {
-      return cardRefs.current[0].getBoundingClientRect().height + 6
+      const height = cardRefs.current[0].getBoundingClientRect().height
+      if (height > 20 && height < 150) return height + 6
     }
     return 54
   }
 
   const startDrag = (e, index) => {
+    if (isDropping) return
     if (e.button !== 0 && e.pointerType === 'mouse') return
     if (e.target.closest('button')) return
 
@@ -112,6 +118,16 @@ export function DominoReorderList({
     const to = overIndex !== null ? overIndex : draggingIndex
 
     if (from === to) {
+      if (Math.abs(dragOffsetY) > 2) {
+        setIsDropping(true)
+        setDragOffsetY(0)
+        dropTimeoutRef.current = setTimeout(() => {
+          setDraggingIndex(null)
+          setOverIndex(null)
+          setIsDropping(false)
+        }, 180)
+        return
+      }
       setDraggingIndex(null)
       setOverIndex(null)
       setDragOffsetY(0)
@@ -119,27 +135,28 @@ export function DominoReorderList({
       return
     }
 
-    // Animation de placement : translate jusqu'à la position cible exacte
+    // Animation de placement douce : glisse précisément vers le slot cible
     setIsDropping(true)
     const h = itemHeightRef.current || 54
     setDragOffsetY((to - from) * h)
 
     try {
-      navigator.vibrate?.(18)
+      navigator.vibrate?.(16)
     } catch {}
 
-    setTimeout(() => {
+    dropTimeoutRef.current = setTimeout(() => {
       setDominoRanks(prev => {
         const arr = [...prev]
         const [moved] = arr.splice(from, 1)
         arr.splice(to, 0, moved)
         return arr
       })
+      // Réinitialisation avec transition: none pour éviter tout saut brutal de repositionnement
       setDraggingIndex(null)
       setOverIndex(null)
       setDragOffsetY(0)
       setIsDropping(false)
-    }, 180)
+    }, 230)
   }
 
   // Échange manuel par boutons flèches
@@ -189,12 +206,15 @@ export function DominoReorderList({
         // Déplacement CSS (transform translateY)
         const h = itemHeightRef.current || 54
         let translateY = 0
-        let transition = 'transform 220ms cubic-bezier(0.2, 0, 0, 1), box-shadow 200ms ease'
+        let transition = 'none'
 
         if (isBeingDragged) {
           translateY = dragOffsetY
-          transition = isDropping ? 'transform 180ms cubic-bezier(0.2, 0, 0, 1)' : 'none'
+          transition = isDropping
+            ? 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease, border-color 220ms ease'
+            : 'none'
         } else if (isDragActive && overIndex !== null) {
+          transition = 'transform 200ms cubic-bezier(0.2, 0, 0, 1)'
           if (draggingIndex < overIndex && index > draggingIndex && index <= overIndex) {
             translateY = -h
           } else if (draggingIndex > overIndex && index >= overIndex && index < draggingIndex) {
@@ -211,13 +231,15 @@ export function DominoReorderList({
             onPointerUp={endDrag}
             onPointerCancel={endDrag}
             style={{
-              transform: `translateY(${translateY}px) ${isBeingDragged && !isDropping ? 'scale(1.02)' : 'scale(1)'}`,
+              transform: `translateY(${translateY}px) ${isBeingDragged && !isDropping ? 'scale(1.025)' : 'scale(1)'}`,
               transition,
               zIndex: isBeingDragged ? 40 : 1,
             }}
-            className={`px-2 sm:px-3 py-2 rounded-xl border flex items-center justify-between gap-1.5 sm:gap-2 transition-colors touch-none cursor-grab active:cursor-grabbing ${
+            className={`px-2 sm:px-3 py-2 rounded-xl border flex items-center justify-between gap-1.5 sm:gap-2 touch-none cursor-grab active:cursor-grabbing ${
               isBeingDragged
-                ? 'shadow-xl bg-white dark:bg-slate-900 border-[#c83b3b]/70 ring-2 ring-[#c83b3b]/25 opacity-98'
+                ? isDropping
+                  ? 'shadow-sm bg-white dark:bg-slate-900 border-[#c83b3b]/40 ring-1 ring-[#c83b3b]/15 opacity-100'
+                  : 'shadow-xl bg-white dark:bg-slate-900 border-[#c83b3b]/70 ring-2 ring-[#c83b3b]/25 opacity-98'
                 : effectiveIndex === 0
                 ? 'border-emerald-500/80 bg-emerald-50/50 dark:bg-emerald-950/20'
                 : effectiveIndex === dominoRanks.length - 1
