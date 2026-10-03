@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import confetti from 'canvas-confetti'
 import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen, Radio, Trash2 } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { getActiveSession } from '../store/liveSession'
@@ -64,18 +65,26 @@ function AnimatedRoundIndicator({ roundNumber }) {
 
   if (!animating || prev === null) {
     return (
-      <span className="text-xs font-semibold text-[#c83b3b] shrink-0 whitespace-nowrap">
+      <span className="text-xs font-semibold text-[#c83b3b] shrink-0 whitespace-nowrap px-0.5">
         M.{current}
       </span>
     )
   }
 
+  const maxWidthLabel = `M.${Math.max(Number(prev) || 0, Number(current) || 0)}`
+
   return (
-    <span className="relative inline-flex items-center h-4.5 overflow-hidden shrink-0 whitespace-nowrap align-middle">
-      <span className="inline-block text-xs font-semibold text-stone-400 dark:text-slate-500 animate-round-roll-out">
+    <span className="relative inline-flex items-center justify-center h-4.5 px-0.5 overflow-hidden shrink-0 whitespace-nowrap align-middle">
+      {/* Élément invisible pour réserver exactement la largeur max et éviter tout clipping */}
+      <span className="invisible text-xs font-semibold select-none pointer-events-none opacity-0" aria-hidden="true">
+        {maxWidthLabel}
+      </span>
+      {/* Ancien numéro qui défile vers le haut */}
+      <span className="absolute inset-0 inline-flex items-center justify-center text-xs font-semibold text-stone-400 dark:text-slate-500 animate-round-roll-out">
         M.{prev}
       </span>
-      <span className="absolute inset-0 inline-flex items-center text-xs font-bold text-[#c83b3b] animate-round-roll-in">
+      {/* Nouveau numéro qui arrive par le bas avec rebond */}
+      <span className="absolute inset-0 inline-flex items-center justify-center text-xs font-bold text-[#c83b3b] animate-round-roll-in">
         M.{current}
       </span>
     </span>
@@ -99,8 +108,23 @@ export function GameScreen() {
     if (!activeGame) return
     const currentLength = activeGame.rounds?.length ?? 0
     if (currentLength > prevRoundsLengthRef.current) {
+      // 1. Retour tactile haptique
       try {
         navigator.vibrate?.([25, 35, 25])
+      } catch {}
+
+      // 2. Mini célébration visuelle festive (confettis discrets à chaque manche)
+      try {
+        confetti({
+          particleCount: 22,
+          spread: 55,
+          startVelocity: 26,
+          origin: { x: 0.5, y: 0.65 },
+          colors: ['#c83b3b', '#059669', '#d97706', '#2563eb'],
+          scalar: 0.75,
+          ticks: 75,
+          disableForReducedMotion: true,
+        })
       } catch {}
     }
     prevRoundsLengthRef.current = currentLength

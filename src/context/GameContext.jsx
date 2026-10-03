@@ -52,6 +52,42 @@ export function GameProvider({ children }) {
   // Sync players to storage
   useEffect(() => { savePlayers(players) }, [players])
 
+  // Synchroniser automatiquement les profils (noms, avatars, couleurs) dans toutes les parties
+  useEffect(() => {
+    if (!Array.isArray(games) || !Array.isArray(players) || players.length === 0) return
+    const playerMap = new Map(players.map(p => [p.id, p]))
+
+    let anyGameChanged = false
+    const nextGames = games.map(g => {
+      if (!g || !Array.isArray(g.players)) return g
+      let gameChanged = false
+      const nextPlayers = g.players.map(p => {
+        const latest = playerMap.get(p.id)
+        if (latest && (latest.name !== p.name || latest.avatar !== p.avatar || latest.color !== p.color)) {
+          gameChanged = true
+          return { ...p, name: latest.name, avatar: latest.avatar, color: latest.color }
+        }
+        return p
+      })
+      if (gameChanged) {
+        anyGameChanged = true
+        const updatedGame = { ...g, players: nextPlayers, updatedAt: new Date().toISOString() }
+        if (g.id === activeGameId) {
+          const liveSession = getActiveSession()
+          if (liveSession?.code) {
+            pushGameToLiveSession(liveSession.code, updatedGame).catch(() => {})
+          }
+        }
+        return updatedGame
+      }
+      return g
+    })
+
+    if (anyGameChanged) {
+      setGames(nextGames)
+    }
+  }, [players, activeGameId])
+
   // Sync activeGameId to storage
   useEffect(() => { saveActiveGameId(activeGameId) }, [activeGameId])
 
@@ -396,6 +432,21 @@ export function GameProvider({ children }) {
         next = [...prev, player]
       }
       return sortPlayersAlpha(next)
+    })
+
+    // Mettre à jour immédiatement les parties actives et enregistrées avec le nouveau profil
+    setGames(prevGames => {
+      let anyChanged = false
+      const nextGames = prevGames.map(g => {
+        if (!g.players?.some(p => p.id === player.id)) return g
+        anyChanged = true
+        return {
+          ...g,
+          players: g.players.map(p => (p.id === player.id ? { ...p, ...player } : p)),
+          updatedAt: new Date().toISOString(),
+        }
+      })
+      return anyChanged ? nextGames : prevGames
     })
 
     if (isAutoSyncEnabled() && getSyncKey()) {
