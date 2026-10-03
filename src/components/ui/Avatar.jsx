@@ -36,14 +36,14 @@ export function Avatar({
   }
 
   const crownConfig = {
-    '2xs': { size: 10, offset: '-top-2' },
-    xs: { size: 12, offset: '-top-2.5' },
-    'sm-compact': { size: 13, offset: '-top-2.5' },
-    sm: { size: 15, offset: '-top-3' },
-    md: { size: 18, offset: '-top-3.5' },
-    lg: { size: 22, offset: '-top-4.5' },
-    xl: { size: 26, offset: '-top-5.5' },
-  }[size] || { size: 15, offset: '-top-3' }
+    '2xs': { size: 11, offset: '-top-2.5' },
+    xs: { size: 13, offset: '-top-3' },
+    'sm-compact': { size: 15, offset: '-top-3' },
+    sm: { size: 18, offset: '-top-4' },
+    md: { size: 21, offset: '-top-4.5' },
+    lg: { size: 25, offset: '-top-5.5' },
+    xl: { size: 30, offset: '-top-6.5' },
+  }[size] || { size: 18, offset: '-top-4' }
 
   const crownElement = crown ? (
     <Crown

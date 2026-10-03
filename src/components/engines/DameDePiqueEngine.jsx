@@ -186,8 +186,8 @@ export function DameDePiqueEngine({ game, onFinish }) {
 
         {/* Si Grand Chelem : Sélecteur du joueur qui a réussi */}
         {isChelem ? (
-          <div className="mb-2 p-2.5 rounded-xl bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10 border border-[#c83b3b]/25">
-            <div className="flex items-center justify-between gap-1 flex-wrap mb-2">
+          <div className="mb-2 p-2.5 pt-3 rounded-xl bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10 border border-[#c83b3b]/25">
+            <div className="flex items-center justify-between gap-1 flex-wrap mb-1.5">
               <p className="text-[11px] font-bold text-[#c83b3b] dark:text-red-400 uppercase tracking-wider">
                 Auteur du Grand Chelem
               </p>
@@ -195,7 +195,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
                 0 pt auteur · +26 pts autres
               </span>
             </div>
-            <div className={`grid gap-2 ${
+            <div className={`grid gap-2 mt-2.5 ${
               game.players.length === 2 ? 'grid-cols-2' :
               game.players.length === 3 ? 'grid-cols-3' :
               'grid-cols-2 sm:grid-cols-4'
@@ -207,21 +207,21 @@ export function DameDePiqueEngine({ game, onFinish }) {
                     key={p.id}
                     type="button"
                     onClick={() => setChelemWinnerId(p.id)}
-                    className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all cursor-pointer select-none active:scale-[0.98] ${
+                    className={`flex flex-col items-center justify-center pt-2 pb-1 px-1.5 rounded-xl border transition-all cursor-pointer select-none active:scale-[0.98] ${
                       isWinner
                         ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs ring-1 ring-[#c83b3b]/30'
                         : 'school-card text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/40'
                     }`}
                   >
-                    <div className="relative mb-1">
+                    <div className="relative -mt-1.5 mb-0.5">
                       <Avatar player={p} size="sm" leader={isWinner} leaderColor="#c83b3b" crown={isWinner} />
                     </div>
-                    <span className={`text-xs font-bold truncate max-w-full text-center px-1 block ${
+                    <span className={`text-xs font-bold truncate max-w-full text-center px-1 block leading-tight ${
                       isWinner ? 'text-white' : 'text-stone-800 dark:text-slate-100'
                     }`}>
                       {p.name}
                     </span>
-                    <span className={`text-[10px] font-semibold mt-1 px-1.5 py-0.5 rounded-full inline-block ${
+                    <span className={`text-[10px] font-semibold mt-0.5 px-1.5 py-0.5 rounded-full inline-block leading-tight ${
                       isWinner
                         ? 'bg-white/20 text-white'
                         : 'bg-stone-200/80 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
