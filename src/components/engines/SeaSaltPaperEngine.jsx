@@ -212,25 +212,38 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
 
         {/* Si Dernière chance : sélection du joueur qui a annoncé */}
         {closingMode !== 'stop' && (
-          <div className="p-2.5 rounded-xl bg-sky-50/60 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800/50 mb-2 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
-            <span className="text-xs font-semibold text-sky-900 dark:text-sky-300 shrink-0">
-              Annonceur :
-            </span>
-            <div className="flex gap-1.5 overflow-x-auto py-0.5 max-w-full">
-              {game.players.map(p => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setAnnouncerId(p.id)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
-                    announcerId === p.id
-                      ? 'bg-sky-600 text-white border-sky-600 shadow-2xs'
-                      : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-sky-300'
-                  }`}
-                >
-                  {p.name}
-                </button>
-              ))}
+          <div className="p-2.5 rounded-xl bg-sky-50/60 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800/50 mb-2">
+            <div className="flex items-center justify-between gap-1.5 mb-2">
+              <span className="text-xs font-bold text-sky-900 dark:text-sky-300 flex items-center gap-1.5 min-w-0">
+                <span className="truncate">Annonceur Dernière Chance :</span>
+              </span>
+              <span className="text-[10px] text-sky-700 dark:text-sky-300 font-semibold shrink-0">
+                Min. 7 pts
+              </span>
+            </div>
+            <div className={`grid gap-1.5 ${
+              game.players.length === 2 ? 'grid-cols-2' :
+              game.players.length === 3 ? 'grid-cols-3' :
+              'grid-cols-2 sm:grid-cols-4'
+            }`}>
+              {game.players.map(p => {
+                const isAnnouncer = announcerId === p.id
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setAnnouncerId(p.id)}
+                    className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer select-none active:scale-[0.98] min-w-0 ${
+                      isAnnouncer
+                        ? 'bg-sky-600 text-white border-sky-600 shadow-2xs ring-1 ring-sky-500/40'
+                        : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-700 dark:text-slate-300 hover:border-sky-300'
+                    }`}
+                  >
+                    <Avatar player={p} size="xs" leader={isAnnouncer} leaderColor="#0284c7" />
+                    <span className="truncate">{p.name}</span>
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
@@ -255,27 +268,27 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-2.5">
                   <button
                     type="button"
                     onClick={() => { setEditingPlayer(p); setOpen(true) }}
-                    className="flex items-center gap-2.5 flex-1 min-w-0 text-left cursor-pointer select-none"
+                    className="flex items-center gap-2 flex-1 min-w-0 text-left cursor-pointer select-none"
                   >
-                    <Avatar player={p} size="xs" />
-                    <div className="min-w-0">
+                    <Avatar player={p} size="xs" leader={isAnnouncer} leaderColor="#0284c7" />
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-sm truncate">{p.name}</span>
                         {isAnnouncer && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300">
+                          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300 shrink-0">
                             Annonceur
                           </span>
                         )}
                         {isNearWin && <Trophy size={13} className="text-emerald-600 shrink-0" />}
                       </div>
-                      <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
+                      <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1 min-w-0">
                         {roundPts > 0 ? (
                           <span className="truncate">
-                            Total : {currentTotal} <strong className="text-sky-600 dark:text-sky-400 font-bold">➔ {projected} pts</strong>
+                            Total : {currentTotal} <strong className="text-sky-600 dark:text-sky-400 font-bold whitespace-nowrap">➔ {projected} pts</strong>
                           </span>
                         ) : (
                           <span className="truncate">Total : {currentTotal} pts</span>
@@ -289,10 +302,10 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
                     <button
                       type="button"
                       onClick={() => setSirensConfirmPlayer(p)}
-                      className="px-2 py-1 rounded-lg text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 transition-colors cursor-pointer"
+                      className="px-2 py-1 rounded-lg text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
                       title="Déclarer une victoire instantanée avec les 4 Sirènes"
                     >
-                      🧜 4 Sirènes
+                      🧜 <span className="hidden sm:inline">4 Sirènes</span><span className="sm:hidden">4 Sir.</span>
                     </button>
 
                     <QuickScoreBadge
