@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, CheckCircle2, Trophy, ChevronLeft, ChevronRight } from 'lucide-react'
+import { AlertTriangle, Trophy, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -209,7 +209,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
         </button>
 
         {/* Si Grand Chelem : Sélecteur du joueur qui a réussi */}
-        {isChelem ? (
+        {isChelem && (
           <div className="mb-2 p-2.5 pt-3 rounded-xl bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10 border border-[#c83b3b]/25">
             <div className="flex items-center justify-between gap-1 flex-wrap mb-1.5">
               <p className="text-[11px] font-bold text-[#c83b3b] dark:text-red-400 uppercase tracking-wider">
@@ -264,27 +264,6 @@ export function DameDePiqueEngine({ game, onFinish }) {
                 )
               })}
             </div>
-          </div>
-        ) : (
-          /* Indicateur de vérification des 26 points en mode normal */
-          <div className={`p-2 rounded-xl border text-xs font-medium flex items-center justify-between mb-2 ${
-            isNormalRoundComplete
-              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700/60 text-emerald-900 dark:text-emerald-200'
-              : 'bg-stone-50 dark:bg-slate-800/60 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400'
-          }`}>
-            <div className="flex items-center gap-1.5 truncate">
-              {isNormalRoundComplete ? (
-                <>
-                  <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
-                  <span>Manche complète : 26/26 pts alloués (13 <span className="text-[#c83b3b] font-bold">♥</span> Cœurs + Q<span className="font-bold">♠</span>)</span>
-                </>
-              ) : (
-                <span>Attribué : {totalAllocated}/26 pts ({totalHeartsAllocated}/13 <span className="text-[#c83b3b] font-bold">♥</span> Cœurs{queenOwnerId ? ' + Q♠' : ''})</span>
-              )}
-            </div>
-            <span className="font-bold text-[11px] ml-2 shrink-0">
-              {totalAllocated} pts
-            </span>
           </div>
         )}
 
