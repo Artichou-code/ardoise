@@ -407,7 +407,7 @@ export function AscenseurEngine({ game, onFinish }) {
                   : 'bg-stone-200 dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:bg-stone-300 dark:hover:bg-slate-700'
               }`}
             >
-              <span className="inline-flex items-center justify-center gap-1.5">
+              <span className="inline-flex items-baseline justify-center gap-1.5">
                 <span>Valider la manche {roundNum}</span>
                 <span className="text-xs font-normal opacity-85">({totalTricks}/{cardsCount} plis)</span>
               </span>

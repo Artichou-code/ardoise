@@ -51,9 +51,14 @@ export function RamiEngine({ game, onFinish }) {
     }
   }
 
-  const confirmLabel = hasNextPlayer
-    ? `Valider & Suivant (${nextPlayer.name})`
-    : 'Valider et terminer'
+  const confirmLabel = hasNextPlayer && nextPlayer ? (
+    <span className="inline-flex items-baseline justify-center gap-1.5 max-w-full">
+      <span className="shrink-0">Valider & Suivant</span>
+      <span className="font-normal opacity-85 truncate min-w-0">({nextPlayer.name})</span>
+    </span>
+  ) : (
+    <span>Valider et terminer</span>
+  )
 
   // Calcul du delta de manche pour chaque joueur
   const computePlayerDelta = (playerId) => {

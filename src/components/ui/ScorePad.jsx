@@ -377,7 +377,7 @@ export function ScorePad({
         <button
           type="button"
           onClick={onConfirm}
-          className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red mt-1 shadow-sm active:scale-[0.99] transition-all cursor-pointer"
+          className="w-full py-3.5 px-3 rounded-xl font-bold text-base btn-margin-red mt-1 shadow-sm active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center text-center"
         >
           {confirmLabel}
         </button>

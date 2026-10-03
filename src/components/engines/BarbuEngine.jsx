@@ -132,9 +132,9 @@ export function BarbuEngine({ game, onFinish }) {
   }
 
   const confirmLabel = hasNextPlayer && nextPlayer ? (
-    <span className="inline-flex items-center justify-center gap-1.5 truncate max-w-full">
-      <span>Valider & Suivant</span>
-      <span className="text-xs font-medium opacity-85 truncate">({nextPlayer.name})</span>
+    <span className="inline-flex items-baseline justify-center gap-1.5 max-w-full">
+      <span className="shrink-0">Valider & Suivant</span>
+      <span className="font-normal opacity-85 truncate min-w-0">({nextPlayer.name})</span>
     </span>
   ) : (
     <span>Valider et terminer</span>
@@ -1038,14 +1038,14 @@ export function BarbuEngine({ game, onFinish }) {
               }`}
             >
               {isContractTotalValid ? (
-                <span className="inline-flex items-center justify-center gap-1.5">
+                <span className="inline-flex items-baseline justify-center gap-1.5">
                   <span>Valider la donne {roundCount}</span>
                   {targetContract?.label && (
                     <span className="text-xs font-normal opacity-85">({targetContract.label})</span>
                   )}
                 </span>
               ) : (
-                <span className="inline-flex items-center justify-center gap-1.5">
+                <span className="inline-flex items-baseline justify-center gap-1.5">
                   <span>Valider la donne {roundCount}</span>
                   <span className="text-xs font-normal opacity-85">({currentTotalAllocated}/{targetContract?.totalPoints} pts)</span>
                 </span>
