@@ -150,7 +150,7 @@ export function RamiEngine({ game, onFinish }) {
               <Zap size={13} className={isRamiSec ? 'text-amber-600 dark:text-amber-400' : 'text-stone-400 dark:text-slate-500'} />
               <span className="font-bold text-xs leading-tight">Rami Sec (posé d'un coup)</span>
             </div>
-            <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5 pl-[19px] truncate">
+            <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5 pl-4.5 leading-snug">
               Pénalités des adversaires doublées (×2)
             </span>
           </div>

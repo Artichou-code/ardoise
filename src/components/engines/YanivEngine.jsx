@@ -240,7 +240,7 @@ export function YanivEngine({ game, onFinish }) {
               <Flame size={14} className={isAssaf ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'} />
               <span className="font-bold text-xs leading-tight">Contre « ASSAF ! » (adversaire ≤ annonceur)</span>
             </div>
-            <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5 pl-[20px] truncate">
+            <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5 pl-5 leading-snug">
               {isAssaf
                 ? 'Annonceur subit +30 pts de malus · Le contreur marque 0 pt'
                 : 'Activer si un adversaire a égalé ou battu l’annonceur'}
