@@ -2,18 +2,30 @@ import { useState } from 'react'
 import { useGame } from '../../context/GameContext'
 import { computePresidentScores, getPresidentRole } from '../../engines/gameEngines'
 import { Avatar } from '../ui/Avatar'
+import { PresidentReorderList } from './PresidentReorderList'
+import { RotateCcw } from 'lucide-react'
 
 export function PresidentEngine({ game }) {
   const { updateScores } = useGame()
-  const [order, setOrder] = useState([])
-
-  const remaining = game.players.filter(p => !order.includes(p.id))
   const totalPlayers = game.players.length
 
-  const addToOrder = (id) => setOrder(prev => [...prev, id])
-  const resetOrder = () => setOrder([])
+  const [order, setOrder] = useState(() => {
+    if (game.restoredRound?.order && Array.isArray(game.restoredRound.order) && game.restoredRound.order.length === totalPlayers) {
+      return [...game.restoredRound.order]
+    }
+    const last = game.rounds[game.rounds.length - 1]
+    if (last?.order && Array.isArray(last.order) && last.order.length === totalPlayers) {
+      return [...last.order]
+    }
+    return game.players.map(p => p.id)
+  })
+
+  const resetToDefault = () => {
+    setOrder(game.players.map(p => p.id))
+  }
 
   const submitRound = () => {
+    if (order.length !== totalPlayers) return
     const roundScores = computePresidentScores(order)
     const newScores = {}
     const delta = {}
@@ -22,17 +34,18 @@ export function PresidentEngine({ game }) {
       newScores[p.id] = (game.scores[p.id] || 0) + (roundScores[p.id] || 0)
     }
     updateScores({ scores: newScores, delta, order: [...order], type: 'president' })
-    setOrder([])
   }
 
-  const isComplete = order.length === totalPlayers
   const lastRound = game.rounds[game.rounds.length - 1]
+  const presidentPlayer = game.players.find(p => p.id === order[0])
+  const trouPlayer = game.players.find(p => p.id === order[order.length - 1])
 
   return (
     <div className="space-y-4 pt-2">
+      {/* Hiérarchie de la manche précédente pour les échanges de cartes de début de manche */}
       {lastRound && (
-        <div className="school-card rounded-xl p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2.5">
+        <div className="school-card rounded-xl p-3 sm:p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2">
             Hiérarchie en cours (échanges de cartes)
           </p>
           <div className="space-y-1.5">
@@ -42,12 +55,14 @@ export function PresidentEngine({ game }) {
               if (!player) return null
               return (
                 <div key={id} className="flex items-center gap-2.5 text-xs py-0.5">
-                  <span className="w-6 font-bold text-stone-400 dark:text-slate-500">
+                  <span className="w-5 font-bold text-stone-400 dark:text-slate-500 text-[11px]">
                     {idx + 1}e
                   </span>
                   <Avatar player={player} size="xs" leader={idx === 0} leaderColor="#10b981" crown={idx === 0} />
-                  <span className="font-semibold flex-1 truncate">{player.name}</span>
-                  <span className="px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 font-bold text-stone-700 dark:text-slate-300">
+                  <span className="font-semibold flex-1 truncate text-stone-900 dark:text-slate-100">
+                    {player.name}
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 font-bold text-stone-700 dark:text-slate-300 text-[10px]">
                     {role.label}
                   </span>
                 </div>
@@ -57,84 +72,49 @@ export function PresidentEngine({ game }) {
         </div>
       )}
 
-      <div className="school-card rounded-xl p-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-3">
-          Ordre de sortie des joueurs
-        </p>
-
-        {/* Joueurs encore en main */}
-        {remaining.length > 0 && (
-          <div className="space-y-2 mb-3">
-            {remaining.map(p => {
-              const nextRole = getPresidentRole(order.length + 1, totalPlayers)
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => addToOrder(p.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl school-subtle hover:border-[#c83b3b] active:scale-[0.99] transition-all"
-                >
-                  <Avatar player={p} size="xs" />
-                  <span className="flex-1 font-semibold text-sm text-left truncate">
-                    {p.name}
-                  </span>
-                  <span className="text-xs font-semibold text-[#c83b3b]">
-                    Classer {order.length + 1}e ({nextRole.short})
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        )}
-
-        {/* Classement enregistré */}
-        {order.length > 0 && (
-          <div className="space-y-1.5 pt-1">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-1.5">
-              Ordre validé :
-            </p>
-            {order.map((id, idx) => {
-              const player = game.players.find(p => p.id === id)
-              const role = getPresidentRole(idx + 1, totalPlayers)
-              if (!player) return null
-              return (
-                <div key={id} className="flex items-center gap-2.5 text-sm px-2 py-1 rounded-lg school-subtle">
-                  <span className="w-6 text-xs font-bold text-stone-400 dark:text-slate-500">
-                    {idx + 1}e
-                  </span>
-                  <Avatar player={player} size="xs" leader={idx === 0} leaderColor="#10b981" crown={idx === 0} />
-                  <span className="font-semibold flex-1 truncate">{player.name}</span>
-                  <span className="text-xs text-stone-500 dark:text-slate-400">{role.label}</span>
-                  <span className={`text-xs font-black tabular-nums ${
-                    role.points > 0 ? 'text-emerald-700 dark:text-emerald-400' : role.points < 0 ? 'text-[#c83b3b]' : 'text-stone-500'
-                  }`}>
-                    {role.points >= 0 ? '+' : ''}{role.points}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        )}
-
-        {order.length > 0 && (
+      {/* Classement interactif par Glisser - Déposer (Drag & Drop) */}
+      <div className="school-card rounded-xl p-3 sm:p-4">
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+            Ordre de sortie des joueurs
+          </p>
           <button
             type="button"
-            onClick={resetOrder}
-            className="mt-3 text-xs font-semibold text-[#c83b3b] underline"
+            onClick={resetToDefault}
+            className="text-[11px] font-semibold text-stone-500 hover:text-[#c83b3b] dark:text-slate-400 dark:hover:text-red-400 flex items-center gap-1 transition-colors cursor-pointer"
+            title="Réinitialiser à l'ordre initial"
           >
-            Réinitialiser l'ordre de sortie
+            <RotateCcw size={11} />
+            <span>Réinitialiser</span>
           </button>
-        )}
+        </div>
+
+        <p className="text-xs text-stone-500 dark:text-slate-400 mb-3 leading-relaxed">
+          Glissez-déposez les cartes au doigt ou utilisez les flèches pour classer les joueurs selon leur ordre de sortie.
+        </p>
+
+        <PresidentReorderList
+          order={order}
+          setOrder={setOrder}
+          players={game.players}
+          gameScores={game.scores}
+        />
       </div>
 
       <button
         type="button"
         onClick={submitRound}
-        disabled={!isComplete}
-        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40"
+        disabled={order.length !== totalPlayers}
+        className="w-full py-3.5 px-3 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40 shadow-sm active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-1.5 text-center"
       >
-        Valider la manche
+        <span>Valider la manche</span>
+        {presidentPlayer && trouPlayer && (
+          <span className="inline-flex items-baseline gap-1 text-sm font-normal opacity-85 truncate max-w-[200px] sm:max-w-xs">
+            <span>({presidentPlayer.name} ➔ 1er)</span>
+          </span>
+        )}
       </button>
     </div>
   )
 }
+
