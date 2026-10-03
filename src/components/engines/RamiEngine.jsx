@@ -148,13 +148,15 @@ export function RamiEngine({ game, onFinish }) {
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-              isRamiSec
-                ? 'bg-amber-500 text-white shadow-2xs'
-                : 'bg-stone-200/80 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
-            }`}>
-              <Zap size={14} className={isRamiSec ? 'fill-current' : ''} />
-            </div>
+            <Zap
+              size={16}
+              strokeWidth={2}
+              className={`shrink-0 transition-colors ${
+                isRamiSec
+                  ? 'text-amber-600 dark:text-amber-400'
+                  : 'text-stone-400 dark:text-slate-500'
+              }`}
+            />
             <div className="text-left min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="font-bold text-xs leading-tight">Rami Sec (posé d'un coup)</span>

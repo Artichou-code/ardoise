@@ -238,13 +238,15 @@ export function YanivEngine({ game, onFinish }) {
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-              isAssaf
-                ? 'bg-[#c83b3b] text-white shadow-2xs'
-                : 'bg-stone-200/80 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
-            }`}>
-              <Flame size={14} className={isAssaf ? 'fill-current' : ''} />
-            </div>
+            <Flame
+              size={16}
+              strokeWidth={2}
+              className={`shrink-0 transition-colors ${
+                isAssaf
+                  ? 'text-[#c83b3b]'
+                  : 'text-stone-400 dark:text-slate-500'
+              }`}
+            />
             <div className="text-left min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="font-bold text-xs leading-tight">Contre « ASSAF ! »</span>
