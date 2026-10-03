@@ -156,7 +156,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
             return (
               <div
                 key={p.id}
-                className={`px-3 py-2 rounded-xl border transition-all ${
+                className={`px-3 py-2.5 rounded-xl border transition-all ${
                   isChelem
                     ? 'border-amber-400/80 bg-amber-50/40 dark:bg-amber-950/20'
                     : isQueen
@@ -164,43 +164,63 @@ export function DameDePiqueEngine({ game, onFinish }) {
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2">
-                  {/* Info joueur (clic pour ouvrir le pavé numérique) */}
+                {/* Ligne 1 : Nom complet et score projeté */}
+                <div className="flex items-center justify-between gap-2 mb-2">
                   <button
                     type="button"
                     onClick={() => { setEditingPlayer(p); setOpen(true) }}
-                    className="flex items-center gap-2 flex-1 min-w-0 text-left cursor-pointer select-none"
+                    className="flex items-center gap-2 min-w-0 text-left cursor-pointer select-none"
                   >
                     <Avatar player={p} size="xs" />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm truncate">{p.name}</span>
-                        {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
-                      </div>
-                      <span className="text-[11px] text-stone-500 dark:text-slate-400 block truncate">
-                        Score : {currentTotal} pts {roundDelta > 0 && <span className="text-[#c83b3b] font-bold">(+{roundDelta} = {projected})</span>}
-                      </span>
-                    </div>
+                    <span className="font-semibold text-sm truncate">{p.name}</span>
+                    {danger && <AlertTriangle size={13} className="text-[#c83b3b] shrink-0" />}
                   </button>
 
-                  {/* Actions pénalités compactes sur une seule ligne */}
+                  <div className="text-right text-xs shrink-0 select-none">
+                    <span className="text-stone-500 dark:text-slate-400">Total : {currentTotal} pts</span>
+                    {roundDelta > 0 && (
+                      <span className="text-[#c83b3b] font-bold ml-1.5">
+                        (+{roundDelta} = {projected})
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Ligne 2 : Actions rapides et scroll tactile à la fin */}
+                <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 shrink-0">
                     {/* Bouton Dame de Pique (+13) */}
                     <button
                       type="button"
                       onClick={() => toggleQueen(p.id)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer select-none ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer select-none active:scale-[0.98] ${
                         isQueen
                           ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
-                          : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-[#c83b3b]/60 hover:text-[#c83b3b]'
+                          : 'bg-white dark:bg-slate-900 text-stone-600 dark:text-slate-400 border-stone-200 dark:border-slate-700 hover:border-[#c83b3b]/60 hover:text-[#c83b3b]'
                       }`}
                       title={isQueen ? "Retirer la Dame de Pique" : "Prendre la Dame de Pique (+13 pts)"}
                     >
                       <span className="text-sm leading-none">♠</span>
-                      <span>Dame</span>
+                      <span>Dame (+13)</span>
                     </button>
 
-                    {/* Sélecteur de Cœurs avec roulette rapide */}
+                    {/* Bouton Grand Chelem */}
+                    <button
+                      type="button"
+                      onClick={() => toggleChelem(p.id)}
+                      className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border cursor-pointer select-none active:scale-[0.98] ${
+                        isChelem
+                          ? 'border-amber-600 bg-amber-600 text-white shadow-2xs'
+                          : 'bg-white dark:bg-slate-900 text-stone-500 dark:text-slate-400 border-stone-200 dark:border-slate-700 hover:border-amber-400 hover:text-amber-600'
+                      }`}
+                      title="Grand Chelem (tous les Cœurs + Dame de Pique)"
+                    >
+                      Chelem
+                    </button>
+                  </div>
+
+                  {/* Roulette tactile de Cœurs placée à la fin */}
+                  <div className="shrink-0">
                     <QuickScoreBadge
                       value={hearts}
                       onChange={v => {
@@ -217,20 +237,6 @@ export function DameDePiqueEngine({ game, onFinish }) {
                         return { text: `+${d} pts (total ${currentTotal + d})`, variant: d > 10 ? 'danger' : 'default' }
                       }}
                     />
-
-                    {/* Bouton Grand Chelem */}
-                    <button
-                      type="button"
-                      onClick={() => toggleChelem(p.id)}
-                      className={`px-2 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border cursor-pointer select-none ${
-                        isChelem
-                          ? 'border-amber-600 bg-amber-600 text-white shadow-2xs'
-                          : 'school-subtle text-stone-500 dark:text-slate-400 hover:border-amber-400 hover:text-amber-600'
-                      }`}
-                      title="Grand Chelem (tous les Cœurs + Dame de Pique)"
-                    >
-                      Chelem
-                    </button>
                   </div>
                 </div>
               </div>
