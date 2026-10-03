@@ -1181,33 +1181,6 @@ export function BarbuEngine({ game, onFinish }) {
       >
         {editingPlayer && (
           <div className="p-4 space-y-3">
-            {/* Sélecteur rapide des joueurs (pastilles tactiles) */}
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 -mx-1 px-1">
-              {game.players.map((p, idx) => {
-                const isSelected = p.id === editingPlayer.id
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setEditingPlayer(p)}
-                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer select-none active:scale-95 ${
-                      isSelected
-                        ? 'btn-margin-red text-white shadow-xs'
-                        : 'bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:bg-stone-200 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    <Avatar player={p} size="2xs" />
-                    <span className="truncate max-w-[80px]">{p.name}</span>
-                    <span className={`text-[10px] font-bold px-1 rounded ${
-                      isSelected ? 'bg-white/20 text-white' : 'text-stone-400 dark:text-slate-500'
-                    }`}>
-                      {idx + 1}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-
             {/* En-tête joueur avec total et chevrons précédent / suivant */}
             <div className="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 dark:bg-slate-800/50 border border-stone-200/70 dark:border-slate-800">
               <div className="flex items-center gap-2.5 min-w-0">
