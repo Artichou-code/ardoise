@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle2, ChevronRight, AlertCircle } from 'lucide-react'
+import { CheckCircle2, ChevronRight, AlertCircle, Info } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { Dialog } from '../ui/Dialog'
@@ -44,6 +44,7 @@ export function AscenseurEngine({ game, onFinish }) {
     return game.restoredRound?.phase || 'bids'
   })
   const [showTricksErrorDialog, setShowTricksErrorDialog] = useState(false)
+  const [showDealerRuleDialog, setShowDealerRuleDialog] = useState(false)
 
   // Sommes pour contrôle de cohérence
   const totalBids = Object.values(bids).reduce((a, b) => a + b, 0)
@@ -189,11 +190,17 @@ export function AscenseurEngine({ game, onFinish }) {
 
         {/* Message d'aide contextuel selon la phase */}
         {phase === 'bids' ? (
-          <div className={`px-3 py-2 rounded-xl border text-xs font-medium flex items-center justify-between gap-2 mb-2 ${
-            isDealerRestricted
-              ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200'
-              : 'bg-stone-50 dark:bg-slate-800/60 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400'
-          }`}>
+          <button
+            type="button"
+            onClick={() => setShowDealerRuleDialog(true)}
+            title="Cliquer pour voir l'explication de la règle du donneur"
+            aria-label="Voir l'explication de la règle du donneur"
+            className={`w-full text-left px-3 py-2 rounded-xl border text-xs font-medium flex items-center justify-between gap-2 mb-2 transition-all cursor-pointer ${
+              isDealerRestricted
+                ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200 hover:bg-amber-100/70 dark:hover:bg-amber-900/50 active:scale-[0.99]'
+                : 'bg-stone-50 dark:bg-slate-800/60 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:bg-stone-100/70 dark:hover:bg-slate-800 active:scale-[0.99]'
+            }`}
+          >
             <div className="flex items-center gap-2 min-w-0 flex-1 truncate">
               {isDealerRestricted ? (
                 <AlertCircle size={15} className="text-amber-600 dark:text-amber-400 shrink-0" />
@@ -206,18 +213,32 @@ export function AscenseurEngine({ game, onFinish }) {
                   : `Total des annonces : ${totalBids} / ${cardsCount} plis`}
               </span>
             </div>
-            {isDealerRestricted && (
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-200/60 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 shrink-0">
-                Interdit
+            {isDealerRestricted ? (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 shrink-0">
+                <span>Interdit</span>
+                <Info size={11} className="opacity-75" />
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[11px] text-stone-400 dark:text-slate-500 hover:text-stone-600 dark:hover:text-slate-300 shrink-0">
+                <Info size={13} />
               </span>
             )}
-          </div>
+          </button>
         ) : (
-          <div className={`px-3 py-2 rounded-xl border text-xs font-medium flex items-center justify-between gap-2 mb-2 ${
-            isTricksExact
-              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700/60 text-emerald-900 dark:text-emerald-200'
-              : 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200'
-          }`}>
+          <button
+            type="button"
+            onClick={() => {
+              if (!isTricksExact) setShowTricksErrorDialog(true)
+            }}
+            title={!isTricksExact ? 'Cliquer pour vérifier la saisie' : undefined}
+            className={`w-full text-left px-3 py-2 rounded-xl border text-xs font-medium flex items-center justify-between gap-2 mb-2 transition-all ${
+              !isTricksExact ? 'cursor-pointer hover:bg-amber-100/70 dark:hover:bg-amber-900/50 active:scale-[0.99]' : ''
+            } ${
+              isTricksExact
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700/60 text-emerald-900 dark:text-emerald-200'
+                : 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200'
+            }`}
+          >
             <div className="flex items-center gap-1.5 min-w-0 flex-1 truncate">
               {isTricksExact ? (
                 <>
@@ -234,11 +255,16 @@ export function AscenseurEngine({ game, onFinish }) {
             <span className={`font-bold text-[11px] px-2 py-0.5 rounded-full shrink-0 ${
               isTricksExact
                 ? 'bg-emerald-200/60 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300'
-                : 'bg-amber-200/60 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300'
+                : 'bg-amber-200/60 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 inline-flex items-center gap-1'
             }`}>
-              {isTricksExact ? 'Complet' : 'À vérifier'}
+              {isTricksExact ? 'Complet' : (
+                <>
+                  <span>À vérifier</span>
+                  <Info size={11} className="opacity-75" />
+                </>
+              )}
             </span>
-          </div>
+          </button>
         )}
 
         {/* Liste des joueurs avec saisie des paris / plis */}
@@ -427,6 +453,58 @@ export function AscenseurEngine({ game, onFinish }) {
               className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white btn-margin-red cursor-pointer shadow-xs active:scale-[0.99] transition-all"
             >
               Vérifier la saisie des plis
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Dialogue explicatif de la règle d'or du donneur */}
+      <Dialog
+        open={showDealerRuleDialog}
+        onClose={() => setShowDealerRuleDialog(false)}
+        title="Règle d'or du Donneur"
+        subtitle="Règle officielle de l'Ascenseur (Rikiki)"
+        icon={<AlertCircle size={22} className="text-amber-600 dark:text-amber-400" />}
+      >
+        <div className="space-y-3 text-xs">
+          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 text-amber-900 dark:text-amber-200 space-y-1">
+            <p className="font-bold text-xs flex items-center gap-1.5">
+              <span>Pourquoi ce total est-il interdit ?</span>
+            </p>
+            <p className="text-[11px] leading-relaxed opacity-95">
+              À l'Ascenseur, le total des paris annoncés par l'ensemble des joueurs ne doit <strong>jamais être égal au nombre de cartes en jeu</strong> ({cardsCount}&nbsp;{cardsCount > 1 ? 'plis' : 'pli'}).
+            </p>
+          </div>
+
+          <div className="space-y-2 text-stone-600 dark:text-slate-300 leading-relaxed text-[11px]">
+            <p>
+              Le <strong>donneur</strong> (qui annonce son pari en dernier) n'a pas le droit d'annoncer un chiffre qui ferait tomber la somme exacte sur {cardsCount}.
+            </p>
+            <p>
+              Cette règle garantit qu'il y aura <strong>obligatoirement des perdants</strong> sur chaque manche (trop ou pas assez de plis réalisés pour satisfaire tout le monde).
+            </p>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 space-y-1 font-medium text-[11px]">
+            <div className="flex justify-between items-center">
+              <span>Cartes / plis en jeu :</span>
+              <strong className="text-stone-900 dark:text-slate-100">{cardsCount} {cardsCount > 1 ? 'plis' : 'pli'}</strong>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Total actuel des paris :</span>
+              <strong className={isDealerRestricted ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-stone-900 dark:text-slate-100'}>
+                {totalBids} pli{totalBids > 1 ? 's' : ''} {isDealerRestricted ? '(interdit !)' : ''}
+              </strong>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setShowDealerRuleDialog(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-stone-800 dark:text-stone-100 bg-stone-200/80 hover:bg-stone-300 dark:bg-slate-700 dark:hover:bg-slate-600 cursor-pointer shadow-xs active:scale-[0.99] transition-all"
+            >
+              Compris !
             </button>
           </div>
         </div>
