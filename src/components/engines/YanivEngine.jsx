@@ -589,43 +589,45 @@ export function YanivEngine({ game, onFinish }) {
                       {currentEditingIndex + 1}/{game.players.length}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-slate-400 mt-0.5">
-                    <span>Total actuel : {game.scores[editingPlayer.id] || 0} pts</span>
-                    {callerId === editingPlayer.id && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 shrink-0">
-                        Annonceur
-                      </span>
-                    )}
-                    {isAssaf && assafRivalId === editingPlayer.id && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shrink-0">
-                        Contreur
-                      </span>
-                    )}
-                  </div>
+                  <span className="text-xs text-stone-500 dark:text-slate-400 block whitespace-nowrap truncate mt-0.5">
+                    Total actuel : {game.scores[editingPlayer.id] || 0} pts
+                  </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  disabled={!hasPrevPlayer}
-                  onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
-                  title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
-                  aria-label="Joueur précédent"
-                >
-                  <ChevronLeft size={17} />
-                </button>
-                <button
-                  type="button"
-                  disabled={!hasNextPlayer}
-                  onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
-                  title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
-                  aria-label="Joueur suivant"
-                >
-                  <ChevronRight size={17} />
-                </button>
+              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                {callerId === editingPlayer.id ? (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300">
+                    Annonceur
+                  </span>
+                ) : isAssaf && assafRivalId === editingPlayer.id ? (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                    Contreur
+                  </span>
+                ) : null}
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={!hasPrevPlayer}
+                    onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                    title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
+                    aria-label="Joueur précédent"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!hasNextPlayer}
+                    onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                    title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
+                    aria-label="Joueur suivant"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
               </div>
             </div>
 
