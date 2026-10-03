@@ -372,52 +372,15 @@ export function GameScreen() {
                     )
                   }
 
-                  // 3, 5 ou 6 Joueurs : disposition semi-horizontale compacte (~48px)
-                  // Avatar + Nom + Score sur la même rangée pour un gain de hauteur maximal
-                  if (count === 3 || count === 5 || count === 6) {
-                    const colSpan =
-                      count === 5 ? (idx < 3 ? 'col-span-2' : 'col-span-3') : ''
-
-                    return (
-                      <div
-                        key={id}
-                        className={`flex flex-col justify-between rounded-xl px-2 py-1 transition-all min-h-[48px] ${colSpan} ${
-                          isLeader
-                            ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
-                            : 'school-card'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between w-full leading-none mb-1">
-                          <span className={`text-[9px] font-bold uppercase ${
-                            isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'
-                          }`}>
-                            {rank === 1 ? '1er' : `${rank}e`}
-                          </span>
-                          {isLeader && <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b] shrink-0" />}
-                        </div>
-                        <div className="flex items-center gap-1.5 w-full min-w-0">
-                          <Avatar player={player} size="xs" leader={isLeader} />
-                          <span className="text-[11px] font-bold truncate flex-1 min-w-0 text-stone-900 dark:text-slate-100 leading-tight">
-                            {player.name}
-                          </span>
-                          <span className={`font-black tabular-nums text-sm shrink-0 leading-none pl-0.5 ${
-                            isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
-                          }`}>
-                            {score}
-                          </span>
-                        </div>
-                      </div>
-                    )
-                  }
-
-                  // 4 Joueurs (1 ligne de 4) ou 7-8 Joueurs (2 lignes de 4) : disposition verticale compacte (~56px)
+                  // 3 à 8 Joueurs : format vertical compact (~58px) où le nom bénéficie de 100% de la largeur
                   const colSpan =
+                    count === 5 ? (idx < 3 ? 'col-span-2' : 'col-span-3') :
                     count === 7 ? (idx < 4 ? 'col-span-3' : 'col-span-4') : ''
 
                   return (
                     <div
                       key={id}
-                      className={`flex flex-col items-center justify-between rounded-xl px-1 py-1 transition-all min-h-[56px] ${colSpan} ${
+                      className={`flex flex-col items-center justify-between rounded-xl px-1 py-1 transition-all min-h-[58px] ${colSpan} ${
                         isLeader
                           ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
                           : 'school-card'
@@ -432,10 +395,10 @@ export function GameScreen() {
                         {isLeader && <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b] shrink-0" />}
                       </div>
                       <Avatar player={player} size="xs" leader={isLeader} />
-                      <span className="text-[10px] sm:text-[11px] font-semibold truncate max-w-full text-center px-0.5 leading-tight text-stone-900 dark:text-slate-100">
+                      <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center px-0.5 leading-tight text-stone-900 dark:text-slate-100 block">
                         {player.name}
                       </span>
-                      <span className={`font-black tabular-nums leading-none text-sm ${
+                      <span className={`font-black tabular-nums leading-none text-xs sm:text-sm ${
                         isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
                       }`}>
                         {score}
