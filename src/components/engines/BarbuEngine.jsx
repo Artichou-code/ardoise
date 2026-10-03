@@ -295,9 +295,10 @@ export function BarbuEngine({ game, onFinish }) {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-            {BARBU_CONTRACTS.map(contract => {
+            {BARBU_CONTRACTS.map((contract, index) => {
               const isSelected = selectedContract === contract.id
               const hasBeenPlayedByDealer = contractsPlayedByDealer[currentDealer?.id]?.has(contract.id)
+              const isLast = index === BARBU_CONTRACTS.length - 1
 
               return (
                 <button
@@ -305,6 +306,8 @@ export function BarbuEngine({ game, onFinish }) {
                   type="button"
                   onClick={() => setSelectedContract(contract.id)}
                   className={`p-2 rounded-xl border text-left transition-all cursor-pointer relative active:scale-[0.98] ${
+                    isLast ? 'col-span-2' : ''
+                  } ${
                     isSelected
                       ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
                       : hasBeenPlayedByDealer
@@ -327,7 +330,9 @@ export function BarbuEngine({ game, onFinish }) {
                       </span>
                     )}
                   </div>
-                  <span className={`text-[10px] block mt-0.5 truncate ${
+                  <span className={`text-[10px] block mt-0.5 ${
+                    isLast ? '' : 'truncate'
+                  } ${
                     isSelected ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'
                   }`}>
                     {contract.rule}
@@ -363,24 +368,43 @@ export function BarbuEngine({ game, onFinish }) {
                   return (
                     <div
                       key={p.id}
-                      className="px-3 py-2 rounded-xl border school-subtle flex items-center justify-between gap-2"
+                      className="px-3 py-2 rounded-xl border school-subtle"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <Avatar player={p} size="xs" />
-                        <div className="min-w-0">
-                          <span className="font-semibold text-xs truncate block">{p.name}</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Avatar player={p} size="xs" />
+                          <span className="font-semibold text-xs truncate">{p.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
                           <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                            {tricks} pli{tricks > 1 ? 's' : ''} ({delta} pts) · Total : {total}
+                            Total : <strong className="text-stone-700 dark:text-slate-200">{total}</strong>
                           </span>
+                          <QuickScoreBadge
+                            value={delta}
+                            onChange={v => setTricksCount(prev => ({ ...prev, [p.id]: Math.round(Math.abs(v) / 2) }))}
+                            onOpenPad={() => {
+                              setEditingPlayer(p)
+                              setPadConfig({ min: -26, max: 0, presets: [0, -2, -4, -6, -8, -10, -12, -26] })
+                              setOpenPad(true)
+                            }}
+                            min={-26}
+                            max={0}
+                            step={2}
+                            formatDisplay={v => `${v} pts`}
+                          />
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 ml-auto">
+                      <div className="flex items-center justify-between gap-2 pt-1.5 mt-1.5 border-t border-stone-200/50 dark:border-slate-800/60">
+                        <span className="text-[11px] text-stone-500 dark:text-slate-400 font-medium">
+                          {tricks} pli{tricks > 1 ? 's' : ''} ({delta} pts)
+                        </span>
+
                         <div className="flex items-center border border-stone-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
                           <button
                             type="button"
                             onClick={() => setTricksCount(prev => ({ ...prev, [p.id]: Math.max(0, (prev[p.id] || 0) - 1) }))}
-                            className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800"
+                            className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 cursor-pointer"
                           >
                             -
                           </button>
@@ -390,25 +414,11 @@ export function BarbuEngine({ game, onFinish }) {
                           <button
                             type="button"
                             onClick={() => setTricksCount(prev => ({ ...prev, [p.id]: Math.min(13, (prev[p.id] || 0) + 1) }))}
-                            className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800"
+                            className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 cursor-pointer"
                           >
                             +
                           </button>
                         </div>
-
-                        <QuickScoreBadge
-                          value={delta}
-                          onChange={v => setTricksCount(prev => ({ ...prev, [p.id]: Math.round(Math.abs(v) / 2) }))}
-                          onOpenPad={() => {
-                            setEditingPlayer(p)
-                            setPadConfig({ min: -26, max: 0, presets: [0, -2, -4, -6, -8, -10, -12, -26] })
-                            setOpenPad(true)
-                          }}
-                          min={-26}
-                          max={0}
-                          step={2}
-                          formatDisplay={v => `${v} pts`}
-                        />
                       </div>
                     </div>
                   )
@@ -439,69 +449,75 @@ export function BarbuEngine({ game, onFinish }) {
                   return (
                     <div
                       key={p.id}
-                      className="px-3 py-2 rounded-xl border school-subtle flex items-center justify-between gap-2"
+                      className="px-3 py-2 rounded-xl border school-subtle"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <Avatar player={p} size="xs" />
-                        <div className="min-w-0">
-                          <span className="font-semibold text-xs truncate block">{p.name}</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Avatar player={p} size="xs" />
+                          <span className="font-semibold text-xs truncate">{p.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
                           <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                            {delta} pts · Total : {total}
+                            Total : <strong className="text-stone-700 dark:text-slate-200">{total}</strong>
                           </span>
+                          <QuickScoreBadge
+                            value={delta}
+                            onChange={v => {
+                              const withoutAce = hasAce ? v + 6 : v
+                              setHeartsCount(prev => ({ ...prev, [p.id]: Math.round(Math.abs(withoutAce) / 2) }))
+                            }}
+                            onOpenPad={() => {
+                              setEditingPlayer(p)
+                              setPadConfig({ min: -30, max: 0, presets: [0, -2, -4, -6, -8, -12, -30] })
+                              setOpenPad(true)
+                            }}
+                            min={-30}
+                            max={0}
+                            step={2}
+                            formatDisplay={v => `${v} pts`}
+                          />
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 ml-auto">
+                      <div className="flex items-center justify-between gap-2 pt-1.5 mt-1.5 border-t border-stone-200/50 dark:border-slate-800/60">
                         {/* Bouton As de Cœur */}
                         <button
                           type="button"
                           onClick={() => setAceOfHeartsPlayerId(prev => prev === p.id ? null : p.id)}
-                          className={`px-2 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer select-none active:scale-95 ${
                             hasAce
                               ? 'border-red-600 bg-red-600 text-white shadow-2xs'
-                              : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-400 hover:border-red-400'
+                              : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:border-red-400'
                           }`}
                         >
-                          ♥ As (-6)
+                          ♥ As (-6 pts)
                         </button>
 
                         {/* Compteur de Cœurs ordinaires */}
-                        <div className="flex items-center border border-stone-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
-                          <button
-                            type="button"
-                            onClick={() => setHeartsCount(prev => ({ ...prev, [p.id]: Math.max(0, (prev[p.id] || 0) - 1) }))}
-                            className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800"
-                          >
-                            -
-                          </button>
-                          <span className="w-8 text-center text-xs font-bold text-stone-900 dark:text-slate-100">
-                            {hCount}
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-stone-500 dark:text-slate-400 font-medium">
+                            {hCount} cœur{hCount > 1 ? 's' : ''}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => setHeartsCount(prev => ({ ...prev, [p.id]: Math.min(12, (prev[p.id] || 0) + 1) }))}
-                            className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800"
-                          >
-                            +
-                          </button>
+                          <div className="flex items-center border border-stone-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+                            <button
+                              type="button"
+                              onClick={() => setHeartsCount(prev => ({ ...prev, [p.id]: Math.max(0, (prev[p.id] || 0) - 1) }))}
+                              className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 cursor-pointer"
+                            >
+                              -
+                            </button>
+                            <span className="w-8 text-center text-xs font-bold text-stone-900 dark:text-slate-100">
+                              {hCount}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setHeartsCount(prev => ({ ...prev, [p.id]: Math.min(12, (prev[p.id] || 0) + 1) }))}
+                              className="w-7 h-7 flex items-center justify-center font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 cursor-pointer"
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
-
-                        <QuickScoreBadge
-                          value={delta}
-                          onChange={v => {
-                            const withoutAce = hasAce ? v + 6 : v
-                            setHeartsCount(prev => ({ ...prev, [p.id]: Math.round(Math.abs(withoutAce) / 2) }))
-                          }}
-                          onOpenPad={() => {
-                            setEditingPlayer(p)
-                            setPadConfig({ min: -30, max: 0, presets: [0, -2, -4, -6, -8, -12, -30] })
-                            setOpenPad(true)
-                          }}
-                          min={-30}
-                          max={0}
-                          step={2}
-                          formatDisplay={v => `${v} pts`}
-                        />
                       </div>
                     </div>
                   )
@@ -533,49 +549,50 @@ export function BarbuEngine({ game, onFinish }) {
                   return (
                     <div
                       key={p.id}
-                      className="px-3 py-2 rounded-xl border school-subtle flex items-center justify-between gap-2"
+                      className="px-3 py-2 rounded-xl border school-subtle"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <Avatar player={p} size="xs" />
-                        <div className="min-w-0">
-                          <span className="font-semibold text-xs truncate block">{p.name}</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Avatar player={p} size="xs" />
+                          <span className="font-semibold text-xs truncate">{p.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
                           <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                            {qCount} Dame{qCount > 1 ? 's' : ''} ({delta} pts) · Total : {total}
+                            Total : <strong className="text-stone-700 dark:text-slate-200">{total}</strong>
                           </span>
+                          <QuickScoreBadge
+                            value={delta}
+                            onChange={v => setQueensCount(prev => ({ ...prev, [p.id]: Math.round(Math.abs(v) / 6) }))}
+                            onOpenPad={() => {
+                              setEditingPlayer(p)
+                              setPadConfig({ min: -24, max: 0, presets: [0, -6, -12, -18, -24] })
+                              setOpenPad(true)
+                            }}
+                            min={-24}
+                            max={0}
+                            step={6}
+                            formatDisplay={v => `${v} pts`}
+                          />
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 ml-auto">
-                        <div className="flex items-center gap-1">
+                      <div className="pt-1.5 mt-1.5 border-t border-stone-200/50 dark:border-slate-800/60">
+                        <div className="grid grid-cols-5 gap-1.5">
                           {[0, 1, 2, 3, 4].map(num => (
                             <button
                               key={num}
                               type="button"
                               onClick={() => setQueensCount(prev => ({ ...prev, [p.id]: num }))}
-                              className={`w-7 h-7 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                              className={`py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center justify-center active:scale-95 ${
                                 qCount === num
                                   ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
-                                  : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-300'
+                                  : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:border-stone-400'
                               }`}
                             >
-                              {num}
+                              {num === 0 ? '0' : `${num} ♛`}
                             </button>
                           ))}
                         </div>
-
-                        <QuickScoreBadge
-                          value={delta}
-                          onChange={v => setQueensCount(prev => ({ ...prev, [p.id]: Math.round(Math.abs(v) / 6) }))}
-                          onOpenPad={() => {
-                            setEditingPlayer(p)
-                            setPadConfig({ min: -24, max: 0, presets: [0, -6, -12, -18, -24] })
-                            setOpenPad(true)
-                          }}
-                          min={-24}
-                          max={0}
-                          step={6}
-                          formatDisplay={v => `${v} pts`}
-                        />
                       </div>
                     </div>
                   )
@@ -596,7 +613,7 @@ export function BarbuEngine({ game, onFinish }) {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
                 {game.players.map(p => {
                   const isTaker = barbuTakerId === p.id
                   const delta = isTaker ? -20 : 0
@@ -607,7 +624,7 @@ export function BarbuEngine({ game, onFinish }) {
                       key={p.id}
                       type="button"
                       onClick={() => setBarbuTakerId(prev => prev === p.id ? null : p.id)}
-                      className={`p-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer select-none active:scale-[0.98] ${
+                      className={`w-full px-3 py-2 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer select-none active:scale-[0.99] ${
                         isTaker
                           ? 'border-red-600 bg-red-600/10 dark:bg-red-950/30 text-red-950 dark:text-red-200 ring-2 ring-red-500'
                           : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-red-400'
@@ -616,16 +633,16 @@ export function BarbuEngine({ game, onFinish }) {
                       <div className="flex items-center gap-2.5 min-w-0">
                         <Avatar player={p} size="xs" />
                         <div className="text-left min-w-0">
-                          <span className="font-bold text-xs truncate block">{p.name}</span>
+                          <span className="font-semibold text-xs truncate block">{p.name}</span>
                           <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                            {isTaker ? '-20 pts' : '0 pt'} · Total : {total}
+                            Total : {total}
                           </span>
                         </div>
                       </div>
-                      <span className={`px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                      <span className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
                         isTaker ? 'bg-red-600 text-white shadow-2xs' : 'bg-stone-100 dark:bg-slate-800 text-stone-500'
                       }`}>
-                        {isTaker ? 'Le Barbu !' : 'Évité'}
+                        {isTaker ? '♥ Le Barbu (-20)' : 'Évité (0 pt)'}
                       </span>
                     </button>
                   )
@@ -741,10 +758,15 @@ export function BarbuEngine({ game, onFinish }) {
                         className="flex items-center gap-2.5 min-w-0 text-left cursor-pointer select-none flex-1"
                       >
                         <Avatar player={p} size="xs" />
-                        <div className="min-w-0">
-                          <span className="font-semibold text-xs truncate block">{p.name}</span>
-                          <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                            Pénalité Salade : {score} pts · Total : {total}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="font-semibold text-xs truncate">{p.name}</span>
+                            <span className="text-[10px] text-stone-400 dark:text-slate-500 whitespace-nowrap shrink-0">
+                              · Total : {total}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate">
+                            Pénalité : {score} pts
                           </span>
                         </div>
                       </button>
@@ -799,22 +821,27 @@ export function BarbuEngine({ game, onFinish }) {
                           : 'school-subtle'
                       }`}
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                           index === 0 ? 'bg-emerald-600 text-white' : 'bg-stone-200 dark:bg-slate-700 text-stone-700 dark:text-slate-300'
                         }`}>
                           {index + 1}
                         </span>
                         <Avatar player={p} size="xs" />
-                        <div className="min-w-0">
-                          <span className="font-semibold text-xs truncate block">{p.name}</span>
-                          <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                            {rankLabels[index]} · Total : {(game.scores[p.id] || 0) + points}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="font-semibold text-xs truncate">{p.name}</span>
+                            <span className="text-[10px] text-stone-400 dark:text-slate-500 whitespace-nowrap shrink-0">
+                              · Total : {(game.scores[p.id] || 0) + points}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate">
+                            {rankLabels[index]}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 shrink-0">
                         {/* Flèches pour monter ou descendre dans le classement */}
                         <div className="flex items-center gap-1">
                           <button
