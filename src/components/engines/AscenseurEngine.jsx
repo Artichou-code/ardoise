@@ -179,42 +179,51 @@ export function AscenseurEngine({ game, onFinish }) {
 
         {/* Message d'aide contextuel selon la phase */}
         {phase === 'bids' ? (
-          <div className={`p-2.5 rounded-xl border text-xs font-medium flex items-center gap-2 mb-2 ${
+          <div className={`px-3 py-2 rounded-xl border text-xs font-medium flex items-center justify-between gap-2 mb-2 ${
             isDealerRestricted
               ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200'
               : 'bg-stone-50 dark:bg-slate-800/60 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400'
           }`}>
-            {isDealerRestricted ? (
-              <AlertCircle size={15} className="text-amber-600 dark:text-amber-400 shrink-0" />
-            ) : (
-              <span className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-slate-500 shrink-0" />
-            )}
-            <span className="leading-snug flex-1">
-              {isDealerRestricted
-                ? `Attention : Total des paris = ${cardsCount} (le donneur doit faire varier le total !)`
-                : `Total des annonces : ${totalBids} plis pour ${cardsCount} cartes en jeu`}
+            <div className="flex items-center gap-2 min-w-0 flex-1 truncate">
+              {isDealerRestricted ? (
+                <AlertCircle size={15} className="text-amber-600 dark:text-amber-400 shrink-0" />
+              ) : (
+                <span className="w-1.5 h-1.5 rounded-full bg-stone-400 dark:bg-slate-500 shrink-0" />
+              )}
+              <span className="whitespace-nowrap truncate">
+                {isDealerRestricted
+                  ? `Total = ${cardsCount} : le donneur doit faire varier`
+                  : `Total des annonces : ${totalBids}/${cardsCount} plis`}
+              </span>
+            </div>
+            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+              isDealerRestricted
+                ? 'bg-amber-200/60 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300'
+                : 'bg-stone-200/60 dark:bg-slate-700 text-stone-600 dark:text-slate-300'
+            }`}>
+              {isDealerRestricted ? 'Interdit' : `${totalBids}/${cardsCount}`}
             </span>
           </div>
         ) : (
-          <div className={`p-2.5 rounded-xl border text-xs font-medium flex items-center justify-between mb-2 ${
+          <div className={`px-3 py-2 rounded-xl border text-xs font-medium flex items-center justify-between gap-2 mb-2 ${
             isTricksExact
               ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700/60 text-emerald-900 dark:text-emerald-200'
               : 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200'
           }`}>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1 truncate">
               {isTricksExact ? (
                 <>
                   <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span>Exactement {totalTricks}/{cardsCount} plis distribués</span>
+                  <span className="whitespace-nowrap truncate">Exactement {totalTricks}/{cardsCount} plis distribués</span>
                 </>
               ) : (
                 <>
                   <AlertCircle size={15} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                  <span>Total saisi : {totalTricks}/{cardsCount} plis</span>
+                  <span className="whitespace-nowrap truncate">Total saisi : {totalTricks}/{cardsCount} plis</span>
                 </>
               )}
             </div>
-            <span className={`font-bold text-[11px] px-2 py-0.5 rounded-full ${
+            <span className={`font-bold text-[11px] px-2 py-0.5 rounded-full shrink-0 ${
               isTricksExact
                 ? 'bg-emerald-200/60 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300'
                 : 'bg-amber-200/60 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300'
