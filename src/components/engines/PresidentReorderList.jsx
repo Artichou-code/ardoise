@@ -258,7 +258,7 @@ export function PresidentReorderList({
               transition,
               zIndex: isBeingDragged ? 40 : 1,
             }}
-            className={`px-2.5 sm:px-3 py-2 rounded-xl border flex items-center justify-between gap-2 touch-none cursor-grab active:cursor-grabbing ${themeClass} ${elevationClass}`}
+            className={`px-2 sm:px-3 py-2 rounded-xl border flex items-center justify-between gap-1.5 sm:gap-2 touch-none cursor-grab active:cursor-grabbing ${themeClass} ${elevationClass}`}
           >
             {/* Poignée de drag & drop visuelle */}
             <div
@@ -269,8 +269,8 @@ export function PresidentReorderList({
               <GripVertical size={14} />
             </div>
 
-            {/* Rang + Avatar + Nom + Rôle & Total */}
-            <div className="flex items-center gap-2 min-w-0 flex-1 pointer-events-none">
+            {/* Rang + Avatar + Nom (Ligne 1) + Rôle & Total (Ligne 2) */}
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 pointer-events-none">
               <span className={`w-5.5 h-5.5 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 transition-all ${
                 isPresident
                   ? 'bg-emerald-600 text-white shadow-2xs'
@@ -294,10 +294,13 @@ export function PresidentReorderList({
               />
 
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-xs truncate text-stone-900 dark:text-slate-100">
-                    {p.name}
-                  </span>
+                {/* Ligne 1 : Nom complet du joueur (jamais tronqué pour les noms classiques) */}
+                <span className="font-semibold text-xs sm:text-sm truncate block text-stone-900 dark:text-slate-100 leading-tight">
+                  {p.name}
+                </span>
+
+                {/* Ligne 2 : Badge du rôle officiel + Projection du score */}
+                <div className="flex items-center gap-1.5 text-[10px] text-stone-500 dark:text-slate-400 mt-0.5 min-w-0">
                   <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${
                     isPresident
                       ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
@@ -311,15 +314,23 @@ export function PresidentReorderList({
                   }`}>
                     {role.label}
                   </span>
-                </div>
 
-                <span className="text-[10px] text-stone-500 dark:text-slate-400 block whitespace-nowrap mt-0.5">
-                  {role.points !== 0 ? (
-                    <>Total : {currentTotal} ➔ <strong className={`font-bold ${role.points > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-[#c83b3b] dark:text-red-400'}`}>{projectedTotal} pts</strong></>
-                  ) : (
-                    `Total : ${currentTotal} pts`
-                  )}
-                </span>
+                  <span className="shrink-0 opacity-40">·</span>
+
+                  <span className="truncate whitespace-nowrap" title={`Score actuel : ${currentTotal} pts ➔ Nouveau total : ${projectedTotal} pts`}>
+                    <span className="hidden sm:inline">Total : {currentTotal} ➔ </span>
+                    <span className="sm:hidden">Total : </span>
+                    <strong className={`font-bold ${
+                      role.points > 0
+                        ? 'text-emerald-700 dark:text-emerald-400'
+                        : role.points < 0
+                        ? 'text-[#c83b3b] dark:text-red-400'
+                        : 'text-stone-700 dark:text-slate-300'
+                    }`}>
+                      {projectedTotal} pts
+                    </strong>
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -354,7 +365,7 @@ export function PresidentReorderList({
                 </button>
               </div>
 
-              <span className={`min-w-[48px] text-center px-1.5 py-1 rounded-lg text-xs font-bold shrink-0 transition-colors ${
+              <span className={`min-w-[44px] text-center px-1.5 py-1 rounded-lg text-xs font-bold shrink-0 transition-colors ${
                 role.points > 0
                   ? 'bg-emerald-600 text-white shadow-2xs'
                   : role.points < 0
