@@ -25,10 +25,16 @@ export function Flip7Engine({ game, onFinish }) {
     return game.restoredRound?.flip7BonusPlayers || {}
   })
 
+  // Suivi des joueurs éliminés (Bust) lors de la manche (score à 0)
+  const [bustedPlayers, setBustedPlayers] = useState(() => {
+    return game.restoredRound?.bustedPlayers || {}
+  })
+
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [open, setOpen] = useState(false)
 
   const toggleFlip7 = (playerId) => {
+    setBustedPlayers(prev => ({ ...prev, [playerId]: false }))
     setFlip7BonusPlayers(prev => {
       const active = !prev[playerId]
       if (active) {
@@ -42,9 +48,23 @@ export function Flip7Engine({ game, onFinish }) {
     })
   }
 
-  const setBust = (playerId) => {
-    setFlip7BonusPlayers(prev => ({ ...prev, [playerId]: false }))
-    setRoundScores(prev => ({ ...prev, [playerId]: 0 }))
+  const toggleBust = (playerId) => {
+    setBustedPlayers(prev => {
+      const nextBust = !prev[playerId]
+      if (nextBust) {
+        setRoundScores(rs => ({ ...rs, [playerId]: 0 }))
+        setFlip7BonusPlayers(fs => ({ ...fs, [playerId]: false }))
+      }
+      return { ...prev, [playerId]: nextBust }
+    })
+  }
+
+  const handleScoreChange = (playerId, val) => {
+    const nextVal = Math.max(0, val)
+    setRoundScores(prev => ({ ...prev, [playerId]: nextVal }))
+    if (nextVal > 0) {
+      setBustedPlayers(prev => ({ ...prev, [playerId]: false }))
+    }
   }
 
   const submitRound = () => {
@@ -61,11 +81,13 @@ export function Flip7Engine({ game, onFinish }) {
       scores: newScores,
       delta,
       flip7BonusPlayers,
+      bustedPlayers,
       type: 'flip_7',
     })
 
     setRoundScores(Object.fromEntries(game.players.map(p => [p.id, 0])))
     setFlip7BonusPlayers({})
+    setBustedPlayers({})
 
     // Vérification de victoire : premier à atteindre 200 points
     const winners = Object.entries(newScores).filter(([, s]) => s >= TARGET_SCORE)
@@ -94,16 +116,16 @@ export function Flip7Engine({ game, onFinish }) {
             const projected = currentTotal + roundPts
             const isNearWin = projected >= TARGET_SCORE
             const hasFlip7 = !!flip7BonusPlayers[p.id]
-            const isBust = roundPts === 0
+            const isBust = !!bustedPlayers[p.id]
 
             return (
               <div
                 key={p.id}
                 className={`px-3 py-2 rounded-xl border transition-all ${
                   hasFlip7
-                    ? 'border-amber-400 bg-amber-500/10'
+                    ? 'border-amber-400/80 bg-amber-50/40 dark:bg-amber-950/20'
                     : isNearWin
-                    ? 'border-emerald-400 bg-emerald-500/5'
+                    ? 'border-emerald-400/80 bg-emerald-50/40 dark:bg-emerald-950/20'
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
                 }`}
               >
@@ -130,13 +152,13 @@ export function Flip7Engine({ game, onFinish }) {
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       type="button"
-                      onClick={() => setBust(p.id)}
-                      className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase transition-all border cursor-pointer ${
+                      onClick={() => toggleBust(p.id)}
+                      className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border cursor-pointer select-none ${
                         isBust
-                          ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-900'
-                          : 'bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400 border-stone-200 dark:border-slate-700 hover:border-rose-300 hover:text-rose-600'
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                          : 'school-subtle text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-200 hover:border-stone-300 dark:hover:border-slate-600'
                       }`}
-                      title="Marquer 0 point (Bust / éliminé de la manche)"
+                      title={isBust ? "Annuler le Bust" : "Marquer comme Bust (0 point pour la manche)"}
                     >
                       Bust
                     </button>
@@ -144,20 +166,20 @@ export function Flip7Engine({ game, onFinish }) {
                     <button
                       type="button"
                       onClick={() => toggleFlip7(p.id)}
-                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold uppercase transition-all border cursor-pointer ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border cursor-pointer select-none ${
                         hasFlip7
-                          ? 'bg-amber-600 text-white border-amber-600 shadow-2xs'
-                          : 'bg-stone-100 dark:bg-slate-800 text-amber-700 dark:text-amber-300 border-stone-200 dark:border-slate-700 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
+                          ? 'border-amber-600 bg-amber-600 text-white shadow-2xs'
+                          : 'school-subtle text-stone-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-300 hover:border-amber-400/60'
                       }`}
-                      title="Activer le bonus de manche Flip 7 (+15 points)"
+                      title={hasFlip7 ? "Désactiver le bonus Flip 7" : "Activer le bonus de manche Flip 7 (+15 points)"}
                     >
-                      <Sparkles size={11} /> Flip 7
+                      <Sparkles size={11} className={hasFlip7 ? 'text-white' : 'text-stone-400 dark:text-slate-500'} /> Flip 7
                     </button>
 
                     {/* Badge de score avec roulette */}
                     <QuickScoreBadge
                       value={roundPts}
-                      onChange={v => setRoundScores(prev => ({ ...prev, [p.id]: Math.max(0, v) }))}
+                      onChange={v => handleScoreChange(p.id, v)}
                       onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
                       min={0}
                       step={1}
@@ -200,7 +222,7 @@ export function Flip7Engine({ game, onFinish }) {
             </p>
             <ScorePad
               value={roundScores[editingPlayer.id] || 0}
-              onChange={v => setRoundScores(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, v) }))}
+              onChange={v => handleScoreChange(editingPlayer.id, v)}
               onConfirm={() => setOpen(false)}
               min={0}
               step={1}
