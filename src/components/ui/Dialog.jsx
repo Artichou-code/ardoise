@@ -25,20 +25,20 @@ export function Dialog({ open, onClose, title, subtitle, icon, children, classNa
       >
         {(title || icon || (showClose && onClose)) && (
           <div className="flex items-start justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-start gap-2.5 min-w-0 flex-1">
               {icon && (
-                <div className="shrink-0">
+                <div className="shrink-0 mt-0.5">
                   {icon}
                 </div>
               )}
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 {title && (
-                  <h2 className="font-serif-title text-lg font-bold leading-tight truncate">
+                  <h2 className="font-serif-title text-base sm:text-lg font-bold leading-snug">
                     {title}
                   </h2>
                 )}
                 {subtitle && (
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5 truncate">
+                  <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5 leading-normal">
                     {subtitle}
                   </p>
                 )}
