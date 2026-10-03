@@ -207,13 +207,13 @@ export function DameDePiqueEngine({ game, onFinish }) {
                     key={p.id}
                     type="button"
                     onClick={() => setChelemWinnerId(p.id)}
-                    className={`flex flex-col items-center justify-center pt-2 pb-1 px-1.5 rounded-xl border transition-all cursor-pointer select-none active:scale-[0.98] ${
+                    className={`flex flex-col items-center justify-center pt-2 pb-1.5 px-1.5 rounded-xl border transition-all cursor-pointer select-none active:scale-[0.98] ${
                       isWinner
                         ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs ring-1 ring-[#c83b3b]/30'
                         : 'school-card text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/40'
                     }`}
                   >
-                    <div className="relative -mt-1.5 mb-0.5">
+                    <div className="relative mb-0.5">
                       <Avatar player={p} size="sm" leader={isWinner} leaderColor="#c83b3b" crown={isWinner} />
                     </div>
                     <span className={`text-xs font-bold truncate max-w-full text-center px-1 block leading-tight ${
@@ -270,7 +270,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
             return (
               <div
                 key={p.id}
-                className={`px-3 py-2.5 rounded-xl border transition-all ${
+                className={`px-3 ${isChelem ? 'py-2' : 'py-2.5'} rounded-xl border transition-all ${
                   isChelemWinner
                     ? 'border-[#c83b3b]/60 bg-[#c83b3b]/6 dark:bg-[#c83b3b]/15'
                     : isQueen && !isChelem
@@ -279,7 +279,7 @@ export function DameDePiqueEngine({ game, onFinish }) {
                 }`}
               >
                 {/* Ligne 1 : Nom complet et score projeté */}
-                <div className="flex items-center justify-between gap-2 mb-2">
+                <div className={`flex items-center justify-between gap-2 ${isChelem ? '' : 'mb-2'}`}>
                   <button
                     type="button"
                     onClick={() => {
