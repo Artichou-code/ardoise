@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useScrollLock } from '../../hooks/useScrollLock'
 import { X } from 'lucide-react'
 
@@ -70,96 +71,104 @@ export function BottomSheet({
 
   if (!open) return null
 
-  // Mode positionné au plus haut (anti-clavier mobile)
-  if (position === 'top') {
+  const renderSheet = () => {
+    // Mode positionné au plus haut (anti-clavier mobile)
+    if (position === 'top') {
+      return (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center p-3.5 bg-black/60 backdrop-blur-sm overflow-y-auto"
+          style={{
+            paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 1.5rem), 2.5rem)',
+          }}
+          onClick={(e) => e.target === e.currentTarget && onClose()}
+        >
+          <div
+            ref={sheetRef}
+            className={`relative w-full max-w-lg school-surface rounded-2xl shadow-2xl border border-stone-200 dark:border-slate-800 transition-all duration-150 max-h-[calc(100dvh-4rem)] flex flex-col mb-auto ${className}`}
+          >
+            {title && (
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-200/80 dark:border-slate-800/80 bg-[#faf9f5]/90 dark:bg-[#151719]/90 rounded-t-2xl flex-shrink-0">
+                <div>
+                  <h2 className="font-serif-title text-lg font-bold leading-tight">{title}</h2>
+                  {subtitle && (
+                    <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 -mr-1">
+                  {headerAction}
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+                    aria-label="Fermer"
+                  >
+                    <X size={18} className="text-stone-500 dark:text-slate-400" />
+                  </button>
+                </div>
+              </div>
+            )}
+            <div className="overflow-y-auto flex-1 scrollbar-hide overscroll-contain">
+              {children}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Mode Bottom Sheet classique (position="bottom")
     return (
       <div
-        className="fixed inset-0 z-50 flex items-start justify-center p-3.5 bg-black/60 backdrop-blur-sm overflow-y-auto"
-        style={{
-          paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 1.5rem), 2.5rem)',
-        }}
+        className="fixed inset-0 z-50 flex items-end justify-center"
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
         <div
           ref={sheetRef}
-          className={`relative w-full max-w-lg school-surface rounded-2xl shadow-2xl border border-stone-200 dark:border-slate-800 transition-all duration-150 max-h-[calc(100dvh-4rem)] flex flex-col mb-auto ${className}`}
+          className={`relative w-full max-w-lg school-surface rounded-t-2xl shadow-2xl border-t border-stone-200 dark:border-slate-800 transition-transform duration-200 max-h-[88dvh] flex flex-col ${className}`}
         >
-          {title && (
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-200/80 dark:border-slate-800/80 bg-[#faf9f5]/90 dark:bg-[#151719]/90 rounded-t-2xl flex-shrink-0">
-              <div>
-                <h2 className="font-serif-title text-lg font-bold leading-tight">{title}</h2>
-                {subtitle && (
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 -mr-1">
-                {headerAction}
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-                  aria-label="Fermer"
-                >
-                  <X size={18} className="text-stone-500 dark:text-slate-400" />
-                </button>
-              </div>
+          {/* Zone tactile de glissement pour fermer (Poignée tactile + Titre) */}
+          <div ref={headerRef} className="touch-none select-none flex-shrink-0 cursor-grab active:cursor-grabbing bg-[#faf9f5]/90 dark:bg-[#151719]/90 rounded-t-2xl">
+            {/* Poignée tactile */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-stone-300 dark:bg-slate-700" />
             </div>
-          )}
+            {/* Header */}
+            {title && (
+              <div className="flex items-start justify-between px-5 pt-1 pb-2 border-b border-stone-200/80 dark:border-slate-800/80">
+                <div>
+                  <h2 className="font-serif-title text-xl font-bold leading-snug">{title}</h2>
+                  {subtitle && (
+                    <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 -mr-1">
+                  {headerAction}
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+                    aria-label="Fermer"
+                  >
+                    <X size={18} className="text-stone-500 dark:text-slate-400" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          {/* Contenu scrollable */}
           <div className="overflow-y-auto flex-1 scrollbar-hide overscroll-contain">
             {children}
           </div>
+          {/* Safe area iOS */}
+          <div className="safe-bottom flex-shrink-0" />
         </div>
       </div>
     )
   }
 
-  // Mode Bottom Sheet classique (position="bottom")
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div
-        ref={sheetRef}
-        className={`relative w-full max-w-lg school-surface rounded-t-2xl shadow-2xl border-t border-stone-200 dark:border-slate-800 transition-transform duration-200 max-h-[88dvh] flex flex-col ${className}`}
-      >
-        {/* Zone tactile de glissement pour fermer (Poignée tactile + Titre) */}
-        <div ref={headerRef} className="touch-none select-none flex-shrink-0 cursor-grab active:cursor-grabbing bg-[#faf9f5]/90 dark:bg-[#151719]/90 rounded-t-2xl">
-          {/* Poignée tactile */}
-          <div className="flex justify-center pt-3 pb-1">
-            <div className="w-10 h-1 rounded-full bg-stone-300 dark:bg-slate-700" />
-          </div>
-          {/* Header */}
-          {title && (
-            <div className="flex items-start justify-between px-5 pt-1 pb-2 border-b border-stone-200/80 dark:border-slate-800/80">
-              <div>
-                <h2 className="font-serif-title text-xl font-bold leading-snug">{title}</h2>
-                {subtitle && (
-                  <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-1 -mr-1">
-                {headerAction}
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-                  aria-label="Fermer"
-                >
-                  <X size={18} className="text-stone-500 dark:text-slate-400" />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-        {/* Contenu scrollable */}
-        <div className="overflow-y-auto flex-1 scrollbar-hide overscroll-contain">
-          {children}
-        </div>
-        {/* Safe area iOS */}
-        <div className="safe-bottom flex-shrink-0" />
-      </div>
-    </div>
-  )
+  if (typeof document !== 'undefined') {
+    return createPortal(renderSheet(), document.body)
+  }
+
+  return renderSheet()
 }

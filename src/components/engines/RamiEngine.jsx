@@ -265,26 +265,40 @@ export function RamiEngine({ game, onFinish }) {
         </div>
       </div>
 
-      {/* Dialogue de confirmation si aucun adversaire n'a de pénalité */}
+      {/* Dialogue de confirmation bienveillant si aucun adversaire n'a de pénalité */}
       <Dialog
         open={showZeroConfirm}
         onClose={() => setShowZeroConfirm(false)}
-        title="Aucun point saisi pour les adversaires"
+        title="Cartes des adversaires"
+        subtitle="Rami · Manche en cours"
+        icon={(
+          <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <AlertTriangle size={17} />
+          </div>
+        )}
       >
-        <div className="space-y-4">
-          <p className="text-xs sm:text-sm text-stone-600 dark:text-slate-400 leading-relaxed">
-            Tous les adversaires sont à <strong>0 pt</strong>. Au Rami, le gagnant pose toutes ses cartes, mais les autres joueurs comptent les cartes qui leur restent en main (Figures = 10, As = 11, Joker = 20...).
-          </p>
-          <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold">
-            Avez-vous oublié de compter leurs cartes en main ?
-          </p>
-          <div className="flex flex-col gap-2 pt-2">
+        <div className="space-y-3 pt-1">
+          <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-950/25 border border-amber-500/25 text-xs leading-relaxed">
+            <p className="font-semibold text-amber-900 dark:text-amber-200 mb-1">
+              Tous les adversaires sont à 0 point.
+            </p>
+            <p className="text-stone-600 dark:text-slate-300">
+              Au Rami, seul le vainqueur pose toutes ses cartes (0 pt). Les autres joueurs additionnent la valeur des cartes restant dans leur main.
+            </p>
+          </div>
+
+          <div className="px-2.5 py-1.5 rounded-lg bg-stone-100 dark:bg-slate-800/80 text-[11px] text-stone-500 dark:text-slate-400 flex justify-between items-center">
+            <span>Barème :</span>
+            <span className="font-semibold text-stone-700 dark:text-slate-300">Figures 10 · As 11 · Joker 20</span>
+          </div>
+
+          <div className="space-y-2 pt-2">
             <button
               type="button"
               onClick={() => setShowZeroConfirm(false)}
-              className="w-full py-2.5 rounded-xl font-bold text-sm text-white btn-margin-red cursor-pointer"
+              className="w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white btn-margin-red cursor-pointer shadow-xs active:scale-[0.99] transition-all"
             >
-              Saisir les cartes des adversaires
+              Saisir les points des adversaires
             </button>
             <button
               type="button"
@@ -292,7 +306,7 @@ export function RamiEngine({ game, onFinish }) {
                 setShowZeroConfirm(false)
                 submitRound()
               }}
-              className="w-full py-2 rounded-xl text-xs font-semibold text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              className="w-full py-2 rounded-xl text-xs font-semibold text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               Valider quand même la manche (0 pt)
             </button>

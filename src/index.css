@@ -240,7 +240,7 @@ html.dark input, html.dark button, html.dark select, html.dark textarea {
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
