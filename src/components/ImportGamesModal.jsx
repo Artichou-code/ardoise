@@ -167,7 +167,7 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
                     En tête de la partie
                   </span>
                   <div className="flex items-center justify-center gap-3">
-                    <Avatar player={singleWinner} size="md" />
+                    <Avatar player={singleWinner} size="md" crown />
                     <div className="text-left">
                       <p className="font-bold font-serif-title text-base text-stone-900 dark:text-slate-100 leading-tight">
                         {singleWinner.name}

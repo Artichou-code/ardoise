@@ -45,7 +45,7 @@ export function PresidentEngine({ game }) {
                   <span className="w-6 font-bold text-stone-400 dark:text-slate-500">
                     {idx + 1}e
                   </span>
-                  <Avatar player={player} size="xs" />
+                  <Avatar player={player} size="xs" leader={idx === 0} leaderColor="#10b981" crown={idx === 0} />
                   <span className="font-semibold flex-1 truncate">{player.name}</span>
                   <span className="px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 font-bold text-stone-700 dark:text-slate-300">
                     {role.label}
@@ -102,7 +102,7 @@ export function PresidentEngine({ game }) {
                   <span className="w-6 text-xs font-bold text-stone-400 dark:text-slate-500">
                     {idx + 1}e
                   </span>
-                  <Avatar player={player} size="xs" />
+                  <Avatar player={player} size="xs" leader={idx === 0} leaderColor="#10b981" crown={idx === 0} />
                   <span className="font-semibold flex-1 truncate">{player.name}</span>
                   <span className="text-xs text-stone-500 dark:text-slate-400">{role.label}</span>
                   <span className={`text-xs font-black tabular-nums ${

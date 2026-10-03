@@ -79,7 +79,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
         {/* Statut & Vainqueur */}
         <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/80">
           <div className="flex items-center gap-2.5 min-w-0">
-            {winner && <Avatar player={winner} size="sm" leader={game.status === 'finished'} leaderColor="#10b981" />}
+            {winner && <Avatar player={winner} size="sm" leader={game.status === 'finished'} leaderColor="#10b981" crown={game.status === 'finished'} />}
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
@@ -157,7 +157,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                       </span>
                     )}
                   </div>
-                  <Avatar player={player} size="xs" leader={isFirst} leaderColor="#10b981" />
+                  <Avatar player={player} size="xs" leader={isFirst} leaderColor="#10b981" crown={isFirst && game.status === 'finished'} />
                   <span className="text-[11px] sm:text-xs font-semibold truncate w-full mt-0.5 px-0.5">
                     {player.name}
                   </span>

@@ -95,7 +95,7 @@ export function SharedGamePreviewModal({ isOpen, onClose, game, onImported }) {
                 Vainqueur de la partie
               </span>
               <div className="flex items-center justify-center gap-3">
-                <Avatar player={winner} size="md" />
+                <Avatar player={winner} size="md" crown />
                 <div className="text-left">
                   <p className="font-bold font-serif-title text-base text-stone-900 dark:text-slate-100 leading-tight">
                     {winner.name}
