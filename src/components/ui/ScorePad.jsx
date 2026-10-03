@@ -146,6 +146,7 @@ export function ScorePad({
 
   const dragStep = step || 1
   const cur = isDragging ? currentValueRef.current : value
+  const totalScore = baseScore !== undefined ? baseScore + cur : null
   const totalObj = formatTotal
     ? (typeof formatTotal(cur) === 'object' && formatTotal(cur) !== null
         ? formatTotal(cur)
