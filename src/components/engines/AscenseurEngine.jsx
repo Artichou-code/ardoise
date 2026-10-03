@@ -202,7 +202,7 @@ export function AscenseurEngine({ game, onFinish }) {
               )}
               <span className="whitespace-nowrap truncate">
                 {isDealerRestricted
-                  ? `Total = ${cardsCount} : interdit pour le donneur`
+                  ? `Total des paris = ${cardsCount} plis`
                   : `Total des annonces : ${totalBids} / ${cardsCount} plis`}
               </span>
             </div>
