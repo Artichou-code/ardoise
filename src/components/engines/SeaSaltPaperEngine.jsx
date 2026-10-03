@@ -131,55 +131,90 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
     <div className="space-y-2 pt-0">
       {/* Sélecteur de clôture de manche */}
       <div className="school-card rounded-xl p-3 sm:p-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5">
-            <Waves size={14} className="text-sky-600 dark:text-sky-400" />
-            Fin de manche (≥ 7 pts)
+        <div className="flex items-center justify-between gap-1.5 mb-2">
+          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
+            <Waves size={14} className="text-sky-600 dark:text-sky-400 shrink-0" />
+            <span className="truncate">Fin de manche (≥ 7 pts)</span>
           </p>
-          <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500">
-            Objectif : {TARGET_SCORE} pts ({game.players.length} joueurs)
+          <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500 shrink-0">
+            Objectif : {TARGET_SCORE} pts
           </span>
         </div>
 
         {/* Choix du mode d'annonce */}
-        <div className="grid grid-cols-3 gap-1.5 mb-2">
-          {[
-            { id: 'stop', label: 'STOP', desc: 'Comptage normal' },
-            { id: 'last_chance_won', label: 'Dernière Chance réussie', desc: 'Auteur > Rivaux' },
-            { id: 'last_chance_lost', label: 'Dernière Chance ratée', desc: 'Auteur contré' },
-          ].map(m => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setClosingMode(m.id)}
-              className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
-                closingMode === m.id
-                  ? 'bg-sky-50 dark:bg-sky-950/40 border-sky-400 text-sky-950 dark:text-sky-200 ring-1 ring-sky-400/40'
-                  : 'bg-stone-50 dark:bg-slate-800/60 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-sky-300'
-              }`}
-            >
-              <span className="block text-xs font-bold leading-tight">{m.label}</span>
-              <span className="block text-[10px] text-stone-400 dark:text-slate-500 mt-0.5 truncate">{m.desc}</span>
-            </button>
-          ))}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-2">
+          {/* Bouton STOP : Pleine largeur sur mobile, 1 colonne sur tablette/PC */}
+          <button
+            type="button"
+            onClick={() => setClosingMode('stop')}
+            className={`col-span-2 sm:col-span-1 p-2 rounded-xl text-left border transition-all cursor-pointer select-none active:scale-[0.99] flex items-center justify-between sm:block ${
+              closingMode === 'stop'
+                ? 'bg-sky-50 dark:bg-sky-950/40 border-sky-400 text-sky-950 dark:text-sky-200 ring-1 ring-sky-400/40 shadow-2xs'
+                : 'bg-stone-50 dark:bg-slate-800/60 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-sky-300'
+            }`}
+          >
+            <div>
+              <span className="block text-xs font-bold leading-tight">STOP</span>
+              <span className="block text-[10px] text-stone-400 dark:text-slate-500 mt-0.5">Comptage normal</span>
+            </div>
+            {closingMode === 'stop' && (
+              <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 sm:hidden">Actif</span>
+            )}
+          </button>
+
+          {/* Bouton Dernière Chance réussie */}
+          <button
+            type="button"
+            onClick={() => setClosingMode('last_chance_won')}
+            className={`col-span-1 p-2 rounded-xl text-left border transition-all cursor-pointer select-none active:scale-[0.99] ${
+              closingMode === 'last_chance_won'
+                ? 'bg-sky-50 dark:bg-sky-950/40 border-sky-400 text-sky-950 dark:text-sky-200 ring-1 ring-sky-400/40 shadow-2xs'
+                : 'bg-stone-50 dark:bg-slate-800/60 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-sky-300'
+            }`}
+          >
+            <span className="block text-xs font-bold leading-tight truncate">
+              D. Chance <span className="text-emerald-600 dark:text-emerald-400">réussie</span>
+            </span>
+            <span className="block text-[10px] text-stone-400 dark:text-slate-500 mt-0.5 truncate">
+              Auteur &gt; Rivaux
+            </span>
+          </button>
+
+          {/* Bouton Dernière Chance ratée */}
+          <button
+            type="button"
+            onClick={() => setClosingMode('last_chance_lost')}
+            className={`col-span-1 p-2 rounded-xl text-left border transition-all cursor-pointer select-none active:scale-[0.99] ${
+              closingMode === 'last_chance_lost'
+                ? 'bg-sky-50 dark:bg-sky-950/40 border-sky-400 text-sky-950 dark:text-sky-200 ring-1 ring-sky-400/40 shadow-2xs'
+                : 'bg-stone-50 dark:bg-slate-800/60 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-sky-300'
+            }`}
+          >
+            <span className="block text-xs font-bold leading-tight truncate">
+              D. Chance <span className="text-[#c83b3b] dark:text-red-400">ratée</span>
+            </span>
+            <span className="block text-[10px] text-stone-400 dark:text-slate-500 mt-0.5 truncate">
+              Auteur contré
+            </span>
+          </button>
         </div>
 
         {/* Si Dernière chance : sélection du joueur qui a annoncé */}
         {closingMode !== 'stop' && (
-          <div className="p-2 rounded-xl bg-sky-50/60 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800/50 mb-2 flex items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-sky-900 dark:text-sky-300">
-              Annonceur de la Dernière Chance :
+          <div className="p-2.5 rounded-xl bg-sky-50/60 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800/50 mb-2 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+            <span className="text-xs font-semibold text-sky-900 dark:text-sky-300 shrink-0">
+              Annonceur :
             </span>
-            <div className="flex gap-1.5 overflow-x-auto py-0.5">
+            <div className="flex gap-1.5 overflow-x-auto py-0.5 max-w-full">
               {game.players.map(p => (
                 <button
                   key={p.id}
                   type="button"
                   onClick={() => setAnnouncerId(p.id)}
-                  className={`px-2 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap ${
                     announcerId === p.id
                       ? 'bg-sky-600 text-white border-sky-600 shadow-2xs'
-                      : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400'
+                      : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-sky-300'
                   }`}
                 >
                   {p.name}
