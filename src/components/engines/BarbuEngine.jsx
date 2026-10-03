@@ -8,6 +8,8 @@ import {
   Trophy,
   RotateCw,
   HelpCircle,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { Mustache } from '../ui/MustacheIcon'
 import { useGame } from '../../context/GameContext'
@@ -106,6 +108,29 @@ export function BarbuEngine({ game, onFinish }) {
     setEditingPlayer(player)
     setOpenPad(true)
   }
+
+  // Navigation séquentielle et validation entre joueurs dans le ScorePad
+  const currentEditingIndex = useMemo(() => {
+    if (!editingPlayer) return -1
+    return game.players.findIndex(p => p.id === editingPlayer.id)
+  }, [editingPlayer, game.players])
+
+  const hasNextPlayer = currentEditingIndex >= 0 && currentEditingIndex < game.players.length - 1
+  const nextPlayer = hasNextPlayer ? game.players[currentEditingIndex + 1] : null
+  const hasPrevPlayer = currentEditingIndex > 0
+  const prevPlayer = hasPrevPlayer ? game.players[currentEditingIndex - 1] : null
+
+  const handleConfirmPad = () => {
+    if (hasNextPlayer && nextPlayer) {
+      setEditingPlayer(nextPlayer)
+    } else {
+      setOpenPad(false)
+    }
+  }
+
+  const confirmLabel = hasNextPlayer && nextPlayer
+    ? `Valider & Suivant (${nextPlayer.name})`
+    : 'Valider et terminer'
 
   // Calcul du delta de manche pour chaque joueur selon le contrat actif
   const playerDeltas = useMemo(() => {
@@ -1129,13 +1154,73 @@ export function BarbuEngine({ game, onFinish }) {
       >
         {editingPlayer && (
           <div className="p-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <Avatar player={editingPlayer} size="md" />
-              <div>
-                <span className="font-bold text-base block">{editingPlayer.name}</span>
-                <span className="text-xs text-stone-500 dark:text-slate-400">
-                  Total actuel : {game.scores[editingPlayer.id] || 0} pts
-                </span>
+            {/* Sélecteur rapide des joueurs (pastilles tactiles) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-0.5 -mx-1 px-1">
+              {game.players.map((p, idx) => {
+                const isSelected = p.id === editingPlayer.id
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setEditingPlayer(p)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer select-none active:scale-95 ${
+                      isSelected
+                        ? 'btn-margin-red text-white shadow-xs'
+                        : 'bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:bg-stone-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <Avatar player={p} size="2xs" />
+                    <span className="truncate max-w-[80px]">{p.name}</span>
+                    <span className={`text-[10px] font-bold px-1 rounded ${
+                      isSelected ? 'bg-white/20 text-white' : 'text-stone-400 dark:text-slate-500'
+                    }`}>
+                      {idx + 1}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* En-tête joueur avec total et chevrons précédent / suivant */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 dark:bg-slate-800/50 border border-stone-200/70 dark:border-slate-800">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Avatar player={editingPlayer} size="md" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-base truncate block text-stone-900 dark:text-slate-100">
+                      {editingPlayer.name}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
+                      {currentEditingIndex + 1} / {game.players.length}
+                    </span>
+                  </div>
+                  <span className="text-xs text-stone-500 dark:text-slate-400">
+                    Total actuel : {game.scores[editingPlayer.id] || 0} pts
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  disabled={!hasPrevPlayer}
+                  onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
+                  aria-label="Joueur précédent"
+                >
+                  <ChevronLeft size={17} />
+                </button>
+                <button
+                  type="button"
+                  disabled={!hasNextPlayer}
+                  onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                  title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
+                  aria-label="Joueur suivant"
+                >
+                  <ChevronRight size={17} />
+                </button>
               </div>
             </div>
 
@@ -1162,9 +1247,11 @@ export function BarbuEngine({ game, onFinish }) {
             )}
 
             <ScorePad
+              key={editingPlayer.id}
               value={currentPadProps.value}
               onChange={currentPadProps.onChange}
-              onConfirm={() => setOpenPad(false)}
+              onConfirm={handleConfirmPad}
+              confirmLabel={confirmLabel}
               min={currentPadProps.min}
               max={currentPadProps.max}
               step={currentPadProps.step}

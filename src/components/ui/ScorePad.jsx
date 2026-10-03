@@ -12,6 +12,7 @@ export function ScorePad({
   value = 0,
   onChange,
   onConfirm,
+  confirmLabel = 'Valider',
   label,
   subLabel,
   min,
@@ -366,9 +367,9 @@ export function ScorePad({
         <button
           type="button"
           onClick={onConfirm}
-          className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red mt-1 shadow-sm"
+          className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red mt-1 shadow-sm active:scale-[0.99] transition-all cursor-pointer"
         >
-          Valider
+          {confirmLabel}
         </button>
       )}
     </div>
