@@ -1121,7 +1121,7 @@ export const BARBU_CONTRACTS = [
   { id: 'plis', label: 'Pas de Plis', short: 'Plis', icon: 'Layers', totalPoints: -26, rule: '-2 pts / pli' },
   { id: 'coeurs', label: 'Pas de Cœurs', short: 'Cœurs', icon: 'Heart', totalPoints: -30, rule: '-2 pts / ♥, As -6 pts' },
   { id: 'dames', label: 'Pas de Dames', short: 'Dames', icon: 'Crown', totalPoints: -24, rule: '-6 pts / Dame' },
-  { id: 'barbu', label: 'Le Barbu', short: 'Barbu', icon: 'ShieldUser', totalPoints: -20, rule: 'Roi de Cœur = -20 pts' },
+  { id: 'barbu', label: 'Le Barbu', short: 'Barbu', icon: 'Mustache', totalPoints: -20, rule: 'Roi de Cœur = -20 pts' },
   { id: 'derniers', label: '2 Derniers Plis', short: '2 Der.', icon: 'Clock', totalPoints: -30, rule: '12e = -10, 13e = -20 pts' },
   { id: 'salade', label: 'La Salade', short: 'Salade', icon: 'Leaf', totalPoints: -130, rule: 'Tous malus combinés' },
   { id: 'domino', label: 'Le Domino', short: 'Domino', icon: 'Trophy', totalPoints: 65, rule: '1er +45, 2e +20, 3e +5, 4e -5 pts' },

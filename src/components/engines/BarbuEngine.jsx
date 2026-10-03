@@ -3,13 +3,13 @@ import {
   Layers,
   Heart,
   Crown,
-  ShieldUser,
   Clock,
   Leaf,
   Trophy,
   RotateCw,
   HelpCircle,
 } from 'lucide-react'
+import { Mustache } from '../ui/MustacheIcon'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -393,7 +393,7 @@ export function BarbuEngine({ game, onFinish }) {
       case 'plis': return <Layers size={size} />
       case 'coeurs': return <Heart size={size} />
       case 'dames': return <Crown size={size} />
-      case 'barbu': return <ShieldUser size={size} />
+      case 'barbu': return <Mustache size={size} />
       case 'derniers': return <Clock size={size} />
       case 'salade': return <Leaf size={size} />
       case 'domino': return <Trophy size={size} />
