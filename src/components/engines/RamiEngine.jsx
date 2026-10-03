@@ -143,8 +143,8 @@ export function RamiEngine({ game, onFinish }) {
           onClick={() => setIsRamiSec(v => !v)}
           className={`w-full p-2.5 px-3 rounded-xl border flex items-center justify-between gap-3 transition-all cursor-pointer mb-3 select-none active:scale-[0.99] ${
             isRamiSec
-              ? 'border-amber-500/50 bg-amber-500/8 dark:bg-amber-500/15 ring-1 ring-amber-400/30'
-              : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-amber-400/50'
+              ? 'border-[#c83b3b]/60 bg-[#c83b3b]/8 dark:bg-[#c83b3b]/15 ring-1 ring-[#c83b3b]/30'
+              : 'school-subtle text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/50'
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
@@ -153,7 +153,7 @@ export function RamiEngine({ game, onFinish }) {
               strokeWidth={2}
               className={`shrink-0 transition-colors ${
                 isRamiSec
-                  ? 'text-amber-600 dark:text-amber-400'
+                  ? 'text-[#c83b3b] dark:text-rose-400'
                   : 'text-stone-400 dark:text-slate-500'
               }`}
             />
@@ -162,7 +162,7 @@ export function RamiEngine({ game, onFinish }) {
                 <span className="font-bold text-xs leading-tight">Rami Sec (posé d'un coup)</span>
                 <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded transition-colors ${
                   isRamiSec
-                    ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+                    ? 'bg-[#c83b3b]/15 text-[#c83b3b] dark:text-rose-300'
                     : 'bg-stone-200/70 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
                 }`}>
                   ×2
@@ -174,10 +174,10 @@ export function RamiEngine({ game, onFinish }) {
             </div>
           </div>
 
-          {/* Interrupteur Switch style iOS */}
+          {/* Interrupteur Switch style iOS (Rouge identitaire Ardoise) */}
           <div
             className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-              isRamiSec ? 'bg-amber-600' : 'bg-stone-300 dark:bg-slate-700'
+              isRamiSec ? 'bg-[#c83b3b]' : 'bg-stone-300 dark:bg-slate-700'
             }`}
           >
             <span
@@ -255,7 +255,7 @@ export function RamiEngine({ game, onFinish }) {
                               Total : {currentTotal} <strong className="text-[#c83b3b] font-bold">➔ {projected} pts</strong>
                             </span>
                             {isRamiSec && (
-                              <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold px-1 py-0.2 rounded bg-amber-500/10 whitespace-nowrap shrink-0">
+                              <span className="text-[10px] text-[#c83b3b] dark:text-rose-400 font-semibold px-1 py-0.2 rounded bg-[#c83b3b]/10 whitespace-nowrap shrink-0">
                                 ×2
                               </span>
                             )}
