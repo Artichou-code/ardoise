@@ -1,6 +1,7 @@
 import { BottomSheet } from './ui/BottomSheet'
 import { GAME_META } from '../constants/games'
 import { formatTypography } from '../utils/typography'
+import { DeckTypeIcon } from './ui/DeckTypeIcon'
 
 /**
  * Fiche mémo des règles officielles (Bottom Sheet tactile avec scroll lock).
@@ -17,7 +18,16 @@ export function RulesSheet({ gameType, variant, title, onClose, onStartSetup }) 
       open={!!gameType}
       onClose={onClose}
       title={formatTypography(sheetTitle)}
-      subtitle={formatTypography(`${meta.playersBadge} · ${meta.categoryBadge}`)}
+      subtitle={
+        <span className="inline-flex items-center gap-1.5 flex-wrap">
+          <span>{formatTypography(meta.playersBadge)}</span>
+          <span className="text-stone-300 dark:text-slate-600 select-none">·</span>
+          <span className="inline-flex items-center gap-1">
+            <DeckTypeIcon deckType={meta.deckType} size={12} />
+            <span>{formatTypography(meta.categoryBadge)}</span>
+          </span>
+        </span>
+      }
     >
       <div className="px-5 py-4 space-y-5">
         {/* Si le jeu définit des sections structurées (ex. Dourak, Caracole, etc.) */}

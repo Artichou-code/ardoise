@@ -8,6 +8,7 @@ import { BurgerMenuButton } from './BurgerMenu'
 import { ArtCreaLogo } from './ui/ArtCreaLogo'
 import { formatDate, formatGameStart } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
+import { DeckTypeIcon } from './ui/DeckTypeIcon'
 import { formatTypography } from '../utils/typography'
 import { getActiveSession } from '../store/liveSession'
 import { RulesSheet } from './RulesSheet'
@@ -383,8 +384,9 @@ export function HomeScreen() {
                     <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300">
                       {meta.playersBadge}
                     </span>
-                    <span className="text-[11px] font-medium px-2 py-0.5 rounded border border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400">
-                      {meta.categoryBadge}
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded border border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400">
+                      <DeckTypeIcon deckType={meta.deckType} size={11} />
+                      <span>{meta.categoryBadge}</span>
                     </span>
                     {playCount > 0 && (
                       <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#c83b3b]/10 text-[#c83b3b] border border-[#c83b3b]/20">
