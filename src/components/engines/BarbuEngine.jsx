@@ -100,8 +100,12 @@ export function BarbuEngine({ game, onFinish }) {
   // Édition via ScorePad
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [openPad, setOpenPad] = useState(false)
-  const [padConfig, setPadConfig] = useState({ min: -130, max: 45, presets: [] })
   const [showBarbuErrorDialog, setShowBarbuErrorDialog] = useState(false)
+
+  const handleOpenPad = (player) => {
+    setEditingPlayer(player)
+    setOpenPad(true)
+  }
 
   // Calcul du delta de manche pour chaque joueur selon le contrat actif
   const playerDeltas = useMemo(() => {
@@ -186,6 +190,142 @@ export function BarbuEngine({ game, onFinish }) {
 
   const targetContract = BARBU_CONTRACTS.find(c => c.id === selectedContract)
   const isContractTotalValid = targetContract ? currentTotalAllocated === targetContract.totalPoints : true
+
+  // Configuration dynamique et réactive du ScorePad selon le contrat actif et le joueur sélectionné
+  const currentPadProps = useMemo(() => {
+    if (!editingPlayer) return {}
+    const pId = editingPlayer.id
+    const currentBase = game.scores[pId] || 0
+
+    switch (selectedContract) {
+      case 'plis': {
+        return {
+          min: 0,
+          max: 13,
+          step: 1,
+          showPlus: false,
+          label: 'Nombre de plis réalisés',
+          subLabel: '-2 pts / pli',
+          presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+          customButtons: [],
+          formatDisplay: v => `${v} pli${v > 1 ? 's' : ''}`,
+          formatTotal: v => {
+            const delta = v * -2
+            const newTot = currentBase + delta
+            return `${delta} pts · Nouveau total : ${newTot} pts`
+          },
+          value: tricksCount[pId] || 0,
+          onChange: val => {
+            const clamped = Math.max(0, Math.min(13, val))
+            setTricksCount(prev => ({ ...prev, [pId]: clamped }))
+          },
+        }
+      }
+      case 'coeurs': {
+        const hasAce = aceOfHeartsPlayerId === pId
+        return {
+          min: 0,
+          max: 12,
+          step: 1,
+          showPlus: false,
+          label: 'Cœurs ramassés (hors As)',
+          subLabel: '-2 pts / ♥',
+          presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+          customButtons: [],
+          formatDisplay: v => `${v} ♥`,
+          formatTotal: v => {
+            const delta = (v * -2) + (hasAce ? -6 : 0)
+            const newTot = currentBase + delta
+            return `${delta} pts ${hasAce ? '(avec As -6)' : ''} · Nouveau total : ${newTot} pts`
+          },
+          value: heartsCount[pId] || 0,
+          onChange: val => {
+            const clamped = Math.max(0, Math.min(12, val))
+            setHeartsCount(prev => ({ ...prev, [pId]: clamped }))
+          },
+        }
+      }
+      case 'dames': {
+        return {
+          min: 0,
+          max: 4,
+          step: 1,
+          showPlus: false,
+          label: 'Dames ramassées',
+          subLabel: '-6 pts / Dame',
+          presets: [
+            { value: 0, label: '0 Dame' },
+            { value: 1, label: '1 ♛' },
+            { value: 2, label: '2 ♛' },
+            { value: 3, label: '3 ♛' },
+            { value: 4, label: '4 ♛' },
+          ],
+          customButtons: [],
+          formatDisplay: v => `${v} ♛`,
+          formatTotal: v => {
+            const delta = v * -6
+            const newTot = currentBase + delta
+            return `${delta} pts · Nouveau total : ${newTot} pts`
+          },
+          value: queensCount[pId] || 0,
+          onChange: val => {
+            const clamped = Math.max(0, Math.min(4, val))
+            setQueensCount(prev => ({ ...prev, [pId]: clamped }))
+          },
+        }
+      }
+      case 'salade': {
+        return {
+          min: -130,
+          max: 0,
+          step: 2,
+          showPlus: false,
+          label: 'Pénalités de la Salade',
+          subLabel: 'Tous malus (-130 total)',
+          presets: [0, -10, -20, -26, -30, -50, -70, -130],
+          customButtons: [
+            { label: '-2', delta: -2, sub: 'Pli' },
+            { label: '-6', delta: -6, sub: 'Dame' },
+            { label: '-10', delta: -10, sub: '12e' },
+            { label: '-20', delta: -20, sub: 'Barbu/13e' },
+            { label: '0', value: 0, sub: 'Reset' },
+          ],
+          formatDisplay: v => `${v} pts`,
+          formatTotal: v => {
+            const newTot = currentBase + v
+            return `Pénalité : ${v} pts · Nouveau total : ${newTot} pts`
+          },
+          value: saladeScores[pId] || 0,
+          onChange: val => {
+            const clamped = Math.max(-130, Math.min(0, val))
+            setSaladeScores(prev => ({ ...prev, [pId]: clamped }))
+          },
+        }
+      }
+      default: {
+        return {
+          min: -130,
+          max: 45,
+          step: 1,
+          showPlus: true,
+          label: 'Score',
+          presets: [],
+          value: playerDeltas[pId] || 0,
+          onChange: () => {},
+        }
+      }
+    }
+  }, [
+    editingPlayer,
+    selectedContract,
+    game.scores,
+    tricksCount,
+    heartsCount,
+    queensCount,
+    saladeScores,
+    aceOfHeartsPlayerId,
+    playerDeltas,
+  ])
 
   // Validation et enregistrement de la manche
   const submitRound = () => {
@@ -391,17 +531,7 @@ export function BarbuEngine({ game, onFinish }) {
                     >
                       <button
                         type="button"
-                        onClick={() => {
-                          setEditingPlayer(p)
-                          setPadConfig({
-                            min: 0,
-                            max: 13,
-                            presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
-                            label: 'Nombre de plis',
-                            showPlus: false,
-                          })
-                          setOpenPad(true)
-                        }}
+                        onClick={() => handleOpenPad(p)}
                         className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer select-none active:opacity-80 transition-opacity"
                       >
                         <Avatar player={p} size="xs" />
@@ -425,17 +555,7 @@ export function BarbuEngine({ game, onFinish }) {
                           const val = Math.max(0, Math.min(13, v))
                           setTricksCount(prev => ({ ...prev, [p.id]: val }))
                         }}
-                        onOpenPad={() => {
-                          setEditingPlayer(p)
-                          setPadConfig({
-                            min: 0,
-                            max: 13,
-                            presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
-                            label: 'Nombre de plis',
-                            showPlus: false,
-                          })
-                          setOpenPad(true)
-                        }}
+                        onOpenPad={() => handleOpenPad(p)}
                         min={0}
                         max={13}
                         step={1}
@@ -483,17 +603,7 @@ export function BarbuEngine({ game, onFinish }) {
                       {/* Ligne 1 : Nom et score total avec évolution (style Dame de Pique) */}
                       <button
                         type="button"
-                        onClick={() => {
-                          setEditingPlayer(p)
-                          setPadConfig({
-                            min: 0,
-                            max: 12,
-                            presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-                            label: 'Nombre de Cœurs (hors As)',
-                            showPlus: false,
-                          })
-                          setOpenPad(true)
-                        }}
+                        onClick={() => handleOpenPad(p)}
                         className="w-full flex items-center justify-between gap-2 text-left cursor-pointer select-none active:opacity-80 transition-opacity mb-2"
                       >
                         <div className="flex items-center gap-2 min-w-0">
@@ -539,17 +649,7 @@ export function BarbuEngine({ game, onFinish }) {
                             const val = Math.max(0, Math.min(12, v))
                             setHeartsCount(prev => ({ ...prev, [p.id]: val }))
                           }}
-                          onOpenPad={() => {
-                            setEditingPlayer(p)
-                            setPadConfig({
-                              min: 0,
-                              max: 12,
-                              presets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-                              label: 'Nombre de Cœurs (hors As)',
-                              showPlus: false,
-                            })
-                            setOpenPad(true)
-                          }}
+                          onOpenPad={() => handleOpenPad(p)}
                           min={0}
                           max={12}
                           step={1}
@@ -597,15 +697,23 @@ export function BarbuEngine({ game, onFinish }) {
                       className="px-3 py-2 rounded-xl border school-subtle"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2.5 min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenPad(p)}
+                          className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer select-none active:opacity-80 transition-opacity"
+                        >
                           <Avatar player={p} size="xs" />
                           <div className="min-w-0">
-                            <span className="font-semibold text-xs truncate block">{p.name}</span>
+                            <span className="font-semibold text-xs truncate block text-stone-900 dark:text-slate-100">{p.name}</span>
                             <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                              Total : {total}
+                              {delta < 0 ? (
+                                <>Total : {game.scores[p.id] || 0} <strong className="font-bold text-[#c83b3b] dark:text-red-300">➔ {total} pts</strong></>
+                              ) : (
+                                `Total : ${total} pts`
+                              )}
                             </span>
                           </div>
-                        </div>
+                        </button>
 
                         <span className={`min-w-14 text-center px-2 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
                           delta < 0
@@ -796,18 +904,18 @@ export function BarbuEngine({ game, onFinish }) {
                     >
                       <button
                         type="button"
-                        onClick={() => {
-                          setEditingPlayer(p)
-                          setPadConfig({ min: -130, max: 0, presets: [0, -10, -20, -30, -40, -50, -60, -70, -130] })
-                          setOpenPad(true)
-                        }}
-                        className="flex items-center gap-2.5 min-w-0 text-left cursor-pointer select-none flex-1"
+                        onClick={() => handleOpenPad(p)}
+                        className="flex items-center gap-2.5 min-w-0 text-left cursor-pointer select-none flex-1 active:opacity-80 transition-opacity"
                       >
                         <Avatar player={p} size="xs" />
                         <div className="min-w-0 flex-1">
-                          <span className="font-semibold text-xs truncate block">{p.name}</span>
+                          <span className="font-semibold text-xs truncate block text-stone-900 dark:text-slate-100">{p.name}</span>
                           <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                            Total : {total}
+                            {score < 0 ? (
+                              <>Total : {game.scores[p.id] || 0} <strong className="font-bold text-[#c83b3b] dark:text-red-300">➔ {total} pts</strong></>
+                            ) : (
+                              `Total : ${game.scores[p.id] || 0} pts`
+                            )}
                           </span>
                         </div>
                       </button>
@@ -815,15 +923,16 @@ export function BarbuEngine({ game, onFinish }) {
                       <QuickScoreBadge
                         value={score}
                         onChange={v => setSaladeScores(prev => ({ ...prev, [p.id]: v }))}
-                        onOpenPad={() => {
-                          setEditingPlayer(p)
-                          setPadConfig({ min: -130, max: 0, presets: [0, -10, -20, -30, -40, -50, -60, -70, -130] })
-                          setOpenPad(true)
-                        }}
+                        onOpenPad={() => handleOpenPad(p)}
                         min={-130}
                         max={0}
                         step={2}
+                        showPlus={false}
                         formatDisplay={v => `${v} pts`}
+                        formatBubble={v => {
+                          const proj = (game.scores[p.id] || 0) + v
+                          return { text: `${v} pts (total ${proj})`, variant: v < 0 ? 'danger' : 'default' }
+                        }}
                       />
                     </div>
                   )
@@ -1026,31 +1135,42 @@ export function BarbuEngine({ game, onFinish }) {
               </div>
             </div>
 
+            {/* Pour le contrat Pas de Cœurs : interrupteur As de Cœur (-6 pts) */}
+            {selectedContract === 'coeurs' && (
+              <div className="flex items-center justify-between p-2.5 rounded-xl border border-stone-200/80 dark:border-slate-800 bg-stone-50/60 dark:bg-slate-800/40">
+                <div className="flex items-center gap-2">
+                  <Heart size={16} className="text-[#c83b3b]" fill="currentColor" />
+                  <span className="text-xs font-bold text-stone-800 dark:text-slate-200">As de Cœur</span>
+                  <span className="text-[11px] text-[#c83b3b] font-semibold">(-6 pts)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAceOfHeartsPlayerId(prev => prev === editingPlayer.id ? null : editingPlayer.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                    aceOfHeartsPlayerId === editingPlayer.id
+                      ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                      : 'border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:border-[#c83b3b]/60 hover:text-[#c83b3b]'
+                  }`}
+                >
+                  {aceOfHeartsPlayerId === editingPlayer.id ? '✓ A pris l\'As (-6 pts)' : 'N\'a pas l\'As'}
+                </button>
+              </div>
+            )}
+
             <ScorePad
-              value={
-                selectedContract === 'plis'
-                  ? (tricksCount[editingPlayer.id] || 0)
-                  : selectedContract === 'coeurs'
-                  ? (heartsCount[editingPlayer.id] || 0)
-                  : selectedContract === 'salade'
-                  ? (saladeScores[editingPlayer.id] || 0)
-                  : (playerDeltas[editingPlayer.id] || 0)
-              }
-              onChange={val => {
-                if (selectedContract === 'plis') {
-                  setTricksCount(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, Math.min(13, val)) }))
-                } else if (selectedContract === 'coeurs') {
-                  setHeartsCount(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, Math.min(12, val)) }))
-                } else if (selectedContract === 'salade') {
-                  setSaladeScores(prev => ({ ...prev, [editingPlayer.id]: val }))
-                }
-              }}
+              value={currentPadProps.value}
+              onChange={currentPadProps.onChange}
               onConfirm={() => setOpenPad(false)}
-              min={padConfig.min}
-              max={padConfig.max}
-              presets={padConfig.presets}
-              label={padConfig.label || 'Score'}
-              showPlus={padConfig.showPlus ?? false}
+              min={currentPadProps.min}
+              max={currentPadProps.max}
+              step={currentPadProps.step}
+              label={currentPadProps.label}
+              subLabel={currentPadProps.subLabel}
+              presets={currentPadProps.presets}
+              customButtons={currentPadProps.customButtons}
+              formatDisplay={currentPadProps.formatDisplay}
+              formatTotal={currentPadProps.formatTotal}
+              showPlus={currentPadProps.showPlus ?? false}
             />
           </div>
         )}

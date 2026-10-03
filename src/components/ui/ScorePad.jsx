@@ -13,11 +13,13 @@ export function ScorePad({
   onChange,
   onConfirm,
   label,
+  subLabel,
   min,
   max,
   step = 1,
   baseScore,
   formatTotal,
+  formatDisplay,
   presets,
   showPlus = true,
   customButtons,
@@ -45,8 +47,8 @@ export function ScorePad({
     return num
   }
 
-  // Déclinaison monochrome rouge Ardoise avec transparences graduées
-  const buttons = customButtons || [
+  // Déclinaison monochrome rouge Ardoise avec transparences graduées (#c83b3b)
+  const defaultButtons = [
     {
       label: '+1',
       delta: 1,
@@ -78,6 +80,8 @@ export function ScorePad({
         'bg-white dark:bg-slate-900 border-2 border-stone-200 dark:border-slate-700 hover:border-[#c83b3b]/40 text-stone-600 dark:text-slate-400',
     },
   ]
+
+  const buttons = customButtons !== undefined ? customButtons : defaultButtons
 
   const handlePointerDown = (e) => {
     try {
@@ -148,18 +152,32 @@ export function ScorePad({
     ? `Total : ${totalScore}`
     : null
 
-  const displayVal = (v) => {
+  const displayVal = (v, clamp = true) => {
+    if (!clamp) {
+      if (min !== undefined && v < min) return ''
+      if (max !== undefined && v > max) return ''
+    }
     const clamped = clampValue(v)
+    if (formatDisplay) return formatDisplay(clamped)
     const sign = showPlus && clamped > 0 ? '+' : ''
     return `${sign}${clamped}`
   }
 
   return (
     <div className="flex flex-col gap-3 pt-2">
-      {label && (
-        <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-          {label}
-        </p>
+      {(label || subLabel) && (
+        <div className="flex items-center justify-between gap-2">
+          {label && (
+            <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate">
+              {label}
+            </p>
+          )}
+          {subLabel && (
+            <span className="text-[11px] font-bold text-[#c83b3b] dark:text-red-400 shrink-0">
+              {subLabel}
+            </span>
+          )}
+        </div>
       )}
 
       {/* Roulette tactile & affichage du score */}
@@ -180,42 +198,46 @@ export function ScorePad({
             <div className="flex flex-col items-center justify-center overflow-hidden py-0.5 w-full pointer-events-none">
               {/* Pastille minimaliste du score total pendant le glissement */}
               {totalText && (
-                <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-white text-[11px] font-bold shadow-xs mb-1 ${
+                <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-white text-[11px] font-bold shadow-xs mb-1 max-w-full truncate ${
                   String(totalText).startsWith('-') ? 'bg-[#c83b3b]' : 'bg-emerald-600'
                 }`}>
-                  <span>{totalText}</span>
+                  <span className="truncate">{totalText}</span>
                 </div>
               )}
 
               {/* Cylindre de roulette */}
               <div className="flex flex-col items-center leading-none">
-                <span className="text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums">
-                  {displayVal(cur + dragStep * 2)}
+                <span className="text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums min-h-[1rem] flex items-center justify-center">
+                  {displayVal(cur + dragStep * 2, false)}
                 </span>
-                <span className="text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 my-1 tabular-nums">
-                  {displayVal(cur + dragStep)}
+                <span className="text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 my-1 tabular-nums min-h-[1.25rem] flex items-center justify-center">
+                  {displayVal(cur + dragStep, false)}
                 </span>
 
                 {/* Mire centrale */}
                 <div className="relative flex items-center justify-center px-6 py-1 my-0.5 rounded-xl bg-white dark:bg-slate-900 border border-[#c83b3b]/40 shadow-xs">
                   <span className="absolute left-2 text-[#c83b3b] font-mono text-xs font-black">▶</span>
-                  <span className="text-4xl font-black text-[#c83b3b] dark:text-red-400 tabular-nums tracking-tight">
+                  <span className={`font-black text-[#c83b3b] dark:text-red-400 tabular-nums tracking-tight ${
+                    String(displayVal(cur)).length > 8 ? 'text-2xl sm:text-3xl' : String(displayVal(cur)).length > 5 ? 'text-3xl sm:text-4xl' : 'text-4xl'
+                  }`}>
                     {displayVal(cur)}
                   </span>
                   <span className="absolute right-2 text-[#c83b3b] font-mono text-xs font-black">◀</span>
                 </div>
 
-                <span className="text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 my-1 tabular-nums">
-                  {displayVal(cur - dragStep)}
+                <span className="text-base font-bold text-stone-500 dark:text-slate-400 opacity-70 my-1 tabular-nums min-h-[1.25rem] flex items-center justify-center">
+                  {displayVal(cur - dragStep, false)}
                 </span>
-                <span className="text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums">
-                  {displayVal(cur - dragStep * 2)}
+                <span className="text-xs font-semibold text-stone-400 dark:text-slate-500 opacity-40 tabular-nums min-h-[1rem] flex items-center justify-center">
+                  {displayVal(cur - dragStep * 2, false)}
                 </span>
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-0.5 py-1">
-              <span className="text-4xl font-black tabular-nums tracking-tight text-stone-900 dark:text-slate-100">
+              <span className={`font-black tabular-nums tracking-tight text-stone-900 dark:text-slate-100 ${
+                String(displayVal(value)).length > 8 ? 'text-2xl sm:text-3xl' : String(displayVal(value)).length > 5 ? 'text-3xl sm:text-4xl' : 'text-4xl'
+              }`}>
                 {displayVal(value)}
               </span>
               {totalText !== null ? (
@@ -224,7 +246,7 @@ export function ScorePad({
                     String(totalText).startsWith('+')
                       ? 'text-emerald-600 dark:text-emerald-400'
                       : String(totalText).startsWith('-')
-                      ? 'text-[#c83b3b]'
+                      ? 'text-[#c83b3b] dark:text-red-300'
                       : 'text-stone-600 dark:text-slate-400'
                   }`}>
                     {totalText}
@@ -274,58 +296,60 @@ export function ScorePad({
       )}
 
       {/* Boutons incrémentaux ou raccourcis personnalisés */}
-      <div className={`grid gap-2 pt-1 ${buttons.length === 5 ? 'grid-cols-5' : 'grid-cols-4 sm:grid-cols-5'}`}>
-        {buttons.map((btn, idx) => {
-          let main = btn.main
-          let sub = btn.sub
-          if (!main && btn.label) {
-            const match = btn.label.match(/^(.*?)\s*\((.*?)\)$/)
-            if (match) {
-              main = match[1]
-              sub = match[2]
-            } else {
-              main = btn.label
+      {buttons && buttons.length > 0 && (
+        <div className={`grid gap-2 pt-1 ${buttons.length === 5 ? 'grid-cols-5' : 'grid-cols-4 sm:grid-cols-5'}`}>
+          {buttons.map((btn, idx) => {
+            let main = btn.main
+            let sub = btn.sub
+            if (!main && btn.label) {
+              const match = btn.label.match(/^(.*?)\s*\((.*?)\)$/)
+              if (match) {
+                main = match[1]
+                sub = match[2]
+              } else {
+                main = btn.label
+              }
             }
-          }
 
-          const isSelected = btn.value !== undefined && value === btn.value
+            const isSelected = btn.value !== undefined && value === btn.value
 
-          return (
-            <button
-              key={btn.label || btn.main || idx}
-              type="button"
-              onPointerDown={(e) => {
-                e.preventDefault()
-                const next = btn.value !== undefined
-                  ? clampValue(btn.value)
-                  : clampValue((Number(value) || 0) + (btn.delta || 0))
-                onChange(next)
-                try { navigator.vibrate?.(10) } catch {}
-              }}
-              className={`h-12 rounded-xl select-none transition-all active:scale-95 flex flex-col items-center justify-center p-1 border cursor-pointer ${
-                btn.colorClass
-                  ? btn.colorClass
-                  : isSelected
-                  ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
-                  : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
-              }`}
-            >
-              <span className={`font-black text-sm leading-tight ${isSelected && !btn.colorClass ? 'text-white' : ''}`}>
-                {main}
-              </span>
-              {sub && (
-                <span className={`text-[9px] font-semibold leading-none mt-0.5 truncate max-w-full ${
-                  isSelected && !btn.colorClass
-                    ? 'text-white/85'
-                    : 'text-stone-400 dark:text-slate-500'
-                }`}>
-                  ({sub})
+            return (
+              <button
+                key={btn.label || btn.main || idx}
+                type="button"
+                onPointerDown={(e) => {
+                  e.preventDefault()
+                  const next = btn.value !== undefined
+                    ? clampValue(btn.value)
+                    : clampValue((Number(value) || 0) + (btn.delta || 0))
+                  onChange(next)
+                  try { navigator.vibrate?.(10) } catch {}
+                }}
+                className={`h-12 rounded-xl select-none transition-all active:scale-95 flex flex-col items-center justify-center p-1 border cursor-pointer ${
+                  btn.colorClass
+                    ? btn.colorClass
+                    : isSelected
+                    ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                    : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
+                }`}
+              >
+                <span className={`font-black text-sm leading-tight ${isSelected && !btn.colorClass ? 'text-white' : ''}`}>
+                  {main}
                 </span>
-              )}
-            </button>
-          )
-        })}
-      </div>
+                {sub && (
+                  <span className={`text-[9px] font-semibold leading-none mt-0.5 truncate max-w-full ${
+                    isSelected && !btn.colorClass
+                      ? 'text-white/85'
+                      : 'text-stone-400 dark:text-slate-500'
+                  }`}>
+                    ({sub})
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {/* Bouton valider final */}
       {onConfirm && (
