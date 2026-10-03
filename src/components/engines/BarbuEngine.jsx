@@ -963,7 +963,9 @@ export function BarbuEngine({ game, onFinish }) {
               {isContractTotalValid ? (
                 <span className="inline-flex items-center justify-center gap-1.5">
                   <span>Valider la donne {roundCount}</span>
-                  <span className="text-xs font-normal opacity-85">({targetContract?.name})</span>
+                  {targetContract?.label && (
+                    <span className="text-xs font-normal opacity-85">({targetContract.label})</span>
+                  )}
                 </span>
               ) : (
                 <span className="inline-flex items-center justify-center gap-1.5">
