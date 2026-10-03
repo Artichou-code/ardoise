@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Sparkles, Trophy, Flame } from 'lucide-react'
+import { Trophy, Flame } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -173,7 +173,7 @@ export function Flip7Engine({ game, onFinish }) {
                       }`}
                       title={hasFlip7 ? "Désactiver le bonus Flip 7" : "Activer le bonus de manche Flip 7 (+15 points)"}
                     >
-                      <Sparkles size={11} className={hasFlip7 ? 'text-white' : 'text-stone-400 dark:text-slate-500'} /> Flip 7
+                      <Flame size={11} className={hasFlip7 ? 'text-white' : 'text-stone-400 dark:text-slate-500'} /> Flip 7
                     </button>
 
                     {/* Badge de score avec roulette */}

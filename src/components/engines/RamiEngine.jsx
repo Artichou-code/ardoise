@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, Sparkles, Check, Trophy } from 'lucide-react'
+import { AlertTriangle, Zap, Check, Trophy } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -123,29 +123,25 @@ export function RamiEngine({ game, onFinish }) {
         <button
           type="button"
           onClick={() => setIsRamiSec(v => !v)}
-          className={`w-full p-2.5 rounded-xl border flex items-center justify-between transition-all cursor-pointer mb-3 select-none active:scale-[0.99] ${
+          className={`w-full p-2.5 px-3 rounded-xl border flex items-center justify-between transition-all cursor-pointer mb-3 select-none active:scale-[0.99] ${
             isRamiSec
               ? 'border-amber-500 bg-amber-500/10 text-amber-950 dark:text-amber-200 ring-1 ring-amber-400/40'
               : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-amber-400/60'
           }`}
         >
-          <div className="flex items-center gap-2.5">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-              isRamiSec ? 'bg-amber-600 text-white shadow-2xs' : 'bg-stone-200 dark:bg-slate-700 text-stone-500 dark:text-slate-400'
-            }`}>
-              <Sparkles size={15} />
+          <div className="text-left min-w-0 pr-2">
+            <div className="flex items-center gap-1.5">
+              <Zap size={13} className={isRamiSec ? 'text-amber-600 dark:text-amber-400' : 'text-stone-400 dark:text-slate-500'} />
+              <span className="font-bold text-xs leading-tight">Rami Sec (posé d'un coup)</span>
             </div>
-            <div className="text-left min-w-0">
-              <span className="font-bold text-xs block leading-tight">Rami Sec (posé d'un coup)</span>
-              <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate">
-                Pénalités des adversaires doublées (×2)
-              </span>
-            </div>
+            <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5 pl-[19px]">
+              Pénalités des adversaires doublées (×2)
+            </span>
           </div>
-          <span className={`text-[11px] font-bold px-2 py-1 rounded-md transition-all shrink-0 ${
-            isRamiSec ? 'bg-amber-600 text-white shadow-2xs' : 'bg-stone-200 dark:bg-slate-700 text-stone-600 dark:text-slate-300'
+          <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all shrink-0 ${
+            isRamiSec ? 'bg-amber-600 text-white shadow-2xs' : 'bg-stone-200/80 dark:bg-slate-700/80 text-stone-600 dark:text-slate-300'
           }`}>
-            {isRamiSec ? '⚡ Actif (×2)' : 'Non'}
+            {isRamiSec ? 'Actif (×2)' : 'Non'}
           </span>
         </button>
 
@@ -263,7 +259,7 @@ export function RamiEngine({ game, onFinish }) {
             </p>
             {isRamiSec && (
               <div className="mb-3 px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-400/50 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center gap-1.5">
-                <Sparkles size={13} className="text-amber-600 shrink-0" />
+                <Zap size={13} className="text-amber-600 shrink-0" />
                 <span>Rami Sec actif : ces pénalités seront doublées (×2).</span>
               </div>
             )}
