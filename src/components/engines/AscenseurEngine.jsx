@@ -474,11 +474,17 @@ export function AscenseurEngine({ game, onFinish }) {
             Cette règle force un déséquilibre pour qu'il y ait toujours au moins un perdant sur la manche.
           </p>
 
-          <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 flex justify-between items-center text-xs font-medium">
-            <span>Total des paris :</span>
-            <strong className="text-amber-700 dark:text-amber-300 font-bold">
-              {totalBids} / {cardsCount} plis {isDealerRestricted ? '(interdit)' : ''}
-            </strong>
+          <div className="p-2.5 rounded-xl bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 space-y-1 font-medium text-[11px]">
+            <div className="flex justify-between items-center">
+              <span>Cartes / plis en jeu :</span>
+              <strong className="text-stone-900 dark:text-slate-100">{cardsCount} {cardsCount > 1 ? 'plis' : 'pli'}</strong>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Total actuel des paris :</span>
+              <strong className={isDealerRestricted ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-stone-900 dark:text-slate-100'}>
+                {totalBids} {totalBids > 1 ? 'plis' : 'pli'} {isDealerRestricted ? '(interdit !)' : ''}
+              </strong>
+            </div>
           </div>
 
           <div className="pt-1">
