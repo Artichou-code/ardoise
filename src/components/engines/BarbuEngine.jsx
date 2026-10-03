@@ -10,6 +10,8 @@ import {
   HelpCircle,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react'
 import { Mustache } from '../ui/MustacheIcon'
 import { useGame } from '../../context/GameContext'
@@ -1040,14 +1042,13 @@ export function BarbuEngine({ game, onFinish }) {
                         </span>
                         <Avatar player={p} size="xs" />
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="font-semibold text-xs truncate">{p.name}</span>
-                            <span className="text-[10px] text-stone-400 dark:text-slate-500 whitespace-nowrap shrink-0">
-                              · Total : {(game.scores[p.id] || 0) + points}
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate">
-                            {rankLabels[index]}
+                          <span className="font-semibold text-xs truncate block text-stone-900 dark:text-slate-100">
+                            {p.name}
+                          </span>
+                          <span className="text-[10px] text-stone-400 dark:text-slate-500 block truncate">
+                            <strong className="font-medium text-stone-600 dark:text-slate-400">{rankLabels[index]}</strong>
+                            <span className="mx-1 opacity-60">·</span>
+                            Total : {(game.scores[p.id] || 0) + points} pts
                           </span>
                         </div>
                       </div>
@@ -1068,10 +1069,11 @@ export function BarbuEngine({ game, onFinish }) {
                                 return arr
                               })
                             }}
-                            className="w-7 h-7 rounded-lg border border-stone-200 dark:border-slate-700 flex items-center justify-center font-bold text-xs disabled:opacity-30 hover:bg-stone-100 dark:hover:bg-slate-800"
+                            className="w-6.5 h-6.5 rounded-lg border border-stone-200 dark:border-slate-700 flex items-center justify-center text-stone-600 dark:text-slate-300 disabled:opacity-25 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-95"
                             title="Monter d'une place"
+                            aria-label="Monter d'une place"
                           >
-                            ▲
+                            <ChevronUp size={14} />
                           </button>
                           <button
                             type="button"
@@ -1086,14 +1088,15 @@ export function BarbuEngine({ game, onFinish }) {
                                 return arr
                               })
                             }}
-                            className="w-7 h-7 rounded-lg border border-stone-200 dark:border-slate-700 flex items-center justify-center font-bold text-xs disabled:opacity-30 hover:bg-stone-100 dark:hover:bg-slate-800"
+                            className="w-6.5 h-6.5 rounded-lg border border-stone-200 dark:border-slate-700 flex items-center justify-center text-stone-600 dark:text-slate-300 disabled:opacity-25 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none active:scale-95"
                             title="Descendre d'une place"
+                            aria-label="Descendre d'une place"
                           >
-                            ▼
+                            <ChevronDown size={14} />
                           </button>
                         </div>
 
-                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
+                        <span className={`min-w-[52px] text-center px-2 py-1 rounded-lg text-xs font-bold shrink-0 ${
                           points > 0
                             ? 'bg-emerald-600 text-white shadow-2xs'
                             : 'bg-[#c83b3b] text-white shadow-2xs'
