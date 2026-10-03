@@ -372,12 +372,14 @@ export function BarbuEngine({ game, onFinish }) {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-                  Nombre de plis réalisés (-2 pts / pli)
+                  Plis réalisés
                 </span>
-                <span className={`text-[11px] font-semibold ${
-                  Object.values(tricksCount).reduce((a, b) => a + b, 0) === 13 ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#c83b3b]'
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                  Object.values(tricksCount).reduce((a, b) => a + b, 0) === 13
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                    : 'bg-stone-100 text-stone-600 dark:bg-slate-800 dark:text-slate-400'
                 }`}>
-                  Total : {Object.values(tricksCount).reduce((a, b) => a + b, 0)} / 13 plis
+                  {Object.values(tricksCount).reduce((a, b) => a + b, 0)} / 13 plis
                 </span>
               </div>
 
@@ -390,38 +392,19 @@ export function BarbuEngine({ game, onFinish }) {
                   return (
                     <div
                       key={p.id}
-                      className="px-3 py-2 rounded-xl border school-subtle"
+                      className="px-3 py-2.5 rounded-xl border school-subtle flex items-center justify-between gap-2"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Avatar player={p} size="xs" />
-                          <span className="font-semibold text-xs truncate">{p.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <Avatar player={p} size="xs" />
+                        <div className="min-w-0">
+                          <span className="font-semibold text-xs truncate block">{p.name}</span>
                           <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                            Total : <strong className="text-stone-700 dark:text-slate-200">{total}</strong>
+                            Total : {total}
                           </span>
-                          <QuickScoreBadge
-                            value={delta}
-                            onChange={v => setTricksCount(prev => ({ ...prev, [p.id]: Math.round(Math.abs(v) / 2) }))}
-                            onOpenPad={() => {
-                              setEditingPlayer(p)
-                              setPadConfig({ min: -26, max: 0, presets: [0, -2, -4, -6, -8, -10, -12, -26] })
-                              setOpenPad(true)
-                            }}
-                            min={-26}
-                            max={0}
-                            step={2}
-                            formatDisplay={v => `${v} pts`}
-                          />
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between gap-2 pt-1.5 mt-1.5 border-t border-stone-200/50 dark:border-slate-800/60">
-                        <span className="text-[11px] text-stone-500 dark:text-slate-400 font-medium">
-                          {tricks} pli{tricks > 1 ? 's' : ''} ({delta} pts)
-                        </span>
-
+                      <div className="flex items-center gap-2 shrink-0">
                         <div className="flex items-center border border-stone-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
                           <button
                             type="button"
@@ -441,6 +424,14 @@ export function BarbuEngine({ game, onFinish }) {
                             +
                           </button>
                         </div>
+
+                        <span className={`min-w-14 text-center px-2 py-1 rounded-lg text-xs font-bold transition-all ${
+                          delta < 0
+                            ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300'
+                            : 'bg-stone-100 dark:bg-slate-800 text-stone-500'
+                        }`}>
+                          {delta} pts
+                        </span>
                       </div>
                     </div>
                   )
@@ -454,10 +445,10 @@ export function BarbuEngine({ game, onFinish }) {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-                  Cartes de Cœur ramassées
+                  Cœurs ramassés
                 </span>
-                <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                  12 Cœurs (-2) + As de Cœur (-6) = -30 pts
+                <span className="text-[10px] text-stone-500 dark:text-slate-400 font-semibold">
+                  12 cœurs (-2) + As (-6)
                 </span>
               </div>
 
@@ -474,31 +465,23 @@ export function BarbuEngine({ game, onFinish }) {
                       className="px-3 py-2 rounded-xl border school-subtle"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex items-center gap-2.5 min-w-0">
                           <Avatar player={p} size="xs" />
-                          <span className="font-semibold text-xs truncate">{p.name}</span>
+                          <div className="min-w-0">
+                            <span className="font-semibold text-xs truncate block">{p.name}</span>
+                            <span className="text-[10px] text-stone-400 dark:text-slate-500">
+                              Total : {total}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                            Total : <strong className="text-stone-700 dark:text-slate-200">{total}</strong>
-                          </span>
-                          <QuickScoreBadge
-                            value={delta}
-                            onChange={v => {
-                              const withoutAce = hasAce ? v + 6 : v
-                              setHeartsCount(prev => ({ ...prev, [p.id]: Math.round(Math.abs(withoutAce) / 2) }))
-                            }}
-                            onOpenPad={() => {
-                              setEditingPlayer(p)
-                              setPadConfig({ min: -30, max: 0, presets: [0, -2, -4, -6, -8, -12, -30] })
-                              setOpenPad(true)
-                            }}
-                            min={-30}
-                            max={0}
-                            step={2}
-                            formatDisplay={v => `${v} pts`}
-                          />
-                        </div>
+
+                        <span className={`min-w-14 text-center px-2 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                          delta < 0
+                            ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300'
+                            : 'bg-stone-100 dark:bg-slate-800 text-stone-500'
+                        }`}>
+                          {delta} pts
+                        </span>
                       </div>
 
                       <div className="flex items-center justify-between gap-2 pt-1.5 mt-1.5 border-t border-stone-200/50 dark:border-slate-800/60">
@@ -553,12 +536,14 @@ export function BarbuEngine({ game, onFinish }) {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-                  Dames ramassées (-6 pts / Dame)
+                  Dames ramassées
                 </span>
-                <span className={`text-[11px] font-semibold ${
-                  Object.values(queensCount).reduce((a, b) => a + b, 0) === 4 ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#c83b3b]'
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                  Object.values(queensCount).reduce((a, b) => a + b, 0) === 4
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                    : 'bg-stone-100 text-stone-600 dark:bg-slate-800 dark:text-slate-400'
                 }`}>
-                  Total : {Object.values(queensCount).reduce((a, b) => a + b, 0)} / 4 Dames
+                  {Object.values(queensCount).reduce((a, b) => a + b, 0)} / 4 Dames
                 </span>
               </div>
 
@@ -574,28 +559,23 @@ export function BarbuEngine({ game, onFinish }) {
                       className="px-3 py-2 rounded-xl border school-subtle"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex items-center gap-2.5 min-w-0">
                           <Avatar player={p} size="xs" />
-                          <span className="font-semibold text-xs truncate">{p.name}</span>
+                          <div className="min-w-0">
+                            <span className="font-semibold text-xs truncate block">{p.name}</span>
+                            <span className="text-[10px] text-stone-400 dark:text-slate-500">
+                              Total : {total}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                            Total : <strong className="text-stone-700 dark:text-slate-200">{total}</strong>
-                          </span>
-                          <QuickScoreBadge
-                            value={delta}
-                            onChange={v => setQueensCount(prev => ({ ...prev, [p.id]: Math.round(Math.abs(v) / 6) }))}
-                            onOpenPad={() => {
-                              setEditingPlayer(p)
-                              setPadConfig({ min: -24, max: 0, presets: [0, -6, -12, -18, -24] })
-                              setOpenPad(true)
-                            }}
-                            min={-24}
-                            max={0}
-                            step={6}
-                            formatDisplay={v => `${v} pts`}
-                          />
-                        </div>
+
+                        <span className={`min-w-14 text-center px-2 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                          delta < 0
+                            ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300'
+                            : 'bg-stone-100 dark:bg-slate-800 text-stone-500'
+                        }`}>
+                          {delta} pts
+                        </span>
                       </div>
 
                       <div className="pt-1.5 mt-1.5 border-t border-stone-200/50 dark:border-slate-800/60">
@@ -628,10 +608,14 @@ export function BarbuEngine({ game, onFinish }) {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-                  Qui a ramassé le Roi de Cœur (-20 pts) ?
+                  Roi de Cœur
                 </span>
-                <span className="text-[10px] text-red-600 dark:text-red-400 font-bold">
-                  ♥ Roi = -20 pts
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                  barbuTakerId
+                    ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300'
+                    : 'bg-stone-100 text-stone-600 dark:bg-slate-800 dark:text-slate-400'
+                }`}>
+                  {barbuTakerId ? 'Preneur désigné' : 'À désigner'}
                 </span>
               </div>
 
@@ -751,12 +735,14 @@ export function BarbuEngine({ game, onFinish }) {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-                  Tous les malus combinés (Total de la donne = -130 pts)
+                  Total distribué
                 </span>
-                <span className={`text-[11px] font-semibold ${
-                  Object.values(saladeScores).reduce((a, b) => a + b, 0) === -130 ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#c83b3b]'
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                  Object.values(saladeScores).reduce((a, b) => a + b, 0) === -130
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                    : 'bg-stone-100 text-stone-600 dark:bg-slate-800 dark:text-slate-400'
                 }`}>
-                  Distribué : {Object.values(saladeScores).reduce((a, b) => a + b, 0)} / -130 pts
+                  {Object.values(saladeScores).reduce((a, b) => a + b, 0)} / -130 pts
                 </span>
               </div>
 
@@ -781,14 +767,9 @@ export function BarbuEngine({ game, onFinish }) {
                       >
                         <Avatar player={p} size="xs" />
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="font-semibold text-xs truncate">{p.name}</span>
-                            <span className="text-[10px] text-stone-400 dark:text-slate-500 whitespace-nowrap shrink-0">
-                              · Total : {total}
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate">
-                            Pénalité : {score} pts
+                          <span className="font-semibold text-xs truncate block">{p.name}</span>
+                          <span className="text-[10px] text-stone-400 dark:text-slate-500">
+                            Total : {total}
                           </span>
                         </div>
                       </button>
@@ -818,10 +799,10 @@ export function BarbuEngine({ game, onFinish }) {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-                  Classement d'arrivée au Domino
+                  Classement d'arrivée
                 </span>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
-                  1er +45 · 2e +20 · 3e +5 · 4e -5
+                <span className="text-[10px] text-stone-400 dark:text-slate-500">
+                  Ordre décroissant
                 </span>
               </div>
 
