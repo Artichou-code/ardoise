@@ -22,6 +22,22 @@ export function getPlayerInitial(player) {
   return trimmed.charAt(0).toUpperCase()
 }
 
+/**
+ * Formate et abrège élégamment les noms d'une équipe de plusieurs joueurs pour les cartes compactes
+ * - "Player 1 & Player 3" -> "P1 & P3"
+ * - Noms longs (> 5 lettres) -> "Alex. & Guil."
+ */
+export function formatTeamNames(players) {
+  if (!players || !Array.isArray(players) || players.length === 0) return ''
+  return players.map(p => {
+    const name = (p?.name || '').trim()
+    const match = name.match(/^(?:Player|Joueur)\s*(\d+)$/i)
+    if (match) return `P${match[1]}`
+    if (name.length > 5) return name.slice(0, 5) + '.'
+    return name
+  }).join(' & ')
+}
+
 export function getPlayerAvatarUrl(player) {
   if (!player) return null
   // Si avatar explicitement mis à null (mode initiale), renvoyer null

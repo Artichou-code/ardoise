@@ -3,9 +3,11 @@ import { ChevronRight } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { computeBeloteScore } from '../../engines/gameEngines'
 import { BELOTE_SIMPLE_CONTRACTS, COINCHE_CONTRACTS } from '../../constants/games'
+import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { ScorePad } from '../ui/ScorePad'
 import { BottomSheet } from '../ui/BottomSheet'
+import { formatTeamNames } from '../../utils/gameUtils'
 
 const TEAMS = ['nous', 'eux']
 
@@ -34,8 +36,8 @@ export function BeloteEngine({ game, onFinish }) {
 
   const nousPlayers = game.players.slice(0, 2)
   const euxPlayers = game.players.slice(2, 4)
-  const nousNames = nousPlayers.map(p => p.name).join(' & ') || 'Joueurs 1 & 2'
-  const euxNames = euxPlayers.map(p => p.name).join(' & ') || 'Joueurs 3 & 4'
+  const nousNames = formatTeamNames(nousPlayers) || 'Équipe 1'
+  const euxNames = formatTeamNames(euxPlayers) || 'Équipe 2'
 
   const submitRound = () => {
     const teamScores = computeBeloteScore({
@@ -292,9 +294,14 @@ export function BeloteEngine({ game, onFinish }) {
               </p>
               <ChevronRight size={12} className="opacity-40 group-hover/title:opacity-100 group-hover/title:translate-x-0.5 transition-all text-stone-400 group-hover/title:text-[#c83b3b]" />
             </div>
-            <p className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 mt-0.5">
-              Défense : <span className="font-bold text-stone-700 dark:text-slate-300">{162 - pointsTaker} pts</span>
-            </p>
+            <div className="flex items-center gap-1.5 mt-0.5 whitespace-nowrap overflow-hidden h-4 min-h-[1rem]">
+              <span className={`text-[11px] font-bold shrink-0 ${contractMade ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#c83b3b]'}`}>
+                {contractMade ? 'Contrat réussi' : 'Contrat chuté'}
+              </span>
+              <span className="text-[10px] text-stone-400 dark:text-slate-500 truncate">
+                · Défense : {162 - pointsTaker} pts
+              </span>
+            </div>
           </button>
 
           {/* Raccourcis manuels équilibrés sur la gauche (2 lignes de 3) */}
@@ -339,7 +346,7 @@ export function BeloteEngine({ game, onFinish }) {
           </div>
         </div>
 
-        {/* Colonne droite : Zone tactile sur toute la hauteur */}
+        {/* Colonne droite : Zone tactile sur toute la hauteur avec info bulle dynamique */}
         <QuickScoreBadge
           value={pointsTaker}
           onChange={setPointsTaker}
@@ -350,6 +357,20 @@ export function BeloteEngine({ game, onFinish }) {
           showPlus={false}
           tall={true}
           formatSub={val => (val === 162 ? 'Capot' : null)}
+          formatBubble={val => {
+            const isCapot = contract === 252 || contract === 250 || contract === 500
+            const totalWithAnnonces = val + announcements
+            const made = isCoinche
+              ? (isCapot ? val === 162 : val >= 82 && totalWithAnnonces >= contract)
+              : (isCapot ? val === 162 : val >= 82)
+            const diff = isCapot
+              ? (val === 162 ? 0 : val - 162)
+              : val - (isCoinche ? contract : 82)
+            if (made) {
+              return { text: `✓ Réussi (${diff >= 0 ? `+${diff}` : diff} pts)`, variant: 'success' }
+            }
+            return { text: `✗ Chuté (${diff} pts)`, variant: 'danger' }
+          }}
         />
       </div>
 
@@ -490,37 +511,98 @@ export function BeloteEngine({ game, onFinish }) {
       <BottomSheet
         open={openTakerSheet}
         onClose={() => setOpenTakerSheet(false)}
-        title="Points réalisés par le preneur (sur 162)"
+        title="Points du preneur (/ 162)"
       >
-        <div className="px-5 pt-2 pb-6">
+        <div className="px-5 pt-2 pb-6 space-y-3">
+          {/* Encart récapitulatif preneur & contrat (comme au Tarot) */}
+          {(() => {
+            const isNous = takerTeam === 'nous'
+            const teamLabel = isNous ? 'Équipe 1' : 'Équipe 2'
+            const teamPlayers = isNous ? nousPlayers : euxPlayers
+            const contractLabel = isCoinche
+              ? (contract === 250 ? 'Capot' : contract === 500 ? 'Générale' : `${contract} pts`)
+              : (contract === 252 ? 'Capot' : `${contract} pts`)
+            const targetPts = isCoinche
+              ? (contract === 250 || contract === 500 ? 162 : contract)
+              : (contract === 252 ? 162 : 82)
+
+            return (
+              <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
+                <div className="flex items-center -space-x-1.5 shrink-0">
+                  {teamPlayers.map(p => (
+                    <Avatar key={p.id} player={p} size="sm" leader={true} />
+                  ))}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-sm truncate text-stone-900 dark:text-slate-100">
+                      {teamLabel}
+                    </span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 shrink-0">
+                      Preneur ({contractLabel})
+                    </span>
+                  </div>
+                  <span className="text-xs text-stone-500 dark:text-slate-400">
+                    Objectif : {targetPts} pts {announcements > 0 ? `(+${announcements} annonces)` : ''}
+                  </span>
+                </div>
+              </div>
+            )
+          })()}
+
           <ScorePad
             value={pointsTaker}
             onChange={setPointsTaker}
             onConfirm={() => setOpenTakerSheet(false)}
+            confirmLabel="Valider les points"
             min={0}
             max={162}
             step={1}
             showPlus={false}
-            label={`Défense : ${162 - pointsTaker} pts`}
+            label="Points réalisés par le preneur (sur 162)"
+            subLabel={`Défense : ${162 - pointsTaker} pts`}
             presets={
               isCoinche
                 ? [
-                    { value: 80, label: '80 (minimum)' },
+                    { value: 80, label: '80' },
                     { value: 90, label: '90' },
                     { value: 100, label: '100' },
                     { value: 110, label: '110' },
                     { value: 120, label: '120' },
-                    { value: 162, label: '162 (Capot)' },
+                    { value: 162, label: '162' },
                   ]
                 : [
-                    { value: 82, label: '82 (fait 80)' },
+                    { value: 82, label: '82' },
                     { value: 90, label: '90' },
                     { value: 100, label: '100' },
                     { value: 110, label: '110' },
                     { value: 120, label: '120' },
-                    { value: 162, label: '162 (Capot)' },
+                    { value: 162, label: '162' },
                   ]
             }
+            formatDisplay={v => `${v} pts`}
+            formatTotal={val => {
+              const isCapot = contract === 252 || contract === 250 || contract === 500
+              const totalWithAnnonces = val + announcements
+              const made = isCoinche
+                ? (isCapot ? val === 162 : val >= 82 && totalWithAnnonces >= contract)
+                : (isCapot ? val === 162 : val >= 82)
+              const diff = isCapot
+                ? (val === 162 ? 0 : val - 162)
+                : val - (isCoinche ? contract : 82)
+              const defPts = 162 - val
+
+              if (made) {
+                return {
+                  text: `Contrat réussi (${diff >= 0 ? `+${diff}` : diff} pts) · Déf. ${defPts} pts`,
+                  variant: 'success'
+                }
+              }
+              return {
+                text: `Contrat chuté (${diff} pts) · Déf. ${defPts} pts`,
+                variant: 'danger'
+              }
+            }}
           />
         </div>
       </BottomSheet>

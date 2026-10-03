@@ -7,7 +7,7 @@ import { BurgerMenuButton } from './BurgerMenu'
 import { Avatar } from './ui/Avatar'
 import { ConfirmDialog } from './ui/Dialog'
 import { RulesSheet } from './RulesSheet'
-import { getRanking } from '../utils/gameUtils'
+import { getRanking, formatTeamNames } from '../utils/gameUtils'
 import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
 import { DourakEngine } from './engines/DourakEngine'
 import { CaracoleEngine } from './engines/CaracoleEngine'
@@ -285,8 +285,8 @@ export function GameScreen() {
                       <span className={`shrink-0 ${t.isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'}`}>
                         {t.rank === 1 ? '1er' : '2e'} ·
                       </span>
-                      <span className={`truncate font-extrabold ${t.id === 'nous' ? 'text-[#c83b3b] dark:text-red-400' : 'text-[#1e3a5f] dark:text-sky-400'}`}>
-                        {t.players.map(p => p.name).join(' & ')}
+                      <span className={`truncate font-extrabold tracking-normal ${t.id === 'nous' ? 'text-[#c83b3b] dark:text-red-400' : 'text-[#1e3a5f] dark:text-sky-400'}`}>
+                        {formatTeamNames(t.players)}
                       </span>
                     </span>
                     {t.isLeader && (
