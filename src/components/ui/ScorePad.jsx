@@ -140,10 +140,10 @@ export function ScorePad({
   }
 
   const dragStep = step || 1
-  const activeVal = isDragging ? currentValueRef.current : value
-  const totalScore = baseScore !== undefined ? baseScore + activeVal : null
+  const cur = isDragging ? currentValueRef.current : value
+  const totalScore = baseScore !== undefined ? baseScore + cur : null
   const totalText = formatTotal
-    ? formatTotal(activeVal)
+    ? formatTotal(cur)
     : totalScore !== null
     ? `Total : ${totalScore}`
     : null
