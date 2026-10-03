@@ -197,7 +197,11 @@ export function ScorePad({
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}
           style={{ touchAction: 'none' }}
-          className={`relative select-none cursor-grab active:cursor-grabbing flex flex-col items-center justify-center transition-colors duration-150 rounded-2xl border-2 h-[178px] ${
+          className={`relative select-none cursor-grab active:cursor-grabbing flex flex-col items-center justify-center transition-colors duration-150 rounded-2xl border-2 ${
+            presets && presets.length > 7
+              ? 'h-[156px] sm:h-[174px]'
+              : 'h-[174px]'
+          } ${
             isDragging
               ? 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/15 border-[#c83b3b] shadow-xs ring-2 ring-[#c83b3b]/30'
               : 'bg-stone-50/80 dark:bg-slate-800/40 border-stone-200 dark:border-slate-800 hover:border-[#c83b3b]/40'
@@ -278,11 +282,16 @@ export function ScorePad({
         </div>
       </div>
 
-      {/* Raccourcis prédéfinis sur une seule ligne fixe (sans scroll) */}
+      {/* Raccourcis prédéfinis */}
       {presets && presets.length > 0 && (() => {
-        const isDense = presets.length > 8
+        const isMultiRow = presets.length > 7
+        const cols = isMultiRow ? Math.ceil(presets.length / 2) : presets.length
+
         return (
-          <div className={`flex items-center justify-center w-full py-0.5 ${isDense ? 'gap-0.5 sm:gap-1' : 'gap-1 sm:gap-1.5'}`}>
+          <div
+            className={`grid w-full py-0.5 ${isMultiRow ? 'gap-1 sm:gap-1.5' : 'gap-1.5'}`}
+            style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+          >
             {presets.map(p => {
               const pVal = typeof p === 'object' ? p.value : p
               const pLabel = typeof p === 'object' ? p.label : `${showPlus && pVal > 0 ? '+' : ''}${pVal}`
@@ -295,13 +304,13 @@ export function ScorePad({
                     onChange(pVal)
                     try { navigator.vibrate?.(10) } catch {}
                   }}
-                  className={`flex-1 min-w-0 text-center rounded-lg font-bold border transition-all cursor-pointer select-none active:scale-95 ${
-                    isDense
-                      ? 'py-1 px-0.5 text-[9.5px] sm:text-[10.5px]'
-                      : 'py-1 px-1 max-w-[52px] text-[11px] sm:text-xs'
+                  className={`min-w-0 text-center rounded-lg font-bold border transition-all cursor-pointer select-none active:scale-95 flex items-center justify-center ${
+                    isMultiRow
+                      ? 'h-8 sm:h-9 text-xs sm:text-sm px-1'
+                      : 'h-8.5 sm:h-9.5 text-xs sm:text-sm px-2'
                   } ${
                     isSelected
-                      ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs'
+                      ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs font-black'
                       : 'school-subtle hover:border-[#c83b3b]/40 text-stone-700 dark:text-slate-300'
                   }`}
                 >
