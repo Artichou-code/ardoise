@@ -166,7 +166,7 @@ export function Flip7Engine({ game, onFinish }) {
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-stretch justify-between gap-3">
                   {/* Colonne gauche : Infos joueur & Total cliquables, et actions rapides Bust / Flip 7 */}
                   <div className="flex-1 min-w-0">
                     <button
@@ -224,24 +224,23 @@ export function Flip7Engine({ game, onFinish }) {
                     </div>
                   </div>
 
-                  {/* Badge de score avec roulette centré verticalement à droite */}
-                  <div className="shrink-0 flex items-center">
-                    <QuickScoreBadge
-                      value={roundPts}
-                      onChange={v => handleScoreChange(p.id, v)}
-                      onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
-                      min={0}
-                      step={1}
-                      showPlus={true}
-                      formatBubble={(v) => {
-                        const proj = currentTotal + v
-                        if (proj >= TARGET_SCORE) {
-                          return { text: `🏆 ${proj} pts (Gagné !)`, variant: 'success' }
-                        }
-                        return { text: `= ${proj} pts`, variant: 'default' }
-                      }}
-                    />
-                  </div>
+                  {/* Badge de score grand format (tall) occupant toute la hauteur de la carte */}
+                  <QuickScoreBadge
+                    value={roundPts}
+                    onChange={v => handleScoreChange(p.id, v)}
+                    onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
+                    min={0}
+                    step={1}
+                    showPlus={true}
+                    tall={true}
+                    formatBubble={(v) => {
+                      const proj = currentTotal + v
+                      if (proj >= TARGET_SCORE) {
+                        return { text: `🏆 ${proj} pts (Gagné !)`, variant: 'success' }
+                      }
+                      return { text: `= ${proj} pts`, variant: 'default' }
+                    }}
+                  />
                 </div>
               </div>
             )
