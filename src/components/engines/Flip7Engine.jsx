@@ -172,17 +172,17 @@ export function Flip7Engine({ game, onFinish }) {
                     onClick={() => { setEditingPlayer(p); setOpen(true) }}
                     className="flex items-center gap-2.5 flex-1 min-w-0 text-left cursor-pointer select-none"
                   >
-                    <Avatar player={p} size="xs" />
-                    <div className="min-w-0">
+                    <Avatar player={p} size="xs" leader={hasFlip7} leaderColor="#f59e0b" />
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-semibold text-sm truncate">{p.name}</span>
+                        <span className="font-semibold text-sm truncate text-stone-900 dark:text-slate-100">{p.name}</span>
                         {isNearWin && <Trophy size={13} className="text-emerald-600 shrink-0" />}
                         {hasFlip7 && <Flame size={13} className="text-amber-500 shrink-0" />}
                       </div>
-                      <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1.5 min-w-0">
+                      <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1 min-w-0 mt-0.5">
                         {roundPts > 0 ? (
                           <span className="truncate">
-                            Total : {currentTotal} <strong className="text-emerald-600 dark:text-emerald-400 font-bold">➔ {projected} pts</strong>
+                            Total : {currentTotal} <strong className="text-emerald-600 dark:text-emerald-400 font-bold whitespace-nowrap">➔ {projected} pts</strong>
                           </span>
                         ) : (
                           <span className="truncate">Total : {currentTotal} pts</span>
@@ -191,35 +191,8 @@ export function Flip7Engine({ game, onFinish }) {
                     </div>
                   </button>
 
-                  {/* Actions rapides Bust et Flip 7 */}
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => toggleBust(p.id)}
-                      className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border cursor-pointer select-none ${
-                        isBust
-                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
-                          : 'school-subtle text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-200 hover:border-stone-300 dark:hover:border-slate-600'
-                      }`}
-                      title={isBust ? "Annuler le Bust" : "Marquer comme Bust (0 point pour la manche)"}
-                    >
-                      Bust
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => toggleFlip7(p.id)}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border cursor-pointer select-none ${
-                        hasFlip7
-                          ? 'border-amber-600 bg-amber-600 text-white shadow-2xs'
-                          : 'school-subtle text-stone-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-300 hover:border-amber-400/60'
-                      }`}
-                      title={hasFlip7 ? "Désactiver le bonus Flip 7" : "Activer le bonus de manche Flip 7 (+15 points)"}
-                    >
-                      <Flame size={11} className={hasFlip7 ? 'text-white' : 'text-stone-400 dark:text-slate-500'} /> Flip 7
-                    </button>
-
-                    {/* Badge de score avec roulette */}
+                  {/* Actions rapides à droite : Score en haut, Bust / Flip 7 en bas */}
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
                     <QuickScoreBadge
                       value={roundPts}
                       onChange={v => handleScoreChange(p.id, v)}
@@ -235,6 +208,35 @@ export function Flip7Engine({ game, onFinish }) {
                         return { text: `= ${proj} pts`, variant: 'default' }
                       }}
                     />
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleBust(p.id)}
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all border cursor-pointer select-none ${
+                          isBust
+                            ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                            : 'border-stone-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 text-stone-600 dark:text-slate-400 hover:border-stone-300'
+                        }`}
+                        title={isBust ? "Annuler le Bust" : "Marquer comme Bust (0 pt)"}
+                      >
+                        {isBust ? '✓ Bust' : 'Bust'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleFlip7(p.id)}
+                        className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold transition-all border cursor-pointer select-none ${
+                          hasFlip7
+                            ? 'border-amber-600 bg-amber-600 text-white shadow-2xs'
+                            : 'border-stone-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 text-stone-600 dark:text-slate-400 hover:border-amber-400/60'
+                        }`}
+                        title={hasFlip7 ? "Désactiver le bonus Flip 7" : "Bonus Flip 7 (+15 pts)"}
+                      >
+                        <Flame size={10} className={hasFlip7 ? 'text-white' : 'text-amber-500'} />
+                        <span>{hasFlip7 ? '✓ Flip 7' : 'Flip 7'}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -299,44 +301,46 @@ export function Flip7Engine({ game, onFinish }) {
                     <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
                       {currentEditingIndex + 1}/{game.players.length}
                     </span>
-                    {flip7BonusPlayers[editingPlayer.id] && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 shrink-0">
-                        Flip 7 (+15)
-                      </span>
-                    )}
-                    {bustedPlayers[editingPlayer.id] && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200 dark:bg-slate-700 text-stone-600 dark:text-slate-400 shrink-0">
-                        Bust (0 pt)
-                      </span>
-                    )}
                   </div>
-                  <span className="text-xs text-stone-500 dark:text-slate-400">
+                  <span className="text-xs text-stone-500 dark:text-slate-400 block whitespace-nowrap truncate mt-0.5">
                     Total actuel : {game.scores[editingPlayer.id] || 0} pts
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  disabled={!hasPrevPlayer}
-                  onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
-                  title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
-                  aria-label="Joueur précédent"
-                >
-                  <ChevronLeft size={17} />
-                </button>
-                <button
-                  type="button"
-                  disabled={!hasNextPlayer}
-                  onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
-                  title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
-                  aria-label="Joueur suivant"
-                >
-                  <ChevronRight size={17} />
-                </button>
+              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                {flip7BonusPlayers[editingPlayer.id] ? (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-400/30">
+                    Flip 7 (+15)
+                  </span>
+                ) : bustedPlayers[editingPlayer.id] ? (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap bg-stone-200 dark:bg-slate-700 text-stone-600 dark:text-slate-400">
+                    Bust (0 pt)
+                  </span>
+                ) : null}
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={!hasPrevPlayer}
+                    onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                    title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
+                    aria-label="Joueur précédent"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!hasNextPlayer}
+                    onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                    title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
+                    aria-label="Joueur suivant"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -388,7 +392,7 @@ export function Flip7Engine({ game, onFinish }) {
                 const cur = game.scores[editingPlayer.id] || 0
                 const proj = cur + val
                 const isWin = proj >= TARGET_SCORE
-                return `+${val} pts · Nouveau total : ${proj}/${TARGET_SCORE} pts${isWin ? ' 🏆 Seuil atteint !' : ''}`
+                return `+${val} pts · Total : ${proj}/${TARGET_SCORE} pts${isWin ? ' (Gagné !)' : ''}`
               }}
               baseScore={game.scores[editingPlayer.id] || 0}
               showPlus={false}
