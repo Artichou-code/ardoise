@@ -10,7 +10,7 @@ import { useGame } from '../../context/GameContext'
 function SchoolTally({ count }) {
   if (!count || count <= 0) {
     return (
-      <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+      <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
         0 défaite
       </span>
     )
@@ -20,8 +20,8 @@ function SchoolTally({ count }) {
   const remainder = count % 5
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1.5 font-mono text-xs font-black tracking-tighter text-[#c83b3b]">
+    <div className="flex items-center gap-1.5 whitespace-nowrap">
+      <div className="flex items-center gap-1 font-mono text-xs font-black tracking-tighter text-[#c83b3b]">
         {Array.from({ length: groupsOfFive }).map((_, idx) => (
           <span key={idx} className="relative inline-block px-0.5 leading-none">
             ||||
@@ -32,7 +32,7 @@ function SchoolTally({ count }) {
           <span className="leading-none">{'|'.repeat(remainder)}</span>
         )}
       </div>
-      <span className="text-[11px] font-bold text-stone-500 dark:text-slate-400 tabular-nums">
+      <span className="text-[10px] font-bold text-stone-500 dark:text-slate-400 tabular-nums">
         ({count})
       </span>
     </div>
@@ -125,7 +125,7 @@ export function DourakEngine({ game, onFinish }) {
           Qui est le Dourak de cette manche ?
         </p>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div className={`grid gap-2 ${game.players.length === 3 ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-3'}`}>
           {game.players.map(p => {
             const isSelected = loserId === p.id
             const wasLastDourak = lastLoserId === p.id
@@ -136,7 +136,7 @@ export function DourakEngine({ game, onFinish }) {
                 key={p.id}
                 type="button"
                 onClick={() => handleSelectPlayer(p)}
-                className={`flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all active:scale-[0.98] text-left ${
+                className={`flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all active:scale-[0.98] text-left cursor-pointer min-h-[46px] ${
                   isSelected
                     ? 'border-[#c83b3b] bg-[#c83b3b]/10 ring-1 ring-[#c83b3b]/30 font-bold'
                     : 'school-subtle hover:border-[#c83b3b]/60'
@@ -150,15 +150,15 @@ export function DourakEngine({ game, onFinish }) {
                       {p.name}
                     </span>
                     {wasLastDourak && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-800 dark:text-amber-200 shrink-0">
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-200 shrink-0 leading-none">
                         Sortant
                       </span>
                     )}
                   </div>
 
-                  {/* Ligne 2 : Décompte/Bâtons à gauche, Désigner/+1 à droite */}
-                  <div className="flex items-center justify-between gap-1 mt-0.5">
-                    <div className="min-w-0">
+                  {/* Ligne 2 : Décompte/Bâtons à gauche, Badge +1 ou cercle de sélection à droite */}
+                  <div className="flex items-center justify-between gap-1 mt-0.5 min-h-[16px]">
+                    <div className="min-w-0 truncate">
                       {mode === 'defeats' ? (
                         <SchoolTally count={playerScore} />
                       ) : (
@@ -168,13 +168,11 @@ export function DourakEngine({ game, onFinish }) {
                       )}
                     </div>
                     {isSelected ? (
-                      <span className="px-1.5 py-0.2 rounded bg-[#c83b3b] text-white text-[10px] font-black shrink-0">
+                      <span className="px-1.5 py-0.5 rounded-full bg-[#c83b3b] text-white text-[10px] font-black shrink-0 shadow-2xs leading-none">
                         {mode === 'cards' ? `+${cardsLeft} c.` : '+1'}
                       </span>
                     ) : (
-                      <span className="text-[10px] font-semibold text-stone-400 dark:text-slate-500 shrink-0">
-                        Désigner
-                      </span>
+                      <span className="w-3.5 h-3.5 rounded-full border border-stone-300 dark:border-slate-600 shrink-0" />
                     )}
                   </div>
                 </div>
