@@ -5,7 +5,6 @@ import { useGame } from '../context/GameContext'
 import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
 import { Avatar } from './ui/Avatar'
 import { getRanking, formatDuration } from '../utils/gameUtils'
-import { BurgerMenuButton } from './BurgerMenu'
 import { ShareGameModal } from './ShareGameModal'
 
 export function VictoryScreen() {
@@ -75,18 +74,7 @@ export function VictoryScreen() {
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
-      <header className="flex items-center justify-between px-4 header-safe pb-2.5 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
-        <span className="font-serif-title text-base sm:text-lg font-bold">
-          {isDourak
-            ? "Verdict du Dourak (l'idiot)"
-            : isBelote
-            ? `Palmarès — ${getGameDisplayName(activeGame)}`
-            : 'Palmarès de la partie'}
-        </span>
-        <BurgerMenuButton />
-      </header>
-
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-2.5 pb-4 pb-safe">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-safe pt-5 pb-4 pb-safe">
         {/* Lauréat & Grand Dourak (si jeu Dourak) */}
         {isDourak ? (
           <div className="grid grid-cols-2 gap-2.5 mt-2 mb-3">
