@@ -38,6 +38,7 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
   const [open, setOpen] = useState(false)
   const [validationError, setValidationError] = useState(null)
   const [sirensConfirmPlayer, setSirensConfirmPlayer] = useState(null)
+  const [sirensSelectorOpen, setSirensSelectorOpen] = useState(false)
 
   // Navigation séquentielle entre joueurs dans le ScorePad
   const currentEditingIndex = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
@@ -268,11 +269,11 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
                     : 'school-subtle hover:border-stone-300 dark:hover:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2.5">
+                <div className="flex items-center justify-between gap-3">
                   <button
                     type="button"
                     onClick={() => { setEditingPlayer(p); setOpen(true) }}
-                    className="flex items-center gap-2 flex-1 min-w-0 text-left cursor-pointer select-none"
+                    className="flex items-center gap-2.5 flex-1 min-w-0 text-left cursor-pointer select-none"
                   >
                     <Avatar player={p} size="xs" leader={isAnnouncer} leaderColor="#0284c7" />
                     <div className="min-w-0 flex-1">
@@ -297,37 +298,38 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
                     </div>
                   </button>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {/* Bouton 4 Sirènes (victoire instantanée rare avec confirmation) */}
-                    <button
-                      type="button"
-                      onClick={() => setSirensConfirmPlayer(p)}
-                      className="px-2 py-1 rounded-lg text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
-                      title="Déclarer une victoire instantanée avec les 4 Sirènes"
-                    >
-                      🧜 <span className="hidden sm:inline">4 Sirènes</span><span className="sm:hidden">4 Sir.</span>
-                    </button>
-
-                    <QuickScoreBadge
-                      value={roundPts}
-                      onChange={v => setRoundScores(prev => ({ ...prev, [p.id]: Math.max(0, v) }))}
-                      onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
-                      min={0}
-                      step={1}
-                      showPlus={true}
-                      formatBubble={(v) => {
-                        const proj = currentTotal + v
-                        if (proj >= TARGET_SCORE) {
-                          return { text: `🏆 ${proj} pts (Gagné !)`, variant: 'success' }
-                        }
-                        return { text: `= ${proj} pts`, variant: 'default' }
-                      }}
-                    />
-                  </div>
+                  <QuickScoreBadge
+                    value={roundPts}
+                    onChange={v => setRoundScores(prev => ({ ...prev, [p.id]: Math.max(0, v) }))}
+                    onOpenPad={() => { setEditingPlayer(p); setOpen(true) }}
+                    min={0}
+                    step={1}
+                    showPlus={true}
+                    formatBubble={(v) => {
+                      const proj = currentTotal + v
+                      if (proj >= TARGET_SCORE) {
+                        return { text: `🏆 ${proj} pts (Gagné !)`, variant: 'success' }
+                      }
+                      return { text: `= ${proj} pts`, variant: 'default' }
+                    }}
+                  />
                 </div>
               </div>
             )
           })}
+        </div>
+
+        {/* Action exceptionnelle : Victoire immédiate des 4 Sirènes */}
+        <div className="pt-2 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setSirensSelectorOpen(true)}
+            className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 py-1.5 px-3 rounded-full border border-amber-300/80 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/25 hover:bg-amber-100/80 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-95"
+            title="Déclarer une victoire instantanée d'un joueur qui possède les 4 cartes Sirènes"
+          >
+            <span>🧜</span>
+            <span>Déclarer une victoire des 4 Sirènes</span>
+          </button>
         </div>
 
         <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
@@ -359,6 +361,38 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
             >
               Ajuster les scores
             </button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Dialog de sélection du joueur pour les 4 Sirènes */}
+      <Dialog
+        open={sirensSelectorOpen}
+        onClose={() => setSirensSelectorOpen(false)}
+        title="Victoire immédiate des 4 Sirènes"
+      >
+        <div className="space-y-3 text-xs">
+          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
+            Quel joueur possède les <strong>4 cartes Sirènes</strong> en main ?
+          </p>
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            {game.players.map(p => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => {
+                  setSirensSelectorOpen(false)
+                  setSirensConfirmPlayer(p)
+                }}
+                className="flex items-center gap-2 p-2.5 rounded-xl border border-amber-300/80 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/25 hover:bg-amber-100 font-bold text-xs text-stone-800 dark:text-slate-200 cursor-pointer transition-all active:scale-95 text-left min-w-0"
+              >
+                <Avatar player={p} size="xs" />
+                <span className="truncate">{p.name}</span>
+              </button>
+            ))}
+          </div>
+          <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 text-[11px] leading-relaxed">
+            Cette combinaison mythique met <strong>fin immédiatement à la partie</strong> et octroie la victoire à son détenteur !
           </div>
         </div>
       </Dialog>
@@ -506,6 +540,21 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
                 { label: '+10', delta: 10 },
               ]}
             />
+
+            {/* Déclarer les 4 Sirènes pour le joueur actif */}
+            <div className="pt-1 flex justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false)
+                  setSirensConfirmPlayer(editingPlayer)
+                }}
+                className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 py-1 px-3 rounded-full border border-amber-300/80 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/25 hover:bg-amber-100/80 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-95"
+              >
+                <span>🧜</span>
+                <span>Déclarer une victoire des 4 Sirènes pour {editingPlayer.name}</span>
+              </button>
+            </div>
           </div>
         )}
       </BottomSheet>
