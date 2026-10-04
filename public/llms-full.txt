@@ -3,7 +3,7 @@
 URL officielle : https://ardoise.art-crea.fr
 Éditeur : ART-créa (https://art-crea.fr)
 Catégorie : Application Web Progressive (PWA) — Compteur de scores, calculateur de points et mémo des règles officielles de jeux de cartes et de société.
-Tarif : 100 % Gratuit, sans publicité, sans abonnement, fonctionnel hors-ligne.
+Tarif : 100 % Gratuit, sans publicité, sans abonnement, synchronisation cloud et mode hors-ligne inclus.
 
 ---
 

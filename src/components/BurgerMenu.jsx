@@ -463,7 +463,7 @@ export function BurgerMenu({
           </button>
 
           <p className="text-[10px] text-stone-400 dark:text-slate-500 text-center">
-            Ardoise · Gratuit, sans pub & 100% hors-ligne
+            Ardoise · Gratuit, sans pub, cloud & hors-ligne
           </p>
         </div>
       </div>

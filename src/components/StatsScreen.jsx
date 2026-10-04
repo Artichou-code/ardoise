@@ -11,6 +11,8 @@ import {
   ChevronRight,
   TrendingUp,
   Cloud,
+  Search,
+  X,
 } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
@@ -25,6 +27,7 @@ import {
   sortPlayers,
   formatStatDuration
 } from '../utils/statsUtils'
+import { computePlayDuration } from '../utils/gameUtils'
 
 export function StatsScreen() {
   const { games, players: registeredPlayers, setScreen, reloadStorage } = useGame()
@@ -33,9 +36,16 @@ export function StatsScreen() {
   const [selectedPlayer, setSelectedPlayer] = useState(null)
   const [showTrophies, setShowTrophies] = useState(false)
   const [showSyncModal, setShowSyncModal] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const searchInputRef = useRef(null)
 
   const tabsContainerRef = useRef(null)
   const tabButtonRefs = useRef({})
+
+  const normalizedQuery = useMemo(() => {
+    return searchQuery.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  }, [searchQuery])
 
   // Centrage fluide de l'onglet actif dans la barre horizontale
   const scrollToTab = (buttonEl) => {
@@ -75,17 +85,86 @@ export function StatsScreen() {
     return sortPlayers(stats.playersStats, sortBy)
   }, [stats.playersStats, sortBy])
 
-  // Onglets disponibles
+  // Joueurs filtrés selon la recherche
+  const displayedPlayers = useMemo(() => {
+    if (!normalizedQuery) return sortedPlayers
+    return sortedPlayers.filter(p => {
+      const pNameNorm = (p.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      return pNameNorm.includes(normalizedQuery)
+    })
+  }, [sortedPlayers, normalizedQuery])
+
+  // Onglets disponibles triés par nombre de parties jouées, puis par temps de jeu en cas d'égalité
   const tabs = useMemo(() => {
+    // 1. Calcul des statistiques par type de jeu
+    const gameStats = {}
+    Object.keys(GAME_META).forEach(id => {
+      gameStats[id] = { count: 0, durationMs: 0 }
+    })
+    games.forEach(g => {
+      if (!g) return
+      const type = g.type || 'universel'
+      if (!gameStats[type]) {
+        gameStats[type] = { count: 0, durationMs: 0 }
+      }
+      gameStats[type].count += 1
+      gameStats[type].durationMs += computePlayDuration(g)
+    })
+
+    const initialKeys = Object.keys(GAME_META)
+    const initialIndex = initialKeys.reduce((acc, id, i) => {
+      acc[id] = i
+      return acc
+    }, {})
+
+    // 2. Trier les jeux : nb de parties décroissant, puis temps passé décroissant, puis ordre initial
+    const sortedGameEntries = Object.entries(GAME_META).sort(([idA], [idB]) => {
+      const statsA = gameStats[idA] || { count: 0, durationMs: 0 }
+      const statsB = gameStats[idB] || { count: 0, durationMs: 0 }
+
+      if (statsB.count !== statsA.count) {
+        return statsB.count - statsA.count
+      }
+      if (statsB.durationMs !== statsA.durationMs) {
+        return statsB.durationMs - statsA.durationMs
+      }
+      return (initialIndex[idA] ?? 999) - (initialIndex[idB] ?? 999)
+    })
+
     const list = [
       { id: 'all', label: 'Tous les jeux', count: games.length },
     ]
-    Object.entries(GAME_META).forEach(([id, meta]) => {
-      const count = games.filter(g => g.type === id).length
+    sortedGameEntries.forEach(([id, meta]) => {
+      const count = gameStats[id]?.count || 0
       list.push({ id, label: meta.name.split(' (')[0], count })
     })
     return list
   }, [games])
+
+  // Onglets filtrés selon la recherche
+  const filteredTabs = useMemo(() => {
+    if (!normalizedQuery) return tabs
+    return tabs.filter(tab => {
+      if (tab.id === 'all') return true
+      const labelNorm = tab.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      const meta = GAME_META[tab.id]
+      const descNorm = (meta?.description || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      const badgeNorm = (meta?.categoryBadge || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      return (
+        labelNorm.includes(normalizedQuery) ||
+        descNorm.includes(normalizedQuery) ||
+        badgeNorm.includes(normalizedQuery) ||
+        tab.id.toLowerCase().includes(normalizedQuery)
+      )
+    })
+  }, [tabs, normalizedQuery])
+
+  const hasMatch = useMemo(() => {
+    if (!normalizedQuery) return false
+    const matchGame = filteredTabs.some(t => t.id !== 'all')
+    const matchPlayer = displayedPlayers.length > 0
+    return matchGame || matchPlayer
+  }, [normalizedQuery, filteredTabs, displayedPlayers])
 
   const { kpis, titles, gamesDistribution } = stats
 
@@ -142,38 +221,102 @@ export function StatsScreen() {
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
       {/* Header avec espacement mobile sécurisé */}
       <header className="flex items-center gap-2 px-4 header-safe pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
-        <button
-          type="button"
-          onClick={() => setScreen('home')}
-          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-          aria-label="Retour à l'accueil"
-        >
-          <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-serif-title font-bold text-lg leading-tight truncate">
-            Statistiques
-          </h1>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowSyncModal(true)}
-          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-          title="Sauvegarde & Synchronisation"
-          aria-label="Sauvegarde & Synchronisation"
-        >
-          <Cloud size={18} className="text-stone-700 dark:text-slate-300" />
-        </button>
-        <button
-          type="button"
-          onClick={() => setScreen('trophies')}
-          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-          title="Guide des trophées & distinctions"
-          aria-label="Guide des trophées"
-        >
-          <Award size={18} className="text-stone-700 dark:text-slate-300" />
-        </button>
-        <BurgerMenuButton />
+        {isSearchOpen ? (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setIsSearchOpen(false)
+                setSearchQuery('')
+              }}
+              className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+              aria-label="Fermer la recherche"
+            >
+              <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
+            </button>
+            <div
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border shadow-2xs transition-all flex-1 min-w-0 ${
+                searchQuery.trim().length > 0 && hasMatch
+                  ? 'border-emerald-500/70 dark:border-emerald-500/70 ring-2 ring-emerald-500/15'
+                  : 'border-[#c83b3b]/70 dark:border-[#c83b3b]/70 ring-2 ring-[#c83b3b]/15'
+              }`}
+            >
+              <Search
+                size={15}
+                className={`transition-colors shrink-0 ${
+                  searchQuery.trim().length > 0 && hasMatch
+                    ? 'text-emerald-500'
+                    : 'text-[#c83b3b]'
+                }`}
+              />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Rechercher un jeu ou joueur..."
+                className="w-full bg-transparent text-xs sm:text-sm font-medium text-stone-900 dark:text-slate-100 placeholder-stone-400 focus:outline-none"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="p-0.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-400 hover:text-stone-600 transition-colors cursor-pointer shrink-0"
+                  aria-label="Effacer le texte"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => setScreen('home')}
+              className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Retour à l'accueil"
+            >
+              <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="font-serif-title font-bold text-lg leading-tight truncate">
+                Statistiques
+              </h1>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setIsSearchOpen(true)
+                setTimeout(() => searchInputRef.current?.focus(), 50)
+              }}
+              className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:border-[#c83b3b] text-[#c83b3b] transition-colors cursor-pointer"
+              title="Rechercher un jeu ou un joueur"
+              aria-label="Rechercher"
+            >
+              <Search size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSyncModal(true)}
+              className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Sauvegarde & Synchronisation"
+              aria-label="Sauvegarde & Synchronisation"
+            >
+              <Cloud size={18} className="text-stone-700 dark:text-slate-300" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setScreen('trophies')}
+              className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Guide des trophées & distinctions"
+              aria-label="Guide des trophées"
+            >
+              <Award size={18} className="text-stone-700 dark:text-slate-300" />
+            </button>
+            <BurgerMenuButton />
+          </>
+        )}
       </header>
 
       {/* Onglets horizontaux de filtre par jeu avec centrage fluide au clic */}
@@ -182,7 +325,22 @@ export function StatsScreen() {
         className="flex-shrink-0 px-4 py-2.5 border-b border-stone-200/60 dark:border-slate-800/60 overflow-x-auto scrollbar-hide scroll-smooth"
       >
         <div className="flex items-center gap-2 pr-[50vw]">
-          {tabs.map(tab => {
+          {!isSearchOpen && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsSearchOpen(true)
+                setTimeout(() => searchInputRef.current?.focus(), 50)
+              }}
+              className="flex items-center justify-center w-7 h-7 rounded-full bg-white/80 dark:bg-slate-900/80 border border-stone-200 dark:border-slate-800 hover:border-[#c83b3b] text-[#c83b3b] transition-colors flex-shrink-0 cursor-pointer shadow-2xs"
+              title="Rechercher un jeu ou joueur"
+              aria-label="Rechercher"
+            >
+              <Search size={13} />
+            </button>
+          )}
+
+          {filteredTabs.map(tab => {
             const isActive = selectedGameType === tab.id
             return (
               <button
@@ -363,9 +521,9 @@ export function StatsScreen() {
                     Classement des joueurs
                   </h3>
                 </div>
-                {sortedPlayers.length > 0 && (
+                {displayedPlayers.length > 0 && (
                   <span className="text-xs text-stone-500 dark:text-slate-400 font-medium flex-shrink-0">
-                    {sortedPlayers.length} joueur{sortedPlayers.length > 1 ? 's' : ''}
+                    {displayedPlayers.length} joueur{displayedPlayers.length > 1 ? 's' : ''}
                   </span>
                 )}
               </div>
@@ -407,13 +565,15 @@ export function StatsScreen() {
                 </button>
               </div>
 
-              {sortedPlayers.length === 0 ? (
+              {displayedPlayers.length === 0 ? (
                 <div className="p-4 rounded-xl school-card text-center text-xs text-stone-500 dark:text-slate-400">
-                  Aucun joueur n'a encore enregistré de score pour ce filtre.
+                  {normalizedQuery
+                    ? `Aucun joueur trouvé pour « ${searchQuery} »`
+                    : "Aucun joueur n'a encore enregistré de score pour ce filtre."}
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {sortedPlayers.map((player, index) => {
+                  {displayedPlayers.map((player, index) => {
                     const rank = index + 1
                     const isTop1 = rank === 1
                     const isTop2 = rank === 2
