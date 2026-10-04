@@ -26,11 +26,11 @@ export const saveDeletedPlayerIds = (ids) => {
 }
 
 
-export const untombstonePlayer = (id, name) => {
+export const untombstonePlayer = (id) => {
   try {
+    if (!id) return
     const deleted = loadDeletedPlayerIds()
-    const norm = name ? name.trim().toLowerCase() : ''
-    const filtered = deleted.filter(item => item !== id && item !== norm)
+    const filtered = deleted.filter(item => item !== id)
     if (filtered.length !== deleted.length) {
       localStorage.setItem(STORAGE_KEYS.DELETED_PLAYERS, JSON.stringify(filtered))
     }
@@ -45,36 +45,24 @@ export const loadPlayers = () => {
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEYS.PLAYERS))
     const deletedIds = new Set(loadDeletedPlayerIds())
     return Array.isArray(raw)
-      ? raw.filter(p => p && typeof p === 'object' && p.name && !deletedIds.has(p.id) && !deletedIds.has(p.name.trim().toLowerCase()))
+      ? raw.filter(p => p && typeof p === 'object' && p.id && !deletedIds.has(p.id))
       : []
   } catch { return [] }
 }
 
-export const deletePlayer = (id, name) => {
-  if (!id && !name) return
-  // 1. Ajouter l'ID et le nom normalisé à la liste des tombstones
+export const deletePlayer = (id) => {
+  if (!id) return
+  // 1. Ajouter l'ID à la liste des tombstones
   try {
     const deleted = loadDeletedPlayerIds()
-    const candidates = [id, name ? name.trim().toLowerCase() : null].filter(Boolean)
-    let changed = false
-    for (const item of candidates) {
-      if (!deleted.includes(item)) {
-        deleted.push(item)
-        changed = true
-      }
-    }
-    if (changed) {
+    if (!deleted.includes(id)) {
+      deleted.push(id)
       localStorage.setItem(STORAGE_KEYS.DELETED_PLAYERS, JSON.stringify(deleted.slice(-500)))
     }
   } catch {}
 
   // 2. Retirer du localStorage
-  const players = loadPlayers().filter(p => {
-    if (!p) return false
-    if (id && p.id === id) return false
-    if (name && p.name && p.name.trim().toLowerCase() === name.trim().toLowerCase()) return false
-    return true
-  })
+  const players = loadPlayers().filter(p => p && p.id !== id)
   savePlayers(players)
 }
 

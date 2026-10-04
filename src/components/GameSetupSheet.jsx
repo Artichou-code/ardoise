@@ -65,7 +65,8 @@ function PlayerCreatorSheet({ open, onClose, onAdd }) {
 }
 
 export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }) {
-  const { players: savedPlayers, games, savePlayer, createGame, customPresets, savePreset, deletePreset, startLiveSessionForGame } = useGame()
+  const { players: allSavedPlayers, games, savePlayer, createGame, customPresets, savePreset, deletePreset, startLiveSessionForGame } = useGame()
+  const savedPlayers = useMemo(() => (allSavedPlayers || []).filter(p => p && !p.archived), [allSavedPlayers])
   const [launchAsLiveTable, setLaunchAsLiveTable] = useState(false)
   const [selectedPlayers, setSelectedPlayers] = useState([])
   const [config, setConfig] = useState({ scoreDir: 'high', limit: 100 })
@@ -92,7 +93,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
 
       for (const gp of g.players) {
         if (!gp || !gp.name) continue
-        const key = normalizePlayerName(gp.name)
+        const key = gp.id || normalizePlayerName(gp.name)
         const entry = map.get(key) || { thisGameCount: 0, totalGamesCount: 0, lastPlayedAt: 0 }
         entry.totalGamesCount += 1
         if (isThisGame) {
@@ -109,14 +110,11 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
   // 1. Joueurs sélectionnés (toujours visibles en tête)
   // 2. Joueurs ayant déjà joué à ce jeu en priorité (par nombre de parties)
   // 3. Joueurs les plus actifs globalement (si nouveau jeu ou pour compléter)
-  // Tri intelligent et stable (aucune permutation lors de la sélection) :
-  // 1. Joueurs ayant déjà joué à ce jeu en priorité (par nombre de parties)
-  // 2. Joueurs les plus actifs globalement (si nouveau jeu ou pour compléter)
-  // 3. Par récence de jeu, puis ordre alphabétique
+  // 4. Par récence de jeu, puis ordre alphabétique
   const sortedSavedPlayers = useMemo(() => {
     return [...savedPlayers].sort((a, b) => {
-      const statA = playerActivityMap.get(normalizePlayerName(a.name)) || { thisGameCount: 0, totalGamesCount: 0, lastPlayedAt: 0 }
-      const statB = playerActivityMap.get(normalizePlayerName(b.name)) || { thisGameCount: 0, totalGamesCount: 0, lastPlayedAt: 0 }
+      const statA = playerActivityMap.get(a.id || normalizePlayerName(a.name)) || { thisGameCount: 0, totalGamesCount: 0, lastPlayedAt: 0 }
+      const statB = playerActivityMap.get(b.id || normalizePlayerName(b.name)) || { thisGameCount: 0, totalGamesCount: 0, lastPlayedAt: 0 }
 
       if (statA.thisGameCount !== statB.thisGameCount) {
         return statB.thisGameCount - statA.thisGameCount

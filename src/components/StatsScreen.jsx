@@ -577,7 +577,7 @@ export function StatsScreen() {
 
                     return (
                       <div
-                        key={player.name}
+                        key={player.id || player.name}
                         onClick={() => setSelectedPlayer(player)}
                         className="p-3 rounded-2xl school-card flex items-center gap-3 cursor-pointer active:scale-[0.99] transition-all hover:border-stone-300 dark:hover:border-slate-700"
                       >

@@ -354,9 +354,11 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
 export function detectPlayerConflicts(incomingGames = []) {
   const localPlayers = loadPlayers()
   const localByName = new Map()
+  const localById = new Map()
   for (const lp of localPlayers) {
     if (lp && lp.name) {
       localByName.set(lp.name.trim().toLowerCase(), lp)
+      if (lp.id) localById.set(lp.id, lp)
     }
   }
 
@@ -370,6 +372,11 @@ export function detectPlayerConflicts(incomingGames = []) {
       const key = gp.name.trim().toLowerCase()
       if (key === 'nous' || key === 'eux') continue
 
+      // Si l'identifiant distant est déjà exactement attribué à un joueur local (ex: Alex J.), aucun conflit !
+      if (gp.id && localById.has(gp.id)) {
+        continue
+      }
+
       if (localByName.has(key)) {
         const localPlayer = localByName.get(key)
         if (!conflictsMap.has(key)) {
@@ -378,6 +385,7 @@ export function detectPlayerConflicts(incomingGames = []) {
             name: gp.name.trim(),
             incomingPlayer: gp,
             localPlayer,
+            isArchived: Boolean(localPlayer.archived),
           })
         }
       } else if (!newPlayersMap.has(key)) {
@@ -396,58 +404,115 @@ export function detectPlayerConflicts(incomingGames = []) {
  * Importe une liste de parties en appliquant les choix de résolution de doublons de joueurs
  * @param {Array} incomingGames - Parties à importer
  * @param {Object} resolutions - Map { [normalizedName]: 'merge' | 'separate' }
+ * @param {Object} customNames - Map { [normalizedName]: string } noms personnalisés saisis par l'utilisateur
  */
-export function importGamesWithResolution(incomingGames = [], resolutions = {}) {
+export function importGamesWithResolution(incomingGames = [], resolutions = {}, customNames = {}) {
   const local = exportNotebookPayload()
   const localPlayers = Array.isArray(local.players) ? [...local.players] : []
   const existingNames = new Set(localPlayers.map(p => p.name?.trim().toLowerCase()).filter(Boolean))
 
-  // Préparer la table de renommage si l'utilisateur a choisi 'separate' pour certains doublons
   const renameMap = new Map() // key -> nouveau nom distinct
+  const idMap = new Map() // key -> ID cible
   const extraPlayersToCreate = []
 
   for (const [key, choice] of Object.entries(resolutions)) {
-    if (choice === 'separate') {
-      // Trouver le joueur entrant correspondant
-      let samplePlayer = null
-      for (const g of incomingGames) {
-        const found = (g?.players || []).find(p => p?.name?.trim().toLowerCase() === key)
-        if (found) {
-          samplePlayer = found
-          break
-        }
+    // Trouver le joueur entrant correspondant
+    let samplePlayer = null
+    for (const g of incomingGames) {
+      const found = (g?.players || []).find(p => p?.name?.trim().toLowerCase() === key)
+      if (found) {
+        samplePlayer = found
+        break
       }
+    }
+
+    if (choice === 'separate') {
       if (samplePlayer) {
-        const baseName = samplePlayer.name.trim()
+        const userCustomName = (customNames[key] || '').trim()
+        const baseName = userCustomName || samplePlayer.name.trim()
+        let candidateName = baseName
         let suffix = 2
-        let candidateName = `${baseName} (${suffix})`
-        while (existingNames.has(candidateName.toLowerCase())) {
-          suffix++
+        // Si aucun nom personnalisé n'a été tapé et qu'il y a collision, ajouter suffixe (2)
+        if (!userCustomName && existingNames.has(candidateName.toLowerCase())) {
           candidateName = `${baseName} (${suffix})`
+          while (existingNames.has(candidateName.toLowerCase())) {
+            suffix++
+            candidateName = `${baseName} (${suffix})`
+          }
         }
         existingNames.add(candidateName.toLowerCase())
         renameMap.set(key, candidateName)
+
+        // Réutiliser l'ID du joueur entrant pour le reconnaître automatiquement lors des futures tables
+        const newPlayerId = samplePlayer.id || `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+        idMap.set(key, newPlayerId)
+
         extraPlayersToCreate.push({
           ...samplePlayer,
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          id: newPlayerId,
           name: candidateName,
+          archived: false,
         })
+      }
+    } else if (choice === 'merge') {
+      // Trouver le joueur local correspondant
+      const localP = localPlayers.find(p => p.name?.trim().toLowerCase() === key)
+      if (localP) {
+        idMap.set(key, localP.id)
+        // Réactiver si archivé
+        if (localP.archived) {
+          localP.archived = false
+        }
       }
     }
   }
 
-  // Adapter les parties entrantes si certains joueurs ont été séparés
+  // Sauvegarder les joueurs locaux mis à jour (dé-archivages éventuels)
+  if (localPlayers.some(p => !p.archived)) {
+    savePlayers(localPlayers)
+  }
+
+  // Adapter les parties entrantes
   const processedGames = incomingGames.map(g => {
     if (!g || !Array.isArray(g.players)) return g
     const updatedPlayers = g.players.map(p => {
       if (!p || !p.name) return p
       const key = p.name.trim().toLowerCase()
-      if (renameMap.has(key)) {
-        return { ...p, name: renameMap.get(key) }
-      }
-      return p
+      const newName = renameMap.has(key) ? renameMap.get(key) : p.name
+      const newId = idMap.has(key) ? idMap.get(key) : p.id
+      return { ...p, id: newId, name: newName }
     })
-    return { ...g, players: updatedPlayers }
+
+    // Réaligner les clés de scores et manches si des IDs ont été réassignés
+    let updatedScores = { ...(g.scores || {}) }
+    let updatedRounds = Array.isArray(g.rounds) ? [...g.rounds] : []
+    g.players.forEach(p => {
+      if (!p || !p.name) return
+      const key = p.name.trim().toLowerCase()
+      const newId = idMap.has(key) ? idMap.get(key) : p.id
+      if (p.id && newId && p.id !== newId) {
+        if (updatedScores[p.id] !== undefined) {
+          updatedScores[newId] = updatedScores[p.id]
+          delete updatedScores[p.id]
+        }
+        updatedRounds = updatedRounds.map(r => {
+          if (!r?.scores) return r
+          const rScores = { ...r.scores }
+          if (rScores[p.id] !== undefined) {
+            rScores[newId] = rScores[p.id]
+            delete rScores[p.id]
+          }
+          return { ...r, scores: rScores }
+        })
+      }
+    })
+
+    return {
+      ...g,
+      players: updatedPlayers,
+      scores: updatedScores,
+      rounds: updatedRounds,
+    }
   })
 
   // Dé-tombstoner les parties explicitement importées par l'utilisateur

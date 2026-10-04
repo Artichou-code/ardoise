@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Award, Swords, X, BarChart3 } from 'lucide-react'
+import { Award, Swords, X, BarChart3, ArchiveRestore } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { Avatar } from './ui/Avatar'
@@ -11,7 +11,7 @@ import { BottomSheet } from './ui/BottomSheet'
  * Utilisée à la fois dans StatsScreen et dans PlayersScreen (Carnet des joueurs)
  */
 export function PlayerDetailSheet({ player, open, onClose }) {
-  const { setScreen } = useGame()
+  const { setScreen, unarchivePlayer } = useGame()
   const [selectedBadgeId, setSelectedBadgeId] = useState(null)
   const [showAllBadges, setShowAllBadges] = useState(false)
   if (!player) return null
@@ -60,9 +60,16 @@ export function PlayerDetailSheet({ player, open, onClose }) {
           <div className="flex items-center gap-3.5">
             <Avatar player={player} size="lg" />
             <div className="flex-1 min-w-0">
-              <h3 className="font-serif-title font-bold text-lg text-stone-900 dark:text-slate-100 truncate">
-                {player.name}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-serif-title font-bold text-lg text-stone-900 dark:text-slate-100 truncate">
+                  {player.name}
+                </h3>
+                {player.archived && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/80 dark:border-amber-800/80">
+                    Archivé
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
                 {player.finishedGames
                   ? `${player.finishedGames} partie${player.finishedGames > 1 ? 's' : ''} terminée${player.finishedGames > 1 ? 's' : ''}`
@@ -75,6 +82,20 @@ export function PlayerDetailSheet({ player, open, onClose }) {
               </p>
             </div>
           </div>
+
+          {player.archived && (
+            <button
+              type="button"
+              onClick={() => {
+                unarchivePlayer(player.id)
+                onClose()
+              }}
+              className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold text-xs hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer"
+            >
+              <ArchiveRestore size={14} />
+              <span>Réactiver dans mon carnet de jeu</span>
+            </button>
+          )}
 
           {/* Trophées sur toute la largeur de la carte pour éviter tout souci de responsive */}
           {badges.length > 0 && (

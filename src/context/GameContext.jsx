@@ -421,7 +421,7 @@ export function GameProvider({ children }) {
   // Gestion joueurs
   const savePlayer = useCallback((player) => {
     if (!player) return
-    untombstonePlayer(player.id, player.name)
+    untombstonePlayer(player.id)
     setPlayers(prev => {
       const idx = prev.findIndex(p => p.id === player.id)
       let next
@@ -454,13 +454,34 @@ export function GameProvider({ children }) {
     }
   }, [])
 
-  const removePlayer = useCallback((id) => {
-    let deletedPlayer = null
+  const archivePlayer = useCallback((id) => {
+    if (!id) return
     setPlayers(prev => {
-      deletedPlayer = prev.find(p => p.id === id)
-      return prev.filter(p => p.id !== id)
+      const next = prev.map(p => (p.id === id ? { ...p, archived: true } : p))
+      savePlayers(next)
+      return next
     })
-    deletePlayer(id, deletedPlayer?.name)
+    if (isAutoSyncEnabled() && getSyncKey()) {
+      pushNotebookToCloud().catch(() => {})
+    }
+  }, [])
+
+  const unarchivePlayer = useCallback((id) => {
+    if (!id) return
+    setPlayers(prev => {
+      const next = prev.map(p => (p.id === id ? { ...p, archived: false } : p))
+      savePlayers(next)
+      return sortPlayersAlpha(next)
+    })
+    if (isAutoSyncEnabled() && getSyncKey()) {
+      pushNotebookToCloud().catch(() => {})
+    }
+  }, [])
+
+  const removePlayer = useCallback((id) => {
+    if (!id) return
+    setPlayers(prev => prev.filter(p => p.id !== id))
+    deletePlayer(id)
 
     // Pousser immédiatement vers le Cloud si auto-sync activé
     if (isAutoSyncEnabled() && getSyncKey()) {
@@ -507,7 +528,7 @@ export function GameProvider({ children }) {
 
   return (
     <GameContext.Provider value={{
-      players, savePlayer, removePlayer,
+      players, savePlayer, removePlayer, archivePlayer, unarchivePlayer,
       games, activeGame, activeGameId,
       customPresets, savePreset, deletePreset,
       screen, setScreen,

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ArrowLeft, Plus, Pencil, Trash2, Users, Award, Search, X } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trash2, Users, Award, Search, X, Archive, ArchiveRestore } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { Avatar, AvatarPicker } from './ui/Avatar'
 import { BottomSheet } from './ui/BottomSheet'
@@ -80,51 +80,72 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
 }
 
 export function PlayersScreen() {
-  const { players, savePlayer, removePlayer, setScreen, games } = useGame()
+  const { players, savePlayer, removePlayer, archivePlayer, unarchivePlayer, setScreen, games } = useGame()
   const [showCreate, setShowCreate] = useState(false)
   const [editPlayer, setEditPlayer] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [detailPlayer, setDetailPlayer] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showArchived, setShowArchived] = useState(false)
+
+  const activePlayers = useMemo(() => {
+    return (players || []).filter(p => !p.archived)
+  }, [players])
+
+  const archivedPlayers = useMemo(() => {
+    return (players || []).filter(p => Boolean(p.archived))
+  }, [players])
 
   // Réinitialiser la recherche si le nombre de joueurs repasse <= 8
   useEffect(() => {
-    if (players.length <= 8 && searchQuery) {
+    if (activePlayers.length <= 8 && searchQuery) {
       setSearchQuery('')
     }
-  }, [players.length, searchQuery])
+  }, [activePlayers.length, searchQuery])
 
   // Statistiques calculées pour afficher badges et fiches
   const playerStatsMap = useMemo(() => {
     const stats = computeStats(games, 'all', players)
     const map = new Map()
-    stats.playersStats.forEach(ps => map.set(normalizePlayerName(ps.name), ps))
+    stats.playersStats.forEach(ps => {
+      if (ps.id) map.set(ps.id, ps)
+      map.set(normalizePlayerName(ps.name), ps)
+    })
     return map
   }, [games, players])
 
   // Tri alphabétique strict A-Z (insensible à la casse et aux accents)
-  const sortedPlayers = useMemo(() => {
-    return [...players].sort((a, b) =>
+  const sortedActivePlayers = useMemo(() => {
+    return [...activePlayers].sort((a, b) =>
       (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })
     )
-  }, [players])
+  }, [activePlayers])
+
+  const sortedArchivedPlayers = useMemo(() => {
+    return [...archivedPlayers].sort((a, b) =>
+      (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })
+    )
+  }, [archivedPlayers])
 
   // Filtrage par recherche (insensible casse et accents)
-  const filteredPlayers = useMemo(() => {
-    if (!searchQuery.trim() || players.length <= 8) return sortedPlayers
+  const filterList = (list) => {
+    if (!searchQuery.trim() || activePlayers.length <= 8) return list
     const query = searchQuery
       .trim()
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-    return sortedPlayers.filter(p => {
+    return list.filter(p => {
       const name = (p.name || '')
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
       return name.includes(query)
     })
-  }, [sortedPlayers, searchQuery, players.length])
+  }
+
+  const filteredPlayers = useMemo(() => filterList(sortedActivePlayers), [sortedActivePlayers, searchQuery, activePlayers.length])
+  const filteredArchivedPlayers = useMemo(() => filterList(sortedArchivedPlayers), [sortedArchivedPlayers, searchQuery, activePlayers.length])
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
@@ -187,7 +208,7 @@ export function PlayersScreen() {
           </div>
         )}
 
-        {players.length === 0 ? (
+        {activePlayers.length === 0 && archivedPlayers.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
             <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
               <Users size={22} className="text-stone-400 dark:text-slate-500" />
@@ -201,12 +222,12 @@ export function PlayersScreen() {
             <button
               type="button"
               onClick={() => setShowCreate(true)}
-              className="px-5 py-3 rounded-xl font-bold text-sm btn-margin-red"
+              className="px-5 py-3 rounded-xl font-bold text-sm btn-margin-red cursor-pointer"
             >
               Ajouter un premier joueur
             </button>
           </div>
-        ) : filteredPlayers.length === 0 ? (
+        ) : filteredPlayers.length === 0 && (!searchQuery || filteredArchivedPlayers.length === 0) ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
             <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
               <Search size={22} className="text-stone-400 dark:text-slate-500" />
@@ -226,73 +247,180 @@ export function PlayersScreen() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-2.5">
-            {filteredPlayers.map(p => {
-              const pStat = playerStatsMap.get(normalizePlayerName(p.name))
-              const fullPlayerData = pStat || {
-                ...p,
-                totalGames: 0,
-                finishedGames: 0,
-                wins: 0,
-                podiums: 0,
-                winRate: 0,
-                badges: [],
-                gameBreakdown: {},
-                recentHistory: [],
-                topOpponent: null,
-              }
+          <div className="space-y-4">
+            {filteredPlayers.length > 0 && (
+              <div className="grid grid-cols-1 gap-2.5">
+                {filteredPlayers.map(p => {
+                  const pStat = playerStatsMap.get(p.id) || playerStatsMap.get(normalizePlayerName(p.name))
+                  const fullPlayerData = pStat || {
+                    ...p,
+                    totalGames: 0,
+                    finishedGames: 0,
+                    wins: 0,
+                    podiums: 0,
+                    winRate: 0,
+                    badges: [],
+                    gameBreakdown: {},
+                    recentHistory: [],
+                    topOpponent: null,
+                  }
 
-              return (
-                <div
-                  key={p.id}
-                  onClick={() => setDetailPlayer(fullPlayerData)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl school-card cursor-pointer active:scale-[0.99] transition-all hover:border-stone-300 dark:hover:border-slate-700"
-                >
-                  <Avatar player={p} size="md" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm truncate">{p.name}</p>
-                    {pStat?.badges && pStat.badges.length > 0 ? (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.2 rounded border border-amber-200/80 dark:border-amber-800/60 truncate">
-                          <Award size={10} className="flex-shrink-0" />
-                          <span className="truncate">{pStat.badges[0].title}</span>
-                        </span>
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => setDetailPlayer(fullPlayerData)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl school-card cursor-pointer active:scale-[0.99] transition-all hover:border-stone-300 dark:hover:border-slate-700"
+                    >
+                      <Avatar player={p} size="md" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-sm truncate">{p.name}</p>
+                        {pStat?.badges && pStat.badges.length > 0 ? (
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.2 rounded border border-amber-200/80 dark:border-amber-800/60 truncate">
+                              <Award size={10} className="flex-shrink-0" />
+                              <span className="truncate">{pStat.badges[0].title}</span>
+                            </span>
+                          </div>
+                        ) : pStat?.totalGames > 0 ? (
+                          <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5 truncate">
+                            {pStat.wins} vict. · {pStat.winRate}% ({pStat.finishedGames} p.)
+                          </p>
+                        ) : (
+                          <p className="text-[11px] text-stone-400 dark:text-slate-500 mt-0.5">
+                            Nouvelle recrue
+                          </p>
+                        )}
                       </div>
-                    ) : pStat?.totalGames > 0 ? (
-                      <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5 truncate">
-                        {pStat.wins} vict. · {pStat.winRate}% ({pStat.finishedGames} p.)
-                      </p>
-                    ) : (
-                      <p className="text-[11px] text-stone-400 dark:text-slate-500 mt-0.5">
-                        Nouvelle recrue
-                      </p>
-                    )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditPlayer(p)
+                        }}
+                        className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+                        aria-label={`Modifier ${p.name}`}
+                        title={`Modifier ${p.name}`}
+                      >
+                        <Pencil size={15} className="text-stone-500 dark:text-slate-400" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          archivePlayer(p.id)
+                        }}
+                        className="p-2 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/30 text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer"
+                        aria-label={`Archiver ${p.name}`}
+                        title={`Archiver ${p.name}`}
+                      >
+                        <Archive size={15} />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Section Joueurs Archivés */}
+            {archivedPlayers.length > 0 && (
+              <div className="pt-3 border-t border-stone-200/90 dark:border-slate-800/90 pb-4">
+                <button
+                  type="button"
+                  onClick={() => setShowArchived(prev => !prev)}
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-stone-100/70 dark:bg-slate-800/40 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-600 dark:text-slate-400 transition-colors cursor-pointer select-none"
+                >
+                  <div className="flex items-center gap-2">
+                    <Archive size={15} className="text-amber-600 dark:text-amber-400" />
+                    <span className="text-xs font-bold font-serif-title">
+                      Joueurs archivés ({archivedPlayers.length})
+                    </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setEditPlayer(p)
-                    }}
-                    className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-                    aria-label={`Modifier ${p.name}`}
-                  >
-                    <Pencil size={15} className="text-stone-500 dark:text-slate-400" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setConfirmDelete(p.id)
-                    }}
-                    className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                    aria-label={`Supprimer ${p.name}`}
-                  >
-                    <Trash2 size={15} className="text-[#c83b3b]" />
-                  </button>
-                </div>
-              )
-            })}
+                  <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500">
+                    {showArchived ? 'Masquer' : 'Afficher'}
+                  </span>
+                </button>
+
+                {showArchived && (
+                  <div className="mt-2.5 space-y-2">
+                    <p className="text-[11px] text-stone-500 dark:text-slate-400 px-1 leading-relaxed">
+                      Ces joueurs ne sont plus proposés lors de la création d'une nouvelle partie. Leurs scores et statistiques restent intacts.
+                    </p>
+                    <div className="grid grid-cols-1 gap-2 mt-2">
+                      {filteredArchivedPlayers.map(p => {
+                        const pStat = playerStatsMap.get(p.id) || playerStatsMap.get(normalizePlayerName(p.name))
+                        const fullPlayerData = pStat || {
+                          ...p,
+                          totalGames: 0,
+                          finishedGames: 0,
+                          wins: 0,
+                          podiums: 0,
+                          winRate: 0,
+                          badges: [],
+                          gameBreakdown: {},
+                          recentHistory: [],
+                          topOpponent: null,
+                        }
+
+                        return (
+                          <div
+                            key={p.id}
+                            onClick={() => setDetailPlayer(fullPlayerData)}
+                            className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-dashed border-stone-300 dark:border-slate-700 bg-stone-50/60 dark:bg-slate-900/40 opacity-80 hover:opacity-100 transition-all cursor-pointer"
+                          >
+                            <Avatar player={p} size="sm" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <p className="font-bold text-xs truncate text-stone-800 dark:text-slate-200">{p.name}</p>
+                                <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-stone-200/80 dark:bg-slate-800 text-stone-600 dark:text-slate-400">
+                                  Archivé
+                                </span>
+                              </div>
+                              {pStat?.finishedGames > 0 ? (
+                                <p className="text-[10px] text-stone-500 dark:text-slate-400 mt-0.5 truncate">
+                                  {pStat.wins} vict. · {pStat.finishedGames} partie{pStat.finishedGames > 1 ? 's' : ''}
+                                </p>
+                              ) : (
+                                <p className="text-[10px] text-stone-400 dark:text-slate-500 mt-0.5">
+                                  0 partie
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Bouton Réactiver / Désarchiver */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                unarchivePlayer(p.id)
+                              }}
+                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer"
+                              title={`Réactiver ${p.name}`}
+                            >
+                              <ArchiveRestore size={13} />
+                              <span>Réactiver</span>
+                            </button>
+
+                            {/* Bouton Supprimer définitivement */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setConfirmDelete(p.id)
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-stone-400 hover:text-[#c83b3b] transition-colors cursor-pointer"
+                              title={`Supprimer définitivement ${p.name}`}
+                              aria-label={`Supprimer définitivement ${p.name}`}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -314,9 +442,9 @@ export function PlayersScreen() {
         open={!!confirmDelete}
         onClose={() => setConfirmDelete(null)}
         onConfirm={() => removePlayer(confirmDelete)}
-        title="Supprimer ce joueur ?"
-        message="Il sera retiré de votre bibliothèque (les parties archivées ne sont pas affectées)."
-        confirmLabel="Supprimer"
+        title="Supprimer définitivement ce joueur ?"
+        message="Il sera retiré de votre bibliothèque. Les parties déjà enregistrées conserveront leurs scores passés."
+        confirmLabel="Supprimer définitivement"
         danger
       />
       <PlayerDetailSheet

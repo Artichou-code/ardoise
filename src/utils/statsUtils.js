@@ -99,20 +99,21 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
   }).sort((a, b) => b.count - a.count)
 
   // 2. Statistiques par Joueur
-  // On crée une table d'association basée sur le nom normalisé
+  // On crée une table d'association basée sur l'identifiant du joueur (avec fallback rétrocompatible)
   const playerStatsMap = new Map()
 
   // Initialiser avec les joueurs enregistrés pour conserver leurs préférences d'avatar/couleur
   safeRegisteredPlayers.forEach(p => {
     if (!p) return
-    const key = normalizePlayerName(p.name)
+    const key = p.id || normalizePlayerName(p.name)
     if (!key) return
     playerStatsMap.set(key, {
       id: p.id,
       name: p.name,
       color: p.color,
       avatar: p.avatar,
-      registered: true,
+      registered: !p.archived,
+      archived: Boolean(p.archived),
       totalGames: 0,
       finishedGames: 0,
       activeGames: 0,
@@ -120,7 +121,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       podiums: 0,
       dourakLosses: 0,
       gameBreakdown: {}, // type -> { played, wins }
-      opponents: {}, // normalizedName -> { name, count, winsAgainst }
+      opponents: {}, // oppKey -> { id, name, count, winsAgainst }
       recentHistory: [], // { gameId, gameType, rank, isWinner, date }
     })
   })
@@ -143,17 +144,26 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
     gamePlayers.forEach(player => {
       if (!player) return
       const pName = typeof player === 'string' ? player : player.name
-      const key = normalizePlayerName(pName)
+      const pId = typeof player === 'object' && player.id ? player.id : null
+
+      // Clé d'association : ID strict en priorité
+      let key = pId
+      if (!key && pName) {
+        // Fallback pour les parties anciennes sans ID : associer par nom si existant
+        const matched = safeRegisteredPlayers.find(rp => normalizePlayerName(rp.name) === normalizePlayerName(pName))
+        key = matched ? matched.id : `legacy_${normalizePlayerName(pName)}`
+      }
       if (!key) return
 
       let stat = playerStatsMap.get(key)
       if (!stat) {
         stat = {
-          id: player.id || key,
+          id: pId || key,
           name: pName,
           color: player.color,
           avatar: player.avatar,
           registered: false,
+          archived: false,
           totalGames: 0,
           finishedGames: 0,
           activeGames: 0,
@@ -182,10 +192,10 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       if (isFinished) {
         stat.finishedGames += 1
 
-        const rankEntry = ranking.find(r => r.id === (player.id || key) || r.id === pName)
+        const rankEntry = ranking.find(r => (pId && r.id === pId) || r.id === key || r.id === pName)
         const rank = rankEntry ? rankEntry.rank : ranking.length
 
-        const isWinner = player.id === winnerId || pName === winnerId || rank === 1
+        const isWinner = (pId && winnerId === pId) || player.id === winnerId || pName === winnerId || rank === 1
         const isPodium = rank <= 3 && ranking.length >= 2
         const isDourakLoser = gType === GAMES.DOURAK && rankEntry && rankEntry.id === lastRankEntry?.id
 
@@ -204,12 +214,12 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         gamePlayers.forEach(opp => {
           if (!opp) return
           const oppName = typeof opp === 'string' ? opp : opp.name
-          const oppId = typeof opp === 'object' ? opp.id : null
-          if ((oppId && oppId === player.id) || normalizePlayerName(oppName) === key) return
-          const oppKey = normalizePlayerName(oppName)
-          if (!oppKey) return
+          const oppId = typeof opp === 'object' && opp.id ? opp.id : null
+          const oppKey = oppId || (oppName ? `legacy_${normalizePlayerName(oppName)}` : null)
+          if (!oppKey || oppKey === key) return
+
           if (!stat.opponents[oppKey]) {
-            stat.opponents[oppKey] = { name: oppName, count: 0, winsAgainst: 0 }
+            stat.opponents[oppKey] = { id: oppId, name: oppName, count: 0, winsAgainst: 0 }
           }
           stat.opponents[oppKey].count += 1
           if (isWinner) {
@@ -454,7 +464,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       })
     }
 
-    if (bestStrategist && p.name === bestStrategist.name && maxWinRate > 0) {
+    if (bestStrategist && (p.id ? p.id === bestStrategist.id : p.name === bestStrategist.name) && maxWinRate > 0) {
       p.badges.push({
         id: 'strategist',
         title: 'Meilleur stratège',
@@ -465,7 +475,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       })
     }
 
-    if (grandDourak && p.name === grandDourak.name && maxDourakLosses > 0) {
+    if (grandDourak && (p.id ? p.id === grandDourak.id : p.name === grandDourak.name) && maxDourakLosses > 0) {
       p.badges.push({
         id: 'dourak',
         title: 'Grand Dourak',
@@ -476,7 +486,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       })
     }
 
-    if (mostActive && p.name === mostActive.name && maxTotalGames >= 3) {
+    if (mostActive && (p.id ? p.id === mostActive.id : p.name === mostActive.name) && maxTotalGames >= 3) {
       p.badges.push({
         id: 'active',
         title: 'Fidèle au poste',
@@ -487,7 +497,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       })
     }
 
-    if (podiumKing && p.name === podiumKing.name && maxPodiums >= 2 && p.name !== bestStrategist?.name) {
+    if (podiumKing && (p.id ? p.id === podiumKing.id : p.name === podiumKing.name) && maxPodiums >= 2 && (p.id ? p.id !== bestStrategist?.id : p.name !== bestStrategist?.name)) {
       p.badges.push({
         id: 'podium',
         title: 'Roi du podium',
@@ -500,7 +510,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
 
     // Titres thématiques par jeu
     Object.entries(gameWinners).forEach(([type, info]) => {
-      if (info.player && p.name === info.player.name && info.wins >= 1) {
+      if (info.player && (p.id ? p.id === info.player.id : p.name === info.player.name) && info.wins >= 1) {
         p.badges.push({
           id: `master_${type}`,
           title: info.title,
@@ -537,10 +547,11 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
  * Récupère les statistiques détaillées d'un joueur individuel
  */
 export function getPlayerStats(games = [], player = null, registeredPlayers = []) {
-  if (!player || !player.name) return null
+  if (!player || (!player.id && !player.name)) return null
   const stats = computeStats(games, 'all', registeredPlayers)
-  const key = normalizePlayerName(player.name)
-  const found = stats.playersStats.find(p => normalizePlayerName(p.name) === key)
+  const targetId = player.id
+  const targetName = normalizePlayerName(player.name)
+  const found = stats.playersStats.find(p => (targetId && p.id === targetId) || normalizePlayerName(p.name) === targetName)
   if (found) return found
   return {
     id: player.id,

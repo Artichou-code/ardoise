@@ -24,6 +24,7 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
   const [importedResult, setImportedResult] = useState(null)
   const [selectedGameIds, setSelectedGameIds] = useState([])
   const [resolutions, setResolutions] = useState({}) // { [normalizedKey]: 'merge' | 'separate' }
+  const [customNames, setCustomNames] = useState({}) // { [normalizedKey]: string }
 
   useScrollLock(isOpen)
 
@@ -89,7 +90,7 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
   const handleImport = () => {
     if (gamesToImport.length === 0) return
     try {
-      const result = importGamesWithResolution(gamesToImport, resolutions)
+      const result = importGamesWithResolution(gamesToImport, resolutions, customNames)
       setImportedResult({
         gamesCount: gamesToImport.length,
         gamesAdded: result.stats?.gamesAdded || 0,
@@ -360,7 +361,7 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
                     Même prénom détecté dans votre carnet
                   </p>
                   <p className="text-[11px] text-stone-600 dark:text-slate-400 leading-snug mt-0.5">
-                    Confirmez s'il s'agit des mêmes joueurs pour fusionner leurs statistiques (l'avatar et la couleur importés seront conservés)&nbsp;:
+                    Confirmez s'il s'agit du même joueur ou d'une autre personne :
                   </p>
                 </div>
               </div>
@@ -380,9 +381,15 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
                             {c.name}
                           </span>
                         </div>
-                        <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                          Déjà présent dans votre carnet
-                        </span>
+                        {c.isArchived ? (
+                          <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/60">
+                            Archivé dans votre carnet
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-stone-400 dark:text-slate-500">
+                            Déjà présent dans votre carnet
+                          </span>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-1.5">
@@ -395,7 +402,7 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
                               : 'border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:bg-stone-50 dark:hover:bg-slate-800'
                           }`}
                         >
-                          Même joueur (Fusionner)
+                          {c.isArchived ? 'Même joueur (Réactiver)' : 'Même joueur (Fusionner)'}
                         </button>
                         <button
                           type="button"
@@ -406,9 +413,24 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
                               : 'border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:bg-stone-50 dark:hover:bg-slate-800'
                           }`}
                         >
-                          Autre ({c.name} 2)
+                          Autre personne
                         </button>
                       </div>
+
+                      {currentChoice === 'separate' && (
+                        <div className="pt-1">
+                          <label className="text-[10px] font-semibold text-stone-600 dark:text-slate-400 block mb-1">
+                            Enregistrer sous un prénom personnalisé :
+                          </label>
+                          <input
+                            type="text"
+                            value={customNames[c.key] ?? `${c.name} 2`}
+                            onChange={(e) => setCustomNames(prev => ({ ...prev, [c.key]: e.target.value }))}
+                            placeholder={`${c.name} (ex: ${c.name} J.)`}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 dark:border-slate-700 bg-stone-50 dark:bg-slate-800 text-xs font-semibold text-stone-900 dark:text-slate-100 placeholder-stone-400 focus:outline-none focus:border-[#c83b3b]"
+                          />
+                        </div>
+                      )}
                     </div>
                   )
                 })}
