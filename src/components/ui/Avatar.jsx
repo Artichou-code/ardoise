@@ -110,7 +110,7 @@ export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, on
         <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2">
           Choisir un avatar
         </p>
-        <div className="grid grid-cols-5 gap-2.5 place-items-center">
+        <div className="grid grid-cols-6 gap-2 sm:gap-2.5 place-items-center">
           {shuffledAvatars.map((src, idx) => {
             const isSelected = selectedAvatar === src
             return (
@@ -118,7 +118,7 @@ export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, on
                 key={src}
                 type="button"
                 onClick={() => onSelectAvatar(src)}
-                className={`relative w-11 h-11 rounded-full transition-transform active:scale-90 focus:outline-none ${
+                className={`relative w-10 h-10 sm:w-11 sm:h-11 rounded-full transition-transform active:scale-90 focus:outline-none ${
                   isSelected ? 'scale-105' : 'opacity-85 hover:opacity-100'
                 }`}
                 style={{

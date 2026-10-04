@@ -574,7 +574,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
               className={`p-2 rounded-full transition-all cursor-pointer ${
                 launchAsLiveTable
                   ? 'bg-[#c83b3b]/15 text-[#c83b3b] ring-1 ring-[#c83b3b]/40'
-                  : 'hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 hover:text-[#c83b3b]'
+                  : 'hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-600 dark:text-slate-300 hover:text-[#c83b3b]'
               }`}
               title={launchAsLiveTable ? "Mode Table en direct activé (cliquez pour désactiver)" : "Lancer sur une Table en direct (partager avec des amis)"}
               aria-label="Table en direct"
@@ -585,7 +585,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
               <button
                 type="button"
                 onClick={() => onOpenRules(gameType)}
-                className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 hover:text-[#c83b3b] transition-colors cursor-pointer"
+                className="p-2 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-600 dark:text-slate-300 hover:text-[#c83b3b] transition-colors cursor-pointer"
                 title="Consulter les règles"
                 aria-label="Règles"
               >

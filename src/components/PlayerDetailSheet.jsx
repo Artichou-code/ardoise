@@ -226,7 +226,7 @@ export function PlayerDetailSheet({ player, open, onClose }) {
                           {meta?.name || type}
                         </span>
                         {meta?.categoryBadge && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 font-medium">
                             {meta.categoryBadge}
                           </span>
                         )}
@@ -276,7 +276,7 @@ export function PlayerDetailSheet({ player, open, onClose }) {
                           ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
                           : (hist.rank || 99) <= 3
                           ? 'bg-stone-200 dark:bg-slate-800 text-stone-700 dark:text-slate-300'
-                          : 'bg-stone-100 dark:bg-slate-800/50 text-stone-500 dark:text-slate-400'
+                          : 'bg-stone-100 dark:bg-slate-800/80 text-stone-700 dark:text-slate-300'
                       }`}
                     >
                       {hist.rank === 1 ? '1er' : `${hist.rank || '-'}e`}

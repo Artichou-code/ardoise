@@ -58,7 +58,7 @@ export function LegalModal({ open, onClose, activeTab = 'mentions', onSelectTab 
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 transition-colors flex-shrink-0"
+              className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-600 dark:text-slate-300 transition-colors flex-shrink-0"
               aria-label="Fermer la fenêtre juridique"
             >
               <X size={18} />

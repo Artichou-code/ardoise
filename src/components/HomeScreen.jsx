@@ -448,7 +448,7 @@ export function HomeScreen() {
           <div className="flex items-center justify-between mb-2.5 gap-2">
             <div className="flex items-center gap-2 shrink-0">
               <span className="w-1.5 h-3.5 rounded-full bg-[#c83b3b]" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 whitespace-nowrap">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-slate-300 whitespace-nowrap">
                 Choisir un jeu
               </h2>
             </div>
@@ -464,7 +464,7 @@ export function HomeScreen() {
                     setIsSearchOpen(true)
                     setTimeout(() => searchInputRef.current?.focus(), 50)
                   }}
-                  className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800/90 hover:bg-stone-200/70 dark:hover:bg-slate-700/70 text-[11px] font-medium text-stone-500 dark:text-slate-400 border border-stone-200/90 dark:border-slate-700 transition-all cursor-pointer shadow-2xs group shrink-0"
+                  className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800/90 hover:bg-stone-200/70 dark:hover:bg-slate-700/70 text-[11px] font-medium text-stone-700 dark:text-slate-200 border border-stone-200/90 dark:border-slate-700 transition-all cursor-pointer shadow-2xs group shrink-0"
                   aria-label="Rechercher un jeu"
                   title="Cliquer pour rechercher un jeu"
                 >
@@ -537,9 +537,9 @@ export function HomeScreen() {
 
           {/* Note discrète et compacte si jeu non répertorié */}
           {isUniversalFallback && (
-            <div className="mb-2 px-2.5 py-1 rounded-lg bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/60 dark:border-slate-700/60 flex items-center justify-between gap-2 text-[11px] text-stone-500 dark:text-slate-400 animate-in fade-in duration-150">
+            <div className="mb-2 px-2.5 py-1 rounded-lg bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/60 dark:border-slate-700/60 flex items-center justify-between gap-2 text-[11px] text-stone-700 dark:text-slate-200 animate-in fade-in duration-150">
               <span className="truncate">
-                Non listé · <strong className="text-stone-700 dark:text-slate-200 font-semibold">Compteur Universel</strong> proposé
+                Non listé · <strong className="text-stone-900 dark:text-slate-100 font-semibold">Compteur Universel</strong> proposé
               </span>
               <button
                 type="button"
@@ -558,7 +558,7 @@ export function HomeScreen() {
           <div className="flex items-center gap-1.5 mb-2.5">
             {[
               { key: null, label: 'Tous', icon: null },
-              { key: 'classic', label: 'Cartes classiques', icon: <span className="text-[13px] leading-none">🂱</span> },
+              { key: 'classic', label: 'Cartes classiques', icon: <span className="text-[13px] leading-none" aria-hidden="true">🂱</span> },
               { key: 'dedicated', label: 'Jeu de société', icon: <Dices size={12} className="shrink-0" /> },
             ].map(({ key, label, icon }) => (
               <button
@@ -568,7 +568,7 @@ export function HomeScreen() {
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border whitespace-nowrap ${
                   deckFilter === key
                     ? 'bg-[#c83b3b] text-white border-[#c83b3b]'
-                    : 'bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400 border-stone-200 dark:border-slate-700 hover:border-[#c83b3b] hover:text-[#c83b3b]'
+                    : 'bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-200 border-stone-200 dark:border-slate-700 hover:border-[#c83b3b] hover:text-[#c83b3b]'
                 }`}
               >
                 {icon}{label}
@@ -607,7 +607,7 @@ export function HomeScreen() {
                       </button>
                     </div>
 
-                    <p className="text-xs text-stone-500 dark:text-slate-400 mt-1 leading-relaxed">
+                    <p className="text-xs text-stone-600 dark:text-slate-300 mt-1 leading-relaxed">
                       {formatTypography(meta.description)}
                     </p>
                   </div>
@@ -617,7 +617,7 @@ export function HomeScreen() {
                     <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300">
                       {meta.playersBadge}
                     </span>
-                    <span className="text-[11px] font-medium px-2 py-0.5 rounded border border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400">
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded border border-stone-200 dark:border-slate-700 text-stone-700 dark:text-slate-300">
                       {meta.categoryBadge}
                     </span>
                     {playCount > 0 && (

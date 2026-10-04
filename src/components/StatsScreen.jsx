@@ -653,7 +653,7 @@ export function StatsScreen() {
                               {item.name}
                             </span>
                             {item.categoryBadge && (
-                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400 flex-shrink-0">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 font-medium flex-shrink-0">
                                 {item.categoryBadge}
                               </span>
                             )}

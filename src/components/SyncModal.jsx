@@ -405,14 +405,14 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
 
               {/* Zone de restauration */}
               <div className="p-4 rounded-xl border-2 border-dashed border-stone-300 dark:border-slate-700 text-center space-y-2.5">
-                <div className="w-9 h-9 rounded-full bg-stone-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-stone-500 dark:text-slate-400">
+                <div className="w-9 h-9 rounded-full bg-stone-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-stone-700 dark:text-slate-300">
                   <Upload size={18} />
                 </div>
                 <div>
                   <span className="font-bold text-stone-800 dark:text-slate-200 block text-xs">
                     Restaurer une sauvegarde
                   </span>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5">
+                  <p className="text-[11px] text-stone-600 dark:text-slate-300 mt-0.5">
                     Sélectionnez un fichier pour réimporter vos parties.
                   </p>
                 </div>
