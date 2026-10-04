@@ -425,15 +425,19 @@ export function RamiEngine({ game, onFinish }) {
             {/* Sélecteur rapide de vainqueur */}
             <button
               type="button"
-              onClick={() => setWinnerId(editingPlayer.id)}
-              className={`w-full p-2 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer select-none active:scale-[0.99] text-xs ${
+              onClick={() => setWinnerId(prev => prev === editingPlayer.id ? null : editingPlayer.id)}
+              className={`w-full py-2 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer select-none active:scale-[0.99] text-xs whitespace-nowrap overflow-hidden ${
                 winnerId === editingPlayer.id
-                  ? 'border-emerald-600/60 bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-600/30 font-semibold'
+                  ? 'border-emerald-600/60 bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-600/30 font-semibold shadow-2xs'
                   : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-emerald-500/40'
               }`}
             >
-              <span>{winnerId === editingPlayer.id ? '✓ A posé toutes ses cartes (0 pt pénalité)' : 'Désigner comme vainqueur de la manche'}</span>
-              <span className="text-[10px] opacity-75">{winnerId === editingPlayer.id ? '0 pt' : 'Cliquer pour définir'}</span>
+              <span className={`truncate font-semibold ${winnerId === editingPlayer.id ? 'text-emerald-700 dark:text-emerald-300' : ''}`}>
+                {winnerId === editingPlayer.id ? '✓ Vainqueur de la manche' : 'Vainqueur de la manche'}
+              </span>
+              <span className={`text-[11px] shrink-0 ${winnerId === editingPlayer.id ? 'font-bold text-emerald-700 dark:text-emerald-300' : 'text-stone-400 dark:text-slate-500'}`}>
+                0 pt
+              </span>
             </button>
 
             {isRamiSec && (
