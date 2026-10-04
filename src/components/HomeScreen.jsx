@@ -468,12 +468,23 @@ export function HomeScreen() {
                   aria-label="Rechercher un jeu"
                   title="Cliquer pour rechercher un jeu"
                 >
-                  <Search size={11} className="text-stone-400 group-hover:text-[#c83b3b] dark:group-hover:text-stone-300 transition-colors" />
+                  <Search size={11} className="text-[#c83b3b] transition-colors shrink-0" />
                   <span>{totalAvailableCount} jeux disponibles</span>
                 </button>
               ) : (
-                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-[#c83b3b]/70 dark:border-[#c83b3b]/70 ring-2 ring-[#c83b3b]/15 shadow-2xs transition-all w-full animate-in fade-in duration-150">
-                  <Search size={11} className="text-[#c83b3b] shrink-0" />
+                <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-900 border shadow-2xs transition-all w-full animate-in fade-in duration-150 ${
+                  searchQuery.trim().length > 0 && !isUniversalFallback
+                    ? 'border-emerald-500/70 dark:border-emerald-500/70 ring-2 ring-emerald-500/15'
+                    : 'border-[#c83b3b]/70 dark:border-[#c83b3b]/70 ring-2 ring-[#c83b3b]/15'
+                }`}>
+                  <Search
+                    size={11}
+                    className={`shrink-0 transition-colors ${
+                      searchQuery.trim().length > 0 && !isUniversalFallback
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-[#c83b3b]'
+                    }`}
+                  />
                   <input
                     ref={searchInputRef}
                     type="text"
