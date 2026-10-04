@@ -300,16 +300,8 @@ export function GameScreen() {
               {/* Leader actuel (individuel ou équipe) et son score */}
               <div className="flex items-center gap-1.5 min-w-0 text-left overflow-hidden">
                 {(() => {
-                  if (!hasStarted) {
-                    return (
-                      <span className="text-xs font-semibold text-stone-500 dark:text-slate-400 tabular-nums shrink-0 whitespace-nowrap">
-                        0 pt
-                      </span>
-                    )
-                  }
-
                   const isBelote4 = activeGame.type === GAMES.BELOTE && activeGame.players.length === 4
-                  const hasManyPlayers = ranking.length > 5
+                  const hasManyPlayers = ranking.length > 6
 
                   if (isBelote4) {
                     const pNous = [activeGame.players[0], activeGame.players[1]].filter(Boolean)
@@ -330,16 +322,18 @@ export function GameScreen() {
                     )
                   }
 
-                  const leadPlayer = ranking[0] ? activeGame.players.find(p => p.id === ranking[0].id) : null
+                  const leadPlayer = ranking[0] ? activeGame.players.find(p => p.id === ranking[0].id) : activeGame.players[0]
+                  const leadScore = hasStarted ? (ranking[0]?.score ?? 0) : 0
+
                   return (
                     <>
                       {!hasManyPlayers && leadPlayer?.name && (
-                        <span className="text-xs font-bold text-stone-800 dark:text-slate-200 truncate max-w-[85px] sm:max-w-[150px]">
+                        <span className="text-xs font-bold text-stone-800 dark:text-slate-200 truncate max-w-[95px] sm:max-w-[160px]">
                           {leadPlayer.name}
                         </span>
                       )}
                       <span className="text-xs font-black text-[#c83b3b] tabular-nums shrink-0 whitespace-nowrap">
-                        {ranking[0]?.score ?? 0} pts
+                        {leadScore} pt{Math.abs(leadScore) > 1 ? 's' : ''}
                       </span>
                     </>
                   )

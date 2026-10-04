@@ -576,7 +576,7 @@ export function HomeScreen() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 gap-2.5">
             {sortedGames.map(meta => {
               const playCount = gamePlayCounts[meta.id] || 0
               return (

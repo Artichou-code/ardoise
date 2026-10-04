@@ -286,18 +286,6 @@ export function StatsScreen() {
             </div>
             <button
               type="button"
-              onClick={() => {
-                setIsSearchOpen(true)
-                setTimeout(() => searchInputRef.current?.focus(), 50)
-              }}
-              className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:border-[#c83b3b] text-[#c83b3b] transition-colors cursor-pointer"
-              title="Rechercher un jeu ou un joueur"
-              aria-label="Rechercher"
-            >
-              <Search size={18} />
-            </button>
-            <button
-              type="button"
               onClick={() => setShowSyncModal(true)}
               className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               title="Sauvegarde & Synchronisation"

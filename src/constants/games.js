@@ -1203,9 +1203,9 @@ export const BARBU_CONTRACTS = [
   { id: 'domino', label: 'Le Domino', short: 'Domino', icon: 'Trophy', totalPoints: 65, rule: '1er +45, 2e +20, 3e +5, 4e -5 pts' },
 ]
 
-// Avatars illustrés (10 avatars complétant la grille 5x2)
+// Avatars illustrés (16 avatars cohérents : 10 classiques + 6 thématiques)
 export const PRESET_AVATARS = Array.from(
-  { length: 10 },
+  { length: 16 },
   (_, i) => `/avatar/Fichier ${i + 1}.png`
 )
 

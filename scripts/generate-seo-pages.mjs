@@ -273,7 +273,7 @@ function renderAppShellHtml(seoHiddenArticlesHtml) {
                 <span>${Object.keys(GAME_META).length} jeux disponibles</span>
               </button>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div class="grid grid-cols-1 gap-2.5">
               ${gameCardsHtml}
             </div>
           </section>

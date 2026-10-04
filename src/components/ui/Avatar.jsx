@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { AVATAR_COLORS, AVATAR_COLOR_NAMES, PRESET_AVATARS } from '../../constants/games'
 import { getPlayerInitial, getPlayerAvatarUrl } from '../../utils/gameUtils'
 import { Check, Crown } from 'lucide-react'
@@ -92,15 +93,25 @@ export function Avatar({
  * Sélecteur compact des 9 avatars ronds + pastilles de couleur.
  */
 export function AvatarPicker({ selectedAvatar, onSelectAvatar, selectedColor, onSelectColor }) {
+  // Mélange aléatoire des avatars à l'ouverture pour ne pas avoir de place dédiée fixe
+  const shuffledAvatars = useMemo(() => {
+    const list = [...PRESET_AVATARS]
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[list[i], list[j]] = [list[j], list[i]]
+    }
+    return list
+  }, [])
+
   return (
     <div className="space-y-3">
-      {/* 9 avatars ronds avec anneau et espace de 2px */}
+      {/* Avatars ronds avec anneau et espace de 2px */}
       <div>
         <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-2">
           Choisir un avatar
         </p>
         <div className="grid grid-cols-5 gap-2.5 place-items-center">
-          {PRESET_AVATARS.map((src, idx) => {
+          {shuffledAvatars.map((src, idx) => {
             const isSelected = selectedAvatar === src
             return (
               <button

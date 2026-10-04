@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  --breakpoint-sm: 99999px;
+  --breakpoint-md: 99999px;
+  --breakpoint-lg: 99999px;
+  --breakpoint-xl: 99999px;
+  --breakpoint-2xl: 99999px;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
@@ -295,5 +303,104 @@ html.dark input, html.dark button, html.dark select, html.dark textarea {
 .animate-round-slide-in {
   animation: roundSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ==========================================================================
+   Vue Maquette Mobile sur Desktop (≥ 1024px)
+   ========================================================================== */
+@media (min-width: 1024px) {
+  html, body {
+    height: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* Fond sombre Ardoise permanent sur grand écran */
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #121316 !important;
+    background-image:
+      radial-gradient(circle at 50% 28%, rgba(200, 59, 59, 0.09), transparent 60%),
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px) !important;
+    background-size: 100% 100%, 24px 24px, 24px 24px !important;
+    position: relative;
+  }
+
+  /* Châssis smartphone moderne sans encoche */
+  #root {
+    width: 412px;
+    height: 870px;
+    max-height: calc(100vh - 40px);
+    border-radius: 46px;
+    position: relative;
+    overflow: hidden;
+    transform: translate3d(0, 0, 0);
+    box-shadow:
+      0 0 0 11px #1d2025,
+      0 0 0 13px #2d3139,
+      0 30px 80px -15px rgba(0, 0, 0, 0.85),
+      0 0 70px rgba(0, 0, 0, 0.4);
+    background-color: var(--bg-page);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Barre Home iOS / Android simulée en bas */
+  #root::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 4.5px;
+    background-color: rgba(120, 113, 108, 0.35);
+    border-radius: 9999px;
+    z-index: 10000;
+    pointer-events: none;
+    transition: background-color 0.2s ease;
+  }
+
+  html.dark #root::after {
+    background-color: rgba(241, 245, 249, 0.25);
+  }
+
+  /* Confinement des portails (modales, tiroir burger, bottom sheets) dans le châssis mobile */
+  body > div[role="dialog"],
+  body > div.drawer-overlay,
+  body > .fixed {
+    position: fixed;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 412px !important;
+    height: 870px !important;
+    max-height: calc(100vh - 40px) !important;
+    border-radius: 46px !important;
+    overflow: hidden !important;
+    pointer-events: none;
+  }
+
+  body > div[role="dialog"] *,
+  body > div.drawer-overlay *,
+  body > .fixed * {
+    pointer-events: auto;
+  }
+
+  /* Ajustement des backdrop pour s'adapter au châssis */
+  body > div[role="dialog"] > div[aria-hidden="true"],
+  body > div.drawer-overlay > .drawer-backdrop {
+    border-radius: 46px !important;
+  }
+
+  /* Espacement naturel et aéré pour l'en-tête (sans encoche) */
+  .header-safe {
+    padding-top: calc(1.25rem + env(safe-area-inset-top, 0px)) !important;
+  }
+}
+
 
 
