@@ -552,7 +552,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
               <div className="flex items-center gap-2 min-w-0">
                 <Radio size={14} className="text-[#c83b3b] shrink-0 animate-pulse" />
                 <span className="text-[11px] font-semibold text-stone-700 dark:text-slate-300 truncate">
-                  Cette partie créera une <strong>Table en direct</strong> avec QR code.
+                  Créera une <strong>Table en direct</strong> avec QR code.
                 </span>
               </div>
               <button
