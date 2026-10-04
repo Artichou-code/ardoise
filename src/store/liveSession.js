@@ -156,6 +156,14 @@ export async function joinLiveSession(code, playerName = '') {
     playerName: cleanPlayer || undefined,
   }
   saveActiveSession(localSession)
+
+  // Tracking silencieux — compte chaque join de table live
+  fetch('/api/stats/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event_type: 'session_join', session_code: cleanCode }),
+  }).catch(() => {})
+
   return {
     ...sessionData,
     importStats,

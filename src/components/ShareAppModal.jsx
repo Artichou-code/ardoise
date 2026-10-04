@@ -1,14 +1,33 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { X, Share2, Copy, Check } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { AppLogo } from './ui/AppLogo'
+import { StatsModal } from './StatsModal'
 
-const APP_SHARE_URL = 'https://ardoise.art-crea.fr/'
+const APP_SHARE_URL = 'https://ardoise.art-crea.fr/qr'
+const APP_HOME_URL = 'https://ardoise.art-crea.fr/'
 
 export function ShareAppModal({ isOpen, onClose }) {
   const [copied, setCopied] = useState(false)
+  const [showStats, setShowStats] = useState(false)
+  const tapCountRef = useRef(0)
+  const tapTimerRef = useRef(null)
+
+  const handleQrTap = useCallback(() => {
+    tapCountRef.current += 1
+    if (tapTimerRef.current) clearTimeout(tapTimerRef.current)
+    if (tapCountRef.current >= 5) {
+      tapCountRef.current = 0
+      setShowStats(true)
+      return
+    }
+    tapTimerRef.current = setTimeout(() => {
+      tapCountRef.current = 0
+    }, 2000)
+  }, [])
+
 
   useScrollLock(isOpen)
 
@@ -23,7 +42,7 @@ export function ShareAppModal({ isOpen, onClose }) {
   }, [isOpen, onClose])
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(APP_SHARE_URL)
+    navigator.clipboard.writeText(APP_HOME_URL)
     setCopied(true)
     setTimeout(() => setCopied(false), 2500)
   }
@@ -34,7 +53,7 @@ export function ShareAppModal({ isOpen, onClose }) {
         // Partager uniquement l'URL permet à WhatsApp, iMessage, Telegram et Discord
         // de générer automatiquement la carte d'aperçu Open Graph (image + titre + description).
         await navigator.share({
-          url: APP_SHARE_URL,
+          url: APP_HOME_URL,
         })
       } catch {
         // Annulé par l'utilisateur
@@ -44,9 +63,11 @@ export function ShareAppModal({ isOpen, onClose }) {
     }
   }
 
-  if (!isOpen || typeof document === 'undefined') return null
+  // StatsModal peut être affiché même si la share modal vient de se fermer
+  if (!isOpen && !showStats) return null
+  if (typeof document === 'undefined') return null
 
-  return createPortal(
+  const sharePortal = isOpen ? createPortal(
     <div
       className="fixed inset-0 z-[1050] flex items-center justify-center p-3 sm:p-5"
       role="dialog"
@@ -91,8 +112,12 @@ export function ShareAppModal({ isOpen, onClose }) {
 
         {/* Corps */}
         <div className="p-5 flex flex-col items-center text-center space-y-4">
-          {/* QR Code de l'application */}
-          <div className="p-3.5 bg-white rounded-2xl shadow-md border border-stone-200 inline-block">
+          {/* QR Code de l'application — 5 taps rapides → dashboard stats */}
+          <div
+            className="p-3.5 bg-white rounded-2xl shadow-md border border-stone-200 inline-block cursor-pointer select-none"
+            onClick={handleQrTap}
+            title="QR code"
+          >
             <QRCodeSVG
               value={APP_SHARE_URL}
               size={190}
@@ -144,5 +169,12 @@ export function ShareAppModal({ isOpen, onClose }) {
       </div>
     </div>,
     document.body
+  ) : null
+
+  return (
+    <>
+      {sharePortal}
+      <StatsModal isOpen={showStats} onClose={() => setShowStats(false)} />
+    </>
   )
 }
