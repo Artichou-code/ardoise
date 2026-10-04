@@ -484,7 +484,7 @@ export function HomeScreen() {
                         setIsSearchOpen(false)
                       }
                     }}
-                    placeholder={`${totalAvailableCount} jeux dispo...`}
+                    placeholder={`${totalAvailableCount} jeux disponibles`}
                     className="w-full bg-transparent text-[11px] font-medium text-stone-800 dark:text-slate-200 placeholder:text-stone-400 dark:placeholder:text-slate-500 outline-none min-w-0"
                     onKeyDown={(e) => {
                       if (e.key === 'Escape') {
