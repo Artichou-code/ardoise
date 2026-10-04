@@ -24,6 +24,7 @@ import { RamiEngine } from './engines/RamiEngine'
 import { YanivEngine } from './engines/YanivEngine'
 import { BarbuEngine } from './engines/BarbuEngine'
 import { UniverselEngine } from './engines/UniverselEngine'
+import { UnoEngine } from './engines/UnoEngine'
 
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
 
@@ -43,6 +44,7 @@ const ENGINE_MAP = {
   [GAMES.YANIV]: YanivEngine,
   [GAMES.BARBU]: BarbuEngine,
   [GAMES.UNIVERSEL]: UniverselEngine,
+  [GAMES.UNO]: UnoEngine,
 }
 
 function AnimatedRoundIndicator({ roundNumber }) {
@@ -102,6 +104,19 @@ export function GameScreen() {
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
   const [isCreatingLive, setIsCreatingLive] = useState(false)
+  const [isScoresCollapsed, setIsScoresCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('ardoise_scoreboard_collapsed') === 'true'
+    } catch {
+      return false
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('ardoise_scoreboard_collapsed', String(isScoresCollapsed))
+    } catch {}
+  }, [isScoresCollapsed])
   const prevRoundsLengthRef = useRef(activeGame?.rounds?.length ?? 0)
 
   useEffect(() => {
@@ -155,8 +170,13 @@ export function GameScreen() {
 
   const meta = GAME_META[activeGame.type]
   const scoreDir = activeGame.config?.scoreDir || meta?.scoreDir || 'high'
-  const ranking = getRanking(activeGame.scores, scoreDir === 'low' || scoreDir === 'low_limit' ? 'low' : 'high')
-  const leaderId = ranking[0]?.id
+  const ranking = getRanking(
+    activeGame.scores,
+    scoreDir === 'low' || scoreDir === 'low_limit' ? 'low' : 'high',
+    activeGame
+  )
+  const hasStarted = (activeGame.rounds?.length ?? 0) > 0
+  const leaderId = hasStarted ? ranking[0]?.id : null
 
   const Engine = ENGINE_MAP[activeGame.type] || UniverselEngine
 
@@ -240,15 +260,116 @@ export function GameScreen() {
 
       {/* Tableau des scores */}
       <div className="flex-shrink-0 px-3 sm:px-4 pt-1.5 pb-1">
-        {activeGame.type === GAMES.BELOTE && activeGame.players.length === 4 ? (
+        {isScoresCollapsed ? (
+          <button
+            type="button"
+            onClick={() => setIsScoresCollapsed(false)}
+            className="w-full flex items-center justify-between gap-1.5 px-3 pt-2.5 pb-1.5 rounded-xl school-card border border-stone-200/90 dark:border-slate-800 hover:border-[#c83b3b]/40 transition-all cursor-pointer group active:scale-[0.99] select-none shadow-2xs"
+            title="Afficher les scores de tous les joueurs"
+            aria-label="Afficher les scores"
+          >
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              {/* Pile d'avatars superposés, le premier avec la couronne */}
+              <div
+                className={`flex items-center ${
+                  ranking.length > 6 ? '-space-x-3' : ranking.length > 4 ? '-space-x-2.5' : '-space-x-2'
+                } shrink-0 pl-1 pt-1 pb-0.5`}
+              >
+                {ranking.map(({ id, rank }, idx) => {
+                  const p = activeGame.players.find(pl => pl.id === id)
+                  if (!p) return null
+                  const isLeader = hasStarted && rank === 1
+                  return (
+                    <div
+                      key={id}
+                      className="relative rounded-full ring-2 ring-white dark:ring-slate-900 transition-transform group-hover:scale-105"
+                      style={{ zIndex: ranking.length - idx }}
+                    >
+                      <Avatar
+                        player={p}
+                        size="xs"
+                        leader={isLeader}
+                        crown={hasStarted && idx === 0}
+                        crownClassName="absolute -top-2 left-0.5 -rotate-12 origin-bottom text-amber-500 fill-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] z-30 pointer-events-none"
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Leader actuel (individuel ou équipe) et son score */}
+              <div className="flex items-center gap-1.5 min-w-0 text-left overflow-hidden">
+                {(() => {
+                  if (!hasStarted) {
+                    return (
+                      <span className="text-xs font-semibold text-stone-500 dark:text-slate-400 tabular-nums shrink-0 whitespace-nowrap">
+                        0 pt
+                      </span>
+                    )
+                  }
+
+                  const isBelote4 = activeGame.type === GAMES.BELOTE && activeGame.players.length === 4
+                  const hasManyPlayers = ranking.length > 5
+
+                  if (isBelote4) {
+                    const pNous = [activeGame.players[0], activeGame.players[1]].filter(Boolean)
+                    const pEux = [activeGame.players[2], activeGame.players[3]].filter(Boolean)
+                    const scoreNous = activeGame.scores[pNous[0]?.id] || 0
+                    const scoreEux = activeGame.scores[pEux[0]?.id] || 0
+                    const leadTeamPlayers = scoreNous >= scoreEux ? pNous : pEux
+                    const leadScore = scoreNous >= scoreEux ? scoreNous : scoreEux
+                    return (
+                      <>
+                        <span className="text-xs font-bold text-stone-800 dark:text-slate-200 truncate max-w-[110px] sm:max-w-[180px]">
+                          {formatTeamNames(leadTeamPlayers)}
+                        </span>
+                        <span className="text-xs font-black text-[#c83b3b] tabular-nums shrink-0 whitespace-nowrap">
+                          {leadScore} pts
+                        </span>
+                      </>
+                    )
+                  }
+
+                  const leadPlayer = ranking[0] ? activeGame.players.find(p => p.id === ranking[0].id) : null
+                  return (
+                    <>
+                      {!hasManyPlayers && leadPlayer?.name && (
+                        <span className="text-xs font-bold text-stone-800 dark:text-slate-200 truncate max-w-[85px] sm:max-w-[150px]">
+                          {leadPlayer.name}
+                        </span>
+                      )}
+                      <span className="text-xs font-black text-[#c83b3b] tabular-nums shrink-0 whitespace-nowrap">
+                        {ranking[0]?.score ?? 0} pts
+                      </span>
+                    </>
+                  )
+                })()}
+              </div>
+            </div>
+
+            {/* Indicateur de déploiement */}
+            <div className="flex items-center gap-1 text-[11px] font-semibold text-stone-400 dark:text-slate-500 group-hover:text-[#c83b3b] transition-colors shrink-0 whitespace-nowrap pl-1">
+              <span>Scores</span>
+              <ChevronDown size={14} className="transition-transform group-hover:translate-y-0.5" />
+            </div>
+          </button>
+        ) : (
+          <div className="relative group">
+            {/* Contenu cliquable pour replier la section */}
+            <div
+              onClick={() => setIsScoresCollapsed(true)}
+              className="cursor-pointer transition-opacity active:opacity-90"
+              title="Cliquer sur la section pour masquer les scores"
+            >
+              {activeGame.type === GAMES.BELOTE && activeGame.players.length === 4 ? (
           <div className="grid grid-cols-2 gap-2">
             {(() => {
               const pNous = [activeGame.players[0], activeGame.players[1]].filter(Boolean)
               const pEux = [activeGame.players[2], activeGame.players[3]].filter(Boolean)
               const scoreNous = activeGame.scores[pNous[0]?.id] || 0
               const scoreEux = activeGame.scores[pEux[0]?.id] || 0
-              const isNousLeader = scoreNous >= scoreEux
-              const isEuxLeader = scoreEux >= scoreNous
+              const isNousLeader = hasStarted && scoreNous > scoreEux
+              const isEuxLeader = hasStarted && scoreEux > scoreNous
               const isTie = scoreNous === scoreEux
 
               const teams = [
@@ -258,7 +379,7 @@ export function GameScreen() {
                   players: pNous,
                   score: scoreNous,
                   isLeader: isNousLeader,
-                  rank: scoreNous > scoreEux ? 1 : isTie ? 1 : 2,
+                  rank: !hasStarted ? null : (scoreNous > scoreEux ? 1 : isTie ? 1 : 2),
                 },
                 {
                   id: 'eux',
@@ -266,7 +387,7 @@ export function GameScreen() {
                   players: pEux,
                   score: scoreEux,
                   isLeader: isEuxLeader,
-                  rank: scoreEux > scoreNous ? 1 : isTie ? 1 : 2,
+                  rank: !hasStarted ? null : (scoreEux > scoreNous ? 1 : isTie ? 1 : 2),
                 },
               ]
 
@@ -289,7 +410,7 @@ export function GameScreen() {
                               player={p}
                               size="sm-compact"
                               leader={t.isLeader}
-                              crown={pIdx === 0 && (t.isLeader || t.rank === 1)}
+                              crown={hasStarted && pIdx === 0 && (t.isLeader || t.rank === 1)}
                               crownClassName="absolute -top-2.5 left-0.5 -rotate-14 origin-bottom text-amber-500 fill-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] z-20 pointer-events-none"
                             />
                           </div>
@@ -297,7 +418,7 @@ export function GameScreen() {
                       </div>
 
                       {/* Pastille 2e si non-leader, positionnée sur le 1er avatar */}
-                      {t.rank > 1 && !t.isLeader && (
+                      {hasStarted && t.rank > 1 && !t.isLeader && (
                         <span
                           className="absolute top-0.5 -left-2 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-20 pointer-events-none select-none"
                         >
@@ -336,26 +457,24 @@ export function GameScreen() {
           (() => {
             const count = activeGame.players.length
 
-            // Détermination de la grille : 1 ligne pour 2-3 joueurs, 2 lignes au-delà (4 joueurs = 2x2, 6 joueurs = 2x3)
+            // Détermination de la grille : max 3 colonnes sur mobile pour que les noms restent lisibles !
             const gridClass =
               count <= 2 ? 'grid grid-cols-2 gap-1.5' :
               count === 3 ? 'grid grid-cols-3 gap-1' :
               count === 4 ? 'grid grid-cols-2 gap-1.5' :
               count === 5 ? 'grid grid-cols-6 gap-1' :
               count === 6 ? 'grid grid-cols-3 gap-1' :
-              count === 7 ? 'grid grid-cols-12 gap-1' :
-              'grid grid-cols-4 gap-1'
+              'grid grid-cols-3 sm:grid-cols-4 gap-1'
 
             return (
               <div className={gridClass}>
                 {ranking.map(({ id, score, rank }, idx) => {
                   const player = activeGame.players.find(p => p.id === id)
                   if (!player) return null
-                  const isLeader = id === leaderId
+                  const isLeader = hasStarted && id === leaderId
 
                   const colSpan =
-                    count === 5 ? (idx < 3 ? 'col-span-2' : 'col-span-3') :
-                    count === 7 ? (idx < 4 ? 'col-span-3' : 'col-span-4') : ''
+                    count === 5 ? (idx < 3 ? 'col-span-2' : 'col-span-3') : ''
 
                   // Cartes larges (50% de largeur) : 2 joueurs, 4 joueurs (grille 2x2) ou 2e ligne de 5 joueurs
                   const isCardWide = count <= 2 || count === 4 || (count === 5 && idx >= 3)
@@ -363,59 +482,107 @@ export function GameScreen() {
                   return (
                     <div
                       key={id}
-                      className={`relative flex items-center justify-between rounded-xl ${
+                      className={`relative flex ${
+                        isCardWide ? 'items-center justify-between' : 'flex-col justify-between'
+                      } rounded-xl ${
                         isCardWide ? (count <= 2 ? 'px-3 py-2' : 'px-3 py-1.5') : 'px-2 py-1.5'
-                      } transition-all min-h-[48px] ${colSpan} ${
+                      } transition-all min-h-[46px] ${colSpan} ${
                         isLeader
                           ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
                           : 'school-card'
                       }`}
                     >
-                      {/* Zone gauche : Avatar centré par rapport au nom */}
-                      <div className={`${
-                        isCardWide ? 'flex-1' : 'flex-1 pr-1'
-                      } flex flex-col items-center justify-center min-w-0`}>
-                        <div className="relative inline-flex items-center justify-center">
-                          <Avatar
-                            player={player}
-                            size={count <= 2 ? 'sm-compact' : 'xs'}
-                            leader={isLeader}
-                            crown={isLeader || rank === 1}
-                          />
+                      {isCardWide ? (
+                        <>
+                          {/* Zone gauche : Avatar centré par rapport au nom */}
+                          <div className="flex-1 flex flex-col items-center justify-center min-w-0">
+                            <div className="relative inline-flex items-center justify-center">
+                              <Avatar
+                                player={player}
+                                size={count <= 2 ? 'sm-compact' : 'xs'}
+                                leader={isLeader}
+                                crown={hasStarted && (isLeader || rank === 1)}
+                              />
 
-                          {/* Pastille de rang 2e, 3e, etc. (décalée de 2-3px vers la gauche pour dégager l'avatar) */}
-                          {rank > 1 && (
-                            <span
-                              className="absolute top-0.5 -left-2.5 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-10 pointer-events-none select-none"
-                            >
-                              {rank}e
+                              {/* Pastille de rang 2e, 3e, etc. */}
+                              {hasStarted && rank > 1 && (
+                                <span className="absolute top-0.5 -left-2.5 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-10 pointer-events-none select-none">
+                                  {rank}e
+                                </span>
+                              )}
+                            </div>
+
+                            <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center leading-tight mt-0.5 text-stone-900 dark:text-slate-100 block">
+                              {player.name}
                             </span>
-                          )}
-                        </div>
+                          </div>
 
-                        <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center leading-tight mt-0.5 text-stone-900 dark:text-slate-100 block">
-                          {player.name}
-                        </span>
-                      </div>
+                          {/* Zone droite restante : Score centré */}
+                          <div className="flex-1 min-w-0 flex items-center justify-center">
+                            <span className={`font-black tabular-nums leading-none ${
+                              count <= 2 ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'
+                            } ${
+                              isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
+                            }`}>
+                              {score}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {/* Ligne 1 : Avatar à gauche + Score à droite */}
+                          <div className="flex items-center justify-between w-full">
+                            <div className="relative inline-flex items-center">
+                              <Avatar
+                                player={player}
+                                size="xs"
+                                leader={isLeader}
+                                crown={hasStarted && (isLeader || rank === 1)}
+                              />
+                              {hasStarted && rank > 1 && (
+                                <span className="absolute top-0.5 -left-2 px-1 min-w-[14px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-10 pointer-events-none select-none">
+                                  {rank}e
+                                </span>
+                              )}
+                            </div>
+                            <span className={`font-black tabular-nums leading-none text-base sm:text-lg ${
+                              isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
+                            }`}>
+                              {score}
+                            </span>
+                          </div>
 
-                      {/* Zone droite restante : Score centré et équilibré */}
-                      <div className={`${
-                        isCardWide ? 'flex-1 min-w-0' : 'w-8 sm:w-9 shrink-0'
-                      } flex items-center justify-center`}>
-                        <span className={`font-black tabular-nums leading-none ${
-                          count <= 2 ? 'text-2xl sm:text-3xl' : (count === 4 ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl')
-                        } ${
-                          isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
-                        }`}>
-                          {score}
-                        </span>
-                      </div>
+                          {/* Ligne 2 : Nom du joueur sur TOUTE la largeur de la carte */}
+                          <span className="text-[10px] sm:text-[11px] font-bold truncate w-full block text-left leading-tight mt-1 text-stone-900 dark:text-slate-100">
+                            {player.name}
+                          </span>
+                        </>
+                      )}
                     </div>
                   )
                 })}
               </div>
             )
           })()
+        )}
+            </div>
+
+            {/* Bouton indicateur de repli discret sous la grille */}
+            <div className="flex justify-center -mt-0.5 pt-0.5">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsScoresCollapsed(true)
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium text-stone-400 hover:text-stone-700 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none"
+                title="Masquer les scores pour gagner de la place"
+              >
+                <span>Masquer les scores</span>
+                <ChevronUp size={11} />
+              </button>
+            </div>
+          </div>
         )}
       </div>
 

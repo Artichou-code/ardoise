@@ -130,6 +130,14 @@ export const SEO_PAGES = [
       'Ardoise de score universelle gratuite et sans pub pour tous vos jeux de cartes et de société (Uno, Rami, Scrabble, Mölkky, Flip 7) de 2 à 12 joueurs.',
     h1: 'Compteur de Points Universel — Ardoise de Score Gratuite pour Tous vos Jeux',
   },
+  {
+    slug: 'uno',
+    gameId: GAMES.UNO,
+    title: 'Compteur de Points UNO en Ligne Gratuit & Règles Officielles — Ardoise',
+    description:
+      'Feuille de score et règles officielles du UNO : comptage des points des cartes restantes (Action 20 pts, Noires 50 pts), seuil officiel à 500 points ou règle maison par élimination.',
+    h1: 'UNO — Compteur de Points Gratuit & Règles Officielles (Seuil 500 pts)',
+  },
 ]
 
 function escapeHtml(str = '') {

@@ -28,7 +28,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
 
   const ranking = useMemo(() => {
     if (!game) return []
-    return getRanking(game.scores || {}, scoreDir)
+    return getRanking(game.scores || {}, scoreDir, game)
   }, [game, scoreDir])
 
   const winner = useMemo(() => {

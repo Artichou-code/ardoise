@@ -16,6 +16,7 @@ export const GAMES = {
   YANIV: 'yaniv',
   BARBU: 'barbu',
   UNIVERSEL: 'universel',
+  UNO: 'uno',
 }
 
 export const GAME_META = {
@@ -1032,6 +1033,81 @@ export const GAME_META = {
       ],
     },
   },
+  [GAMES.UNO]: {
+    id: GAMES.UNO,
+    deckType: 'dedicated',
+    name: 'UNO',
+    playersBadge: '2 à 10 j.',
+    categoryBadge: '108 cartes',
+    description:
+      "Débarrassez-vous de vos cartes en associant couleurs ou numéros. N'oubliez pas d'annoncer « UNO » et piégez vos adversaires avec les +4 !",
+    minPlayers: 2,
+    maxPlayers: 10,
+    scoreDir: 'high',
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & But du jeu',
+          items: [
+            'Nombre de joueurs : 2 à 10 joueurs.',
+            'Matériel : Jeu de 108 cartes UNO (chiffres de 0 à 9 en 4 couleurs, cartes Action et cartes Noires).',
+            'But du jeu : Être le premier à se débarrasser de toutes ses cartes. Le joueur qui finit en premier remporte les points de toutes les cartes qui restent dans les mains de ses adversaires.',
+          ],
+        },
+        {
+          title: 'Distribution & Déroulement d’un tour',
+          items: [
+            'Chaque joueur reçoit 7 cartes face cachée. Le reste forme la pioche (talon) et la première carte est retournée pour entamer la défausse.',
+            'À son tour, un joueur doit recouvrir la carte du sommet de la défausse par une carte de sa main ayant la même couleur, le même numéro ou le même symbole d’action.',
+            'Les cartes Noires (Joker et Super Joker +4) peuvent être jouées à tout moment sur n’importe quelle carte.',
+            'Si le joueur n’a pas de carte jouable (ou ne souhaite pas en jouer), il pioche 1 carte. Si celle-ci est jouable, il peut la poser immédiatement ; sinon son tour s’achève.',
+          ],
+        },
+        {
+          title: 'Cartes d’Action & Cartes Noires',
+          items: [
+            'Carte +2 : Le joueur suivant doit immédiatement piocher 2 cartes et passer son tour.',
+            'Carte Inversion : Inverse immédiatement le sens de jeu (horaire ➔ anti-horaire). À 2 joueurs, elle agit comme un Passe ton tour.',
+            'Carte Passe ton tour : Le joueur suivant est sauté et ne joue pas.',
+            'Carte Joker (Changement de couleur) : Permet de choisir la couleur suivante sur la table.',
+            'Carte Super Joker +4 : Permet de choisir la couleur et oblige le joueur suivant à piocher 4 cartes et passer son tour.',
+          ],
+        },
+        {
+          title: 'L’annonce « UNO » (Règle d’or)',
+          items: [
+            'Dès qu’un joueur n’a plus qu’une seule carte en main, il doit impérativement s’écrier à voix haute « UNO ! ».',
+            'Oubli de l’annonce : Si un adversaire le prend en défaut avant que le joueur suivant ne joue en annonçant « Contre-UNO ! », le joueur distrait doit immédiatement piocher 2 cartes de pénalité.',
+          ],
+        },
+        {
+          title: 'Valeur des cartes (Pour le comptage)',
+          items: [
+            'Cartes numérotées (0 à 9) : Valeur du chiffre (0 à 9 points).',
+            'Cartes Action (+2, Inversion, Passe ton tour) : 20 points chacune.',
+            'Cartes Noires (Joker couleur, Super Joker +4) : 50 points chacune.',
+          ],
+        },
+        {
+          title: 'Fin de partie & Les 2 modes de comptage',
+          items: [
+            'Règle officielle (par défaut) : Le gagnant de la manche récupère la valeur des cartes restantes des adversaires. Le premier joueur à atteindre 500 points est déclaré grand vainqueur !',
+            'Règle Maison (Pénalités individuelles) : Beaucoup jouent avec la règle "Maison" où l’on compte ses propres points négatifs (le gagnant marque 0 pt, chacun ajoute ses pénalités). Dans ce cas, le premier à 500 a perdu (le joueur au total le plus bas l’emporte).',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Distribution', value: '7 cartes par joueur' },
+        { item: 'Cartes numérotées (0 à 9)', value: 'Valeur du chiffre (0 à 9 pts)' },
+        { item: 'Cartes Action (+2, Inversion, Passe)', value: '20 points chacune' },
+        { item: 'Cartes Noires (Joker, Super +4)', value: '50 points chacune' },
+        { item: 'Oubli d’annonce « UNO »', value: '2 cartes de pénalité' },
+        { item: 'Règle officielle (par défaut)', value: 'Gagnant empoche tout (1er à 500 gagne)' },
+        { item: 'Règle Maison (variante)', value: 'Pénalités perso (1er à 500 a perdu)' },
+        { item: 'Seuil officiel par défaut', value: '500 points' },
+      ],
+    },
+  },
   [GAMES.UNIVERSEL]: {
     id: GAMES.UNIVERSEL,
     deckType: 'any',
@@ -1184,6 +1260,9 @@ export function getGameDisplayName(game) {
       return 'Coinche'
     }
     return 'Belote'
+  }
+  if (typeLower === GAMES.UNO || nameLower === 'uno') {
+    return 'UNO'
   }
   // Pour tout jeu, ne garder qu'un seul nom sans parenthèses alternatives ni slashs (ex: "Nom (Alias)" -> "Nom")
   if (game.name) {

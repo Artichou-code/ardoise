@@ -161,7 +161,7 @@ export function LegalModal({ open, onClose, activeTab = 'mentions', onSelectTab 
                   L'application <strong>Ardoise</strong>, son architecture logicielle, ses logos, sa charte graphique et ses textes explicatifs sont la propriété intellectuelle exclusive d'<strong>ART-créa</strong>.
                 </p>
                 <p className="text-stone-500 dark:text-slate-500 text-[11px] italic">
-                  Les règles des jeux traditionnels répertoriés (Dourak, Belote, Tarot, Trou du cul, Skyjo, etc.) font partie du patrimoine ludique et du domaine public.
+                  Les règles des jeux traditionnels répertoriés (Dourak, Belote, Tarot, Trou du cul, Skyjo, Uno, etc.) font partie du patrimoine ludique et du domaine public.
                 </p>
               </div>
             </div>

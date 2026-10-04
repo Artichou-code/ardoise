@@ -62,10 +62,52 @@ export function getLowest(scores) {
   return Object.entries(scores).sort((a, b) => a[1] - b[1])[0][0]
 }
 
-export function getRanking(scores, direction = 'high') {
-  return Object.entries(scores)
-    .sort((a, b) => direction === 'high' ? b[1] - a[1] : a[1] - b[1])
-    .map(([id, score], idx) => ({ id, score, rank: idx + 1 }))
+export function getRanking(scores, direction = 'high', game = null) {
+  if (!scores || Object.keys(scores).length === 0) return []
+
+  // Traitement spécifique Belote / Coinche par équipe (4 joueurs = 2 équipes de 2)
+  if (
+    game &&
+    (game.type === 'belote' || game.type === 'coinche') &&
+    Array.isArray(game.players) &&
+    game.players.length === 4
+  ) {
+    const p1 = game.players[0]
+    const p2 = game.players[1]
+    const p3 = game.players[2]
+    const p4 = game.players[3]
+    const sTeam1 = scores[p1?.id] != null ? scores[p1.id] : 0
+    const sTeam2 = scores[p3?.id] != null ? scores[p3.id] : 0
+
+    if (sTeam1 >= sTeam2) {
+      const isTie = sTeam1 === sTeam2
+      return [
+        { id: p1.id, score: sTeam1, rank: 1 },
+        { id: p2.id, score: sTeam1, rank: 1 },
+        { id: p3.id, score: sTeam2, rank: isTie ? 1 : 2 },
+        { id: p4.id, score: sTeam2, rank: isTie ? 1 : 2 },
+      ]
+    } else {
+      return [
+        { id: p3.id, score: sTeam2, rank: 1 },
+        { id: p4.id, score: sTeam2, rank: 1 },
+        { id: p1.id, score: sTeam1, rank: 2 },
+        { id: p2.id, score: sTeam1, rank: 2 },
+      ]
+    }
+  }
+
+  const sorted = Object.entries(scores).sort((a, b) =>
+    direction === 'high' ? b[1] - a[1] : a[1] - b[1]
+  )
+
+  let currentRank = 1
+  return sorted.map(([id, score], idx) => {
+    if (idx > 0 && score !== sorted[idx - 1][1]) {
+      currentRank = idx + 1
+    }
+    return { id, score, rank: currentRank }
+  })
 }
 
 const MAX_GAP_MS = 15 * 60 * 1000 // 15 min — pauses au-delà ignorées

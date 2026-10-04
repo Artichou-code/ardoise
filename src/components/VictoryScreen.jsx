@@ -44,7 +44,7 @@ export function VictoryScreen() {
       ? 'low'
       : 'high'
 
-  const ranking = getRanking(activeGame.scores, scoreDir)
+  const ranking = getRanking(activeGame.scores, scoreDir, activeGame)
   const winner =
     activeGame.players.find(p => p.id === activeGame.winner) ||
     activeGame.players.find(p => p.id === ranking[0]?.id)

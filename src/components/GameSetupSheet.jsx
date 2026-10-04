@@ -242,6 +242,13 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
     } else if (gameType === 'barbu') {
       setConfig({ rounds: 28, scoreDir: 'high' })
       setCustomGameName('')
+    } else if (gameType === 'uno') {
+      setConfig({
+        mode: 'official',
+        scoreDir: 'high',
+        limit: 500,
+      })
+      setCustomGameName('')
     } else if (gameType === 'universel') {
       setConfig({
         scoreDir: 'high',
@@ -1368,6 +1375,88 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                     >
                       <span className="block font-bold text-xs">{title}</span>
                       <span className="block text-[10px] font-semibold opacity-85 mt-0.5">{sub}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Config spécifique UNO */}
+          {gameType === 'uno' && (
+            <div className="space-y-4 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+                  Règle de score & Victoire
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: 'official', title: 'Officielle', sub: 'Points cumulés', scoreDir: 'high' },
+                    { id: 'house', title: 'Maison', sub: 'Pénalités', scoreDir: 'low' },
+                  ].map(opt => {
+                    const active = (config.mode || 'official') === opt.id
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() =>
+                          setConfig(c => ({
+                            ...c,
+                            mode: opt.id,
+                            scoreDir: opt.scoreDir,
+                          }))
+                        }
+                        className={`py-2 px-2 rounded-xl text-center border transition-colors focus:outline-none cursor-pointer ${
+                          active
+                            ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                            : 'school-subtle'
+                        }`}
+                      >
+                        <span className="block font-bold text-xs leading-tight">{opt.title}</span>
+                        <span
+                          className={`block text-[10px] font-semibold mt-0.5 ${
+                            active ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'
+                          }`}
+                        >
+                          {opt.sub}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-1.5 leading-snug">
+                  {config.mode === 'house'
+                    ? 'Chacun compte ses cartes restantes · Min points gagne.'
+                    : 'Le gagnant empoche les points adverses · Max points gagne.'}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+                  Seuil de fin de partie
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { val: 250, title: '250 pts', sub: 'Partie courte' },
+                    { val: 500, title: '500 pts', sub: 'Officiel' },
+                    { val: 1000, title: '1 000 pts', sub: 'Marathon' },
+                  ].map(({ val, title, sub }) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, limit: val }))}
+                      className={`py-2 px-1 rounded-xl text-center border transition-colors focus:outline-none cursor-pointer ${
+                        (config.limit || 500) === val
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      <span className="block font-bold text-xs">{title}</span>
+                      <span className={`block text-[10px] font-semibold mt-0.5 ${
+                        (config.limit || 500) === val ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'
+                      }`}>
+                        {sub}
+                      </span>
                     </button>
                   ))}
                 </div>

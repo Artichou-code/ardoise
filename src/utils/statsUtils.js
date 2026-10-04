@@ -135,7 +135,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
     if (!game) return
     const isFinished = game.status === 'finished'
     const scoreDir = getGameScoreDirection(game)
-    const ranking = getRanking(game.scores || {}, scoreDir) || []
+    const ranking = getRanking(game.scores || {}, scoreDir, game) || []
     const gamePlayers = Array.isArray(game.players) ? game.players.filter(Boolean) : []
 
     // Identifier le gagnant et le dernier
@@ -414,6 +414,14 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       desc: 'Maître du Barbu',
       explanation: 'Attribué au joueur ayant remporté le plus de parties de Barbu à travers les 7 contrats.',
       iconName: 'Mustache',
+    },
+    [GAMES.UNO]: {
+      player: null,
+      wins: 0,
+      title: 'Roi du UNO',
+      desc: 'As du UNO',
+      explanation: 'Attribué au joueur ayant cumulé le plus de victoires au UNO et terrassé ses adversaires avec les cartes Action.',
+      iconName: 'Flame',
     },
     [GAMES.UNIVERSEL]: {
       player: null,
@@ -784,6 +792,16 @@ export const TROPHIES_CATALOG = [
     description: 'Le grand maître des 7 contrats impitoyables et de la redoutable Salade.',
     color: 'rose',
     iconName: 'Mustache',
+  },
+  {
+    id: 'master_uno',
+    gameType: GAMES.UNO,
+    title: 'Roi du UNO',
+    category: 'UNO',
+    condition: 'Avoir remporté le plus grand nombre de victoires au UNO.',
+    description: 'Le maître des cartes Action, des contres +4 et des annonces « UNO » fulgurantes.',
+    color: 'rose',
+    iconName: 'Flame',
   },
   {
     id: 'master_universel',

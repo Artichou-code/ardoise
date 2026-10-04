@@ -112,6 +112,7 @@ export function HomeScreen() {
         barbu: 'barbu',
         'le-barbu': 'barbu',
         'compteur-universel': 'universel',
+        uno: 'uno',
       }
       const targetGameId = slugToGameId[slug]
       if (targetGameId && GAME_META[targetGameId]) {

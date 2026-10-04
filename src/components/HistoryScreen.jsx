@@ -223,7 +223,7 @@ export function HistoryScreen() {
                 meta?.scoreDir === 'low'
                   ? 'low'
                   : 'high'
-              const ranking = getRanking(game.scores, scoreDir)
+              const ranking = getRanking(game.scores, scoreDir, game)
               const duration = game.finishedAt
                 ? formatDuration(computePlayDuration(game))
                 : null
