@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
-import { ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Radio, Share2, CheckCircle2, X, Dices, ChevronDown } from 'lucide-react'
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react'
+import { ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Radio, Share2, CheckCircle2, X, Dices, ChevronDown, Search } from 'lucide-react'
 import { useGame } from '../context/GameContext'
-import { GAME_META, getGameDisplayName } from '../constants/games'
+import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
 import { AppLogo } from './ui/AppLogo'
 import { BurgerMenuButton } from './BurgerMenu'
@@ -36,6 +36,9 @@ export function HomeScreen() {
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
   const [deckFilter, setDeckFilter] = useState(null) // null = tous, 'classic', 'dedicated'
   const [sharingPresetGame, setSharingPresetGame] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const searchInputRef = useRef(null)
   const [isPresetsCollapsed, setIsPresetsCollapsed] = useState(() => {
     try {
       return localStorage.getItem('ardoise_presets_collapsed') === 'true'
@@ -137,9 +140,13 @@ export function HomeScreen() {
     return counts
   }, [games])
 
+  // Recherche textuelle normalisée
+  const normalizedQuery = searchQuery.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+
   // Tri dynamique : les jeux les plus joués se placent automatiquement en premier
-  const sortedGames = useMemo(() => {
+  const { sortedGames, isUniversalFallback, totalAvailableCount } = useMemo(() => {
     const list = Object.values(GAME_META)
+    const totalAvailableCount = list.length
     const initialIndex = list.reduce((acc, m, i) => {
       acc[m.id] = i
       return acc
@@ -152,9 +159,62 @@ export function HomeScreen() {
       return initialIndex[a.id] - initialIndex[b.id]
     })
 
-    if (!deckFilter) return sorted
-    return sorted.filter(m => m.deckType === deckFilter || m.deckType === 'any')
-  }, [gamePlayCounts, deckFilter])
+    const filteredByDeck = !deckFilter
+      ? sorted
+      : sorted.filter(m => m.deckType === deckFilter || m.deckType === 'any')
+
+    if (normalizedQuery) {
+      const matches = filteredByDeck.filter(m => {
+        const nameNorm = (m.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        const descNorm = (m.description || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        const badgeNorm = (m.categoryBadge || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        const idNorm = (m.id || '').toLowerCase()
+
+        // Synonymes et mots-clés courants
+        const keywords = []
+        if (m.id === 'belote') keywords.push('coinche', 'atout', 'belote-rebelote')
+        if (m.id === 'president') keywords.push('trou du cul', 'tdc', 'president')
+        if (m.id === 'ascenseur') keywords.push('rikiki', 'oh hell', 'plis')
+        if (m.id === 'barbu') keywords.push('tonton', 'contrats', 'salade')
+        if (m.id === 'yaniv') keywords.push('asaf', 'assaf')
+        if (m.id === 'six_qui_prend') keywords.push('boeuf', 'taureau', '6', 'six')
+        if (m.id === 'sea_salt_paper') keywords.push('origami', 'mer', 'sirene')
+        if (m.id === 'dame_de_pique') keywords.push('coeur', 'reine', 'grand chelem')
+        if (m.id === 'uno') keywords.push('+4', 'plus 4', 'joker', 'cartes')
+        if (m.id === 'universel') keywords.push('libre', 'autre', 'personnalise', 'scrabble', 'molkky', 'yams', 'tarot')
+
+        const matchesKeyword = keywords.some(k => k.includes(normalizedQuery))
+
+        return nameNorm.includes(normalizedQuery) ||
+               descNorm.includes(normalizedQuery) ||
+               badgeNorm.includes(normalizedQuery) ||
+               idNorm.includes(normalizedQuery) ||
+               matchesKeyword
+      })
+
+      // Si aucun jeu spécifique trouvé : toujours montrer le Compteur Universel
+      if (matches.length === 0) {
+        const universalMeta = GAME_META[GAMES.UNIVERSEL]
+        return {
+          sortedGames: universalMeta ? [universalMeta] : [],
+          isUniversalFallback: true,
+          totalAvailableCount,
+        }
+      }
+
+      return {
+        sortedGames: matches,
+        isUniversalFallback: false,
+        totalAvailableCount,
+      }
+    }
+
+    return {
+      sortedGames: filteredByDeck,
+      isUniversalFallback: false,
+      totalAvailableCount,
+    }
+  }, [gamePlayCounts, deckFilter, normalizedQuery])
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
@@ -385,17 +445,98 @@ export function HomeScreen() {
 
         {/* Grille des jeux (Zéro émoji, style Cahier & Ardoise) */}
         <section className="mt-4">
-          <div className="flex items-center justify-between mb-2.5">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between mb-2.5 gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <span className="w-1.5 h-3.5 rounded-full bg-[#c83b3b]" />
               <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
                 Choisir un jeu
               </h2>
             </div>
-            <span className="text-[11px] text-stone-400 dark:text-slate-500">
-              {sortedGames.length} jeu{sortedGames.length > 1 ? 'x' : ''} disponible{sortedGames.length > 1 ? 's' : ''}
-            </span>
+
+            {/* Barre de recherche compacte intégrée sans perte de place */}
+            <div className="flex items-center justify-end min-w-0">
+              {!isSearchOpen && !searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSearchOpen(true)
+                    setTimeout(() => searchInputRef.current?.focus(), 50)
+                  }}
+                  className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800/90 hover:bg-stone-200/70 dark:hover:bg-slate-700/70 text-[11px] font-medium text-stone-500 dark:text-slate-400 border border-stone-200/90 dark:border-slate-700 transition-all cursor-pointer shadow-2xs group shrink-0"
+                  aria-label="Rechercher un jeu"
+                  title="Cliquer pour rechercher un jeu"
+                >
+                  <Search size={11} className="text-stone-400 group-hover:text-[#c83b3b] dark:group-hover:text-stone-300 transition-colors" />
+                  <span>{totalAvailableCount} jeux disponibles</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-[#c83b3b]/70 dark:border-[#c83b3b]/70 ring-2 ring-[#c83b3b]/15 shadow-2xs transition-all w-[155px] xs:w-[185px] sm:w-[220px] shrink-0">
+                  <Search size={11} className="text-[#c83b3b] shrink-0" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onBlur={() => {
+                      if (!searchQuery.trim()) {
+                        setIsSearchOpen(false)
+                      }
+                    }}
+                    placeholder={`${totalAvailableCount} jeux dispo...`}
+                    className="w-full bg-transparent text-[11px] font-medium text-stone-800 dark:text-slate-200 placeholder:text-stone-400 dark:placeholder:text-slate-500 outline-none min-w-0"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setSearchQuery('')
+                        setIsSearchOpen(false)
+                      }
+                    }}
+                  />
+                  {searchQuery ? (
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setSearchQuery('')
+                        searchInputRef.current?.focus()
+                      }}
+                      className="p-0.5 text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 cursor-pointer shrink-0"
+                      aria-label="Effacer la recherche"
+                      title="Effacer"
+                    >
+                      <X size={11} />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => setIsSearchOpen(false)}
+                      className="p-0.5 text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 cursor-pointer shrink-0"
+                      aria-label="Fermer la recherche"
+                      title="Fermer"
+                    >
+                      <X size={11} />
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Alerte si aucun jeu dédié n'est trouvé : proposition du Compteur Universel */}
+          {isUniversalFallback && (
+            <div className="mb-2.5 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200 animate-in fade-in duration-200">
+              <span className="truncate">
+                Jeu non répertorié pour « <strong>{searchQuery}</strong> » · Jouez avec le <strong>Compteur Universel</strong> :
+              </span>
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-[11px] font-bold text-amber-700 dark:text-amber-300 hover:underline shrink-0 cursor-pointer whitespace-nowrap"
+              >
+                Tout réafficher
+              </button>
+            </div>
+          )}
 
           {/* Filtres par type de matériel */}
           <div className="flex items-center gap-1.5 mb-2.5">

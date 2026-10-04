@@ -268,7 +268,10 @@ function renderAppShellHtml(seoHiddenArticlesHtml) {
                 <span class="w-1.5 h-3.5 rounded-full bg-[#c83b3b]"></span>
                 <h2 class="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">Choisir un jeu</h2>
               </div>
-              <span class="text-[11px] text-stone-400 dark:text-slate-500">${Object.keys(GAME_META).length} jeux disponibles</span>
+              <button type="button" class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800 text-[11px] font-medium text-stone-500 dark:text-slate-400 border border-stone-200 dark:border-slate-700 shadow-2xs" aria-label="Rechercher un jeu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <span>${Object.keys(GAME_META).length} jeux disponibles</span>
+              </button>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               ${gameCardsHtml}
