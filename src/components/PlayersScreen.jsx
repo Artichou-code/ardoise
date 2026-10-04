@@ -86,7 +86,8 @@ export function PlayersScreen() {
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [detailPlayer, setDetailPlayer] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [showArchived, setShowArchived] = useState(false)
+  const [isArchiveView, setIsArchiveView] = useState(false)
+  const [archiveSearchQuery, setArchiveSearchQuery] = useState('')
 
   const activePlayers = useMemo(() => {
     return (players || []).filter(p => !p.archived)
@@ -127,303 +128,450 @@ export function PlayersScreen() {
     )
   }, [archivedPlayers])
 
-  // Filtrage par recherche (insensible casse et accents)
-  const filterList = (list) => {
-    if (!searchQuery.trim() || activePlayers.length <= 8) return list
+  // Filtrage par recherche active (insensible casse et accents)
+  const filteredPlayers = useMemo(() => {
+    if (!searchQuery.trim() || activePlayers.length <= 8) return sortedActivePlayers
     const query = searchQuery
       .trim()
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-    return list.filter(p => {
+    return sortedActivePlayers.filter(p => {
       const name = (p.name || '')
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
       return name.includes(query)
     })
-  }
+  }, [sortedActivePlayers, searchQuery, activePlayers.length])
 
-  const filteredPlayers = useMemo(() => filterList(sortedActivePlayers), [sortedActivePlayers, searchQuery, activePlayers.length])
-  const filteredArchivedPlayers = useMemo(() => filterList(sortedArchivedPlayers), [sortedArchivedPlayers, searchQuery, activePlayers.length])
+  // Filtrage par recherche archives
+  const filteredArchivedPlayers = useMemo(() => {
+    if (!archiveSearchQuery.trim()) return sortedArchivedPlayers
+    const query = archiveSearchQuery
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+    return sortedArchivedPlayers.filter(p => {
+      const name = (p.name || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+      return name.includes(query)
+    })
+  }, [sortedArchivedPlayers, archiveSearchQuery])
+
+  // Données complètes pour la fiche détaillée
+  const getFullPlayerData = (p) => {
+    const pStat = playerStatsMap.get(p.id) || playerStatsMap.get(normalizePlayerName(p.name))
+    return {
+      ...p,
+      ...(pStat || {}),
+      id: p.id,
+      name: p.name,
+      color: p.color,
+      avatar: p.avatar,
+      archived: Boolean(p.archived),
+      totalGames: pStat?.totalGames || 0,
+      finishedGames: pStat?.finishedGames || 0,
+      wins: pStat?.wins || 0,
+      podiums: pStat?.podiums || 0,
+      winRate: pStat?.winRate || 0,
+      badges: pStat?.badges || [],
+      gameBreakdown: pStat?.gameBreakdown || {},
+      recentHistory: pStat?.recentHistory || [],
+      topOpponent: pStat?.topOpponent || null,
+    }
+  }
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
-      <header className="flex items-center gap-2 px-4 header-safe pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
-        <button
-          type="button"
-          onClick={() => setScreen('home')}
-          className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-          aria-label="Retour"
-        >
-          <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
-        </button>
-        <h1 className="flex-1 font-serif-title font-bold text-lg truncate">
-          Joueurs
-        </h1>
-        <button
-          type="button"
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs btn-margin-red cursor-pointer"
-        >
-          <Plus size={15} /> Ajouter
-        </button>
-        <BurgerMenuButton />
-      </header>
-
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">
-        {/* Barre de recherche uniquement si plus de 8 joueurs enregistrés */}
-        {players.length > 8 && (
-          <div className="mb-3">
-            <div className="relative flex items-center">
-              <Search
-                size={16}
-                className="absolute left-3.5 text-stone-400 dark:text-slate-500 pointer-events-none"
-              />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Rechercher un joueur..."
-                className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-medium text-stone-900 dark:text-slate-100 placeholder-stone-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#c83b3b] focus:ring-1 focus:ring-[#c83b3b]/30 shadow-2xs transition-all"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 p-1 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                  aria-label="Effacer la recherche"
-                >
-                  <X size={15} />
-                </button>
-              )}
-            </div>
-            {searchQuery.trim() && (
-              <div className="flex items-center justify-between px-1 mt-1.5 text-[11px] font-semibold text-stone-500 dark:text-slate-400">
-                <span>
-                  {filteredPlayers.length} résultat{filteredPlayers.length > 1 ? 's' : ''}
-                </span>
-              </div>
-            )}
+      {isArchiveView ? (
+        /* Header vue Archives */
+        <header className="flex items-center gap-2 px-4 header-safe pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
+          <button
+            type="button"
+            onClick={() => setIsArchiveView(false)}
+            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            aria-label="Retour aux joueurs"
+          >
+            <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
+          </button>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-serif-title font-bold text-lg truncate">
+              Joueurs archivés
+            </h1>
+            <p className="text-[11px] text-stone-500 dark:text-slate-400 -mt-0.5 truncate">
+              {archivedPlayers.length} joueur{archivedPlayers.length > 1 ? 's' : ''}
+            </p>
           </div>
-        )}
+          <BurgerMenuButton />
+        </header>
+      ) : (
+        /* Header vue Joueurs actifs */
+        <header className="flex items-center gap-2 px-4 header-safe pb-3 flex-shrink-0 border-b border-stone-200/90 dark:border-slate-800/90 bg-[#faf9f5]/90 dark:bg-[#151719]/90 backdrop-blur-xs">
+          <button
+            type="button"
+            onClick={() => setScreen('home')}
+            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            aria-label="Retour"
+          >
+            <ArrowLeft size={18} className="text-stone-700 dark:text-slate-300" />
+          </button>
+          <h1 className="flex-1 font-serif-title font-bold text-lg truncate">
+            Joueurs
+          </h1>
+          <button
+            type="button"
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs btn-margin-red cursor-pointer shrink-0"
+          >
+            <Plus size={15} /> Ajouter
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsArchiveView(true)}
+            className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300 transition-colors cursor-pointer shrink-0"
+            title="Joueurs archivés"
+            aria-label="Joueurs archivés"
+          >
+            <Archive size={17} />
+          </button>
+          <BurgerMenuButton />
+        </header>
+      )}
 
-        {activePlayers.length === 0 && archivedPlayers.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
-            <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
-              <Users size={22} className="text-stone-400 dark:text-slate-500" />
-            </div>
-            <p className="font-serif-title font-bold text-base mb-1">
-              Aucun joueur enregistré
+      {isArchiveView ? (
+        /* ================= VUE JOUEURS ARCHIVÉS ================= */
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">
+          {archivedPlayers.length > 0 && (
+            <p className="text-[11px] text-stone-500 dark:text-slate-400 mb-3 px-1 leading-relaxed">
+              Ces joueurs ne sont plus proposés lors de la création d'une partie. Leurs statistiques et historiques restent intacts.
             </p>
-            <p className="text-stone-500 dark:text-slate-400 text-xs mb-5">
-              Enregistrez vos partenaires habituels pour lancer vos parties en deux clics.
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowCreate(true)}
-              className="px-5 py-3 rounded-xl font-bold text-sm btn-margin-red cursor-pointer"
-            >
-              Ajouter un premier joueur
-            </button>
-          </div>
-        ) : filteredPlayers.length === 0 && (!searchQuery || filteredArchivedPlayers.length === 0) ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-            <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
-              <Search size={22} className="text-stone-400 dark:text-slate-500" />
-            </div>
-            <p className="font-serif-title font-bold text-base mb-1">
-              Aucun résultat
-            </p>
-            <p className="text-stone-500 dark:text-slate-400 text-xs mb-4">
-              Aucun joueur ne correspond à « {searchQuery.trim()} »
-            </p>
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-stone-700 dark:text-slate-300 border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            >
-              Effacer la recherche
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredPlayers.length > 0 && (
-              <div className="grid grid-cols-1 gap-2.5">
-                {filteredPlayers.map(p => {
-                  const pStat = playerStatsMap.get(p.id) || playerStatsMap.get(normalizePlayerName(p.name))
-                  const fullPlayerData = pStat || {
-                    ...p,
-                    totalGames: 0,
-                    finishedGames: 0,
-                    wins: 0,
-                    podiums: 0,
-                    winRate: 0,
-                    badges: [],
-                    gameBreakdown: {},
-                    recentHistory: [],
-                    topOpponent: null,
-                  }
+          )}
 
-                  return (
-                    <div
-                      key={p.id}
-                      onClick={() => setDetailPlayer(fullPlayerData)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl school-card cursor-pointer active:scale-[0.99] transition-all hover:border-stone-300 dark:hover:border-slate-700"
-                    >
-                      <Avatar player={p} size="md" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm truncate">{p.name}</p>
-                        {pStat?.badges && pStat.badges.length > 0 ? (
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.2 rounded border border-amber-200/80 dark:border-amber-800/60 truncate">
-                              <Award size={10} className="flex-shrink-0" />
-                              <span className="truncate">{pStat.badges[0].title}</span>
-                            </span>
-                          </div>
-                        ) : pStat?.totalGames > 0 ? (
-                          <p className="text-[11px] text-stone-500 dark:text-slate-400 mt-0.5 truncate">
-                            {pStat.wins} vict. · {pStat.winRate}% ({pStat.finishedGames} p.)
-                          </p>
-                        ) : (
-                          <p className="text-[11px] text-stone-400 dark:text-slate-500 mt-0.5">
-                            Nouvelle recrue
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setEditPlayer(p)
-                        }}
-                        className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
-                        aria-label={`Modifier ${p.name}`}
-                        title={`Modifier ${p.name}`}
-                      >
-                        <Pencil size={15} className="text-stone-500 dark:text-slate-400" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          archivePlayer(p.id)
-                        }}
-                        className="p-2 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/30 text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer"
-                        aria-label={`Archiver ${p.name}`}
-                        title={`Archiver ${p.name}`}
-                      >
-                        <Archive size={15} />
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
-            {/* Section Joueurs Archivés */}
-            {archivedPlayers.length > 0 && (
-              <div className="pt-3 border-t border-stone-200/90 dark:border-slate-800/90 pb-4">
-                <button
-                  type="button"
-                  onClick={() => setShowArchived(prev => !prev)}
-                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-stone-100/70 dark:bg-slate-800/40 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-600 dark:text-slate-400 transition-colors cursor-pointer select-none"
-                >
-                  <div className="flex items-center gap-2">
-                    <Archive size={15} className="text-amber-600 dark:text-amber-400" />
-                    <span className="text-xs font-bold font-serif-title">
-                      Joueurs archivés ({archivedPlayers.length})
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500">
-                    {showArchived ? 'Masquer' : 'Afficher'}
-                  </span>
-                </button>
-
-                {showArchived && (
-                  <div className="mt-2.5 space-y-2">
-                    <p className="text-[11px] text-stone-500 dark:text-slate-400 px-1 leading-relaxed">
-                      Ces joueurs ne sont plus proposés lors de la création d'une nouvelle partie. Leurs scores et statistiques restent intacts.
-                    </p>
-                    <div className="grid grid-cols-1 gap-2 mt-2">
-                      {filteredArchivedPlayers.map(p => {
-                        const pStat = playerStatsMap.get(p.id) || playerStatsMap.get(normalizePlayerName(p.name))
-                        const fullPlayerData = pStat || {
-                          ...p,
-                          totalGames: 0,
-                          finishedGames: 0,
-                          wins: 0,
-                          podiums: 0,
-                          winRate: 0,
-                          badges: [],
-                          gameBreakdown: {},
-                          recentHistory: [],
-                          topOpponent: null,
-                        }
-
-                        return (
-                          <div
-                            key={p.id}
-                            onClick={() => setDetailPlayer(fullPlayerData)}
-                            className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-dashed border-stone-300 dark:border-slate-700 bg-stone-50/60 dark:bg-slate-900/40 opacity-80 hover:opacity-100 transition-all cursor-pointer"
-                          >
-                            <Avatar player={p} size="sm" />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className="font-bold text-xs truncate text-stone-800 dark:text-slate-200">{p.name}</p>
-                                <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-stone-200/80 dark:bg-slate-800 text-stone-600 dark:text-slate-400">
-                                  Archivé
-                                </span>
-                              </div>
-                              {pStat?.finishedGames > 0 ? (
-                                <p className="text-[10px] text-stone-500 dark:text-slate-400 mt-0.5 truncate">
-                                  {pStat.wins} vict. · {pStat.finishedGames} partie{pStat.finishedGames > 1 ? 's' : ''}
-                                </p>
-                              ) : (
-                                <p className="text-[10px] text-stone-400 dark:text-slate-500 mt-0.5">
-                                  0 partie
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Bouton Réactiver / Désarchiver */}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                unarchivePlayer(p.id)
-                              }}
-                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer"
-                              title={`Réactiver ${p.name}`}
-                            >
-                              <ArchiveRestore size={13} />
-                              <span>Réactiver</span>
-                            </button>
-
-                            {/* Bouton Supprimer définitivement */}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setConfirmDelete(p.id)
-                              }}
-                              className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-stone-400 hover:text-[#c83b3b] transition-colors cursor-pointer"
-                              title={`Supprimer définitivement ${p.name}`}
-                              aria-label={`Supprimer définitivement ${p.name}`}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
+          {/* Barre de recherche dans les archives */}
+          {archivedPlayers.length > 0 && (
+            <div className="mb-3">
+              <div className="relative flex items-center">
+                <Search
+                  size={16}
+                  className="absolute left-3.5 text-stone-400 dark:text-slate-500 pointer-events-none"
+                />
+                <input
+                  type="text"
+                  value={archiveSearchQuery}
+                  onChange={e => setArchiveSearchQuery(e.target.value)}
+                  placeholder="Rechercher dans les archives..."
+                  className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-medium text-stone-900 dark:text-slate-100 placeholder-stone-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#c83b3b] focus:ring-1 focus:ring-[#c83b3b]/30 shadow-2xs transition-all"
+                />
+                {archiveSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setArchiveSearchQuery('')}
+                    className="absolute right-2.5 p-1 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    aria-label="Effacer la recherche"
+                  >
+                    <X size={15} />
+                  </button>
                 )}
               </div>
-            )}
-          </div>
-        )}
-      </div>
+              {archiveSearchQuery.trim() && (
+                <div className="flex items-center justify-between px-1 mt-1.5 text-[11px] font-semibold text-stone-500 dark:text-slate-400">
+                  <span>
+                    {filteredArchivedPlayers.length} résultat{filteredArchivedPlayers.length > 1 ? 's' : ''}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {archivedPlayers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center px-6">
+              <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3 text-stone-400 dark:text-slate-500">
+                <Archive size={22} />
+              </div>
+              <p className="font-serif-title font-bold text-base mb-1">
+                Aucun joueur archivé
+              </p>
+              <p className="text-stone-500 dark:text-slate-400 text-xs max-w-xs leading-relaxed mb-4">
+                Vous pouvez archiver des joueurs occasionnels depuis la liste principale pour ne plus les voir lors de la création d'une partie tout en conservant leur historique.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsArchiveView(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-stone-700 dark:text-slate-300 border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Retour aux joueurs
+              </button>
+            </div>
+          ) : filteredArchivedPlayers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+              <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
+                <Search size={22} className="text-stone-400 dark:text-slate-500" />
+              </div>
+              <p className="font-serif-title font-bold text-base mb-1">
+                Aucun résultat
+              </p>
+              <p className="text-stone-500 dark:text-slate-400 text-xs mb-4">
+                Aucun joueur archivé ne correspond à « {archiveSearchQuery.trim()} »
+              </p>
+              <button
+                type="button"
+                onClick={() => setArchiveSearchQuery('')}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-stone-700 dark:text-slate-300 border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Effacer la recherche
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+              {filteredArchivedPlayers.map(p => {
+                const fullPlayerData = getFullPlayerData(p)
+                const pStat = playerStatsMap.get(p.id) || playerStatsMap.get(normalizePlayerName(p.name))
+
+                return (
+                  <div
+                    key={p.id}
+                    onClick={() => setDetailPlayer(fullPlayerData)}
+                    className="flex flex-col items-center p-3 rounded-2xl school-card relative hover:border-stone-300 dark:hover:border-slate-700 transition-all cursor-pointer group active:scale-[0.98]"
+                  >
+                    {/* Bouton de suppression définitive en haut à droite */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setConfirmDelete(p.id)
+                      }}
+                      className="absolute top-2 right-2 p-1.5 rounded-lg text-stone-400 hover:text-[#c83b3b] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                      title={`Supprimer définitivement ${p.name}`}
+                      aria-label={`Supprimer définitivement ${p.name}`}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+
+                    {/* Avatar et Infos Joueur */}
+                    <div className="mt-1 mb-2">
+                      <Avatar player={p} size="md" />
+                    </div>
+
+                    <p className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate w-full text-center">
+                      {p.name}
+                    </p>
+
+                    {/* Stats abrégées */}
+                    {pStat?.finishedGames > 0 ? (
+                      <p className="text-[11px] text-stone-500 dark:text-slate-400 text-center truncate w-full mt-0.5">
+                        {pStat.wins} vict. · {pStat.finishedGames} p.
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-stone-400 dark:text-slate-500 text-center mt-0.5">
+                        0 partie
+                      </p>
+                    )}
+
+                    {/* Bouton Réactiver */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        unarchivePlayer(p.id)
+                      }}
+                      className="mt-3 w-full flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors cursor-pointer"
+                      title={`Réactiver ${p.name}`}
+                    >
+                      <ArchiveRestore size={13} />
+                      <span>Réactiver</span>
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* ================= VUE JOUEURS ACTIFS ================= */
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">
+          {/* Barre de recherche uniquement si plus de 8 joueurs actifs enregistrés */}
+          {activePlayers.length > 8 && (
+            <div className="mb-3">
+              <div className="relative flex items-center">
+                <Search
+                  size={16}
+                  className="absolute left-3.5 text-stone-400 dark:text-slate-500 pointer-events-none"
+                />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Rechercher un joueur..."
+                  className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-medium text-stone-900 dark:text-slate-100 placeholder-stone-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#c83b3b] focus:ring-1 focus:ring-[#c83b3b]/30 shadow-2xs transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 p-1 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    aria-label="Effacer la recherche"
+                  >
+                    <X size={15} />
+                  </button>
+                )}
+              </div>
+              {searchQuery.trim() && (
+                <div className="flex items-center justify-between px-1 mt-1.5 text-[11px] font-semibold text-stone-500 dark:text-slate-400">
+                  <span>
+                    {filteredPlayers.length} résultat{filteredPlayers.length > 1 ? 's' : ''}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activePlayers.length === 0 && archivedPlayers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
+              <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
+                <Users size={22} className="text-stone-400 dark:text-slate-500" />
+              </div>
+              <p className="font-serif-title font-bold text-base mb-1">
+                Aucun joueur enregistré
+              </p>
+              <p className="text-stone-500 dark:text-slate-400 text-xs mb-5">
+                Enregistrez vos partenaires habituels pour lancer vos parties en deux clics.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowCreate(true)}
+                className="px-5 py-3 rounded-xl font-bold text-sm btn-margin-red cursor-pointer"
+              >
+                Ajouter un premier joueur
+              </button>
+            </div>
+          ) : activePlayers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center px-6">
+              <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
+                <Users size={22} className="text-stone-400 dark:text-slate-500" />
+              </div>
+              <p className="font-serif-title font-bold text-base mb-1">
+                Aucun joueur actif
+              </p>
+              <p className="text-stone-500 dark:text-slate-400 text-xs mb-4">
+                Tous vos joueurs sont actuellement dans les archives ({archivedPlayers.length}).
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsArchiveView(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-stone-700 dark:text-slate-300 border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Voir les archives ({archivedPlayers.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCreate(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold btn-margin-red cursor-pointer"
+                >
+                  Ajouter un joueur
+                </button>
+              </div>
+            </div>
+          ) : filteredPlayers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+              <div className="w-12 h-12 rounded-2xl school-card flex items-center justify-center mb-3">
+                <Search size={22} className="text-stone-400 dark:text-slate-500" />
+              </div>
+              <p className="font-serif-title font-bold text-base mb-1">
+                Aucun résultat
+              </p>
+              <p className="text-stone-500 dark:text-slate-400 text-xs mb-4">
+                Aucun joueur ne correspond à « {searchQuery.trim()} »
+              </p>
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-stone-700 dark:text-slate-300 border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-stone-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Effacer la recherche
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+              {filteredPlayers.map(p => {
+                const fullPlayerData = getFullPlayerData(p)
+                const pStat = playerStatsMap.get(p.id) || playerStatsMap.get(normalizePlayerName(p.name))
+
+                return (
+                  <div
+                    key={p.id}
+                    onClick={() => setDetailPlayer(fullPlayerData)}
+                    className="flex flex-col items-center p-3 rounded-2xl school-card relative hover:border-stone-300 dark:hover:border-slate-700 transition-all cursor-pointer group active:scale-[0.98]"
+                  >
+                    {/* Bouton Modifier en haut à gauche */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditPlayer(p)
+                      }}
+                      className="absolute top-2 left-2 p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                      aria-label={`Modifier ${p.name}`}
+                      title={`Modifier ${p.name}`}
+                    >
+                      <Pencil size={13} />
+                    </button>
+
+                    {/* Bouton Archiver en haut à droite */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        archivePlayer(p.id)
+                      }}
+                      className="absolute top-2 right-2 p-1.5 rounded-lg text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
+                      aria-label={`Archiver ${p.name}`}
+                      title={`Archiver ${p.name}`}
+                    >
+                      <Archive size={13} />
+                    </button>
+
+                    {/* Avatar */}
+                    <div className="mt-1 mb-1.5">
+                      <Avatar player={p} size="md" />
+                    </div>
+
+                    {/* Nom du joueur */}
+                    <p className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate w-full text-center">
+                      {p.name}
+                    </p>
+
+                    {/* Stats et/ou Badge */}
+                    {pStat?.badges && pStat.badges.length > 0 ? (
+                      <div className="flex flex-col items-center gap-0.5 mt-1 w-full">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/60 truncate max-w-full">
+                          <Award size={10} className="shrink-0" />
+                          <span className="truncate">{pStat.badges[0].title}</span>
+                        </span>
+                        <p className="text-[10px] text-stone-500 dark:text-slate-400 text-center truncate w-full">
+                          {pStat.wins} vict. · {pStat.finishedGames} p.
+                        </p>
+                      </div>
+                    ) : pStat?.finishedGames > 0 ? (
+                      <p className="text-[11px] text-stone-500 dark:text-slate-400 text-center truncate w-full mt-1">
+                        {pStat.wins} vict. · {pStat.finishedGames} p.
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-stone-400 dark:text-slate-500 text-center mt-1">
+                        Nouvelle recrue
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       <PlayerSheet
         open={showCreate}
