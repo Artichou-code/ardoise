@@ -406,7 +406,7 @@ export function RamiEngine({ game, onFinish }) {
               <div className="flex flex-col items-end gap-1.5 shrink-0">
                 {winnerId === editingPlayer.id && (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shrink-0">
-                    Vainqueur (0 pt)
+                    Vainqueur
                   </span>
                 )}
                 <div className="flex items-center gap-1">
@@ -471,16 +471,15 @@ export function RamiEngine({ game, onFinish }) {
               min={0}
               step={1}
               disabled={winnerId === editingPlayer.id}
-              disabledMessage="Vainqueur (0 pt de pénalité)"
+              disabledMessage="Toutes les cartes posées"
               label="Pénalités de main"
-              subLabel={winnerId === editingPlayer.id ? "A posé toutes ses cartes" : "Figures 10 · As 11 · Joker 20"}
+              subLabel="Figures 10 · As 11 · Joker 20"
               presets={[0, 10, 11, 20, 25, 30, 40, 50]}
               formatDisplay={v => `${v} pts`}
               formatTotal={val => {
-                const isWinner = winnerId === editingPlayer.id
                 const cur = game.scores[editingPlayer.id] || 0
-                if (isWinner) {
-                  return { text: `Vainqueur · 0 pt · Total actuel : ${cur} pts`, variant: 'success' }
+                if (winnerId === editingPlayer.id) {
+                  return { text: 'Toutes les cartes posées', variant: 'success' }
                 }
                 const effectiveDelta = isRamiSec ? val * 2 : val
                 const proj = cur + effectiveDelta

@@ -279,7 +279,17 @@ export function ScorePad({
               }`}>
                 {displayVal(value)}
               </span>
-              {totalText !== null ? (
+              {disabled ? (
+                <div className="flex flex-col items-center max-w-full px-3 mt-1">
+                  <span className={`text-xs font-bold text-center truncate max-w-full ${
+                    totalVariant === 'danger'
+                      ? 'text-[#c83b3b] dark:text-red-400'
+                      : 'text-emerald-700 dark:text-emerald-400'
+                  }`}>
+                    {disabledMessage || totalText || 'Score verrouillé'}
+                  </span>
+                </div>
+              ) : totalText !== null ? (
                 <div className="flex flex-col items-center max-w-full px-3">
                   <span className={`text-xs font-bold text-center truncate max-w-full ${
                     totalVariant === 'danger'
@@ -290,29 +300,16 @@ export function ScorePad({
                   }`}>
                     {totalText}
                   </span>
-                  {!disabled && (
-                    <span className="animate-breathe text-[10.5px] text-stone-400 dark:text-slate-500 flex items-center gap-1.5 mt-2.5 font-medium select-none">
-                      <ArrowUpDown size={11} className="text-[#c83b3b] shrink-0" />
-                      <span>Maintenir & glisser pour faire tourner</span>
-                    </span>
-                  )}
-                  {disabled && (
-                    <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 mt-2 select-none">
-                      <span>✓ {disabledMessage || 'Score verrouillé à 0 pt'}</span>
-                    </span>
-                  )}
-                </div>
-              ) : (
-                !disabled ? (
-                  <span className="animate-breathe text-[11px] font-medium text-stone-400 dark:text-slate-500 flex items-center gap-1.5 mt-2.5 select-none">
+                  <span className="animate-breathe text-[10.5px] text-stone-400 dark:text-slate-500 flex items-center gap-1.5 mt-2.5 font-medium select-none">
                     <ArrowUpDown size={11} className="text-[#c83b3b] shrink-0" />
                     <span>Maintenir & glisser pour faire tourner</span>
                   </span>
-                ) : (
-                  <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 mt-2 select-none">
-                    <span>✓ {disabledMessage || 'Score verrouillé à 0 pt'}</span>
-                  </span>
-                )
+                </div>
+              ) : (
+                <span className="animate-breathe text-[11px] font-medium text-stone-400 dark:text-slate-500 flex items-center gap-1.5 mt-2.5 select-none">
+                  <ArrowUpDown size={11} className="text-[#c83b3b] shrink-0" />
+                  <span>Maintenir & glisser pour faire tourner</span>
+                </span>
               )}
             </div>
           )}
