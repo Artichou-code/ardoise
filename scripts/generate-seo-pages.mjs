@@ -253,8 +253,12 @@ function renderAppShellHtml(seoHiddenArticlesHtml) {
             </div>
           </div>
           <div class="flex items-center gap-1.5">
-            <span class="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-stone-700 dark:text-slate-300 w-[36px] h-[36px] inline-block" aria-hidden="true"></span>
-            <span class="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 text-stone-700 dark:text-slate-300 w-[36px] h-[36px] inline-block" aria-hidden="true"></span>
+            <button type="button" class="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors shrink-0" aria-label="Mode Ardoise (sombre)" title="Changer de thème">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-stone-700 dark:text-slate-200"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </button>
+            <button type="button" class="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300 transition-colors relative cursor-pointer shrink-0" aria-label="Ouvrir le menu principal" title="Menu principal">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+            </button>
           </div>
         </header>
         <main class="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 scroll-bottom-space">
@@ -264,7 +268,7 @@ function renderAppShellHtml(seoHiddenArticlesHtml) {
                 <span class="w-1.5 h-3.5 rounded-full bg-[#c83b3b]"></span>
                 <h2 class="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">Choisir un jeu</h2>
               </div>
-              <span class="text-[11px] text-stone-400 dark:text-slate-500">8 jeux disponibles</span>
+              <span class="text-[11px] text-stone-400 dark:text-slate-500">${Object.keys(GAME_META).length} jeux disponibles</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               ${gameCardsHtml}
@@ -321,7 +325,7 @@ function generateSeoFiles() {
     )
   }
 
-  // 1. Enrichir dist/index.html avec l'App Shell visuel + le catalogue complet des 8 jeux
+  // 1. Enrichir dist/index.html avec l'App Shell visuel + le catalogue complet des jeux
   const allGamesArticles = SEO_PAGES.map((p) =>
     renderGameArticleHtml(GAME_META[p.gameId], p.slug)
   ).join('\n')
@@ -332,7 +336,7 @@ function generateSeoFiles() {
   )
   fs.writeFileSync(baseHtmlPath, enrichedHomeHtml, 'utf-8')
 
-  // 2. Générer une page HTML dédiée dans dist/jeux/<slug>/index.html pour chacun des 8 jeux
+  // 2. Générer une page HTML dédiée dans dist/jeux/<slug>/index.html pour chacun des jeux
   for (const page of SEO_PAGES) {
     const meta = GAME_META[page.gameId]
     const pageUrl = `${SITE_URL}/jeux/${page.slug}`

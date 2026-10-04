@@ -14,11 +14,11 @@ Tarif : 100 % Gratuit, sans publicité, sans abonnement, fonctionnel hors-ligne.
 2. **Les fiches de règles officielles et barèmes** consultables en un clic même sans connexion Internet.
 3. **Une Table en direct (Session Live)** permettant à tous les joueurs autour de la table de suivre les scores en temps réel sur leur propre téléphone via un simple QR code ou code court (`ARD-XXXX`).
 4. **Le partage et la sauvegarde Cloud sans compte** pour transférer ses parties ou synchroniser plusieurs appareils instantanément.
-5. **Des statistiques détaillées et 15 trophées** (taux de victoire, jeu favori, séries de victoires, palmarès individuel par joueur).
+5. **Des statistiques détaillées et 20 trophées thématiques** (taux de victoire, jeu favori, séries de victoires, palmarès individuel par joueur).
 
 ---
 
-## 2. Règles Officielles & Barèmes des 8 Jeux Intégrés
+## 2. Règles Officielles & Barèmes des 16 Jeux Intégrés
 
 ### 2.1. Caracole (2 à 6 joueurs · 52 cartes)
 - **URL dédiée** : https://ardoise.art-crea.fr/jeux/caracole
@@ -142,7 +142,92 @@ Tarif : 100 % Gratuit, sans publicité, sans abonnement, fonctionnel hors-ligne.
 
 ### 2.8. Compteur Universel (2 à 12 joueurs · Tous jeux)
 - **URL dédiée** : https://ardoise.art-crea.fr/jeux/compteur-universel
-- **Usage** : Ardoise libre pour compter les points manche après manche dans n'importe quel jeu de cartes ou de société (Uno, Rami, Scrabble, Mölkky, Flip 7, Yam's, Mille Bornes, etc.).
+- **Usage** : Ardoise libre pour compter les points manche après manche dans n'importe quel jeu de cartes ou de société (Scrabble, Mölkky, Yam's, Mille Bornes, etc.).
 - **Modes disponibles** :
   - **Mode Score élevé** : le plus grand total gagne.
   - **Mode Seuil éliminatoire** : le plus petit total gagne, avec seuil de fin paramétrable (50, 100, 150 ou 200 points).
+
+---
+
+### 2.9. UNO (2 à 10 joueurs · 108 cartes)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/uno
+- **Objectif** : Se débarrasser de ses cartes en associant couleur ou valeur. Le vainqueur de la manche empoche les points des cartes restant dans les mains des adversaires.
+- **Fin de partie & Seuil** : Le premier joueur atteignant 500 points remporte la partie (ou mode éliminatoire Règle Maison).
+- **Barème des cartes** :
+  - **Cartes numérotées (0 à 9)** : Valeur faciale
+  - **Cartes Action (+2, Inversion, Passer)** : 20 points chacune
+  - **Cartes Noires (Joker, Super Joker +4)** : 50 points chacune
+
+---
+
+### 2.10. Dame de Pique (4 joueurs · 52 cartes)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/dame-de-pique
+- **Objectif** : Avoir le score le plus bas possible en évitant de ramasser les Cœurs et la Dame de Pique.
+- **Barème des levées** :
+  - **Chaque Cœur** : 1 point de pénalité (13 points au total)
+  - **Dame de Pique (Q♠)** : 13 points de pénalité
+  - **Total de la manche** : Strictement 26 points.
+  - **Grand Chelem (Déménagement)** : Si un joueur ramasse tous les cœurs et la dame de pique, il marque 0 point et tous les adversaires reçoivent +26 points !
+  - **Fin de partie** : Seuil éliminatoire à 100 points.
+
+---
+
+### 2.11. Flip 7 (2 à 8 joueurs · Paquet spécial)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/flip-7
+- **Objectif** : Jeu de stop-ou-encore. Tirer des cartes sans jamais avoir de doublon. Le premier à franchir 200 points gagne.
+- **Règles & Barème** :
+  - Les cartes valent leur numéro.
+  - Si un joueur tire une carte déjà présente devant lui : il est éliminé de la manche (Bust) et marque 0 pt.
+  - S'il s'arrête volontairement : il marque la somme des cartes tirées.
+  - S'il parvient à aligner 7 cartes sans doublon : bonus « Flip 7 » immédiat de +15 points !
+
+---
+
+### 2.12. Sea Salt & Paper (2 à 4 joueurs · 64 cartes origami)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/sea-salt-paper
+- **Objectif** : Combiner des cartes à effets (Duos requin/nageur, crabes, bateaux, poissons) pour cumuler au moins 7 points et tenter d'annoncer la fin de manche.
+- **Fin de manche** :
+  - **Stop** : Fin immédiate, chaque joueur marque la valeur de ses cartes.
+  - **Dernière Chance** : L'annonceur parie qu'il a le score strictement le plus élevé après un dernier tour de tous les adversaires. S'il réussit : bonus de couleur + ses points, ses adversaires ne marquent que leur bonus de couleur. S'il échoue : 0 pt et ses adversaires marquent tous leurs points.
+  - **Victoire instantanée** : Réunir les 4 cartes Sirènes procure une victoire immédiate à la partie.
+
+---
+
+### 2.13. L'Ascenseur / Rikiki (3 à 8 joueurs · 52 cartes)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/ascenseur
+- **Objectif** : Annoncer avec exactitude le nombre de plis que l'on va remporter avec un nombre variable de cartes (de 1 à 10+ puis redescente).
+- **Barème de score** :
+  - Pari exact : 10 points de prime + 2 points par pli réalisé.
+  - Pari manqué : 0 point de prime, pénalité de -2 points par pli d'écart (ou 0 pt selon variante).
+  - Règle stricte du donneur : La somme des annonces de tous les joueurs ne peut jamais être égale au nombre total de cartes distribuées.
+
+---
+
+### 2.14. Le Rami (2 à 6 joueurs · 108 cartes avec Jokers)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/rami
+- **Objectif** : Poser des combinaisons (Tierces, Brelans, Carrés) pour être le premier à poser toutes ses cartes.
+- **Barème des cartes restantes** :
+  - As = 11 pts (ou 1 pt dans 1-2-3), Figures (V, D, R) = 10 pts, Cartes 2 à 10 = valeur faciale, Joker = 20 pts.
+  - **Rami Sec** : Poser toute sa main d'un seul coup sans avoir posé au préalable double les points de pénalité de tous les adversaires.
+
+---
+
+### 2.15. Le Yaniv (2 à 6 joueurs · 54 cartes avec Jokers)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/yaniv
+- **Objectif** : Réduire la valeur des cartes dans sa main pour pouvoir annoncer « Yaniv ! » lorsqu'elle est ≤ 5 points.
+- **Contre-attaque ASSAF !** : Si un adversaire a un total de cartes inférieur ou égal à l'annonceur, l'annonceur subit une pénalité ASSAF (+30 pts) et marque 0 pt, tandis que le contre-attaquant marque 0 pt.
+- **Sursis à 50 et 100 points** : Atteindre pile 50 points ou pile 100 points divise le score par 2 !
+
+---
+
+### 2.16. Le Barbu / Le Tonton (4 joueurs · 32 ou 52 cartes)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/le-barbu
+- **Objectif** : Jeu de contrats négatifs où chaque joueur choisit à son tour de donne un contrat à éviter :
+  - Pas de plis (-2 pts / pli)
+  - Pas de cœurs (-2 pts / cœur, As -6)
+  - Pas de dames (-8 pts / dame)
+  - Le Barbu : Roi de Cœur (-20 pts)
+  - Les 2 derniers plis (-10 et -20 pts)
+  - La Salade : tous les contrats négatifs réunis en une seule manche (-130 pts)
+  - Les Dominos : contrat positif où le premier à poser ses cartes marque +65 pts.
+
