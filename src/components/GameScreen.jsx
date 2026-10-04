@@ -273,63 +273,58 @@ export function GameScreen() {
               return teams.map(t => (
                 <div
                   key={t.id}
-                  className={`relative flex items-center justify-between rounded-xl px-3 py-2 transition-all min-h-[48px] ${
+                  className={`flex flex-col justify-between rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 transition-all min-h-[54px] ${
                     t.isLeader
                       ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
                       : 'school-card'
                   }`}
                 >
-                  {/* Zone gauche : Avatars superposés (-space-x-2.5) + Couronne/Pastille de rang + Noms centrés */}
-                  <div className="flex-1 flex flex-col items-center justify-center min-w-0 pr-1">
-                    <div className="relative inline-flex items-center justify-center">
+                  {/* Ligne 1 : Avatars à gauche (couronne/pastille sur le 1er avatar) et Score aligné à droite */}
+                  <div className="flex items-center justify-between w-full">
+                    <div className="relative inline-flex items-center">
                       <div className="flex items-center -space-x-2.5">
-                        {t.players.map(p => (
+                        {t.players.map((p, pIdx) => (
                           <div key={p.id} className="relative rounded-full">
                             <Avatar
                               player={p}
                               size="sm-compact"
                               leader={t.isLeader}
+                              crown={pIdx === 0 && (t.isLeader || t.rank === 1)}
                             />
                           </div>
                         ))}
                       </div>
 
-                      {/* Couronne si 1er / Leader (comme sur les cartes individuelles) */}
-                      {(t.isLeader || t.rank === 1) ? (
-                        <Crown
-                          size={14}
-                          className="absolute -top-2.5 left-1/2 -translate-x-1/2 -rotate-6 origin-bottom text-amber-500 fill-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] z-20 pointer-events-none"
-                          strokeWidth={2.2}
-                          aria-hidden="true"
-                        />
-                      ) : t.rank > 1 ? (
-                        /* Pastille 2e si non leader (comme sur les cartes individuelles) */
+                      {/* Pastille 2e si non-leader, positionnée sur le 1er avatar */}
+                      {t.rank > 1 && !t.isLeader && (
                         <span
-                          className="absolute top-0.5 -left-2.5 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-20 pointer-events-none select-none"
+                          className="absolute top-0.5 -left-2 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-20 pointer-events-none select-none"
                         >
                           {t.rank}e
                         </span>
-                      ) : null}
+                      )}
                     </div>
 
-                    {/* Noms de l'équipe sous les avatars (toute la largeur disponible pour respirer) */}
+                    {/* Score à droite (aligné avec les avatars, légèrement plus haut) */}
+                    <div className="flex items-center justify-end pr-0.5">
+                      <span
+                        className={`font-black tabular-nums leading-none text-2xl sm:text-3xl text-right ${
+                          t.isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
+                        }`}
+                      >
+                        {t.score}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Ligne 2 : Noms de l'équipe sur toute la largeur disponible de la carte */}
+                  <div className="w-full mt-1 min-w-0">
                     <span
-                      className={`text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center leading-tight mt-0.5 block ${
+                      className={`text-[10px] sm:text-[11px] font-bold truncate max-w-full block leading-tight ${
                         t.id === 'nous' ? 'text-[#c83b3b] dark:text-red-400' : 'text-[#1e3a5f] dark:text-sky-400'
                       }`}
                     >
-                      {formatTeamNames(t.players)}
-                    </span>
-                  </div>
-
-                  {/* Zone droite : Score centré et équilibré */}
-                  <div className="flex-1 min-w-0 flex items-center justify-center">
-                    <span
-                      className={`font-black tabular-nums leading-none text-2xl sm:text-3xl text-center ${
-                        t.isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
-                      }`}
-                    >
-                      {t.score}
+                      {formatTeamNames(t.players, 8)}
                     </span>
                   </div>
                 </div>

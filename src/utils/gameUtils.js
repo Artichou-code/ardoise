@@ -27,13 +27,13 @@ export function getPlayerInitial(player) {
  * - "Player 1 & Player 3" -> "P1 & P3"
  * - Noms longs (> 5 lettres) -> "Alex. & Guil."
  */
-export function formatTeamNames(players) {
+export function formatTeamNames(players, maxLen = 8) {
   if (!players || !Array.isArray(players) || players.length === 0) return ''
   return players.map(p => {
     const name = (p?.name || '').trim()
     const match = name.match(/^(?:Player|Joueur)\s*(\d+)$/i)
     if (match) return `P${match[1]}`
-    if (name.length > 6) return name.slice(0, 5) + '.'
+    if (name.length > maxLen) return name.slice(0, maxLen - 1) + '.'
     return name
   }).join(' & ')
 }
