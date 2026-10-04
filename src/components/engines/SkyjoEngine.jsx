@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -122,14 +122,6 @@ export function SkyjoEngine({ game, onFinish }) {
             )
           })}
         </div>
-        {closerDoubled && (
-          <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-950/30 border border-[#c83b3b]/40">
-            <AlertTriangle size={14} className="text-[#c83b3b] flex-shrink-0" />
-            <p className="text-xs text-[#c83b3b] dark:text-red-300 font-medium">
-              Malus Skyjo : le clôtureur n'a pas le score strictement le plus bas (score ×2).
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Scores de la manche */}
@@ -199,7 +191,14 @@ export function SkyjoEngine({ game, onFinish }) {
         disabled={!canSubmit}
         className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40 cursor-pointer active:scale-[0.99] transition-all"
       >
-        Valider la manche
+        {closerDoubled ? (
+          <span className="inline-flex items-baseline justify-center gap-1.5">
+            <span>Valider la manche</span>
+            <span className="text-xs font-semibold opacity-90">(Malus ×2 clôtureur)</span>
+          </span>
+        ) : (
+          <span>Valider la manche</span>
+        )}
       </button>
 
       {/* Dialog d'avertissement scores à 0 */}
