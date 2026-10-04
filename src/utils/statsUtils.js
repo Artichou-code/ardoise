@@ -309,6 +309,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       title: 'Président éternel',
       desc: 'Expert du Trou du cul',
       explanation: 'Attribué au joueur ayant terminé le plus souvent au rang suprême de Président au Trou du cul.',
+      iconName: 'UserCheck',
     },
     [GAMES.CARACOLE]: {
       player: null,
@@ -316,6 +317,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       title: 'As du Sursis',
       desc: 'Maître de la Caracole',
       explanation: 'Attribué au joueur qui cumule le plus de victoires avec le score le plus faible à la Caracole.',
+      iconName: 'Hourglass',
     },
     [GAMES.SKYJO]: {
       player: null,
@@ -323,6 +325,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       title: 'Zéro faute',
       desc: 'Score minimal au Skyjo',
       explanation: 'Attribué au joueur ayant dominé la grille de 12 cartes avec le plus de victoires au Skyjo.',
+      iconName: 'Target',
     },
     [GAMES.BELOTE]: {
       player: null,
@@ -330,6 +333,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       title: 'Grand Preneur',
       desc: 'Champion de Belote',
       explanation: 'Attribué au joueur/équipe ayant mené son camp au plus grand nombre de victoires à la Belote / Coinche.',
+      iconName: 'Layers',
     },
     [GAMES.TAROT]: {
       player: null,
@@ -337,6 +341,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       title: 'Maître du Bout',
       desc: 'As du Tarot',
       explanation: 'Attribué au joueur ayant réussi le plus grand nombre de victoires en attaque au Tarot.',
+      iconName: 'Wand2',
     },
     [GAMES.SIX_QUI_PREND]: {
       player: null,
@@ -344,6 +349,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       title: 'Dompteur de taureaux',
       desc: 'Évite les bœufs',
       explanation: 'Attribué au joueur ayant esquivé les pénalités et remporté le plus de victoires à 6 qui prend.',
+      iconName: 'Skull',
     },
     [GAMES.DAME_DE_PIQUE]: {
       player: null,
@@ -351,6 +357,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       title: 'Épargneur de Cœurs',
       desc: 'Évite la Dame de Pique',
       explanation: 'Attribué au joueur ayant cumulé le plus de victoires à la Dame de Pique.',
+      iconName: 'HeartCrack',
     },
     [GAMES.FLIP_7]: {
       player: null,
@@ -358,6 +365,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       title: 'Série Magique',
       desc: 'Maître du Flip 7',
       explanation: 'Attribué au joueur ayant franchi le plus de fois les 200 points à Flip 7.',
+      iconName: 'Zap',
     },
     [GAMES.SEA_SALT_PAPER]: {
       player: null,
@@ -365,6 +373,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       title: 'Seigneur des Mers',
       desc: 'As de Sea Salt & Paper',
       explanation: 'Attribué au joueur ayant remporté le plus de parties à Sea Salt & Paper.',
+      iconName: 'Anchor',
     },
     [GAMES.ASCENSEUR]: {
       player: null,
@@ -372,6 +381,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       title: 'Oracle des Plis',
       desc: 'Expert de l’Ascenseur',
       explanation: 'Attribué au joueur ayant prédit ses plis avec la plus grande précision à l’Ascenseur.',
+      iconName: 'Eye',
     },
     [GAMES.RAMI]: {
       player: null,
@@ -379,6 +389,39 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       title: 'Grand Défausseur',
       desc: 'As du Rami',
       explanation: 'Attribué au joueur ayant totalisé le plus de victoires au Rami.',
+      iconName: 'CheckCircle2',
+    },
+    [GAMES.DOURAK]: {
+      player: null,
+      wins: 0,
+      title: 'Insubmersible',
+      desc: 'Maître du Dourak',
+      explanation: 'Attribué au joueur ayant remporté le plus grand nombre de victoires au Dourak en esquivant toutes les attaques.',
+      iconName: 'ShieldCheck',
+    },
+    [GAMES.YANIV]: {
+      player: null,
+      wins: 0,
+      title: 'Invocateur d’Asaf',
+      desc: 'As du Yaniv',
+      explanation: 'Attribué au joueur ayant cumulé le plus de victoires à Yaniv et réussi ses annonces à 5 points.',
+      iconName: 'Swords',
+    },
+    [GAMES.BARBU]: {
+      player: null,
+      wins: 0,
+      title: 'Barbe d’Or',
+      desc: 'Maître du Barbu',
+      explanation: 'Attribué au joueur ayant remporté le plus de parties de Barbu à travers les 7 contrats.',
+      iconName: 'Mustache',
+    },
+    [GAMES.UNIVERSEL]: {
+      player: null,
+      wins: 0,
+      title: 'Touche-à-tout',
+      desc: 'Champion Universel',
+      explanation: 'Attribué au joueur ayant remporté le plus de victoires sur les compteurs et jeux personnalisés.',
+      iconName: 'Dices',
     },
   }
 
@@ -404,6 +447,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         desc: `${p.finishedGames} victoires d'affilée`,
         explanation: 'Attribué pour avoir réalisé un sans-faute absolu (100% de victoires sur au moins 3 parties terminées).',
         type: 'gold',
+        iconName: 'Crown',
       })
     }
 
@@ -414,6 +458,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         desc: `${p.winRate}% de victoires`,
         explanation: 'Attribué au joueur possédant le plus haut pourcentage de victoires de la table (minimum 2 parties disputées).',
         type: 'gold',
+        iconName: 'Brain',
       })
     }
 
@@ -424,6 +469,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         desc: `${p.dourakLosses} revers`,
         explanation: "Attribué au joueur ayant terminé le plus souvent dans le rôle de l'idiot (le dernier joueur conservant des cartes en main).",
         type: 'red',
+        iconName: 'Frown',
       })
     }
 
@@ -434,6 +480,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         desc: `${p.totalGames} parties jouées`,
         explanation: 'Attribué au joueur le plus assidu ayant disputé le plus grand nombre de parties sur l’ardoise.',
         type: 'blue',
+        iconName: 'Flame',
       })
     }
 
@@ -444,6 +491,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         desc: `${p.podiums} podiums`,
         explanation: 'Attribué au joueur ayant fini le plus de fois dans le Top 3.',
         type: 'emerald',
+        iconName: 'Medal',
       })
     }
 
@@ -456,6 +504,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
           desc: `${info.wins} vict. ${GAME_META[type]?.name.split(' (')[0] || ''}`.trim(),
           explanation: info.explanation,
           type: 'theme',
+          iconName: info.iconName || 'Award',
         })
       }
     })
@@ -558,6 +607,7 @@ export const TROPHIES_CATALOG = [
     condition: 'Avoir le plus haut taux de victoire (%) de la table (minimum 2 parties disputées).',
     description: 'Récompense la régularité et la tactique globale sur l’ensemble des jeux.',
     color: 'gold',
+    iconName: 'Brain',
   },
   {
     id: 'active',
@@ -566,6 +616,7 @@ export const TROPHIES_CATALOG = [
     condition: 'Avoir disputé le plus grand nombre total de parties (minimum 3 parties).',
     description: 'Attribué au joueur le plus présent et infatigable autour de la table.',
     color: 'blue',
+    iconName: 'Flame',
   },
   {
     id: 'dourak',
@@ -574,6 +625,7 @@ export const TROPHIES_CATALOG = [
     condition: 'Avoir subi le plus grand nombre de défaites au Dourak (au moins 1 revers).',
     description: "Le titre craint de tous : le joueur qui a le plus souvent conservé les cartes en main.",
     color: 'rose',
+    iconName: 'Frown',
   },
   {
     id: 'podium',
@@ -582,6 +634,7 @@ export const TROPHIES_CATALOG = [
     condition: 'Avoir terminé le plus grand nombre de fois dans le Top 3 (minimum 2 podiums).',
     description: 'Récompense la constance aux avant-postes sur les parties disputées.',
     color: 'emerald',
+    iconName: 'Medal',
   },
   {
     id: 'invincible',
@@ -590,6 +643,7 @@ export const TROPHIES_CATALOG = [
     condition: 'Réaliser 100% de victoires sur au moins 3 parties terminées.',
     description: 'L’exploit absolu : n’avoir jamais connu la défaite sur un cycle significatif.',
     color: 'purple',
+    iconName: 'Crown',
   },
   {
     id: 'master_president',
@@ -599,6 +653,7 @@ export const TROPHIES_CATALOG = [
     condition: 'Avoir remporté le plus grand nombre de victoires en tant que Président au Trou du cul.',
     description: 'Le monarque incontesté de la hiérarchie et des échanges de cartes.',
     color: 'gold',
+    iconName: 'UserCheck',
   },
   {
     id: 'master_caracole',
@@ -608,15 +663,17 @@ export const TROPHIES_CATALOG = [
     condition: 'Cumuler le plus grand nombre de victoires (score minimal) à la Caracole.',
     description: 'Maître du bluff, de la mémoire des cartes cachées et de la règle du sursis.',
     color: 'blue',
+    iconName: 'Hourglass',
   },
   {
     id: 'master_skyjo',
     gameType: GAMES.SKYJO,
     title: 'Zéro faute',
     category: 'Skyjo',
-    condition: 'Avoir remporté le plus grand nombre de victoires à 100 points au Skyjo.',
+    condition: 'Avoir remporté le plus grand nombre de victoires au Skyjo.',
     description: 'Dompteur de la grille de 12 cartes, expert des colonnes alignées à 0 point.',
     color: 'emerald',
+    iconName: 'Target',
   },
   {
     id: 'master_belote',
@@ -626,15 +683,17 @@ export const TROPHIES_CATALOG = [
     condition: 'Avoir mené son camp au plus grand nombre de victoires à la Belote.',
     description: 'Le preneur intrépide qui réussit ses contrats et capitalise sur le 10 de der.',
     color: 'rose',
+    iconName: 'Layers',
   },
   {
     id: 'master_tarot',
     gameType: GAMES.TAROT,
     title: 'Maître du Bout',
     category: 'Tarot',
-    condition: 'Avoir réussi le plus grand nombre de victoires en attaque au Tarot.',
+    condition: 'Avoir réussi le plus grand nombre de victoires au Tarot.',
     description: 'Le stratège qui maîtrise la gestion du Petit au bout, des 21 et des Excuses.',
     color: 'purple',
+    iconName: 'Wand2',
   },
   {
     id: 'master_six_qui_prend',
@@ -644,6 +703,7 @@ export const TROPHIES_CATALOG = [
     condition: 'Avoir remporté le plus grand nombre de victoires à 6 qui prend.',
     description: 'Le joueur qui anticipe les 6èmes cartes et évite le ramassage des bœufs.',
     color: 'gold',
+    iconName: 'Skull',
   },
   {
     id: 'master_dame_de_pique',
@@ -653,6 +713,7 @@ export const TROPHIES_CATALOG = [
     condition: 'Avoir cumulé le plus de victoires à la Dame de Pique.',
     description: 'Le joueur qui évite les Cœurs et la Dame de Pique ou réussit le Grand Chelem.',
     color: 'rose',
+    iconName: 'HeartCrack',
   },
   {
     id: 'master_flip_7',
@@ -662,6 +723,7 @@ export const TROPHIES_CATALOG = [
     condition: 'Avoir remporté le plus de victoires à Flip 7.',
     description: 'L’as du stop-ou-encore qui franchit les 200 points sans faire de doublons.',
     color: 'amber',
+    iconName: 'Zap',
   },
   {
     id: 'master_sea_salt_paper',
@@ -671,6 +733,7 @@ export const TROPHIES_CATALOG = [
     condition: 'Avoir remporté le plus de parties à Sea Salt & Paper.',
     description: 'Le marin qui optimise ses duos origami et réussit ses Dernières Chances.',
     color: 'blue',
+    iconName: 'Anchor',
   },
   {
     id: 'master_ascenseur',
@@ -680,6 +743,7 @@ export const TROPHIES_CATALOG = [
     condition: 'Avoir cumulé le plus de victoires à l’Ascenseur.',
     description: 'Le clairvoyant qui prédit avec exactitude ses plis manche après manche.',
     color: 'purple',
+    iconName: 'Eye',
   },
   {
     id: 'master_rami',
@@ -688,6 +752,47 @@ export const TROPHIES_CATALOG = [
     category: 'Rami',
     condition: 'Avoir totalisé le plus de victoires au Rami.',
     description: 'Le maître des tierces et des brelans qui terrasse ses rivaux au Rami Sec.',
-    color: 'green',
+    color: 'emerald',
+    iconName: 'CheckCircle2',
+  },
+  {
+    id: 'master_dourak',
+    gameType: GAMES.DOURAK,
+    title: 'Insubmersible',
+    category: 'Dourak',
+    condition: 'Avoir remporté le plus grand nombre de victoires au Dourak.',
+    description: 'Le maître des défausses qui esquive toutes les attaques et échappe au statut de Dourak.',
+    color: 'emerald',
+    iconName: 'ShieldCheck',
+  },
+  {
+    id: 'master_yaniv',
+    gameType: GAMES.YANIV,
+    title: 'Invocateur d’Asaf',
+    category: 'Yaniv',
+    condition: 'Avoir cumulé le plus de victoires à Yaniv.',
+    description: 'L’expert des annonces « Yaniv » à 5 points ou moins et des contre-attaques Asaf impitoyables.',
+    color: 'amber',
+    iconName: 'Swords',
+  },
+  {
+    id: 'master_barbu',
+    gameType: GAMES.BARBU,
+    title: 'Barbe d’Or',
+    category: 'Le Barbu',
+    condition: 'Avoir remporté le plus grand nombre de victoires au Barbu.',
+    description: 'Le grand maître des 7 contrats impitoyables et de la redoutable Salade.',
+    color: 'rose',
+    iconName: 'Mustache',
+  },
+  {
+    id: 'master_universel',
+    gameType: GAMES.UNIVERSEL,
+    title: 'Touche-à-tout',
+    category: 'Compteur Universel',
+    condition: 'Avoir remporté le plus de victoires sur les compteurs et jeux personnalisés.',
+    description: 'Le joueur caméléon capable de triompher sur n’importe quelle règle personnalisée.',
+    color: 'gold',
+    iconName: 'Dices',
   },
 ]

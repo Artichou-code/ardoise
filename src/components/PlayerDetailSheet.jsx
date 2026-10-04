@@ -3,6 +3,7 @@ import { Award, Swords, X, BarChart3 } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { Avatar } from './ui/Avatar'
+import { TrophyIcon } from './ui/TrophyIcon'
 import { BottomSheet } from './ui/BottomSheet'
 
 /**
@@ -93,7 +94,7 @@ export function PlayerDetailSheet({ player, open, onClose }) {
                       }`}
                       title="Toucher pour voir l'explication"
                     >
-                      <Award size={12} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                      <TrophyIcon name={b.iconName} size={12} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
                       <span className="truncate max-w-[160px]">{b.title}</span>
                       <span
                         className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${
@@ -124,7 +125,7 @@ export function PlayerDetailSheet({ player, open, onClose }) {
                 <div className="p-2.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200/90 dark:border-amber-800/60 text-xs text-amber-950 dark:text-amber-200 animate-in fade-in duration-150">
                   <div className="flex items-center justify-between font-bold mb-1">
                     <span className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300">
-                      <Award size={13} />
+                      <TrophyIcon name={selectedBadge.iconName} size={13} />
                       {selectedBadge.title}
                     </span>
                     <button
