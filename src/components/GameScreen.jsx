@@ -306,10 +306,10 @@ export function GameScreen() {
                       )}
                     </div>
 
-                    {/* Score centré dans l'espace restant à droite */}
-                    <div className="flex-1 min-w-0 flex items-center justify-center pl-1">
+                    {/* Score centré dans l'espace restant à droite, légèrement descendu */}
+                    <div className="flex-1 min-w-0 flex items-center justify-center pl-1 pt-1">
                       <span
-                        className={`font-black tabular-nums leading-none text-2xl sm:text-3xl text-center ${
+                        className={`font-black tabular-nums leading-none text-2xl sm:text-3xl text-center translate-y-0.5 ${
                           t.isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
                         }`}
                       >
