@@ -24,6 +24,8 @@ export function ScorePad({
   presets,
   showPlus = true,
   customButtons,
+  disabled = false,
+  disabledMessage,
 }) {
   const [isDragging, setIsDragging] = useState(false)
 
@@ -212,19 +214,21 @@ export function ScorePad({
       {/* Roulette tactile & affichage du score */}
       <div className="relative">
         <div
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerCancel}
-          style={{ touchAction: 'none' }}
-          className={`relative select-none cursor-grab active:cursor-grabbing flex flex-col items-center justify-center transition-colors duration-150 rounded-2xl border-2 ${
+          onPointerDown={disabled ? undefined : handlePointerDown}
+          onPointerMove={disabled ? undefined : handlePointerMove}
+          onPointerUp={disabled ? undefined : handlePointerUp}
+          onPointerCancel={disabled ? undefined : handlePointerCancel}
+          style={{ touchAction: disabled ? 'auto' : 'none' }}
+          className={`relative select-none flex flex-col items-center justify-center transition-colors duration-150 rounded-2xl border-2 ${
             presets && presets.length > 7
               ? 'h-[156px] sm:h-[174px]'
               : 'h-[174px]'
           } ${
-            isDragging
-              ? 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/15 border-[#c83b3b] shadow-xs ring-2 ring-[#c83b3b]/30'
-              : 'bg-stone-50/80 dark:bg-slate-800/40 border-stone-200 dark:border-slate-800 hover:border-[#c83b3b]/40'
+            disabled
+              ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-300/60 dark:border-emerald-800/50 cursor-default'
+              : isDragging
+              ? 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/15 border-[#c83b3b] shadow-xs ring-2 ring-[#c83b3b]/30 cursor-grab active:cursor-grabbing'
+              : 'bg-stone-50/80 dark:bg-slate-800/40 border-stone-200 dark:border-slate-800 hover:border-[#c83b3b]/40 cursor-grab active:cursor-grabbing'
           }`}
         >
           {isDragging ? (
@@ -266,7 +270,11 @@ export function ScorePad({
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center gap-1.5 h-full w-full py-2">
-              <span className={`font-black tabular-nums tracking-tight text-stone-900 dark:text-slate-100 ${
+              <span className={`font-black tabular-nums tracking-tight ${
+                disabled
+                  ? 'text-emerald-700 dark:text-emerald-400'
+                  : 'text-stone-900 dark:text-slate-100'
+              } ${
                 getDisplayLength(displayVal(value)) > 8 ? 'text-2xl sm:text-3xl' : getDisplayLength(displayVal(value)) > 5 ? 'text-3xl sm:text-4xl' : 'text-4xl'
               }`}>
                 {displayVal(value)}
@@ -276,20 +284,35 @@ export function ScorePad({
                   <span className={`text-xs font-bold text-center truncate max-w-full ${
                     totalVariant === 'danger'
                       ? 'text-[#c83b3b] dark:text-red-400'
+                      : totalVariant === 'success'
+                      ? 'text-emerald-700 dark:text-emerald-400'
                       : 'text-stone-600 dark:text-slate-400'
                   }`}>
                     {totalText}
                   </span>
-                  <span className="animate-breathe text-[10.5px] text-stone-400 dark:text-slate-500 flex items-center gap-1.5 mt-2.5 font-medium select-none">
+                  {!disabled && (
+                    <span className="animate-breathe text-[10.5px] text-stone-400 dark:text-slate-500 flex items-center gap-1.5 mt-2.5 font-medium select-none">
+                      <ArrowUpDown size={11} className="text-[#c83b3b] shrink-0" />
+                      <span>Maintenir & glisser pour faire tourner</span>
+                    </span>
+                  )}
+                  {disabled && (
+                    <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 mt-2 select-none">
+                      <span>✓ {disabledMessage || 'Score verrouillé à 0 pt'}</span>
+                    </span>
+                  )}
+                </div>
+              ) : (
+                !disabled ? (
+                  <span className="animate-breathe text-[11px] font-medium text-stone-400 dark:text-slate-500 flex items-center gap-1.5 mt-2.5 select-none">
                     <ArrowUpDown size={11} className="text-[#c83b3b] shrink-0" />
                     <span>Maintenir & glisser pour faire tourner</span>
                   </span>
-                </div>
-              ) : (
-                <span className="animate-breathe text-[11px] font-medium text-stone-400 dark:text-slate-500 flex items-center gap-1.5 mt-2.5 select-none">
-                  <ArrowUpDown size={11} className="text-[#c83b3b] shrink-0" />
-                  <span>Maintenir & glisser pour faire tourner</span>
-                </span>
+                ) : (
+                  <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 mt-2 select-none">
+                    <span>✓ {disabledMessage || 'Score verrouillé à 0 pt'}</span>
+                  </span>
+                )
               )}
             </div>
           )}
@@ -303,7 +326,9 @@ export function ScorePad({
 
         return (
           <div
-            className={`grid w-full py-0.5 ${isMultiRow ? 'gap-1 sm:gap-1.5' : 'gap-1.5'}`}
+            className={`grid w-full py-0.5 transition-opacity ${isMultiRow ? 'gap-1 sm:gap-1.5' : 'gap-1.5'} ${
+              disabled ? 'opacity-30 pointer-events-none select-none grayscale' : ''
+            }`}
             style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
           >
             {presets.map(p => {
@@ -314,6 +339,7 @@ export function ScorePad({
                 <button
                   key={pVal}
                   type="button"
+                  disabled={disabled}
                   onClick={() => {
                     onChange(pVal)
                     try { navigator.vibrate?.(10) } catch {}
@@ -338,7 +364,9 @@ export function ScorePad({
 
       {/* Boutons incrémentaux ou raccourcis personnalisés */}
       {buttons && buttons.length > 0 && (
-        <div className={`grid gap-2 pt-1 ${buttons.length === 5 ? 'grid-cols-5' : 'grid-cols-4 sm:grid-cols-5'}`}>
+        <div className={`grid gap-2 pt-1 transition-opacity ${buttons.length === 5 ? 'grid-cols-5' : 'grid-cols-4 sm:grid-cols-5'} ${
+          disabled ? 'opacity-30 pointer-events-none select-none grayscale' : ''
+        }`}>
           {buttons.map((btn, idx) => {
             let main = btn.main
             let sub = btn.sub

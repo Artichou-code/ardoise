@@ -60,6 +60,16 @@ export function RamiEngine({ game, onFinish }) {
     <span>Valider et terminer</span>
   )
 
+  const handleToggleWinner = (id) => {
+    setWinnerId(prev => {
+      const next = prev === id ? null : id
+      if (next) {
+        setHandPenalties(hp => ({ ...hp, [next]: 0 }))
+      }
+      return next
+    })
+  }
+
   // Calcul du delta de manche pour chaque joueur
   const computePlayerDelta = (playerId) => {
     if (playerId === winnerId) return 0
@@ -137,7 +147,7 @@ export function RamiEngine({ game, onFinish }) {
               <button
                 key={p.id}
                 type="button"
-                onClick={() => setWinnerId(p.id)}
+                onClick={() => handleToggleWinner(p.id)}
                 className={`flex items-center gap-2 p-2 rounded-xl border transition-all cursor-pointer select-none active:scale-[0.98] ${
                   isWinner
                     ? 'border-emerald-600 bg-emerald-600 text-white shadow-2xs ring-1 ring-emerald-600/40'
@@ -427,7 +437,7 @@ export function RamiEngine({ game, onFinish }) {
             {/* Sélecteur rapide de vainqueur */}
             <button
               type="button"
-              onClick={() => setWinnerId(prev => prev === editingPlayer.id ? null : editingPlayer.id)}
+              onClick={() => handleToggleWinner(editingPlayer.id)}
               className={`w-full py-2 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer select-none active:scale-[0.99] text-xs whitespace-nowrap overflow-hidden ${
                 winnerId === editingPlayer.id
                   ? 'border-emerald-600/60 bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-600/30 font-semibold shadow-2xs'
@@ -442,7 +452,7 @@ export function RamiEngine({ game, onFinish }) {
               </span>
             </button>
 
-            {isRamiSec && (
+            {isRamiSec && winnerId !== editingPlayer.id && (
               <div className="px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-400/50 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center gap-1.5">
                 <Zap size={13} className="text-amber-600 shrink-0" />
                 <span>Rami Sec actif : ces pénalités seront doublées (×2).</span>
@@ -451,24 +461,30 @@ export function RamiEngine({ game, onFinish }) {
 
             <ScorePad
               key={editingPlayer.id}
-              value={handPenalties[editingPlayer.id] || 0}
-              onChange={v => setHandPenalties(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, v) }))}
+              value={winnerId === editingPlayer.id ? 0 : (handPenalties[editingPlayer.id] || 0)}
+              onChange={v => {
+                if (winnerId === editingPlayer.id) return
+                setHandPenalties(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, v) }))
+              }}
               onConfirm={handleConfirmPad}
               confirmLabel={confirmLabel}
               min={0}
               step={1}
+              disabled={winnerId === editingPlayer.id}
+              disabledMessage="Vainqueur (0 pt de pénalité)"
               label="Pénalités de main"
-              subLabel="Figures 10 · As 11 · Joker 20"
+              subLabel={winnerId === editingPlayer.id ? "A posé toutes ses cartes" : "Figures 10 · As 11 · Joker 20"}
               presets={[0, 10, 11, 20, 25, 30, 40, 50]}
               formatDisplay={v => `${v} pts`}
               formatTotal={val => {
                 const isWinner = winnerId === editingPlayer.id
-                const effectiveDelta = isWinner ? 0 : (isRamiSec ? val * 2 : val)
                 const cur = game.scores[editingPlayer.id] || 0
+                if (isWinner) {
+                  return { text: `Vainqueur · 0 pt · Total actuel : ${cur} pts`, variant: 'success' }
+                }
+                const effectiveDelta = isRamiSec ? val * 2 : val
                 const proj = cur + effectiveDelta
-                return isWinner
-                  ? `Vainqueur · 0 pt · Total actuel : ${cur} pts`
-                  : `+${effectiveDelta} pts ${isRamiSec ? '(Rami Sec ×2) ' : ''}· Nouveau cumul : ${proj}/${LIMIT} pts${proj >= LIMIT ? ' 💥 Éliminé' : ''}`
+                return `+${effectiveDelta} pts ${isRamiSec ? '(Rami Sec ×2) ' : ''}· Nouveau cumul : ${proj}/${LIMIT} pts${proj >= LIMIT ? ' 💥 Éliminé' : ''}`
               }}
               baseScore={game.scores[editingPlayer.id] || 0}
               showPlus={false}
