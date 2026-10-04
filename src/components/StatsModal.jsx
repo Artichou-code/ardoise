@@ -64,7 +64,7 @@ export function StatsModal({ isOpen, onClose }) {
       <div className="min-w-0">
         <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-500 dark:text-slate-400">{label}</p>
         <p className="text-xl font-bold text-stone-900 dark:text-slate-100 leading-tight">{value}</p>
-        {sub && <p className="text-[10px] text-stone-400 dark:text-slate-500 mt-0.5">{sub}</p>}
+        {sub && <p className="text-[10px] text-stone-400 dark:text-slate-500 mt-0.5 truncate">{sub}</p>}
       </div>
     </div>
   )
@@ -138,7 +138,7 @@ export function StatsModal({ isOpen, onClose }) {
                 <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-slate-500 mb-2 px-0.5">
                   Acquisition
                 </p>
-                <div className="flex flex-col gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <StatCard
                     icon={QrCode}
                     color="bg-blue-50/80 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/40"
@@ -161,7 +161,7 @@ export function StatsModal({ isOpen, onClose }) {
                 <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-slate-500 mb-2 px-0.5">
                   Sessions Live
                 </p>
-                <div className="flex flex-col gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <StatCard
                     icon={Gamepad2}
                     color="bg-emerald-50/80 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/40"
