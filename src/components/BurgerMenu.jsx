@@ -55,6 +55,7 @@ export function BurgerMenu({
   onOpenSync,
   onOpenLegal,
   onOpenArtCrea,
+  onOpenShareApp,
   liveSession,
 }) {
   const { theme, toggleTheme } = useTheme()
@@ -385,6 +386,24 @@ export function BurgerMenu({
                   </p>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
                     Webdesign & Photo
+                  </p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleAction(onOpenShareApp || (() => window.dispatchEvent(new CustomEvent('ardoise-open-share-app'))))}
+                className="w-full p-2 rounded-xl flex items-center gap-3 text-left hover:bg-stone-100 dark:hover:bg-slate-800/70 transition-colors group cursor-pointer"
+              >
+                <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                  <AppLogo className="w-7 h-7 rounded-lg shadow-2xs group-hover:scale-105 transition-transform" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-stone-800 dark:text-slate-200 text-xs">
+                    Partager l'application
+                  </p>
+                  <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
+                    Faites découvrir Ardoise à vos amis
                   </p>
                 </div>
               </button>

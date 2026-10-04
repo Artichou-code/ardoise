@@ -138,6 +138,7 @@ export default function App() {
         onOpenSync={() => setIsSyncModalOpen(true)}
         onOpenLegal={(tab) => setLegalTab(tab || 'mentions')}
         onOpenArtCrea={() => setIsArtCreaModalOpen(true)}
+        onOpenShareApp={() => setIsShareAppModalOpen(true)}
         liveSession={liveSession}
       />
 

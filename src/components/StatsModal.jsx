@@ -56,15 +56,31 @@ export function StatsModal({ isOpen, onClose }) {
   const history = (data?.history || []).slice(0, 28)
   const sessionsHistory = (data?.sessionsHistory || []).slice(0, 14)
 
+  const formatFrDate = (dateStr) => {
+    if (!dateStr) return ''
+    const [y, m, d] = dateStr.split('-')
+    return y && m && d ? `${d}/${m}/${y}` : dateStr
+  }
+
   const StatCard = ({ icon: Icon, color, label, value, sub }) => (
-    <div className={`p-3 rounded-xl border ${color} flex items-start gap-3`}>
-      <div className="p-1.5 rounded-lg bg-white/60 dark:bg-slate-800/60 shrink-0">
-        <Icon size={16} className="text-stone-600 dark:text-slate-300" />
+    <div className={`p-2.5 sm:p-3 rounded-xl border ${color} flex flex-col justify-between`}>
+      <div className="flex items-center justify-between gap-1.5 mb-1.5">
+        <div className="p-1.5 rounded-lg bg-white/60 dark:bg-slate-800/60 shrink-0">
+          <Icon size={16} className="text-stone-600 dark:text-slate-300" />
+        </div>
+        <span className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-slate-100 leading-none">
+          {value}
+        </span>
       </div>
       <div className="min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-500 dark:text-slate-400">{label}</p>
-        <p className="text-xl font-bold text-stone-900 dark:text-slate-100 leading-tight">{value}</p>
-        {sub && <p className="text-[10px] text-stone-400 dark:text-slate-500 mt-0.5 truncate">{sub}</p>}
+        <p className="text-[10px] font-bold uppercase tracking-wide text-stone-500 dark:text-slate-400 leading-tight">
+          {label}
+        </p>
+        {sub && (
+          <p className="text-[10px] text-stone-400 dark:text-slate-500 mt-1 truncate leading-tight w-full" title={sub}>
+            {sub}
+          </p>
+        )}
       </div>
     </div>
   )
@@ -182,10 +198,10 @@ export function StatsModal({ isOpen, onClose }) {
               {/* Historique 14j */}
               {history.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-slate-500 mb-2 px-0.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-slate-500 mb-1.5 px-0.5">
                     Historique (30 derniers jours)
                   </p>
-                  <div className="rounded-xl border border-stone-200/80 dark:border-slate-800/80 overflow-hidden">
+                  <div className="rounded-xl border border-stone-200/90 dark:border-slate-800/90 bg-white/95 dark:bg-[#1a1d21]/95 shadow-2xs overflow-hidden">
                     <div className="divide-y divide-stone-100 dark:divide-slate-800/60">
                       {/* Dédupliquer par jour */}
                       {Object.entries(
@@ -198,16 +214,16 @@ export function StatsModal({ isOpen, onClose }) {
                         .sort((a, b) => b[0].localeCompare(a[0]))
                         .slice(0, 10)
                         .map(([day, counts]) => (
-                          <div key={day} className="flex items-center justify-between px-3 py-2 text-xs">
-                            <span className="text-stone-500 dark:text-slate-400 font-mono text-[10px]">{day}</span>
-                            <div className="flex items-center gap-3">
+                          <div key={day} className="flex items-center justify-between px-3 py-1.5 text-xs">
+                            <span className="text-stone-600 dark:text-slate-400 font-mono text-[10px] font-medium">{formatFrDate(day)}</span>
+                            <div className="flex items-center gap-2.5">
                               {counts.qr_share_scan != null && (
-                                <span className="text-blue-600 dark:text-blue-400">
+                                <span className="text-blue-600 dark:text-blue-400 font-semibold text-[11px]">
                                   {counts.qr_share_scan} QR
                                 </span>
                               )}
                               {counts.session_join != null && (
-                                <span className="text-emerald-600 dark:text-emerald-400">
+                                <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-[11px]">
                                   {counts.session_join} joins
                                 </span>
                               )}
@@ -222,15 +238,15 @@ export function StatsModal({ isOpen, onClose }) {
               {/* Sessions history 14j */}
               {sessionsHistory.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-slate-500 mb-2 px-0.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-slate-500 mb-1.5 px-0.5">
                     Tables par jour (30j)
                   </p>
-                  <div className="rounded-xl border border-stone-200/80 dark:border-slate-800/80 overflow-hidden">
+                  <div className="rounded-xl border border-stone-200/90 dark:border-slate-800/90 bg-white/95 dark:bg-[#1a1d21]/95 shadow-2xs overflow-hidden">
                     <div className="divide-y divide-stone-100 dark:divide-slate-800/60">
                       {sessionsHistory.map((row) => (
-                        <div key={row.day} className="flex items-center justify-between px-3 py-2 text-xs">
-                          <span className="text-stone-500 dark:text-slate-400 font-mono text-[10px]">{row.day}</span>
-                          <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                        <div key={row.day} className="flex items-center justify-between px-3 py-1.5 text-xs">
+                          <span className="text-stone-600 dark:text-slate-400 font-mono text-[10px] font-medium">{formatFrDate(row.day)}</span>
+                          <span className="text-[#c83b3b] dark:text-red-400 font-normal text-[11px]">
                             {row.count} table{row.count > 1 ? 's' : ''}
                           </span>
                         </div>
