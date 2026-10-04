@@ -386,39 +386,41 @@ export function RamiEngine({ game, onFinish }) {
                     <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
                       {currentEditingIndex + 1}/{game.players.length}
                     </span>
-                    {winnerId === editingPlayer.id && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shrink-0">
-                        Vainqueur (0 pt)
-                      </span>
-                    )}
                   </div>
-                  <span className="text-xs text-stone-500 dark:text-slate-400">
+                  <span className="text-xs text-stone-500 dark:text-slate-400 block whitespace-nowrap truncate mt-0.5">
                     Total actuel : {game.scores[editingPlayer.id] || 0} pts
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  disabled={!hasPrevPlayer}
-                  onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
-                  title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
-                  aria-label="Joueur précédent"
-                >
-                  <ChevronLeft size={17} />
-                </button>
-                <button
-                  type="button"
-                  disabled={!hasNextPlayer}
-                  onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
-                  title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
-                  aria-label="Joueur suivant"
-                >
-                  <ChevronRight size={17} />
-                </button>
+              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                {winnerId === editingPlayer.id && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shrink-0">
+                    Vainqueur (0 pt)
+                  </span>
+                )}
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={!hasPrevPlayer}
+                    onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                    title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
+                    aria-label="Joueur précédent"
+                  >
+                    <ChevronLeft size={17} />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!hasNextPlayer}
+                    onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                    title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
+                    aria-label="Joueur suivant"
+                  >
+                    <ChevronRight size={17} />
+                  </button>
+                </div>
               </div>
             </div>
 
