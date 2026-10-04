@@ -337,7 +337,7 @@ export function StatsScreen() {
                       >
                         <Avatar player={honor.player} size="sm" />
                         <div className="min-w-0 flex-1">
-                          <span className={`block text-[10px] font-bold ${honor.labelStyle} uppercase tracking-wider`}>
+                          <span className={`block text-[9px] font-bold ${honor.labelStyle} uppercase tracking-wider`}>
                             {honor.label}
                           </span>
                           <p className="font-semibold text-xs text-stone-900 dark:text-slate-100 truncate">
