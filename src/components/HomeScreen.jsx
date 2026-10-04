@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
-import { ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Radio, Share2, CheckCircle2, X, Dices } from 'lucide-react'
+import { ChevronRight, BookOpen, Play, Bookmark, Trash2, Clock, Trophy, Scale, Radio, Share2, CheckCircle2, X, Dices, ChevronDown } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META, getGameDisplayName } from '../constants/games'
 import { ThemeToggle } from './ui/ThemeToggle'
@@ -14,6 +14,7 @@ import { RulesSheet } from './RulesSheet'
 import { GameDetailSheet } from './GameDetailSheet'
 import { GameSetupSheet } from './GameSetupSheet'
 import { ShareGamesModal } from './ShareGamesModal'
+import { ShareGameModal } from './ShareGameModal'
 import { SyncModal } from './SyncModal'
 
 import { LegalModal } from './LegalModal'
@@ -34,8 +35,53 @@ export function HomeScreen() {
   const [isShareGamesModalOpen, setIsShareGamesModalOpen] = useState(false)
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
   const [deckFilter, setDeckFilter] = useState(null) // null = tous, 'classic', 'dedicated'
+  const [sharingPresetGame, setSharingPresetGame] = useState(null)
+  const [isPresetsCollapsed, setIsPresetsCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('ardoise_presets_collapsed') === 'true'
+    } catch {
+      return false
+    }
+  })
 
+  const togglePresetsCollapse = () => {
+    setIsPresetsCollapsed(prev => {
+      const next = !prev
+      try {
+        localStorage.setItem('ardoise_presets_collapsed', String(next))
+      } catch {}
+      return next
+    })
+  }
 
+  const handleSharePreset = (preset, e) => {
+    e.stopPropagation()
+    const templateGame = {
+      id: `template-${preset.id || Date.now()}`,
+      name: preset.name,
+      type: 'universel',
+      status: 'template',
+      config: {
+        customGameName: preset.name,
+        scoreDir: preset.scoreDir || 'high',
+        targetScore: preset.scoreDir === 'low_limit' ? (preset.limit || 100) : 0,
+        limit: preset.limit || 100,
+        specialRule: preset.specialRule || { enabled: false },
+        playersPreset: preset.players || []
+      },
+      players: (preset.players && preset.players.length > 0)
+        ? preset.players.map((p, idx) => (typeof p === 'string' ? { id: `p${idx + 1}`, name: p } : { id: p.id || `p${idx + 1}`, name: p.name || `Joueur ${idx + 1}` }))
+        : [
+            { id: 'p1', name: 'Joueur 1' },
+            { id: 'p2', name: 'Joueur 2' }
+          ],
+      rounds: [],
+      dealerIdx: 0,
+      startedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString()
+    }
+    setSharingPresetGame(templateGame)
+  }
 
   useEffect(() => {
     const handleSessionChanged = (e) => {
@@ -229,86 +275,110 @@ export function HomeScreen() {
         {/* Jeux personnalisés enregistrés */}
         {customPresets && customPresets.length > 0 && (
           <section className="mt-4">
-            <div className="flex items-center justify-between mb-2.5">
+            <button
+              type="button"
+              onClick={togglePresetsCollapse}
+              className="w-full flex items-center justify-between mb-2.5 group cursor-pointer text-left select-none p-1 -m-1 rounded-lg hover:bg-stone-100/70 dark:hover:bg-slate-800/50 transition-colors"
+              aria-expanded={!isPresetsCollapsed}
+              title={isPresetsCollapsed ? 'Déplier mes jeux enregistrés' : 'Replier mes jeux enregistrés'}
+            >
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-3.5 rounded-full bg-amber-500" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 group-hover:text-stone-800 dark:group-hover:text-slate-200 transition-colors">
                   Mes jeux enregistrés
                 </h2>
+                <ChevronDown
+                  size={14}
+                  className={`text-stone-400 dark:text-slate-500 group-hover:text-amber-500 transition-transform duration-200 ${
+                    isPresetsCollapsed ? '-rotate-90' : 'rotate-0'
+                  }`}
+                />
               </div>
               <span className="text-[11px] text-stone-400 dark:text-slate-500">
                 {customPresets.length} modèle{customPresets.length > 1 ? 's' : ''}
               </span>
-            </div>
+            </button>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {customPresets.map(preset => {
-                const isSpecial = preset.specialRule?.enabled
-                const ruleDesc = isSpecial
-                  ? `Si ${preset.specialRule.target} pts → ${
-                      preset.specialRule.action === 'divide'
-                        ? `÷${preset.specialRule.value || 2}`
-                        : preset.specialRule.action === 'multiply'
-                        ? `×${preset.specialRule.value || 2}`
-                        : `${preset.specialRule.value || 0} pts`
-                    }`
-                  : (preset.scoreDir === 'low_limit' ? `Seuil de ${preset.limit || 100} pts` : 'Score le plus élevé')
+            {!isPresetsCollapsed && (
+              <div className="grid grid-cols-2 gap-2 sm:gap-2.5 animate-in fade-in duration-200">
+                {customPresets.map(preset => {
+                  const isSpecial = preset.specialRule?.enabled
+                  const ruleDesc = isSpecial
+                    ? `Si ${preset.specialRule.target} pts → ${
+                        preset.specialRule.action === 'divide'
+                          ? `÷${preset.specialRule.value || 2}`
+                          : preset.specialRule.action === 'multiply'
+                          ? `×${preset.specialRule.value || 2}`
+                          : `${preset.specialRule.value || 0} pts`
+                      }`
+                    : (preset.scoreDir === 'low_limit' ? `Seuil de ${preset.limit || 100} pts` : 'Score le plus élevé')
 
-                return (
-                  <div
-                    key={preset.id}
-                    onClick={() => {
-                      setSetupPreset(preset)
-                      setSetupGame('universel')
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
+                  return (
+                    <div
+                      key={preset.id}
+                      onClick={() => {
                         setSetupPreset(preset)
                         setSetupGame('universel')
-                      }
-                    }}
-                    className="relative flex flex-col justify-between p-3.5 rounded-xl school-card hover:border-amber-500 transition-all active:scale-[0.99] cursor-pointer shadow-2xs border-l-4 border-l-amber-500"
-                  >
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <Bookmark size={15} className="text-amber-500 shrink-0" />
-                          <h3 className="font-serif-title font-bold text-base leading-snug truncate">
-                            {preset.name}
-                          </h3>
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setSetupPreset(preset)
+                          setSetupGame('universel')
+                        }
+                      }}
+                      className="relative flex flex-col justify-between p-2.5 sm:p-3 rounded-xl school-card border-l-4 border-l-amber-500/80 hover:border-amber-500 dark:hover:border-amber-500/80 transition-all active:scale-[0.98] cursor-pointer shadow-2xs group"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-1">
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <Bookmark size={13} className="text-amber-500 shrink-0" />
+                            <h3 className="font-serif-title font-bold text-sm sm:text-base leading-snug truncate">
+                              {preset.name}
+                            </h3>
+                          </div>
+                          <div className="flex items-center gap-0.5 shrink-0 -mr-1 -mt-0.5">
+                            <button
+                              type="button"
+                              onClick={(e) => handleSharePreset(preset, e)}
+                              className="p-1 rounded-lg text-stone-400 hover:text-amber-600 dark:text-slate-500 dark:hover:text-amber-400 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                              title="Partager ce jeu"
+                            >
+                              <Share2 size={12} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                deletePreset(preset.id)
+                              }}
+                              className="p-1 rounded-lg text-stone-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                              title="Supprimer ce modèle"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            deletePreset(preset.id)
-                          }}
-                          className="p-1 rounded-lg text-stone-400 hover:text-red-500 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors shrink-0"
-                          title="Supprimer ce modèle"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+
+                        <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate mt-0.5">
+                          {ruleDesc}
+                        </p>
                       </div>
 
-                      <p className="text-xs text-stone-500 dark:text-slate-400 truncate mt-1">
-                        {ruleDesc}
-                      </p>
+                      <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-stone-100 dark:border-slate-800/60">
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 truncate max-w-[85px]">
+                          {preset.scoreDir === 'low_limit' ? `Seuil ${preset.limit || 100}` : 'Score max'}
+                        </span>
+                        <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-0.5 shrink-0 group-hover:translate-x-0.5 transition-transform">
+                          Lancer <ChevronRight size={13} />
+                        </span>
+                      </div>
                     </div>
-
-                    <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-stone-100 dark:border-slate-800/70">
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20">
-                        {preset.scoreDir === 'low_limit' ? `Seuil ${preset.limit || 100} pts` : 'Score max'}
-                      </span>
-                      <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-0.5">
-                        Lancer <ChevronRight size={14} />
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            )}
           </section>
         )}
 
@@ -601,6 +671,15 @@ export function HomeScreen() {
             onOpenImportGames={(importedGames) => {
               window.dispatchEvent(new CustomEvent('ardoise-open-import-games', { detail: importedGames }))
             }}
+          />
+        )}
+
+        {/* Modale de partage d'un modèle / raccourci de jeu */}
+        {sharingPresetGame && (
+          <ShareGameModal
+            isOpen={Boolean(sharingPresetGame)}
+            onClose={() => setSharingPresetGame(null)}
+            game={sharingPresetGame}
           />
         )}
       </Suspense>

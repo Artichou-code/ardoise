@@ -13,6 +13,7 @@ import {
   Calendar,
   CheckSquare,
   Square,
+  Bookmark,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { detectPlayerConflicts, importGamesWithResolution } from '../store/syncStorage'
@@ -57,9 +58,10 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
 
   const isSingle = allIncomingGames.length === 1
   const firstGame = allIncomingGames[0]
+  const isTemplate = isSingle && firstGame?.status === 'template'
 
   // Classement si partie unique
-  const sortedSinglePlayers = isSingle
+  const sortedSinglePlayers = isSingle && !isTemplate
     ? [...(firstGame.players || [])].sort((a, b) => {
         const scoreA = firstGame.scores?.[a.id] ?? a.score ?? 0
         const scoreB = firstGame.scores?.[b.id] ?? b.score ?? 0
@@ -131,15 +133,17 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
         {/* En-tête responsive */}
         <div className="relative z-10 p-3.5 sm:p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0">
-              <Trophy size={18} />
+            <span className={`p-1.5 rounded-lg shrink-0 ${isTemplate ? 'bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400' : 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b]'}`}>
+              {isTemplate ? <Bookmark size={18} /> : <Trophy size={18} />}
             </span>
             <div className="min-w-0 flex-1">
               <h2 id="import-games-title" className="text-base font-bold font-serif-title leading-snug truncate">
-                {isSingle ? 'Partie partagée' : `Lot de ${allIncomingGames.length} parties partagées`}
+                {isTemplate ? 'Modèle de jeu' : isSingle ? 'Partie partagée' : `Lot de ${allIncomingGames.length} parties partagées`}
               </h2>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                {isSingle
+                {isTemplate
+                  ? `${firstGame.config?.customGameName || firstGame.name || 'Jeu personnalisé'} · Raccourci Ardoise`
+                  : isSingle
                   ? `${firstGame.name} · ${formatDate(firstGame.finishedAt || firstGame.endedAt || firstGame.startedAt)}`
                   : 'Sélectionnez les parties et vérifiez les joueurs à importer'}
               </p>
@@ -158,7 +162,58 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
 
         {/* Corps scrollable */}
         <div className="p-4 sm:p-5 overflow-y-auto space-y-4">
-          {isSingle ? (
+          {isTemplate ? (
+            /* APERÇU MODÈLE / RACCOURCI DE JEU */
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl school-card border-l-4 border-l-amber-500/80 shadow-2xs space-y-3">
+                <div className="flex items-center gap-2">
+                  <Bookmark size={18} className="text-amber-500 shrink-0" />
+                  <h3 className="font-serif-title font-bold text-lg text-stone-900 dark:text-slate-100 leading-tight">
+                    {firstGame.config?.customGameName || firstGame.name || 'Jeu personnalisé'}
+                  </h3>
+                </div>
+
+                <div className="space-y-2 text-xs text-stone-600 dark:text-slate-300">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-stone-100/70 dark:bg-slate-800/70">
+                    <span className="text-stone-500 dark:text-slate-400">Mode de comptage</span>
+                    <span className="font-bold text-stone-800 dark:text-slate-200">
+                      {firstGame.config?.scoreDir === 'low_limit'
+                        ? `Seuil de ${firstGame.config?.limit || firstGame.config?.targetScore || 100} pts (score le plus bas gagne)`
+                        : 'Score le plus élevé l’emporte'}
+                    </span>
+                  </div>
+
+                  {firstGame.config?.specialRule?.enabled && (
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200">
+                      <span>Règle spéciale</span>
+                      <span className="font-bold">
+                        Si {firstGame.config.specialRule.target} pts → {
+                          firstGame.config.specialRule.action === 'divide'
+                            ? `÷${firstGame.config.specialRule.value || 2}`
+                            : firstGame.config.specialRule.action === 'multiply'
+                            ? `×${firstGame.config.specialRule.value || 2}`
+                            : `${firstGame.config.specialRule.value || 0} pts`
+                        }
+                      </span>
+                    </div>
+                  )}
+
+                  {firstGame.config?.playersPreset && firstGame.config.playersPreset.length > 0 && (
+                    <div className="p-2 rounded-lg bg-stone-100/70 dark:bg-slate-800/70">
+                      <span className="text-stone-500 dark:text-slate-400 block mb-1">Joueurs enregistrés :</span>
+                      <span className="font-semibold text-stone-800 dark:text-slate-200">
+                        {firstGame.config.playersPreset.map(p => p.name || p).join(' · ')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 text-xs text-center leading-relaxed">
+                Ce jeu personnalisé apparaîtra directement dans vos raccourcis <strong>« Mes jeux enregistrés »</strong> sur votre écran d'accueil.
+              </div>
+            </div>
+          ) : isSingle ? (
             /* APERÇU PARTIE UNIQUE */
             <>
               {singleWinner && (
@@ -368,8 +423,9 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
             <div className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold text-xs flex items-center justify-center gap-1.5">
               <Check size={16} />
               <span>
-                {importedResult.gamesCount} partie{importedResult.gamesCount > 1 ? 's' : ''} enregistrée
-                {importedResult.gamesCount > 1 ? 's' : ''} dans votre carnet&nbsp;!
+                {isTemplate
+                  ? 'Modèle enregistré dans vos raccourcis d’accueil\u00A0!'
+                  : `${importedResult.gamesCount} partie${importedResult.gamesCount > 1 ? 's' : ''} enregistrée${importedResult.gamesCount > 1 ? 's' : ''} dans votre carnet\u00A0!`}
               </span>
             </div>
           ) : (
@@ -379,9 +435,11 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
               disabled={gamesToImport.length === 0}
               className="flex-1 py-2.5 px-3 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-2xs"
             >
-              <Download size={15} />
+              {isTemplate ? <Bookmark size={15} /> : <Download size={15} />}
               <span>
-                Importer {gamesToImport.length} partie{gamesToImport.length > 1 ? 's' : ''} dans mon carnet
+                {isTemplate
+                  ? 'Ajouter ce jeu à mes raccourcis'
+                  : `Importer ${gamesToImport.length} partie${gamesToImport.length > 1 ? 's' : ''} dans mon carnet`}
               </span>
             </button>
           )}

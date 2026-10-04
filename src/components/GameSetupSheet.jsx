@@ -69,6 +69,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
   const [launchAsLiveTable, setLaunchAsLiveTable] = useState(false)
   const [selectedPlayers, setSelectedPlayers] = useState([])
   const [config, setConfig] = useState({ scoreDir: 'high', limit: 100 })
+  const [selectedPresetId, setSelectedPresetId] = useState(initialPreset?.id || null)
   const [customGameName, setCustomGameName] = useState('')
   const [beloteVariant, setBeloteVariant] = useState('belote')
   const [targetTeam, setTargetTeam] = useState(1) // 1 = Équipe 1, 2 = Équipe 2
@@ -196,6 +197,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
 
   useEffect(() => {
     if (initialPreset) {
+      setSelectedPresetId(initialPreset.id || null)
       setCustomGameName(initialPreset.name || '')
       setConfig({
         scoreDir: initialPreset.scoreDir || 'high',
@@ -205,6 +207,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
       setSavedSuccessMsg(null)
       return
     }
+    setSelectedPresetId(null)
 
     if (gameType === 'dourak') {
       setConfig({
@@ -445,20 +448,41 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
   }
 
   const loadPresetIntoConfig = (preset) => {
+    setSelectedPresetId(preset.id)
     setCustomGameName(preset.name || '')
     setConfig({
       scoreDir: preset.scoreDir || 'high',
       limit: preset.limit || 100,
       specialRule: preset.specialRule || { enabled: false, target: 100, action: 'divide', value: 2 },
     })
-    setSavedSuccessMsg(`Modèle « ${preset.name} » chargé`)
+    setSavedSuccessMsg(`Modèle « ${preset.name} » sélectionné`)
     setTimeout(() => setSavedSuccessMsg(null), 2500)
+  }
+
+  const handleStartNewPreset = () => {
+    setSelectedPresetId(null)
+    setCustomGameName('')
+    setConfig({
+      scoreDir: 'high',
+      limit: 100,
+      specialRule: { enabled: false, target: 100, action: 'divide', value: 2 },
+    })
+    setSavedSuccessMsg('Nouveau modèle vierge prêt')
+    setTimeout(() => setSavedSuccessMsg(null), 2000)
   }
 
   const handleSaveCurrentAsPreset = () => {
     const name = customGameName.trim() || 'Mon Jeu'
+    const existing = (customPresets || []).find(p => p.name?.trim().toLowerCase() === name.toLowerCase())
+    const activePreset = (customPresets || []).find(p => p.id === selectedPresetId)
+    const isSameNameAsActive = activePreset && activePreset.name?.trim().toLowerCase() === name.toLowerCase()
+
+    // Si le nom correspond exactement à un modèle existant ou au modèle actif, on le met à jour.
+    // Sinon, on génère un nouvel identifiant pour créer un jeu à part entière !
+    const targetId = existing?.id || (isSameNameAsActive ? selectedPresetId : `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`)
+
     const newPreset = {
-      id: initialPreset?.id || Date.now().toString(),
+      id: targetId,
       name,
       scoreDir: config.scoreDir || 'high',
       limit: config.limit || 100,
@@ -466,6 +490,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
       updatedAt: Date.now(),
     }
     savePreset(newPreset)
+    setSelectedPresetId(targetId)
     setCustomGameName(name)
     setSavedSuccessMsg(`Modèle « ${name} » enregistré !`)
     setTimeout(() => setSavedSuccessMsg(null), 3000)
@@ -476,6 +501,24 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
     : selectedPlayers.length >= (meta.minPlayers || 2)
 
   const handleStart = async () => {
+    // Si c'est un Compteur Universel avec un nom personnalisé, l'enregistrer automatiquement comme modèle raccourci
+    if (gameType === 'universel' && customGameName.trim()) {
+      const name = customGameName.trim()
+      const existing = (customPresets || []).find(p => p.name?.trim().toLowerCase() === name.toLowerCase())
+      const activePreset = (customPresets || []).find(p => p.id === selectedPresetId)
+      const isSameNameAsActive = activePreset && activePreset.name?.trim().toLowerCase() === name.toLowerCase()
+      const targetId = existing?.id || (isSameNameAsActive ? selectedPresetId : `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`)
+
+      savePreset({
+        id: targetId,
+        name,
+        scoreDir: config.scoreDir || 'high',
+        limit: config.limit || 100,
+        specialRule: config.specialRule || { enabled: false, target: 100, action: 'divide', value: 2 },
+        updatedAt: Date.now(),
+      })
+    }
+
     const finalConfig = {
       ...config,
       variant: gameType === 'belote' ? beloteVariant : undefined,
@@ -1342,31 +1385,51 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                     <Bookmark size={13} className="text-[#c83b3b]" /> Vos modèles enregistrés
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {customPresets.map(preset => (
-                      <div
-                        key={preset.id}
-                        className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800/80 text-xs font-semibold hover:border-[#c83b3b] transition-all group"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => loadPresetIntoConfig(preset)}
-                          className="text-stone-800 dark:text-slate-200 hover:text-[#c83b3b] transition-colors cursor-pointer"
+                    {customPresets.map(preset => {
+                      const isActive = preset.id === selectedPresetId
+                      return (
+                        <div
+                          key={preset.id}
+                          className={`inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full border text-xs font-semibold transition-all group ${
+                            isActive
+                              ? 'border-[#c83b3b] bg-[#c83b3b]/10 text-[#c83b3b]'
+                              : 'border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-800/80 text-stone-800 dark:text-slate-200 hover:border-[#c83b3b]'
+                          }`}
                         >
-                          {preset.name}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            deletePreset(preset.id)
-                          }}
-                          title="Supprimer ce modèle"
-                          className="p-1 rounded-full text-stone-400 hover:text-red-500 hover:bg-stone-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
+                          <button
+                            type="button"
+                            onClick={() => loadPresetIntoConfig(preset)}
+                            className="cursor-pointer truncate max-w-[120px]"
+                          >
+                            {preset.name}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              deletePreset(preset.id)
+                              if (selectedPresetId === preset.id) {
+                                handleStartNewPreset()
+                              }
+                            }}
+                            title="Supprimer ce modèle"
+                            className="p-1 rounded-full text-stone-400 hover:text-red-500 hover:bg-stone-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      )
+                    })}
+
+                    {/* Bouton pour créer un nouveau modèle vierge distinct */}
+                    <button
+                      type="button"
+                      onClick={handleStartNewPreset}
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-dashed border-stone-300 dark:border-slate-600 hover:border-[#c83b3b] text-xs font-semibold text-stone-500 hover:text-[#c83b3b] transition-colors cursor-pointer bg-white/50 dark:bg-slate-800/50"
+                    >
+                      <Plus size={12} />
+                      <span>Nouveau jeu</span>
+                    </button>
                   </div>
                 </div>
               )}

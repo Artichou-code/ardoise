@@ -324,18 +324,15 @@ export function HistoryScreen() {
                                 size="xs"
                                 leader={isWinner}
                                 leaderColor="#10b981"
+                                crown={rank === 1}
                               />
-                              <span
-                                className={`absolute -top-1.5 -left-1 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 ${
-                                  isWinner
-                                    ? 'bg-emerald-600 text-white'
-                                    : rank === 1
-                                    ? 'bg-[#c83b3b] text-white'
-                                    : 'bg-stone-500/90 dark:bg-slate-600 text-white'
-                                }`}
-                              >
-                                {rank === 1 ? '1er' : `${rank}e`}
-                              </span>
+                              {rank > 1 && (
+                                <span
+                                  className="absolute -top-1.5 -left-1 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white"
+                                >
+                                  {`${rank}e`}
+                                </span>
+                              )}
                             </div>
                             <span className="flex-1 truncate font-semibold text-xs min-w-0">
                               {player.name}

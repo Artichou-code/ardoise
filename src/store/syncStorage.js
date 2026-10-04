@@ -206,7 +206,7 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
   }
 
   for (const g of incomingGames) {
-    if (!g || !g.id || allDeletedGameIds.has(g.id)) continue
+    if (!g || !g.id || allDeletedGameIds.has(g.id) || g.status === 'template') continue
     if (!gamesMap.has(g.id)) {
       gamesMap.set(g.id, g)
       gamesAdded++
@@ -242,7 +242,7 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
 
   const allIncomingPlayers = [...incomingPlayers]
   for (const g of incomingGames) {
-    if (g && Array.isArray(g.players) && !allDeletedGameIds.has(g.id)) {
+    if (g && g.status !== 'template' && Array.isArray(g.players) && !allDeletedGameIds.has(g.id)) {
       for (const gp of g.players) {
         if (gp && gp.name) {
           const norm = gp.name.trim().toLowerCase()
@@ -295,6 +295,30 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
     }
   }
 
+  // Extraire également les modèles personnalisés présents dans les parties entrantes
+  for (const g of incomingGames) {
+    if (g && g.type === 'universel' && (g.config?.customGameName || (g.name && g.name !== 'Compteur Universel'))) {
+      const presetName = (g.config?.customGameName || g.name || '').trim()
+      if (presetName) {
+        const alreadyExists = Array.from(presetsMap.values()).some(
+          p => p.name?.trim().toLowerCase() === presetName.toLowerCase()
+        )
+        if (!alreadyExists) {
+          const newPreset = {
+            id: `preset_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            name: presetName,
+            scoreDir: g.config?.scoreDir || 'high',
+            limit: g.config?.limit || g.config?.targetScore || 100,
+            specialRule: g.config?.specialRule || { enabled: false, target: 100, action: 'divide', value: 2 },
+            updatedAt: Date.now(),
+          }
+          presetsMap.set(newPreset.id, newPreset)
+          presetsAdded++
+        }
+      }
+    }
+  }
+
   const mergedGames = Array.from(gamesMap.values()).sort((a, b) => {
     const timeA = new Date(a.finishedAt || a.endedAt || a.startedAt || 0).getTime()
     const timeB = new Date(b.finishedAt || b.endedAt || b.startedAt || 0).getTime()
@@ -340,7 +364,7 @@ export function detectPlayerConflicts(incomingGames = []) {
   const newPlayersMap = new Map()
 
   for (const g of incomingGames) {
-    if (!g || !Array.isArray(g.players)) continue
+    if (!g || g.status === 'template' || !Array.isArray(g.players)) continue
     for (const gp of g.players) {
       if (!gp || !gp.name) continue
       const key = gp.name.trim().toLowerCase()

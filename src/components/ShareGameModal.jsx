@@ -87,10 +87,10 @@ export function ShareGameModal({ isOpen, onClose, game }) {
             </span>
             <div className="min-w-0 flex-1">
               <h2 id="share-game-title" className="text-base font-bold font-serif-title leading-snug truncate">
-                Partager la partie
+                {game.status === 'template' ? 'Partager ce jeu' : 'Partager la partie'}
               </h2>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                {getGameDisplayName(game)} · {game.players?.length || 0} joueurs
+                {getGameDisplayName(game)} {game.status === 'template' ? '· Raccourci Ardoise' : `· ${game.players?.length || 0} joueurs`}
               </p>
             </div>
           </div>
@@ -131,7 +131,7 @@ export function ShareGameModal({ isOpen, onClose, game }) {
               {/* Code textuel */}
               <div>
                 <span className="text-[10px] text-stone-400 dark:text-slate-500 uppercase tracking-widest font-semibold block">
-                  Code de match
+                  {game.status === 'template' ? 'Code du modèle' : 'Code de match'}
                 </span>
                 <span className="font-mono font-bold text-lg tracking-widest text-[#c83b3b]">
                   {gameCode}
@@ -139,7 +139,9 @@ export function ShareGameModal({ isOpen, onClose, game }) {
               </div>
 
               <p className="text-xs text-stone-500 dark:text-slate-400 max-w-xs leading-relaxed">
-                Vos amis peuvent scanner ce QR code avec leur appareil photo pour consulter la feuille de match et l'ajouter à leur historique personnel.
+                {game.status === 'template'
+                  ? 'Vos amis peuvent scanner ce QR code pour ajouter automatiquement ce jeu personnalisé à leurs raccourcis d’accueil.'
+                  : "Vos amis peuvent scanner ce QR code avec leur appareil photo pour consulter la feuille de match et l'ajouter à leur historique personnel."}
               </p>
 
               {/* Actions de partage */}
