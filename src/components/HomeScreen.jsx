@@ -448,13 +448,15 @@ export function HomeScreen() {
           <div className="flex items-center justify-between mb-2.5 gap-2">
             <div className="flex items-center gap-2 shrink-0">
               <span className="w-1.5 h-3.5 rounded-full bg-[#c83b3b]" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 whitespace-nowrap">
                 Choisir un jeu
               </h2>
             </div>
 
-            {/* Barre de recherche compacte intégrée sans perte de place */}
-            <div className="flex items-center justify-end min-w-0">
+            {/* Barre de recherche qui s'étire jusqu'au titre à gauche au clic */}
+            <div className={`transition-all duration-200 ease-out flex items-center justify-end ${
+              isSearchOpen || searchQuery ? 'flex-1 min-w-0' : 'shrink-0'
+            }`}>
               {!isSearchOpen && !searchQuery ? (
                 <button
                   type="button"
@@ -470,7 +472,7 @@ export function HomeScreen() {
                   <span>{totalAvailableCount} jeux disponibles</span>
                 </button>
               ) : (
-                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-[#c83b3b]/70 dark:border-[#c83b3b]/70 ring-2 ring-[#c83b3b]/15 shadow-2xs transition-all w-[155px] xs:w-[185px] sm:w-[220px] shrink-0">
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-[#c83b3b]/70 dark:border-[#c83b3b]/70 ring-2 ring-[#c83b3b]/15 shadow-2xs transition-all w-full animate-in fade-in duration-150">
                   <Search size={11} className="text-[#c83b3b] shrink-0" />
                   <input
                     ref={searchInputRef}
@@ -522,18 +524,21 @@ export function HomeScreen() {
             </div>
           </div>
 
-          {/* Alerte si aucun jeu dédié n'est trouvé : proposition du Compteur Universel */}
+          {/* Note discrète et compacte si jeu non répertorié */}
           {isUniversalFallback && (
-            <div className="mb-2.5 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200 animate-in fade-in duration-200">
+            <div className="mb-2 px-2.5 py-1 rounded-lg bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/60 dark:border-slate-700/60 flex items-center justify-between gap-2 text-[11px] text-stone-500 dark:text-slate-400 animate-in fade-in duration-150">
               <span className="truncate">
-                Jeu non répertorié pour « <strong>{searchQuery}</strong> » · Jouez avec le <strong>Compteur Universel</strong> :
+                Non listé · <strong className="text-stone-700 dark:text-slate-200 font-semibold">Compteur Universel</strong> proposé
               </span>
               <button
                 type="button"
-                onClick={() => setSearchQuery('')}
-                className="text-[11px] font-bold text-amber-700 dark:text-amber-300 hover:underline shrink-0 cursor-pointer whitespace-nowrap"
+                onClick={() => {
+                  setSearchQuery('')
+                  searchInputRef.current?.focus()
+                }}
+                className="text-[10px] font-bold text-[#c83b3b] hover:underline shrink-0 cursor-pointer whitespace-nowrap"
               >
-                Tout réafficher
+                Effacer
               </button>
             </div>
           )}
