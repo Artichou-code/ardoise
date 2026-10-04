@@ -33,7 +33,7 @@ export function formatTeamNames(players) {
     const name = (p?.name || '').trim()
     const match = name.match(/^(?:Player|Joueur)\s*(\d+)$/i)
     if (match) return `P${match[1]}`
-    if (name.length > 5) return name.slice(0, 5) + '.'
+    if (name.length > 6) return name.slice(0, 5) + '.'
     return name
   }).join(' & ')
 }

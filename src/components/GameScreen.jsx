@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import confetti from 'canvas-confetti'
-import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen, Radio, Trash2 } from 'lucide-react'
+import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen, Radio, Trash2, Crown } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { getActiveSession } from '../store/liveSession'
 import { BurgerMenuButton } from './BurgerMenu'
@@ -273,43 +273,64 @@ export function GameScreen() {
               return teams.map(t => (
                 <div
                   key={t.id}
-                  className={`flex flex-col justify-between rounded-xl py-1.5 px-2.5 transition-all ${
+                  className={`relative flex items-center justify-between rounded-xl px-3 py-2 transition-all min-h-[48px] ${
                     t.isLeader
                       ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
                       : 'school-card'
                   }`}
                 >
-                  {/* Ligne 1 : Rang + Noms des joueurs uniquement */}
-                  <div className="flex items-center justify-between w-full leading-none mb-1 gap-1">
-                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 min-w-0">
-                      <span className={`shrink-0 ${t.isLeader ? 'text-[#c83b3b]' : 'text-stone-400 dark:text-slate-500'}`}>
-                        {t.rank === 1 ? '1er' : '2e'} ·
-                      </span>
-                      <span className={`truncate font-extrabold tracking-normal ${t.id === 'nous' ? 'text-[#c83b3b] dark:text-red-400' : 'text-[#1e3a5f] dark:text-sky-400'}`}>
-                        {formatTeamNames(t.players)}
-                      </span>
+                  {/* Zone gauche : Avatars superposés (-space-x-2.5) + Couronne/Pastille de rang + Noms centrés */}
+                  <div className="flex-1 flex flex-col items-center justify-center min-w-0 pr-1">
+                    <div className="relative inline-flex items-center justify-center">
+                      <div className="flex items-center -space-x-2.5">
+                        {t.players.map(p => (
+                          <div key={p.id} className="relative rounded-full">
+                            <Avatar
+                              player={p}
+                              size="sm-compact"
+                              leader={t.isLeader}
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Couronne si 1er / Leader (comme sur les cartes individuelles) */}
+                      {(t.isLeader || t.rank === 1) ? (
+                        <Crown
+                          size={14}
+                          className="absolute -top-2.5 left-1/2 -translate-x-1/2 -rotate-6 origin-bottom text-amber-500 fill-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] z-20 pointer-events-none"
+                          strokeWidth={2.2}
+                          aria-hidden="true"
+                        />
+                      ) : t.rank > 1 ? (
+                        /* Pastille 2e si non leader (comme sur les cartes individuelles) */
+                        <span
+                          className="absolute top-0.5 -left-2.5 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-20 pointer-events-none select-none"
+                        >
+                          {t.rank}e
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {/* Noms de l'équipe sous les avatars (toute la largeur disponible pour respirer) */}
+                    <span
+                      className={`text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center leading-tight mt-0.5 block ${
+                        t.id === 'nous' ? 'text-[#c83b3b] dark:text-red-400' : 'text-[#1e3a5f] dark:text-sky-400'
+                      }`}
+                    >
+                      {formatTeamNames(t.players)}
                     </span>
-                    {t.isLeader && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b] shrink-0" />
-                    )}
                   </div>
 
-                  {/* Ligne 2 : Avatars à gauche + Score centré dans l'espace disponible */}
-                  <div className="flex items-center w-full py-0.5">
-                    <div className="flex items-center gap-1 shrink-0">
-                      {t.players.map(p => (
-                        <Avatar key={p.id} player={p} size="sm-compact" leader={t.isLeader} />
-                      ))}
-                    </div>
-                    <div className="flex-1 flex items-center justify-center min-w-0">
-                      <span
-                        className={`font-black tabular-nums leading-none text-2xl sm:text-3xl text-center ${
-                          t.isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
-                        }`}
-                      >
-                        {t.score}
-                      </span>
-                    </div>
+                  {/* Zone droite : Score centré et équilibré */}
+                  <div className="flex-1 min-w-0 flex items-center justify-center">
+                    <span
+                      className={`font-black tabular-nums leading-none text-2xl sm:text-3xl text-center ${
+                        t.isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
+                      }`}
+                    >
+                      {t.score}
+                    </span>
                   </div>
                 </div>
               ))
