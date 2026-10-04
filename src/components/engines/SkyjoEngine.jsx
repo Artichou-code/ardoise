@@ -285,14 +285,18 @@ export function SkyjoEngine({ game, onFinish }) {
             <button
               type="button"
               onClick={() => setCloserId(prev => prev === editingPlayer.id ? null : editingPlayer.id)}
-              className={`w-full p-2.5 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer select-none active:scale-[0.99] text-xs ${
+              className={`w-full py-2 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer select-none active:scale-[0.99] text-xs whitespace-nowrap overflow-hidden ${
                 closerId === editingPlayer.id
-                  ? 'border-[#c83b3b]/60 bg-[#c83b3b]/10 text-[#c83b3b] dark:text-red-300 ring-1 ring-[#c83b3b]/30 font-semibold'
+                  ? 'border-[#c83b3b]/60 bg-[#c83b3b]/10 text-[#c83b3b] dark:text-red-300 ring-1 ring-[#c83b3b]/30 font-semibold shadow-2xs'
                   : 'school-subtle text-stone-600 dark:text-slate-400 hover:border-[#c83b3b]/40'
               }`}
             >
-              <span>{closerId === editingPlayer.id ? '✓ Clôtureur de la manche (a dit "Skyjo")' : 'Désigner comme clôtureur de la manche'}</span>
-              <span className="text-[10px] opacity-75">{closerId === editingPlayer.id ? 'Malus ×2 si non vainqueur' : 'Cliquer pour définir'}</span>
+              <span className={`truncate font-semibold ${closerId === editingPlayer.id ? 'text-[#c83b3b] dark:text-red-300' : ''}`}>
+                {closerId === editingPlayer.id ? '✓ Clôtureur ("Skyjo")' : 'Clôtureur ("Skyjo")'}
+              </span>
+              <span className={`text-[11px] shrink-0 ${closerId === editingPlayer.id ? 'font-bold text-[#c83b3b] dark:text-red-300' : 'text-stone-400 dark:text-slate-500'}`}>
+                {closerId === editingPlayer.id ? 'Malus ×2 si battu' : 'Malus ×2'}
+              </span>
             </button>
 
             <ScorePad
