@@ -32,19 +32,36 @@ export function PullToRefreshIndicator({ disabled = false }) {
   }, [disabled])
 
   useEffect(() => {
+    const isModalOpen = () => {
+      if (typeof document === 'undefined') return false
+      return (
+        document.body.style.overflow === 'hidden' ||
+        Boolean(document.querySelector('[role="dialog"], [aria-modal="true"], .drawer-overlay, .modal-backdrop'))
+      )
+    }
+
     const handleTouchStart = (e) => {
       if (disabledRef.current || refreshingRef.current) return
-      
+
+      // Ne JAMAIS déclencher si une modale, feuille ou tiroir est ouvert ou touché
+      if (
+        isModalOpen() ||
+        e.target.closest('[role="dialog"], [aria-modal="true"], .drawer-overlay, .modal-backdrop, .bottom-sheet')
+      ) {
+        activeRef.current = false
+        return
+      }
+
       // Ne jamais déclencher si le toucher commence sur un bouton ou élément interactif
       if (e.target.closest('button, [role="button"], input, select, textarea, [data-interactive], a, .quick-score, .score-pad')) {
         activeRef.current = false
         return
       }
 
-      // Ne déclencher que si le conteneur scrollable actif est tout en haut
+      // Ne déclencher que si le conteneur scrollable actif est tout en haut ET que la fenêtre est en haut
       const scrollable = e.target.closest('.overflow-y-auto')
       const scrollTop = scrollable ? scrollable.scrollTop : window.scrollY
-      if (scrollTop <= 0) {
+      if (scrollTop <= 0 && window.scrollY <= 0) {
         startYRef.current = e.touches[0].clientY
         activeRef.current = true
       } else {
@@ -53,7 +70,22 @@ export function PullToRefreshIndicator({ disabled = false }) {
     }
 
     const handleTouchMove = (e) => {
-      if (disabledRef.current || !activeRef.current || startYRef.current === null || refreshingRef.current) return
+      if (
+        disabledRef.current ||
+        !activeRef.current ||
+        startYRef.current === null ||
+        refreshingRef.current ||
+        isModalOpen()
+      ) {
+        if (activeRef.current) {
+          activeRef.current = false
+          startYRef.current = null
+          pullYRef.current = 0
+          setPullY(0)
+        }
+        return
+      }
+
       const currentY = e.touches[0].clientY
       const dy = currentY - startYRef.current
 
@@ -71,7 +103,19 @@ export function PullToRefreshIndicator({ disabled = false }) {
     }
 
     const handleTouchEnd = () => {
-      if (disabledRef.current || !activeRef.current || refreshingRef.current) return
+      if (
+        disabledRef.current ||
+        !activeRef.current ||
+        refreshingRef.current ||
+        isModalOpen()
+      ) {
+        activeRef.current = false
+        startYRef.current = null
+        pullYRef.current = 0
+        setPullY(0)
+        return
+      }
+
       const finalY = pullYRef.current
       activeRef.current = false
       startYRef.current = null
@@ -114,7 +158,7 @@ export function PullToRefreshIndicator({ disabled = false }) {
     }
   }, []) // Écouteurs stables attachés une seule fois au montage
 
-  const isVisible = (pullY >= 20 || refreshing)
+  const isVisible = !disabled && (pullY >= 20 || refreshing)
   const isTriggered = pullY >= 55
 
   return (
