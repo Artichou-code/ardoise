@@ -1,5 +1,5 @@
 import { GAME_META, GAMES } from '../constants/games'
-import { getRanking } from './gameUtils'
+import { getRanking, computePlayDuration } from './gameUtils'
 
 /**
  * Normalise un nom de joueur pour regrouper les statistiques de façon fiable
@@ -54,11 +54,8 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
     if (!game) return
     totalRounds += game.rounds?.length || 0
 
-    const start = game.startedAt || 0
-    const end = game.finishedAt || game.updatedAt || start
-    if (end > start) {
-      totalPlayTimeMs += (end - start)
-    }
+    const duration = computePlayDuration(game)
+    totalPlayTimeMs += duration
 
     const gType = game.type || 'universel'
     if (!gameTypeCounts[gType]) {
@@ -68,9 +65,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
     if (game.status === 'finished') {
       gameTypeCounts[gType].finished += 1
     }
-    if (end > start) {
-      gameTypeCounts[gType].durationMs += (end - start)
-    }
+    gameTypeCounts[gType].durationMs += duration
   })
 
   // Jeu favori (le plus joué)
@@ -597,6 +592,7 @@ export function sortPlayers(players = [], sortBy = 'winRate') {
 export function formatStatDuration(ms) {
   if (!ms || ms <= 0) return '0 min'
   const totalMinutes = Math.round(ms / 60000)
+  if (totalMinutes === 0) return '< 1 min'
   if (totalMinutes < 60) return `${totalMinutes} min`
   const hours = Math.floor(totalMinutes / 60)
   const remainingMinutes = totalMinutes % 60

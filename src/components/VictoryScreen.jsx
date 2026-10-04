@@ -4,7 +4,7 @@ import { RotateCcw, Home, Award, AlertCircle, QrCode } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
 import { Avatar } from './ui/Avatar'
-import { getRanking, formatDuration } from '../utils/gameUtils'
+import { getRanking, formatDuration, computePlayDuration } from '../utils/gameUtils'
 import { ShareGameModal } from './ShareGameModal'
 
 export function VictoryScreen() {
@@ -55,7 +55,7 @@ export function VictoryScreen() {
     : null
 
   const duration = activeGame.finishedAt
-    ? formatDuration(activeGame.finishedAt - activeGame.startedAt)
+    ? formatDuration(computePlayDuration(activeGame))
     : null
 
   const pNous = isBelote ? [activeGame.players[0], activeGame.players[1]].filter(Boolean) : []

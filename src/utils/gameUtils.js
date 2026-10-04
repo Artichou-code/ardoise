@@ -112,26 +112,47 @@ export function getRanking(scores, direction = 'high', game = null) {
 
 const MAX_GAP_MS = 15 * 60 * 1000 // 15 min — pauses au-delà ignorées
 
+function parseTimestamp(val) {
+  if (!val) return 0
+  if (typeof val === 'number') return isNaN(val) ? 0 : val
+  const parsed = new Date(val).getTime()
+  return isNaN(parsed) ? 0 : parsed
+}
+
 export function computePlayDuration(game) {
-  const { rounds = [], startedAt, finishedAt } = game
-  const end = finishedAt || Date.now()
-  const hasSavedAt = rounds.length > 0 && rounds[0].savedAt != null
+  if (!game) return 0
+  const rounds = Array.isArray(game.rounds) ? game.rounds : []
+  if (rounds.length === 0) return 0
+
+  const startedAt = parseTimestamp(game.startedAt)
+  const finishedAt = parseTimestamp(game.finishedAt)
+  const end = finishedAt || parseTimestamp(game.updatedAt) || Date.now()
+
+  const hasSavedAt = rounds[0]?.savedAt != null
 
   if (!hasSavedAt) {
     // Fallback anciennes parties : plafond à N × 20 min
-    const raw = end - startedAt
-    const cap = Math.max(rounds.length, 1) * 20 * 60 * 1000
+    const raw = Math.max(0, end - (startedAt || end))
+    const cap = rounds.length * 20 * 60 * 1000
     return Math.min(raw, cap)
   }
 
   // Nouvelles parties : somme des gaps inter-manches écrêtés
   let total = 0
-  let prev = startedAt
+  let prev = startedAt || parseTimestamp(rounds[0].savedAt)
   for (const round of rounds) {
-    total += Math.min(round.savedAt - prev, MAX_GAP_MS)
-    prev = round.savedAt
+    if (round && round.savedAt != null) {
+      const rTime = parseTimestamp(round.savedAt)
+      const delta = rTime - prev
+      if (delta > 0) {
+        total += Math.min(delta, MAX_GAP_MS)
+      }
+      prev = rTime
+    }
   }
-  if (finishedAt) total += Math.min(finishedAt - prev, MAX_GAP_MS)
+  if (finishedAt && finishedAt > prev) {
+    total += Math.min(finishedAt - prev, MAX_GAP_MS)
+  }
   return total
 }
 

@@ -3,7 +3,7 @@ import { Play, RotateCcw, FileText, QrCode } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
 import { Avatar } from './ui/Avatar'
 import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
-import { getRanking, formatDate, formatDuration } from '../utils/gameUtils'
+import { getRanking, formatDate, formatDuration, computePlayDuration } from '../utils/gameUtils'
 import { ShareGameModal } from './ShareGameModal'
 
 /**
@@ -42,7 +42,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
 
   const duration = useMemo(() => {
     if (!game?.finishedAt) return null
-    return formatDuration(game.finishedAt - game.startedAt)
+    return formatDuration(computePlayDuration(game))
   }, [game])
 
   // Calcul des scores cumulés manche par manche de manière sûre
