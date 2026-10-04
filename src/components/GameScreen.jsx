@@ -279,9 +279,9 @@ export function GameScreen() {
                       : 'school-card'
                   }`}
                 >
-                  {/* Ligne 1 : Avatars à gauche (couronne/pastille sur le 1er avatar) et Score aligné à droite */}
+                  {/* Ligne 1 : Avatars à gauche (couronne penchée sur le 1er avatar) et Score centré dans la zone droite */}
                   <div className="flex items-center justify-between w-full">
-                    <div className="relative inline-flex items-center">
+                    <div className="shrink-0 relative inline-flex items-center">
                       <div className="flex items-center -space-x-2.5">
                         {t.players.map((p, pIdx) => (
                           <div key={p.id} className="relative rounded-full">
@@ -290,6 +290,7 @@ export function GameScreen() {
                               size="sm-compact"
                               leader={t.isLeader}
                               crown={pIdx === 0 && (t.isLeader || t.rank === 1)}
+                              crownClassName="absolute -top-2.5 left-0.5 -rotate-14 origin-bottom text-amber-500 fill-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] z-20 pointer-events-none"
                             />
                           </div>
                         ))}
@@ -305,10 +306,10 @@ export function GameScreen() {
                       )}
                     </div>
 
-                    {/* Score à droite (aligné avec les avatars, légèrement plus haut) */}
-                    <div className="flex items-center justify-end pr-0.5">
+                    {/* Score centré dans l'espace restant à droite */}
+                    <div className="flex-1 min-w-0 flex items-center justify-center pl-1">
                       <span
-                        className={`font-black tabular-nums leading-none text-2xl sm:text-3xl text-right ${
+                        className={`font-black tabular-nums leading-none text-2xl sm:text-3xl text-center ${
                           t.isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
                         }`}
                       >

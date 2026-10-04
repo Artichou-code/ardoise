@@ -11,6 +11,7 @@ export function Avatar({
   crown = false,
   crownOffset,
   crownSize,
+  crownClassName,
 }) {
   const sizeClass = {
     '2xs': 'w-5 h-5 text-[10px] m-[2.5px]',
@@ -50,7 +51,7 @@ export function Avatar({
   const crownElement = crown ? (
     <Crown
       size={crownSize || crownConfig.size}
-      className={`absolute ${crownOffset || crownConfig.offset} left-1/2 -translate-x-1/2 -rotate-6 origin-bottom text-amber-500 fill-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] z-10 pointer-events-none`}
+      className={crownClassName || `absolute ${crownOffset || crownConfig.offset} left-1/2 -translate-x-1/2 -rotate-6 origin-bottom text-amber-500 fill-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] z-10 pointer-events-none`}
       strokeWidth={2.2}
       aria-hidden="true"
     />
