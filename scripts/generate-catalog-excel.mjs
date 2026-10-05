@@ -29,6 +29,9 @@ const SLUG_BY_GAME_ID = {
   [GAMES.UNIVERSEL]: 'compteur-universel',
   [GAMES.UNO]: 'uno',
   [GAMES.SYMBIOSE]: 'symbiose',
+  [GAMES.MOLKKY]: 'molkky',
+  [GAMES.YAM]: 'yams-yahtzee',
+  [GAMES.DIXIT]: 'dixit',
 }
 
 // Ordre d'affichage des jeux dans le catalogue
@@ -49,6 +52,9 @@ const GAME_ORDER = [
   GAMES.YANIV,
   GAMES.BARBU,
   GAMES.SYMBIOSE,
+  GAMES.MOLKKY,
+  GAMES.YAM,
+  GAMES.DIXIT,
   GAMES.UNIVERSEL,
 ]
 
