@@ -233,8 +233,8 @@ export function DixitEngine({ game, onFinish }) {
                   : 'border-stone-200/90 dark:border-slate-800'
               }`}
             >
-              {/* Entête du joueur */}
-              <div className="flex items-center justify-between gap-2 pb-2 border-b border-stone-100 dark:border-slate-800/80">
+              {/* Entête et saisie du joueur */}
+              <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <Avatar player={p} size="sm" />
                   <div className="min-w-0">
@@ -262,27 +262,10 @@ export function DixitEngine({ game, onFinish }) {
                     min={0}
                     max={12}
                     step={1}
+                    values={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
                     showPlus={true}
                   />
                 </div>
-              </div>
-
-              {/* Boutons d'accès rapide aux scores typiques de Dixit (+0, +1, +2, +3, +4, +5, +6) */}
-              <div className="pt-2 flex items-center justify-between gap-1 overflow-x-auto scrollbar-hide py-0.5">
-                {[0, 1, 2, 3, 4, 5, 6].map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setRoundPoints(prev => ({ ...prev, [p.id]: v }))}
-                    className={`flex-1 min-w-[32px] h-7 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                      pts === v
-                        ? 'bg-[#c83b3b] text-white shadow-2xs scale-105'
-                        : 'bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 hover:bg-stone-200 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    +{v}
-                  </button>
-                ))}
               </div>
             </div>
           )

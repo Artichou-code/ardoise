@@ -90,6 +90,9 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
   const [touchDrag, setTouchDrag] = useState(null)
   const touchStartRef = useRef(null)
   const hasDraggedRef = useRef(false)
+  const floatingAvatarRef = useRef(null)
+  const currentTargetKeyRef = useRef(null)
+  const teamsInitializedRef = useRef(false)
 
   // Statistiques d'activité des joueurs (spécifique à ce jeu et globale)
   const playerActivityMap = useMemo(() => {
@@ -165,22 +168,34 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
   // Mode par équipe (Belote ou Symbiose équipe)
   const isTeamMode = gameType === 'belote' || (gameType === 'symbiose' && config.mode === 'team')
 
-  // Composition des équipes
+  // Helper pour trouver un joueur par son id dans les sélectionnés ou sauvegardés
+  const findPlayer = (id) => {
+    return selectedPlayers.find(p => p.id === id) || (savedPlayers || []).find(p => p.id === id) || null
+  }
+
+  // Initialisation des équipes si nécessaire lors du passage en mode équipe
+  useEffect(() => {
+    if (isTeamMode) {
+      if (!teamsInitializedRef.current && selectedPlayers.length > 0 && team1Ids.length === 0 && team2Ids.length === 0) {
+        setTeam1Ids(selectedPlayers.slice(0, 2).map(p => p.id))
+        setTeam2Ids(selectedPlayers.slice(2, 4).map(p => p.id))
+        teamsInitializedRef.current = true
+      }
+    } else {
+      teamsInitializedRef.current = false
+    }
+  }, [isTeamMode, selectedPlayers, team1Ids.length, team2Ids.length])
+
+  // Composition stricte des équipes à partir des IDs (évite toute duplication lors du déplacement)
   const team1Players = useMemo(() => {
     if (!isTeamMode) return []
-    if (team1Ids.length > 0) {
-      return team1Ids.map(id => selectedPlayers.find(p => p.id === id)).filter(Boolean)
-    }
-    return selectedPlayers.slice(0, 2)
-  }, [isTeamMode, team1Ids, selectedPlayers])
+    return team1Ids.map(findPlayer).filter(Boolean)
+  }, [isTeamMode, team1Ids, selectedPlayers, savedPlayers])
 
   const team2Players = useMemo(() => {
     if (!isTeamMode) return []
-    if (team2Ids.length > 0) {
-      return team2Ids.map(id => selectedPlayers.find(p => p.id === id)).filter(Boolean)
-    }
-    return selectedPlayers.slice(2, 4)
-  }, [isTeamMode, team2Ids, selectedPlayers])
+    return team2Ids.map(findPlayer).filter(Boolean)
+  }, [isTeamMode, team2Ids, selectedPlayers, savedPlayers])
 
   const cycleTeamPairings = () => {
     if (team1Players.length === 2 && team2Players.length === 2) {
@@ -245,14 +260,13 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
     if (!fromPlayerId) return
     if (fromTeam === toTeam && fromPlayerId === toPlayerId) return
 
-    const pFrom = selectedPlayers.find(p => p.id === fromPlayerId)
+    const pFrom = findPlayer(fromPlayerId)
     if (!pFrom) return
-    const pTo = toPlayerId ? selectedPlayers.find(p => p.id === toPlayerId) : null
 
-    const t1 = team1Ids.length > 0 ? [...team1Ids] : team1Players.map(p => p.id)
-    const t2 = team2Ids.length > 0 ? [...team2Ids] : team2Players.map(p => p.id)
+    const t1 = [...team1Ids]
+    const t2 = [...team2Ids]
 
-    if (pTo) {
+    if (toPlayerId) {
       // Échange (swap) entre deux joueurs
       if (fromTeam === toTeam) {
         if (fromTeam === 1) {
@@ -290,18 +304,18 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
     } else {
       // Déplacement vers un emplacement vide
       if (fromTeam === toTeam) return
-      if (fromTeam === 1) {
+      if (fromTeam === 1 && toTeam === 2) {
+        if (t2.length >= 2) return
         const nextT1 = t1.filter(id => id !== fromPlayerId)
-        const nextT2 = t2.filter(id => id !== fromPlayerId)
-        if (nextT2.length < 2) nextT2.push(fromPlayerId)
+        const nextT2 = [...t2.filter(id => id !== fromPlayerId), fromPlayerId]
         t1.length = 0
         t1.push(...nextT1)
         t2.length = 0
         t2.push(...nextT2)
-      } else {
+      } else if (fromTeam === 2 && toTeam === 1) {
+        if (t1.length >= 2) return
         const nextT2 = t2.filter(id => id !== fromPlayerId)
-        const nextT1 = t1.filter(id => id !== fromPlayerId)
-        if (nextT1.length < 2) nextT1.push(fromPlayerId)
+        const nextT1 = [...t1.filter(id => id !== fromPlayerId), fromPlayerId]
         t1.length = 0
         t1.push(...nextT1)
         t2.length = 0
@@ -311,7 +325,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
 
     setTeam1Ids([...t1])
     setTeam2Ids([...t2])
-    const newSelected = [...t1, ...t2].map(id => selectedPlayers.find(p => p.id === id)).filter(Boolean)
+    const newSelected = [...t1, ...t2].map(findPlayer).filter(Boolean)
     setSelectedPlayers(newSelected)
   }
 
@@ -324,6 +338,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
       playerId: player.id,
       startX: e.clientX,
       startY: e.clientY,
+      pointerId: e.pointerId,
+      targetEl: e.currentTarget,
     }
   }
 
@@ -358,30 +374,49 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
       const dist = Math.hypot(dx, dy)
 
       if (dist > 8) {
-        hasDraggedRef.current = true
-        setTouchDrag({
-          team: touchStartRef.current.team,
-          player: touchStartRef.current.player,
-          playerId: touchStartRef.current.playerId,
-          x: e.clientX,
-          y: e.clientY,
-        })
+        if (!hasDraggedRef.current) {
+          hasDraggedRef.current = true
+          try {
+            touchStartRef.current.targetEl?.setPointerCapture?.(touchStartRef.current.pointerId)
+          } catch (_) {}
+          setTouchDrag({
+            team: touchStartRef.current.team,
+            player: touchStartRef.current.player,
+            playerId: touchStartRef.current.playerId,
+          })
+        }
+
+        // Accélération matérielle directe 60fps sans re-rendering de composant
+        if (floatingAvatarRef.current) {
+          floatingAvatarRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY - 12}px, 0) translate(-50%, -50%) scale(1.15)`
+        }
 
         const el = document.elementFromPoint(e.clientX, e.clientY)
         const dropZone = el?.closest('[data-team-slot]')
-        if (dropZone) {
-          const t = Number(dropZone.getAttribute('data-team'))
-          const slot = Number(dropZone.getAttribute('data-slot'))
-          const pid = dropZone.getAttribute('data-player-id') || null
-          setDragOverTarget({ team: t, slotIndex: slot, playerId: pid })
-        } else {
-          setDragOverTarget(null)
+        const targetKey = dropZone
+          ? `${dropZone.getAttribute('data-team')}-${dropZone.getAttribute('data-slot')}-${dropZone.getAttribute('data-player-id') || ''}`
+          : null
+
+        if (currentTargetKeyRef.current !== targetKey) {
+          currentTargetKeyRef.current = targetKey
+          if (dropZone) {
+            const t = Number(dropZone.getAttribute('data-team'))
+            const slot = Number(dropZone.getAttribute('data-slot'))
+            const pid = dropZone.getAttribute('data-player-id') || null
+            setDragOverTarget({ team: t, slotIndex: slot, playerId: pid })
+          } else {
+            setDragOverTarget(null)
+          }
         }
       }
     }
 
     const handleGlobalPointerUp = (e) => {
       if (touchStartRef.current) {
+        try {
+          touchStartRef.current.targetEl?.releasePointerCapture?.(touchStartRef.current.pointerId)
+        } catch (_) {}
+
         if (hasDraggedRef.current) {
           const el = document.elementFromPoint(e.clientX, e.clientY)
           const dropZone = el?.closest('[data-team-slot]')
@@ -395,14 +430,21 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
           }, 60)
         }
         touchStartRef.current = null
+        currentTargetKeyRef.current = null
         setTouchDrag(null)
         setDragOverTarget(null)
       }
     }
 
     const handleGlobalPointerCancel = () => {
+      if (touchStartRef.current) {
+        try {
+          touchStartRef.current.targetEl?.releasePointerCapture?.(touchStartRef.current.pointerId)
+        } catch (_) {}
+      }
       touchStartRef.current = null
       hasDraggedRef.current = false
+      currentTargetKeyRef.current = null
       setTouchDrag(null)
       setDragOverTarget(null)
     }
@@ -415,7 +457,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
       window.removeEventListener('pointerup', handleGlobalPointerUp)
       window.removeEventListener('pointercancel', handleGlobalPointerCancel)
     }
-  }, [team1Players, team2Players, selectedPlayers, isTeamMode, team1Ids, team2Ids, selectedForSwap])
+  }, [team1Players, team2Players, selectedPlayers, isTeamMode, team1Ids, team2Ids, selectedForSwap, savedPlayers])
 
   const handleCreateDemoPlayers = () => {
     const p1 = createPlayer('Alex', AVATAR_COLORS[0], PRESET_AVATARS[0])
@@ -1394,7 +1436,11 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
               {selectedPlayers.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => setSelectedPlayers([])}
+                  onClick={() => {
+                    setSelectedPlayers([])
+                    setTeam1Ids([])
+                    setTeam2Ids([])
+                  }}
                   className="text-[11px] font-semibold text-stone-500 hover:text-[#c83b3b] transition-colors cursor-pointer"
                 >
                   Désélectionner tout
@@ -2716,15 +2762,17 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
       {/* Aperçu flottant de l'avatar lors d'un glisser tactile */}
       {touchDrag && typeof document !== 'undefined' && createPortal(
         <div
+          ref={floatingAvatarRef}
           style={{
             position: 'fixed',
-            left: `${touchDrag.x}px`,
-            top: `${touchDrag.y - 12}px`,
-            transform: 'translate(-50%, -50%) scale(1.15)',
+            left: 0,
+            top: 0,
+            transform: `translate3d(${touchStartRef.current?.startX || 0}px, ${(touchStartRef.current?.startY || 0) - 12}px, 0) translate(-50%, -50%) scale(1.15)`,
             pointerEvents: 'none',
             zIndex: 9999,
+            willChange: 'transform',
           }}
-          className="flex flex-col items-center gap-1 opacity-95 drop-shadow-2xl animate-in fade-in zoom-in-95 duration-75 select-none"
+          className="flex flex-col items-center gap-1 opacity-95 drop-shadow-2xl select-none"
         >
           <div className="p-0.5 rounded-full ring-2 ring-emerald-500 bg-white dark:bg-slate-900 shadow-xl">
             <Avatar player={touchDrag.player} size="sm" />

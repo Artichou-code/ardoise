@@ -18,6 +18,7 @@ export function QuickScoreBadge({
   step = 1,
   showPlus = true,
   tall = false,
+  compact = false,
   formatBubble,
   formatDisplay,
   formatSub,
@@ -26,15 +27,15 @@ export function QuickScoreBadge({
 }) {
   const [isDragging, setIsDragging] = useState(false)
   const dragStartYRef = useRef(0)
-  const dragStartValueRef = useRef(value)
-  const currentValueRef = useRef(value)
+  const dragStartValueRef = useRef(value ?? 0)
+  const currentValueRef = useRef(value ?? 0)
   const hasMovedRef = useRef(false)
   const isDraggingRef = useRef(false)
 
   // Maintient la référence synchronisée avec la prop value
   useEffect(() => {
     if (!isDraggingRef.current) {
-      currentValueRef.current = value
+      currentValueRef.current = value ?? 0
     }
   }, [value])
 
@@ -56,9 +57,10 @@ export function QuickScoreBadge({
       e.currentTarget.setPointerCapture(e.pointerId)
     } catch {}
 
+    const initVal = value == null ? (values && values.length > 0 ? values[0] : (min !== undefined ? min : 0)) : value
     dragStartYRef.current = e.clientY
-    dragStartValueRef.current = value
-    currentValueRef.current = value
+    dragStartValueRef.current = initVal
+    currentValueRef.current = initVal
     hasMovedRef.current = false
     isDraggingRef.current = true
     setIsDragging(true)
@@ -130,13 +132,14 @@ export function QuickScoreBadge({
   }
 
   const cur = isDragging ? currentValueRef.current : value
+  const isUnset = !isDragging && (value === null || value === undefined)
   const displaySign = showPlus && cur > 0 ? '+' : ''
-  const isNonZero = cur !== 0
-  const displayedValue = formatDisplay ? formatDisplay(cur) : `${displaySign}${cur}`
-  const subText = formatSub ? formatSub(cur) : null
+  const displayedValue = isUnset ? (formatDisplay ? formatDisplay(null) : '—') : (formatDisplay ? formatDisplay(cur) : `${displaySign}${cur}`)
+  const subText = isUnset ? null : (formatSub ? formatSub(cur) : null)
+  const isFilled = !isUnset && (cur !== 0 || formatDisplay != null)
 
   return (
-    <div className={`relative inline-flex items-center select-none flex-shrink-0 ${tall ? 'self-stretch' : ''}`}>
+    <div className={`relative inline-flex items-center select-none flex-shrink-0 ${tall ? 'self-stretch' : ''} ${compact ? 'w-full' : ''}`}>
 
       {/* Zone interactive compacte ou haute */}
       <div
@@ -152,13 +155,15 @@ export function QuickScoreBadge({
         className={`group relative border transition-all cursor-ns-resize select-none ${
           tall
             ? 'flex flex-col items-center justify-between min-w-[4.8rem] w-20 sm:w-24 h-full self-stretch py-2 px-1.5 rounded-2xl'
+            : compact
+            ? 'flex items-center justify-between gap-1 w-full min-w-0 h-8 sm:h-9 px-2 py-0.5 rounded-lg'
             : 'flex items-center justify-between gap-1.5 min-w-[4.2rem] h-10 px-2.5 py-1 rounded-xl'
         } ${
           isDragging
-            ? `${tall ? 'scale-103' : 'scale-108'} border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b] ring-2 ring-[#c83b3b]/40 shadow-md z-30`
-            : isNonZero
+            ? `${tall ? 'scale-103' : 'scale-105'} border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b] ring-2 ring-[#c83b3b]/40 shadow-md z-30`
+            : isFilled
             ? 'bg-[#c83b3b]/8 dark:bg-[#c83b3b]/15 border-[#c83b3b]/35 text-[#c83b3b] dark:text-red-300 hover:border-[#c83b3b] shadow-2xs'
-            : 'bg-white/80 dark:bg-slate-900/80 border-stone-200 dark:border-slate-800 text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/60 hover:text-[#c83b3b] shadow-2xs'
+            : 'bg-white/80 dark:bg-slate-900/80 border-stone-200 dark:border-slate-800 text-stone-400 dark:text-slate-500 hover:border-[#c83b3b]/60 hover:text-[#c83b3b] shadow-2xs'
         } ${className}`}
       >
         {tall ? (
@@ -186,7 +191,7 @@ export function QuickScoreBadge({
         ) : (
           <>
             <div className="flex items-baseline justify-center gap-1 flex-1 text-center truncate">
-              <span className="text-base sm:text-lg font-black tabular-nums leading-none tracking-tight">
+              <span className={`${compact ? 'text-sm font-extrabold' : 'text-base sm:text-lg font-black'} tabular-nums leading-none tracking-tight`}>
                 {displayedValue}
               </span>
               {subText && (
@@ -196,7 +201,7 @@ export function QuickScoreBadge({
               )}
             </div>
             <div className="flex flex-col items-center justify-center -mr-0.5 opacity-40 group-hover:opacity-100 transition-opacity">
-              <ArrowUpDown size={11} strokeWidth={2.5} />
+              <ArrowUpDown size={compact ? 10 : 11} strokeWidth={2.5} />
             </div>
           </>
         )}

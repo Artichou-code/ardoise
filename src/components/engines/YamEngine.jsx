@@ -155,6 +155,14 @@ export function YamEngine({ game, onFinish }) {
     })
   }
 
+  const handleClearCategory = (playerId, catId) => {
+    setGridByPlayer(prev => {
+      const current = { ...(prev[playerId] || {}) }
+      delete current[catId]
+      return { ...prev, [playerId]: current }
+    })
+  }
+
   const handleValidate = () => {
     const newScores = {}
     const delta = {}
@@ -323,36 +331,52 @@ export function YamEngine({ game, onFinish }) {
 
               {/* Mode Grille : Affichage des 13 cases organisées en 2 sections */}
               {inputMode === 'grid' && (
-                <div className="space-y-2 pt-1">
+                <div className="space-y-3 pt-1">
                   {/* Section Supérieure */}
                   <div>
-                    <div className="flex items-center justify-between text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                    <div className="flex items-center justify-between text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
                       <span>Section Supérieure (1 à 6)</span>
                       <span>{stats.upperSubtotal}/63 pts</span>
                     </div>
-                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                       {YAM_CATEGORIES.filter(c => c.section === 'upper').map((cat) => {
                         const val = pGrid[cat.id]
                         const isSet = val != null
 
                         return (
-                          <button
+                          <div
                             key={cat.id}
-                            type="button"
-                            onClick={() => setPadTarget({ playerId: p.id, catId: cat.id })}
-                            className={`p-1.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[46px] ${
+                            className={`p-2 rounded-xl border flex flex-col justify-between gap-1.5 transition-all ${
                               isSet
-                                ? 'border-[#c83b3b]/40 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
-                                : 'border-stone-200/70 dark:border-slate-800 hover:border-stone-300'
+                                ? 'border-[#c83b3b]/35 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
+                                : 'border-stone-200/80 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30'
                             }`}
                           >
-                            <span className="text-[10px] font-bold text-stone-600 dark:text-slate-300 truncate">
-                              {cat.name}
-                            </span>
-                            <span className={`text-xs font-black tabular-nums ${isSet ? 'text-[#c83b3b]' : 'text-stone-400'}`}>
-                              {isSet ? `${val} pts` : '—'}
-                            </span>
-                          </button>
+                            <div className="flex items-center justify-between w-full px-0.5">
+                              <span className="text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate">
+                                {cat.name}
+                              </span>
+                              {isSet && (
+                                <span className="text-[8px] font-black text-[#c83b3b]">
+                                  ●
+                                </span>
+                              )}
+                            </div>
+
+                            <QuickScoreBadge
+                              value={val}
+                              onChange={(v) => handleCategoryValueChange(p.id, cat.id, v)}
+                              onOpenPad={() => setPadTarget({ playerId: p.id, catId: cat.id })}
+                              values={cat.presets}
+                              min={0}
+                              max={cat.max}
+                              step={1}
+                              compact={true}
+                              formatDisplay={(v) => (v != null ? `${v}` : '—')}
+                              showPlus={false}
+                              className="w-full"
+                            />
+                          </div>
                         )
                       })}
                     </div>
@@ -360,33 +384,49 @@ export function YamEngine({ game, onFinish }) {
 
                   {/* Section Inférieure */}
                   <div>
-                    <div className="flex items-center justify-between text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                    <div className="flex items-center justify-between text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
                       <span>Section Inférieure (Combinaisons)</span>
                       <span>{stats.lowerSubtotal} pts</span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
                       {YAM_CATEGORIES.filter(c => c.section === 'lower').map((cat) => {
                         const val = pGrid[cat.id]
                         const isSet = val != null
 
                         return (
-                          <button
+                          <div
                             key={cat.id}
-                            type="button"
-                            onClick={() => setPadTarget({ playerId: p.id, catId: cat.id })}
-                            className={`p-1.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[46px] ${
+                            className={`p-2 rounded-xl border flex flex-col justify-between gap-1.5 transition-all ${
                               isSet
-                                ? 'border-[#c83b3b]/40 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
-                                : 'border-stone-200/70 dark:border-slate-800 hover:border-stone-300'
+                                ? 'border-[#c83b3b]/35 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
+                                : 'border-stone-200/80 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30'
                             }`}
                           >
-                            <span className="text-[10px] font-bold text-stone-600 dark:text-slate-300 truncate">
-                              {cat.name}
-                            </span>
-                            <span className={`text-xs font-black tabular-nums ${isSet ? 'text-[#c83b3b]' : 'text-stone-400'}`}>
-                              {isSet ? `${val} pts` : '—'}
-                            </span>
-                          </button>
+                            <div className="flex items-center justify-between w-full px-0.5">
+                              <span className="text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate">
+                                {cat.name}
+                              </span>
+                              {isSet && (
+                                <span className="text-[8px] font-black text-[#c83b3b]">
+                                  ●
+                                </span>
+                              )}
+                            </div>
+
+                            <QuickScoreBadge
+                              value={val}
+                              onChange={(v) => handleCategoryValueChange(p.id, cat.id, v)}
+                              onOpenPad={() => setPadTarget({ playerId: p.id, catId: cat.id })}
+                              values={cat.fixed ? cat.presets : undefined}
+                              min={0}
+                              max={cat.max}
+                              step={1}
+                              compact={true}
+                              formatDisplay={(v) => (v != null ? `${v}` : '—')}
+                              showPlus={false}
+                              className="w-full"
+                            />
+                          </div>
                         )
                       })}
                     </div>
@@ -458,8 +498,21 @@ export function YamEngine({ game, onFinish }) {
                 </div>
               </div>
 
-              {/* Navigation précédente / suivante */}
-              <div className="flex items-center gap-1">
+              {/* Navigation et actions */}
+              <div className="flex items-center gap-1.5">
+                {activeCategory && gridByPlayer[activePlayer.id]?.[activeCategory.id] != null && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleClearCategory(activePlayer.id, activeCategory.id)
+                      setPadTarget(null)
+                    }}
+                    className="px-2 py-1 rounded-lg text-[10px] font-bold text-stone-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 border border-stone-200 dark:border-slate-700 transition-colors cursor-pointer"
+                    title="Effacer et réinitialiser cette case"
+                  >
+                    Effacer
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handlePadPrev}

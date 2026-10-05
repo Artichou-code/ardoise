@@ -261,34 +261,14 @@ export function MolkkyEngine({ game, onFinish }) {
                     min={0}
                     max={12}
                     step={1}
+                    values={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
+                    formatSub={(v) => (v === 0 ? 'Raté' : null)}
                     showPlus={true}
                   />
                 </div>
               </div>
 
-              {/* Ligne 2 : Boutons d'accès rapide aux scores officiels (0 à 12 quilles) */}
-              <div className="pt-2">
-                <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-0.5">
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => setRoundPoints(prev => ({ ...prev, [p.id]: v }))}
-                      className={`min-w-[28px] h-7 px-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                        pts === v
-                          ? 'bg-[#c83b3b] text-white shadow-2xs scale-105'
-                          : v === 0
-                          ? 'bg-stone-200/60 dark:bg-slate-800 text-stone-500 dark:text-slate-400 hover:bg-stone-300/60'
-                          : 'bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300 hover:bg-stone-200 dark:hover:bg-slate-700'
-                      }`}
-                    >
-                      {v === 0 ? 'Raté' : v}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Ligne 3 : Statut et alertes pour ce joueur */}
+              {/* Statut et alertes pour ce joueur */}
               {!isTeamMode && (
                 <div className="pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px]">
                   <div className="flex items-center gap-1.5">
