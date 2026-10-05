@@ -18,6 +18,9 @@ export const GAMES = {
   UNIVERSEL: 'universel',
   UNO: 'uno',
   SYMBIOSE: 'symbiose',
+  MOLKKY: 'molkky',
+  YAM: 'yam',
+  DIXIT: 'dixit',
 }
 
 export const GAME_META = {
@@ -1252,6 +1255,210 @@ export const GAME_META = {
       ],
     },
   },
+  [GAMES.MOLKKY]: {
+    id: GAMES.MOLKKY,
+    deckType: 'dedicated',
+    name: 'Mölkky',
+    playersBadge: '2 à 8+ j.',
+    categoryBadge: '12 quilles',
+    description:
+      'Faites tomber les quilles en bois numérotées pour marquer des points et atteindre exactement 50 points. Attention au dépassement qui vous renvoie à 25 points et aux 3 lancers ratés consécutifs !',
+    minPlayers: 2,
+    maxPlayers: 12,
+    scoreDir: 'high',
+    endScore: 50,
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & But du jeu',
+          items: [
+            'Nombre de joueurs : 2 à 8+ joueurs (individuel ou en 2 équipes).',
+            'Matériel : 12 quilles en bois biseautées numérotées de 1 à 12 et 1 bâton de lancer (le Mölkky).',
+            'Objectif : Être le premier joueur ou la première équipe à totaliser exactement 50 points.',
+          ],
+        },
+        {
+          title: 'Mise en place & Distance de lancer',
+          items: [
+            'Disposition initiale : Les 12 quilles sont regroupées dans un ordre précis et serrées les unes contre les autres (1 et 2 devant, 7, 9, 8 au milieu, etc.).',
+            'Zone de tir (Mölkkaari) : Les joueurs se placent à une distance officielle de 3,50 mètres du groupe de quilles.',
+            'Lancer : Le bâton doit être lancé par le bas (lancer franc sous la main).',
+          ],
+        },
+        {
+          title: 'Barème des points après chaque lancer',
+          items: [
+            'Une seule quille abattue : Le joueur marque la valeur inscrite sur cette quille (de 1 à 12 points).',
+            'Plusieurs quilles abattues : Le joueur marque un nombre de points égal au nombre de quilles tombées (ex. : 4 quilles tombées = 4 points), quels que soient leurs numéros.',
+            'Quille non comptée : Une quille n’est considérée comme tombée que si elle repose complètement à plat sur le sol (pas en équilibre sur une autre quille ou le bâton).',
+            'Relèvement des quilles : Après chaque lancer, les quilles tombées sont redressées exactement à l’endroit où elles ont atterri, étendant ainsi l’aire de jeu.',
+          ],
+        },
+        {
+          title: 'Règle du dépassement des 50 points (Chute à 25)',
+          items: [
+            'Le score cumulé d’un joueur ne doit jamais dépasser 50 points.',
+            'Si un lancer amène son score total à 51 points ou plus, son score retombe automatiquement et immédiatement à 25 points pour le tour suivant !',
+          ],
+        },
+        {
+          title: 'Règle d’élimination (3 lancers ratés consécutifs)',
+          items: [
+            'Si un joueur ou une équipe ne fait tomber aucune quille (0 point) lors de 3 lancers consécutifs, il est éliminé de la partie.',
+            'Si tous les adversaires sont éliminés, le dernier joueur restant en lice l’emporte.',
+          ],
+        },
+        {
+          title: 'Mode par Équipes (2 vs 2 ou plus)',
+          items: [
+            'Les coéquipiers cumulent leurs scores au sein d’une même équipe.',
+            'Les lancers s’effectuent en alternance entre les membres des deux équipes.',
+            'La retombée à 25 points en cas de dépassement et les 3 zéros consécutifs s’appliquent à l’équipe entière.',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: '1 quille tombée seule', value: 'Valeur de la quille (1 à 12 pts)' },
+        { item: 'Plusieurs quilles tombées', value: 'Nombre de quilles tombées' },
+        { item: 'Lancer manqué (0 quille)', value: '0 point' },
+        { item: '3 lancers ratés consécutifs', value: 'Élimination de la partie' },
+        { item: 'Score > 50 points', value: 'Score ramené à 25 points' },
+        { item: 'Victoire', value: 'Exactement 50 points' },
+      ],
+    },
+  },
+  [GAMES.YAM]: {
+    id: GAMES.YAM,
+    deckType: 'dedicated',
+    name: "Yam's / Yahtzee",
+    headerName: "Yam's",
+    playersBadge: '2 à 6 j.',
+    categoryBadge: '5 dés',
+    description:
+      'Lancez les 5 dés jusqu’à 3 fois par tour, remplissez les 13 combinaisons de votre grille officielle, visez le bonus de 35 points et le mythique Yam’s à 50 points !',
+    minPlayers: 2,
+    maxPlayers: 6,
+    scoreDir: 'high',
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & But du jeu',
+          items: [
+            'Nombre de joueurs : 2 à 6 joueurs.',
+            'Matériel : 5 dés standard à 6 faces, un gobelet et une feuille de marque (13 cases à compléter).',
+            'Objectif : Réaliser le plus grand score cumulé après avoir complété les 13 cases de la grille.',
+          ],
+        },
+        {
+          title: 'Déroulement d’un tour (3 lancers max)',
+          items: [
+            '1er lancer : Le joueur jette les 5 dés.',
+            '2e et 3e lancers : Il peut mettre de côté les dés qu’il souhaite conserver et relancer les autres une ou deux fois.',
+            'Choix obligatoire : À la fin de ses 3 lancers (ou avant s’il est satisfait), le joueur doit obligatoirement inscrire un score dans l’une des 13 cases de sa grille.',
+            'Case sacrifiée (0 pt) : Si aucune combinaison libre n’est validée, le joueur doit inscrire 0 dans la case de son choix.',
+          ],
+        },
+        {
+          title: 'Section Supérieure & Bonus de 35 points',
+          items: [
+            'Cases As à 6 : On additionne uniquement les dés du chiffre correspondant (ex. : trois 4 = 12 points).',
+            'Prime / Bonus de 35 points : Si la somme de la Section Supérieure atteint ou dépasse 63 points (moyenne de trois dés de chaque valeur), le joueur gagne un bonus de +35 points !',
+          ],
+        },
+        {
+          title: 'Section Inférieure (Les Combinaisons)',
+          items: [
+            'Brelan (3 dés identiques) : Somme totale des 5 dés.',
+            'Carré (4 dés identiques) : Somme totale des 5 dés.',
+            'Full (3 dés identiques + 2 dés identiques) : 25 points fixes.',
+            'Petite Suite (4 dés consécutifs : 1-2-3-4, 2-3-4-5 ou 3-4-5-6) : 30 points fixes.',
+            'Grande Suite (5 dés consécutifs : 1-2-3-4-5 ou 2-3-4-5-6) : 40 points fixes.',
+            'Yam’s / Yahtzee (5 dés identiques) : 50 points fixes.',
+            'Chance : Somme totale des 5 dés (utilisable pour sauver un lancer quelconque).',
+          ],
+        },
+        {
+          title: 'Fin de partie & Vainqueur',
+          items: [
+            'La partie se termine au bout de 13 manches, lorsque tous les joueurs ont rempli l’intégralité de leur grille.',
+            'Le vainqueur est celui qui possède le total général le plus élevé (Section Supérieure + Bonus éventuel + Section Inférieure).',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Partie Supérieure (1 à 6)', value: 'Somme des dés correspondants' },
+        { item: 'Bonus Supérieur (si total ≥ 63)', value: '+35 points' },
+        { item: 'Brelan / Carré', value: 'Somme des 5 dés' },
+        { item: 'Full (3 + 2 dés)', value: '25 points fixes' },
+        { item: 'Petite Suite / Grande Suite', value: '30 points / 40 points' },
+        { item: 'Yam’s (5 dés identiques)', value: '50 points fixes' },
+        { item: 'Chance', value: 'Somme des 5 dés' },
+      ],
+    },
+  },
+  [GAMES.DIXIT]: {
+    id: GAMES.DIXIT,
+    deckType: 'dedicated',
+    name: 'Dixit',
+    playersBadge: '3 à 8 j.',
+    categoryBadge: 'Jeu illustré',
+    description:
+      'Énoncez un indice énigmatique, retrouvez la carte du conteur et bluffez vos adversaires avec vos propres illustrations. Le premier joueur à franchir 30 points l’emporte !',
+    minPlayers: 3,
+    maxPlayers: 8,
+    scoreDir: 'high',
+    endScore: 30,
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & But du jeu',
+          items: [
+            'Nombre de joueurs : 3 à 8 joueurs.',
+            'Matériel : 84 cartes grand format illustrées, pions de vote et piste de score.',
+            'Objectif : Atteindre ou dépasser 30 points en trouvant la carte du conteur et en incitant les autres joueurs à voter pour sa propre carte.',
+          ],
+        },
+        {
+          title: 'Déroulement d’un tour : Le Conteur',
+          items: [
+            'À chaque manche, un joueur différent prend le rôle du Conteur.',
+            'Il choisit l’une des 6 cartes de sa main et énonce à voix haute un indice énigmatique (un mot, une phrase, une chanson, une onomatopée...).',
+            'Chaque autre joueur choisit dans sa propre main la carte qui illustre le mieux cet indice et la donne face cachée au conteur.',
+          ],
+        },
+        {
+          title: 'Phase de vote & Révélation',
+          items: [
+            'Le conteur mélange toutes les cartes reçues avec la sienne et les dispose face visible sur la table.',
+            'Tous les joueurs (sauf le conteur) votent secrètement pour désigner la carte qu’ils pensent appartenir au conteur (il est interdit de voter pour sa propre carte).',
+          ],
+        },
+        {
+          title: 'Barème officiel des points',
+          items: [
+            'Indice trop évident ou trop obscur : Si TOUS les joueurs trouvent la carte du conteur, OU si AUCUN joueur ne la trouve, le conteur marque 0 point et tous les autres joueurs marquent 2 points.',
+            'Indice équilibré : Si AU MOINS un joueur (mais pas tous) trouve la carte du conteur, le conteur marque 3 points et chaque joueur ayant trouvé la bonne carte marque également 3 points.',
+            'Bonus de bluff (Tromperie) : Chaque joueur (hormis le conteur) marque 1 point supplémentaire par vote reçu sur sa propre carte (jusqu’à concurrence du nombre de votants).',
+          ],
+        },
+        {
+          title: 'Fin de partie & Vainqueur',
+          items: [
+            'Chaque manche se termine par le renouvellement de la main (piocher 1 carte pour revenir à 6).',
+            'La partie prend fin dès qu’un ou plusieurs joueurs atteignent ou dépassent 30 points.',
+            'Le joueur ayant le score le plus élevé remporte la victoire !',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Tous ou Aucun trouvent', value: 'Conteur = 0 pt · Autres = 2 pts' },
+        { item: 'Certains trouvent (1 à n-1)', value: 'Conteur = 3 pts · Devins = 3 pts' },
+        { item: 'Vote sur sa fausse carte', value: '+1 point par vote reçu' },
+        { item: 'Taille de la main', value: '6 cartes par joueur' },
+        { item: 'Fin de partie', value: 'Premier joueur à 30 points' },
+      ],
+    },
+  },
 }
 
 export const PRESIDENT_ROLES = [
@@ -1360,6 +1567,19 @@ export function getGameDisplayName(game) {
   }
   if (typeLower === GAMES.SYMBIOSE || nameLower.includes('symbiose')) {
     return 'Symbiose'
+  }
+  if (typeLower === GAMES.YAM || nameLower.includes('yam') || nameLower.includes('yahtzee')) {
+    return "Yam's"
+  }
+  if (typeLower === GAMES.MOLKKY || nameLower.includes('molkky') || nameLower.includes('mölkky')) {
+    return 'Mölkky'
+  }
+  if (typeLower === GAMES.DIXIT || nameLower.includes('dixit')) {
+    return 'Dixit'
+  }
+  const meta = GAME_META[game.type]
+  if (meta?.headerName) {
+    return meta.headerName
   }
   // Pour tout jeu, ne garder qu'un seul nom sans parenthèses alternatives ni slashs (ex: "Nom (Alias)" -> "Nom")
   if (game.name) {

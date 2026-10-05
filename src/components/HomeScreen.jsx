@@ -182,7 +182,10 @@ export function HomeScreen() {
         if (m.id === 'dame_de_pique') keywords.push('coeur', 'reine', 'grand chelem')
         if (m.id === 'uno') keywords.push('+4', 'plus 4', 'joker', 'cartes')
         if (m.id === 'symbiose') keywords.push('subverti', 'mare', 'riviere', 'grenouille', 'societe', 'animaux')
-        if (m.id === 'universel') keywords.push('libre', 'autre', 'personnalise', 'scrabble', 'molkky', 'yams', 'tarot')
+        if (m.id === 'molkky') keywords.push('molkki', 'quille', 'quilles', 'plein air', 'bois', 'finlande', '50')
+        if (m.id === 'yam') keywords.push('yahtzee', 'yams', 'des', 'combinaison', 'full', 'brelan', 'carre', 'suite')
+        if (m.id === 'dixit') keywords.push('conteur', 'conte', 'carte', 'cartes', 'illustration', 'imagination', 'vote', 'bluff')
+        if (m.id === 'universel') keywords.push('libre', 'autre', 'personnalise', 'scrabble', 'tarot')
 
         const matchesKeyword = keywords.some(k => k.includes(normalizedQuery))
 
