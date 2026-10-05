@@ -385,10 +385,8 @@ export function MolkkyEngine({ game, onFinish }) {
             <h3 className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
               {isTeamMode ? 'Mölkky — Équipe 2 vs 2' : 'Mölkky — Individuel'}
             </h3>
-            <p className="text-[10px] text-stone-500 dark:text-slate-400 leading-snug">
-              <span>50 pts pile · Si &gt; 50 ➔ 25 pts</span>
-              <br />
-              <span>{isTeamMode ? '3 ratés d’équipe consécutifs = éliminé' : '3 ratés consécutifs = éliminé'}</span>
+            <p className="text-[10px] text-stone-500 dark:text-slate-400 truncate">
+              50 pts pile · Si &gt; 50 ➔ 25 pts
             </p>
           </div>
         </div>
