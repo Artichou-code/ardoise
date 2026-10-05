@@ -869,18 +869,26 @@ export function MolkkyEngine({ game, onFinish }) {
       <Dialog
         open={showRulesMemo}
         onClose={() => setShowRulesMemo(false)}
-        title="Règles officielles du Mölkky (F.F.Mölkky)"
+        title={isTeamMode ? "Règles officielles du Mölkky (Mode Équipe 2 vs 2)" : "Règles officielles du Mölkky (F.F.Mölkky)"}
       >
         <div className="space-y-2.5 text-xs text-stone-600 dark:text-slate-300">
           <p className="leading-relaxed font-semibold">
-            Objectif : Être le premier à atteindre exactement 50 points !
+            {isTeamMode
+              ? "Objectif : Être la première équipe à atteindre exactement 50 points !"
+              : "Objectif : Être le premier à atteindre exactement 50 points !"}
           </p>
           <ul className="space-y-1.5 pl-3 list-disc text-[11px]">
-            <li><strong>Une seule quille abattue :</strong> Le joueur marque la valeur inscrite sur la quille (de 1 à 12 points).</li>
-            <li><strong>Plusieurs quilles abattues :</strong> Le joueur marque le nombre de quilles tombées (ex. 3 quilles = 3 points), quel que soit leur numéro.</li>
-            <li><strong>Dépassement de 50 points :</strong> Si un lancer fait dépasser 50 points, le score retombe immédiatement à 25 points.</li>
-            <li><strong>3 lancers ratés consécutifs :</strong> Si un joueur fait 3 fois de suite 0 point (aucune quille tombée), il est éliminé de la manche.</li>
-            <li><strong>Mode Équipe (2 vs 2) :</strong> Les coéquipiers alternent leurs lancers et cumulent leurs points pour leur équipe vers les 50 points.</li>
+            <li><strong>Une seule quille abattue :</strong> {isTeamMode ? "L'équipe marque" : "Le joueur marque"} la valeur inscrite sur la quille (de 1 à 12 points).</li>
+            <li><strong>Plusieurs quilles abattues :</strong> {isTeamMode ? "L'équipe marque" : "Le joueur marque"} le nombre de quilles tombées (ex. 3 quilles = 3 points), quel que soit leur numéro.</li>
+            <li><strong>Dépassement de 50 points :</strong> Si un lancer fait dépasser 50 points, le score {isTeamMode ? "de l'équipe" : ""} retombe immédiatement à 25 points.</li>
+            {isTeamMode ? (
+              <>
+                <li><strong>3 lancers ratés consécutifs d'équipe :</strong> Si une équipe cumule 3 lancers ratés consécutifs par ses coéquipiers (0 point), toute l'équipe est éliminée de la manche.</li>
+                <li><strong>Alternance des lancers (2 vs 2) :</strong> Les coéquipiers alternent leurs lancers et cumulent leurs points pour l'équipe vers les 50 points.</li>
+              </>
+            ) : (
+              <li><strong>3 lancers ratés consécutifs :</strong> Si un joueur fait 3 fois de suite 0 point (aucune quille tombée), il est éliminé de la manche.</li>
+            )}
           </ul>
           <div className="pt-2">
             <button
