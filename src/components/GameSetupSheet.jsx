@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Plus, X, Check, BookOpen, Bookmark, BookmarkPlus, Flame, ArrowLeftRight, Search, ChevronDown, ChevronUp, Radio } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
@@ -84,6 +84,12 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
   const [showAllPlayers, setShowAllPlayers] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [playerToReplaceCandidate, setPlayerToReplaceCandidate] = useState(null)
+  const [draggedItem, setDraggedItem] = useState(null)
+  const [dragOverTarget, setDragOverTarget] = useState(null)
+  const [selectedForSwap, setSelectedForSwap] = useState(null)
+  const [touchDrag, setTouchDrag] = useState(null)
+  const touchStartRef = useRef(null)
+  const hasDraggedRef = useRef(false)
 
   // Statistiques d'activité des joueurs (spécifique à ce jeu et globale)
   const playerActivityMap = useMemo(() => {
@@ -230,7 +236,186 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
     setSelectedPlayers(prev => prev.filter(p => p.id !== playerId))
     setTeam1Ids(prev => prev.filter(id => id !== playerId))
     setTeam2Ids(prev => prev.filter(id => id !== playerId))
+    if (selectedForSwap?.playerId === playerId) {
+      setSelectedForSwap(null)
+    }
   }
+
+  const handleMoveOrSwap = (fromTeam, fromPlayerId, toTeam, toPlayerId = null) => {
+    if (!fromPlayerId) return
+    if (fromTeam === toTeam && fromPlayerId === toPlayerId) return
+
+    const pFrom = selectedPlayers.find(p => p.id === fromPlayerId)
+    if (!pFrom) return
+    const pTo = toPlayerId ? selectedPlayers.find(p => p.id === toPlayerId) : null
+
+    const t1 = team1Ids.length > 0 ? [...team1Ids] : team1Players.map(p => p.id)
+    const t2 = team2Ids.length > 0 ? [...team2Ids] : team2Players.map(p => p.id)
+
+    if (pTo) {
+      // Échange (swap) entre deux joueurs
+      if (fromTeam === toTeam) {
+        if (fromTeam === 1) {
+          const i1 = t1.indexOf(fromPlayerId)
+          const i2 = t1.indexOf(toPlayerId)
+          if (i1 !== -1 && i2 !== -1) {
+            t1[i1] = toPlayerId
+            t1[i2] = fromPlayerId
+          }
+        } else {
+          const i1 = t2.indexOf(fromPlayerId)
+          const i2 = t2.indexOf(toPlayerId)
+          if (i1 !== -1 && i2 !== -1) {
+            t2[i1] = toPlayerId
+            t2[i2] = fromPlayerId
+          }
+        }
+      } else {
+        if (fromTeam === 1) {
+          const i1 = t1.indexOf(fromPlayerId)
+          const i2 = t2.indexOf(toPlayerId)
+          if (i1 !== -1 && i2 !== -1) {
+            t1[i1] = toPlayerId
+            t2[i2] = fromPlayerId
+          }
+        } else {
+          const i1 = t2.indexOf(fromPlayerId)
+          const i2 = t1.indexOf(toPlayerId)
+          if (i1 !== -1 && i2 !== -1) {
+            t2[i1] = toPlayerId
+            t1[i2] = fromPlayerId
+          }
+        }
+      }
+    } else {
+      // Déplacement vers un emplacement vide
+      if (fromTeam === toTeam) return
+      if (fromTeam === 1) {
+        const nextT1 = t1.filter(id => id !== fromPlayerId)
+        const nextT2 = t2.filter(id => id !== fromPlayerId)
+        if (nextT2.length < 2) nextT2.push(fromPlayerId)
+        t1.length = 0
+        t1.push(...nextT1)
+        t2.length = 0
+        t2.push(...nextT2)
+      } else {
+        const nextT2 = t2.filter(id => id !== fromPlayerId)
+        const nextT1 = t1.filter(id => id !== fromPlayerId)
+        if (nextT1.length < 2) nextT1.push(fromPlayerId)
+        t1.length = 0
+        t1.push(...nextT1)
+        t2.length = 0
+        t2.push(...nextT2)
+      }
+    }
+
+    setTeam1Ids([...t1])
+    setTeam2Ids([...t2])
+    const newSelected = [...t1, ...t2].map(id => selectedPlayers.find(p => p.id === id)).filter(Boolean)
+    setSelectedPlayers(newSelected)
+  }
+
+  const handlePointerDownAvatar = (e, team, player) => {
+    if (e.target.closest('button[data-action="remove"]')) return
+    hasDraggedRef.current = false
+    touchStartRef.current = {
+      team,
+      player,
+      playerId: player.id,
+      startX: e.clientX,
+      startY: e.clientY,
+    }
+  }
+
+  const handleAvatarClick = (team, player) => {
+    if (hasDraggedRef.current) return
+    if (selectedForSwap) {
+      if (selectedForSwap.playerId === player.id) {
+        setSelectedForSwap(null)
+      } else {
+        handleMoveOrSwap(selectedForSwap.team, selectedForSwap.playerId, team, player.id)
+        setSelectedForSwap(null)
+      }
+    } else {
+      setSelectedForSwap({ team, player, playerId: player.id })
+    }
+  }
+
+  const handleEmptySlotClick = (team) => {
+    if (selectedForSwap) {
+      handleMoveOrSwap(selectedForSwap.team, selectedForSwap.playerId, team, null)
+      setSelectedForSwap(null)
+    } else {
+      handleAddSlot(team)
+    }
+  }
+
+  useEffect(() => {
+    const handleGlobalPointerMove = (e) => {
+      if (!touchStartRef.current) return
+      const dx = e.clientX - touchStartRef.current.startX
+      const dy = e.clientY - touchStartRef.current.startY
+      const dist = Math.hypot(dx, dy)
+
+      if (dist > 8) {
+        hasDraggedRef.current = true
+        setTouchDrag({
+          team: touchStartRef.current.team,
+          player: touchStartRef.current.player,
+          playerId: touchStartRef.current.playerId,
+          x: e.clientX,
+          y: e.clientY,
+        })
+
+        const el = document.elementFromPoint(e.clientX, e.clientY)
+        const dropZone = el?.closest('[data-team-slot]')
+        if (dropZone) {
+          const t = Number(dropZone.getAttribute('data-team'))
+          const slot = Number(dropZone.getAttribute('data-slot'))
+          const pid = dropZone.getAttribute('data-player-id') || null
+          setDragOverTarget({ team: t, slotIndex: slot, playerId: pid })
+        } else {
+          setDragOverTarget(null)
+        }
+      }
+    }
+
+    const handleGlobalPointerUp = (e) => {
+      if (touchStartRef.current) {
+        if (hasDraggedRef.current) {
+          const el = document.elementFromPoint(e.clientX, e.clientY)
+          const dropZone = el?.closest('[data-team-slot]')
+          if (dropZone) {
+            const targetTeam = Number(dropZone.getAttribute('data-team'))
+            const targetPlayerId = dropZone.getAttribute('data-player-id') || null
+            handleMoveOrSwap(touchStartRef.current.team, touchStartRef.current.playerId, targetTeam, targetPlayerId)
+          }
+          setTimeout(() => {
+            hasDraggedRef.current = false
+          }, 60)
+        }
+        touchStartRef.current = null
+        setTouchDrag(null)
+        setDragOverTarget(null)
+      }
+    }
+
+    const handleGlobalPointerCancel = () => {
+      touchStartRef.current = null
+      hasDraggedRef.current = false
+      setTouchDrag(null)
+      setDragOverTarget(null)
+    }
+
+    window.addEventListener('pointermove', handleGlobalPointerMove, { passive: true })
+    window.addEventListener('pointerup', handleGlobalPointerUp)
+    window.addEventListener('pointercancel', handleGlobalPointerCancel)
+    return () => {
+      window.removeEventListener('pointermove', handleGlobalPointerMove)
+      window.removeEventListener('pointerup', handleGlobalPointerUp)
+      window.removeEventListener('pointercancel', handleGlobalPointerCancel)
+    }
+  }, [team1Players, team2Players, selectedPlayers, isTeamMode, team1Ids, team2Ids, selectedForSwap])
 
   const handleCreateDemoPlayers = () => {
     const p1 = createPlayer('Alex', AVATAR_COLORS[0], PRESET_AVATARS[0])
@@ -786,16 +971,17 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
           {/* Affichage des joueurs sélectionnés / Composition des équipes */}
           <div className="min-w-0 w-full">
             {isTeamMode ? (
-              <div className="flex items-center gap-1.5">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5">
                   {/* Équipe 1 (Rouge) */}
                   <div
                     onClick={() => {
                       setTargetTeam(1)
-                      if (team1Players.length < 2) {
+                      if (team1Players.length < 2 && !selectedForSwap) {
                         handleAddSlot(1)
                       }
                     }}
-                    className={`flex-1 min-w-0 p-2 rounded-xl border transition-all cursor-pointer school-card space-y-1.5 ${
+                    className={`flex-1 min-w-0 p-2 rounded-xl border transition-all school-card space-y-1.5 ${
                       targetTeam === 1 && team1Players.length < 2
                         ? 'border-[#c83b3b] ring-2 ring-[#c83b3b]/25 bg-[#c83b3b]/5'
                         : 'border-stone-200 dark:border-slate-800'
@@ -813,43 +999,150 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                       </span>
                     </div>
                     <div className="flex items-center justify-around gap-2 min-h-[46px] w-full px-1">
-                      {team1Players.map(p => (
-                        <div key={p.id} className="relative group shrink-0 flex flex-col items-center">
-                          <Avatar player={p} size="sm" />
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleRemovePlayer(p.id)
-                              setTargetTeam(1)
+                      {[0, 1].map((slotIdx) => {
+                        const p = team1Players[slotIdx]
+                        const isDragOver = dragOverTarget?.team === 1 && dragOverTarget?.slotIndex === slotIdx
+                        const isSelected = selectedForSwap?.playerId === p?.id
+                        const isBeingDragged = (draggedItem?.playerId === p?.id) || (touchDrag?.playerId === p?.id)
+
+                        if (p) {
+                          return (
+                            <div
+                              key={p.id}
+                              data-team-slot="true"
+                              data-team="1"
+                              data-slot={slotIdx}
+                              data-player-id={p.id}
+                              onDragOver={(e) => {
+                                e.preventDefault()
+                                e.dataTransfer.dropEffect = 'move'
+                                setDragOverTarget({ team: 1, slotIndex: slotIdx, playerId: p.id })
+                              }}
+                              onDragLeave={() => {
+                                if (dragOverTarget?.team === 1 && dragOverTarget?.slotIndex === slotIdx) {
+                                  setDragOverTarget(null)
+                                }
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault()
+                                if (draggedItem) {
+                                  handleMoveOrSwap(draggedItem.team, draggedItem.playerId, 1, p.id)
+                                }
+                                setDraggedItem(null)
+                                setDragOverTarget(null)
+                              }}
+                              className={`relative group shrink-0 flex flex-col items-center transition-all ${
+                                isBeingDragged ? 'opacity-30 scale-90' : ''
+                              }`}
+                            >
+                              <div
+                                draggable
+                                onDragStart={(e) => {
+                                  e.dataTransfer.setData('text/plain', p.id)
+                                  e.dataTransfer.effectAllowed = 'move'
+                                  setDraggedItem({ team: 1, player: p, playerId: p.id })
+                                }}
+                                onDragEnd={() => {
+                                  setDraggedItem(null)
+                                  setDragOverTarget(null)
+                                }}
+                                onPointerDown={(e) => handlePointerDownAvatar(e, 1, p)}
+                                onClick={() => handleAvatarClick(1, p)}
+                                className={`relative rounded-full transition-all cursor-grab active:cursor-grabbing touch-none select-none ${
+                                  isDragOver
+                                    ? 'ring-2 ring-emerald-500 scale-110 shadow-md'
+                                    : isSelected
+                                    ? 'ring-2 ring-amber-500 scale-105 shadow-md animate-pulse'
+                                    : 'hover:scale-105'
+                                }`}
+                                title="Glissez ou touchez pour échanger de place"
+                              >
+                                <Avatar player={p} size="sm" />
+                                {isDragOver && (
+                                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[8px] font-black px-1 rounded shadow-xs whitespace-nowrap z-20">
+                                    Échanger
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                data-action="remove"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleRemovePlayer(p.id)
+                                  setTargetTeam(1)
+                                }}
+                                className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-stone-800 text-white hover:bg-[#c83b3b] flex items-center justify-center text-[9px] shadow-xs cursor-pointer transition-colors z-10"
+                                title={`Retirer ${p.name}`}
+                                aria-label={`Retirer ${p.name}`}
+                              >
+                                <X size={9} strokeWidth={2.5} />
+                              </button>
+                              <span className="text-[10px] font-semibold text-stone-700 dark:text-slate-300 max-w-[54px] truncate text-center mt-0.5">
+                                {p.name}
+                              </span>
+                            </div>
+                          )
+                        }
+
+                        return (
+                          <div
+                            key={`empty-1-${slotIdx}`}
+                            data-team-slot="true"
+                            data-team="1"
+                            data-slot={slotIdx}
+                            data-player-id=""
+                            onDragOver={(e) => {
+                              e.preventDefault()
+                              e.dataTransfer.dropEffect = 'move'
+                              setDragOverTarget({ team: 1, slotIndex: slotIdx, playerId: null })
                             }}
-                            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-stone-800 text-white hover:bg-[#c83b3b] flex items-center justify-center text-[9px] shadow-xs cursor-pointer transition-colors"
-                            title={`Retirer ${p.name}`}
-                            aria-label={`Retirer ${p.name}`}
-                          >
-                            <X size={9} strokeWidth={2.5} />
-                          </button>
-                          <span className="text-[10px] font-semibold text-stone-700 dark:text-slate-300 max-w-[54px] truncate text-center mt-0.5">
-                            {p.name}
-                          </span>
-                        </div>
-                      ))}
-                      {Array.from({ length: 2 - team1Players.length }).map((_, i) => (
-                        <div key={i} className="flex flex-col items-center">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleAddSlot(1)
+                            onDragLeave={() => {
+                              if (dragOverTarget?.team === 1 && dragOverTarget?.slotIndex === slotIdx) {
+                                setDragOverTarget(null)
+                              }
                             }}
-                            className="flex items-center justify-center w-9 h-9 rounded-full border border-dashed border-stone-300 dark:border-slate-700 hover:border-[#c83b3b] hover:bg-[#c83b3b]/10 text-stone-400 hover:text-[#c83b3b] dark:text-slate-600 dark:hover:text-rose-400 text-sm font-bold transition-colors cursor-pointer"
-                            title="Cliquer pour ajouter un joueur à l'Équipe 1"
+                            onDrop={(e) => {
+                              e.preventDefault()
+                              if (draggedItem) {
+                                handleMoveOrSwap(draggedItem.team, draggedItem.playerId, 1, null)
+                              }
+                              setDraggedItem(null)
+                              setDragOverTarget(null)
+                            }}
+                            className="flex flex-col items-center"
                           >
-                            +
-                          </button>
-                          <span className="text-[10px] text-stone-400 dark:text-slate-500 mt-0.5 font-medium">Place vide</span>
-                        </div>
-                      ))}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleEmptySlotClick(1)
+                              }}
+                              className={`flex items-center justify-center w-9 h-9 rounded-full border border-dashed transition-all cursor-pointer ${
+                                isDragOver
+                                  ? 'border-emerald-500 bg-emerald-500/15 text-emerald-600 scale-110 shadow-sm'
+                                  : selectedForSwap
+                                  ? 'border-amber-500 bg-amber-500/10 text-amber-600 animate-pulse'
+                                  : 'border-stone-300 dark:border-slate-700 hover:border-[#c83b3b] hover:bg-[#c83b3b]/10 text-stone-400 hover:text-[#c83b3b] dark:text-slate-600 dark:hover:text-rose-400'
+                              }`}
+                              title={selectedForSwap ? "Déplacer ici" : "Cliquer pour ajouter un joueur à l'Équipe 1"}
+                            >
+                              {isDragOver ? (
+                                <span className="text-xs font-black">↓</span>
+                              ) : selectedForSwap ? (
+                                <span className="text-[10px] font-black">ici</span>
+                              ) : (
+                                <Plus size={15} />
+                              )}
+                            </button>
+                            <span className={`text-[10px] mt-0.5 font-medium transition-colors ${
+                              isDragOver ? 'text-emerald-600 font-bold' : 'text-stone-400 dark:text-slate-500'
+                            }`}>
+                              {isDragOver ? 'Déposer' : 'Place vide'}
+                            </span>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
 
@@ -877,11 +1170,11 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                   <div
                     onClick={() => {
                       setTargetTeam(2)
-                      if (team2Players.length < 2) {
+                      if (team2Players.length < 2 && !selectedForSwap) {
                         handleAddSlot(2)
                       }
                     }}
-                    className={`flex-1 min-w-0 p-2 rounded-xl border transition-all cursor-pointer school-card space-y-1.5 ${
+                    className={`flex-1 min-w-0 p-2 rounded-xl border transition-all school-card space-y-1.5 ${
                       targetTeam === 2 && team2Players.length < 2
                         ? 'border-[#1e3a5f] ring-2 ring-[#1e3a5f]/25 bg-[#1e3a5f]/5'
                         : 'border-stone-200 dark:border-slate-800'
@@ -899,46 +1192,168 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                       </span>
                     </div>
                     <div className="flex items-center justify-around gap-2 min-h-[46px] w-full px-1">
-                      {team2Players.map(p => (
-                        <div key={p.id} className="relative group shrink-0 flex flex-col items-center">
-                          <Avatar player={p} size="sm" />
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleRemovePlayer(p.id)
-                              setTargetTeam(2)
+                      {[0, 1].map((slotIdx) => {
+                        const p = team2Players[slotIdx]
+                        const isDragOver = dragOverTarget?.team === 2 && dragOverTarget?.slotIndex === slotIdx
+                        const isSelected = selectedForSwap?.playerId === p?.id
+                        const isBeingDragged = (draggedItem?.playerId === p?.id) || (touchDrag?.playerId === p?.id)
+
+                        if (p) {
+                          return (
+                            <div
+                              key={p.id}
+                              data-team-slot="true"
+                              data-team="2"
+                              data-slot={slotIdx}
+                              data-player-id={p.id}
+                              onDragOver={(e) => {
+                                e.preventDefault()
+                                e.dataTransfer.dropEffect = 'move'
+                                setDragOverTarget({ team: 2, slotIndex: slotIdx, playerId: p.id })
+                              }}
+                              onDragLeave={() => {
+                                if (dragOverTarget?.team === 2 && dragOverTarget?.slotIndex === slotIdx) {
+                                  setDragOverTarget(null)
+                                }
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault()
+                                if (draggedItem) {
+                                  handleMoveOrSwap(draggedItem.team, draggedItem.playerId, 2, p.id)
+                                }
+                                setDraggedItem(null)
+                                setDragOverTarget(null)
+                              }}
+                              className={`relative group shrink-0 flex flex-col items-center transition-all ${
+                                isBeingDragged ? 'opacity-30 scale-90' : ''
+                              }`}
+                            >
+                              <div
+                                draggable
+                                onDragStart={(e) => {
+                                  e.dataTransfer.setData('text/plain', p.id)
+                                  e.dataTransfer.effectAllowed = 'move'
+                                  setDraggedItem({ team: 2, player: p, playerId: p.id })
+                                }}
+                                onDragEnd={() => {
+                                  setDraggedItem(null)
+                                  setDragOverTarget(null)
+                                }}
+                                onPointerDown={(e) => handlePointerDownAvatar(e, 2, p)}
+                                onClick={() => handleAvatarClick(2, p)}
+                                className={`relative rounded-full transition-all cursor-grab active:cursor-grabbing touch-none select-none ${
+                                  isDragOver
+                                    ? 'ring-2 ring-emerald-500 scale-110 shadow-md'
+                                    : isSelected
+                                    ? 'ring-2 ring-amber-500 scale-105 shadow-md animate-pulse'
+                                    : 'hover:scale-105'
+                                }`}
+                                title="Glissez ou touchez pour échanger de place"
+                              >
+                                <Avatar player={p} size="sm" />
+                                {isDragOver && (
+                                  <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[8px] font-black px-1 rounded shadow-xs whitespace-nowrap z-20">
+                                    Échanger
+                                  </span>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                data-action="remove"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleRemovePlayer(p.id)
+                                  setTargetTeam(2)
+                                }}
+                                className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-stone-800 text-white hover:bg-[#c83b3b] flex items-center justify-center text-[9px] shadow-xs cursor-pointer transition-colors z-10"
+                                title={`Retirer ${p.name}`}
+                                aria-label={`Retirer ${p.name}`}
+                              >
+                                <X size={9} strokeWidth={2.5} />
+                              </button>
+                              <span className="text-[10px] font-semibold text-stone-700 dark:text-slate-300 max-w-[54px] truncate text-center mt-0.5">
+                                {p.name}
+                              </span>
+                            </div>
+                          )
+                        }
+
+                        return (
+                          <div
+                            key={`empty-2-${slotIdx}`}
+                            data-team-slot="true"
+                            data-team="2"
+                            data-slot={slotIdx}
+                            data-player-id=""
+                            onDragOver={(e) => {
+                              e.preventDefault()
+                              e.dataTransfer.dropEffect = 'move'
+                              setDragOverTarget({ team: 2, slotIndex: slotIdx, playerId: null })
                             }}
-                            className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-stone-800 text-white hover:bg-[#c83b3b] flex items-center justify-center text-[9px] shadow-xs cursor-pointer transition-colors"
-                            title={`Retirer ${p.name}`}
-                            aria-label={`Retirer ${p.name}`}
-                          >
-                            <X size={9} strokeWidth={2.5} />
-                          </button>
-                          <span className="text-[10px] font-semibold text-stone-700 dark:text-slate-300 max-w-[54px] truncate text-center mt-0.5">
-                            {p.name}
-                          </span>
-                        </div>
-                      ))}
-                      {Array.from({ length: 2 - team2Players.length }).map((_, i) => (
-                        <div key={i} className="flex flex-col items-center">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleAddSlot(2)
+                            onDragLeave={() => {
+                              if (dragOverTarget?.team === 2 && dragOverTarget?.slotIndex === slotIdx) {
+                                setDragOverTarget(null)
+                              }
                             }}
-                            className="flex items-center justify-center w-9 h-9 rounded-full border border-dashed border-stone-300 dark:border-slate-700 hover:border-[#1e3a5f] hover:bg-[#1e3a5f]/10 text-stone-400 hover:text-[#1e3a5f] dark:text-slate-600 dark:hover:text-sky-400 text-sm font-bold transition-colors cursor-pointer"
-                            title="Cliquer pour ajouter un joueur à l'Équipe 2"
+                            onDrop={(e) => {
+                              e.preventDefault()
+                              if (draggedItem) {
+                                handleMoveOrSwap(draggedItem.team, draggedItem.playerId, 2, null)
+                              }
+                              setDraggedItem(null)
+                              setDragOverTarget(null)
+                            }}
+                            className="flex flex-col items-center"
                           >
-                            +
-                          </button>
-                          <span className="text-[10px] text-stone-400 dark:text-slate-500 mt-0.5 font-medium">Place vide</span>
-                        </div>
-                      ))}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleEmptySlotClick(2)
+                              }}
+                              className={`flex items-center justify-center w-9 h-9 rounded-full border border-dashed transition-all cursor-pointer ${
+                                isDragOver
+                                  ? 'border-emerald-500 bg-emerald-500/15 text-emerald-600 scale-110 shadow-sm'
+                                  : selectedForSwap
+                                  ? 'border-amber-500 bg-amber-500/10 text-amber-600 animate-pulse'
+                                  : 'border-stone-300 dark:border-slate-700 hover:border-[#1e3a5f] hover:bg-[#1e3a5f]/10 text-stone-400 hover:text-[#1e3a5f] dark:text-slate-600 dark:hover:text-sky-400'
+                              }`}
+                              title={selectedForSwap ? "Déplacer ici" : "Cliquer pour ajouter un joueur à l'Équipe 2"}
+                            >
+                              {isDragOver ? (
+                                <span className="text-xs font-black">↓</span>
+                              ) : selectedForSwap ? (
+                                <span className="text-[10px] font-black">ici</span>
+                              ) : (
+                                <Plus size={15} />
+                              )}
+                            </button>
+                            <span className={`text-[10px] mt-0.5 font-medium transition-colors ${
+                              isDragOver ? 'text-emerald-600 font-bold' : 'text-stone-400 dark:text-slate-500'
+                            }`}>
+                              {isDragOver ? 'Déposer' : 'Place vide'}
+                            </span>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 </div>
+                {selectedForSwap && (
+                  <div className="p-1.5 px-2.5 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-between text-[11px] text-amber-800 dark:text-amber-300 font-semibold animate-fadeIn">
+                    <span>
+                      <strong>{selectedForSwap.player.name}</strong> sélectionné(e) : touchez une case ou un joueur pour échanger
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedForSwap(null)}
+                      className="text-[10px] font-bold underline cursor-pointer ml-2 hover:text-amber-900 dark:hover:text-amber-100"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : selectedPlayers.length === 0 ? (
               <p className="text-xs text-stone-600 dark:text-slate-400 leading-relaxed">
                 {meta.description}
@@ -1605,91 +2020,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
             </div>
           )}
 
-          {/* Config spécifique Symbiose */}
-          {gameType === 'symbiose' && (
-            <div className="space-y-3 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
-                  Mode de jeu officiel
-                </p>
-                {selectedPlayers.length === 4 ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setConfig(c => ({ ...c, mode: 'individual' }))}
-                      className={`py-2 px-3 rounded-xl text-center border transition-all cursor-pointer ${
-                        (config.mode || 'individual') === 'individual'
-                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
-                          : 'school-subtle'
-                      }`}
-                    >
-                      <span className="block font-bold text-xs leading-tight">Individuel</span>
-                      <span className={`block text-[10px] font-semibold mt-0.5 leading-tight ${(config.mode || 'individual') === 'individual' ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
-                        <span className="block">Chacun pour soi</span>
-                        <span className="block mt-0.5 opacity-90">(4 mares)</span>
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfig(c => ({ ...c, mode: 'team' }))}
-                      className={`py-2 px-3 rounded-xl text-center border transition-all cursor-pointer ${
-                        config.mode === 'team'
-                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
-                          : 'school-subtle'
-                      }`}
-                    >
-                      <span className="block font-bold text-xs leading-tight">Équipe (2 vs 2)</span>
-                      <span className={`block text-[10px] font-semibold mt-0.5 leading-tight ${config.mode === 'team' ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
-                        <span className="block">Partenaires face-à-face</span>
-                        <span className="block mt-0.5 opacity-90">(Somme des mares)</span>
-                      </span>
-                    </button>
-                  </div>
-                ) : selectedPlayers.length === 3 ? (
-                  <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-700/60 text-xs text-stone-600 dark:text-slate-300 space-y-1">
-                    <div className="font-bold text-stone-800 dark:text-slate-100 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
-                      Partie à 3 joueurs (Standard)
-                    </div>
-                    <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-relaxed">
-                      Vos colonnes de gauche et droite marquent par rapport aux mares respectives de vos voisins immédiats de table.
-                    </p>
-                  </div>
-                ) : selectedPlayers.length === 2 ? (
-                  <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-700/60 text-xs text-stone-600 dark:text-slate-300 space-y-1">
-                    <div className="font-bold text-stone-800 dark:text-slate-100 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
-                      Mode Duel officiel (1 vs 1)
-                    </div>
-                    <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-relaxed">
-                      Rivière de 8 cartes (4 visibles + 4 cachées). Vos cartes côté Rivière marquent par rapport aux 8 cartes de la Rivière.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-700/60 text-xs text-stone-600 dark:text-slate-300 space-y-2">
-                    <div className="font-bold text-stone-800 dark:text-slate-100 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
-                      Modes selon le nombre de joueurs (2 à 4)
-                    </div>
-                    <div className="space-y-1 text-[11px] text-stone-500 dark:text-slate-400 leading-relaxed">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="font-bold text-stone-700 dark:text-slate-300 shrink-0">2 joueurs :</span>
-                        <span>Mode Duel (Rivière de 8 cartes)</span>
-                      </div>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="font-bold text-stone-700 dark:text-slate-300 shrink-0">3 joueurs :</span>
-                        <span>Mode Standard (voisins de gauche et droite)</span>
-                      </div>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="font-bold text-stone-700 dark:text-slate-300 shrink-0">4 joueurs :</span>
-                        <span>Choix entre Individuel ou Équipe (2 vs 2)</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+
 
           {/* Config spécifique Mölkky */}
           {gameType === 'molkky' && (
@@ -2378,6 +2709,29 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
               </button>
             </div>
           </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Aperçu flottant de l'avatar lors d'un glisser tactile */}
+      {touchDrag && typeof document !== 'undefined' && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            left: `${touchDrag.x}px`,
+            top: `${touchDrag.y - 12}px`,
+            transform: 'translate(-50%, -50%) scale(1.15)',
+            pointerEvents: 'none',
+            zIndex: 9999,
+          }}
+          className="flex flex-col items-center gap-1 opacity-95 drop-shadow-2xl animate-in fade-in zoom-in-95 duration-75 select-none"
+        >
+          <div className="p-0.5 rounded-full ring-2 ring-emerald-500 bg-white dark:bg-slate-900 shadow-xl">
+            <Avatar player={touchDrag.player} size="sm" />
+          </div>
+          <span className="px-2 py-0.5 rounded-md bg-stone-900/90 text-white text-[10px] font-bold shadow-md truncate max-w-[80px]">
+            {touchDrag.player.name}
+          </span>
         </div>,
         document.body
       )}
