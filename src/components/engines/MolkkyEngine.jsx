@@ -536,8 +536,8 @@ export function MolkkyEngine({ game, onFinish }) {
                 </div>
 
                 {/* Ligne 3 : Conseil de visée unifié pour l'équipe et Jauge des 3 ratés unifiée */}
-                <div className="pt-2 border-t border-stone-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-1 text-[11px]">
-                  <div className="flex items-center gap-1.5 min-w-0">
+                <div className="pt-2 border-t border-stone-100 dark:border-slate-800/80 flex items-center justify-between gap-1 text-[11px] min-h-8">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
                     {isWinner ? (
                       <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                         <Trophy size={13} />
@@ -563,7 +563,7 @@ export function MolkkyEngine({ game, onFinish }) {
 
                   {/* Jauge des 3 ratés d'équipe vers l'élimination */}
                   {(streak > 0 || pastZeros > 0) && (
-                    <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[10px] shrink-0 transition-all ${
+                    <div className={`flex items-center gap-1.5 px-2 h-5.5 rounded-lg border text-[10px] shrink-0 transition-all ${
                       streak >= 3
                         ? 'bg-red-500/15 border-red-500/30 text-red-600 dark:text-red-400'
                         : streak === 2
@@ -590,7 +590,7 @@ export function MolkkyEngine({ game, onFinish }) {
                         })}
                       </div>
 
-                      <span className="font-bold tabular-nums">
+                      <span className="font-bold tabular-nums leading-none">
                         {streak >= 3
                           ? 'Éliminé (3/3)'
                           : streak === 2
@@ -694,8 +694,8 @@ export function MolkkyEngine({ game, onFinish }) {
                 </div>
 
                 {/* Ligne 2 : Statut, commentaire sur quoi viser en rouge ardoise et jauge visuelle des ratés */}
-                <div className="pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px]">
-                  <div className="flex items-center gap-1.5 min-w-0">
+                <div className="pt-2 flex items-center justify-between gap-1 text-[11px] min-h-8">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
                     {isWinner ? (
                       <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                         <Trophy size={13} />
@@ -721,7 +721,7 @@ export function MolkkyEngine({ game, onFinish }) {
 
                   {/* Jauge visuelle des 3 ratés consécutifs vers l'élimination */}
                   {(nextStreak > 0 || pastZeros > 0) && (
-                    <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[10px] shrink-0 transition-all ${
+                    <div className={`flex items-center gap-1.5 px-2 h-5.5 rounded-lg border text-[10px] shrink-0 transition-all ${
                       nextStreak >= 3
                         ? 'bg-red-500/15 border-red-500/30 text-red-600 dark:text-red-400'
                         : nextStreak === 2
@@ -748,7 +748,7 @@ export function MolkkyEngine({ game, onFinish }) {
                         })}
                       </div>
 
-                      <span className="font-bold tabular-nums">
+                      <span className="font-bold tabular-nums leading-none">
                         {nextStreak >= 3
                           ? 'Éliminé (3/3)'
                           : nextStreak === 2
