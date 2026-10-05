@@ -142,7 +142,7 @@ export function DixitEngine({ game, onFinish }) {
             <h3 className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
               Dixit — Manche {roundNum}
             </h3>
-            <p className="text-[10px] text-stone-500 dark:text-slate-400 truncate">
+            <p className="text-[10px] text-stone-500 dark:text-slate-400 leading-snug">
               Fin de partie à {WIN_SCORE} points · Vote & bluff
             </p>
           </div>

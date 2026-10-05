@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
-import { Trophy, Target, Users, AlertTriangle, ChevronLeft, ChevronRight, Check } from 'lucide-react'
+import { Trophy, Target, Users, AlertTriangle, ChevronLeft, ChevronRight, Check, HelpCircle } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
+import { Dialog } from '../ui/Dialog'
 import { formatTeamNames } from '../../utils/gameUtils'
 
 export function MolkkyEngine({ game, onFinish }) {
@@ -28,6 +29,7 @@ export function MolkkyEngine({ game, onFinish }) {
 
   // Joueur en cours d'édition dans le ScorePad
   const [editingPlayer, setEditingPlayer] = useState(null)
+  const [showRulesMemo, setShowRulesMemo] = useState(false)
 
   // Calcul du nombre de lancers ratés (0 point) consécutifs passés pour chaque joueur
   const pastZeroStreaks = useMemo(() => {
@@ -196,11 +198,22 @@ export function MolkkyEngine({ game, onFinish }) {
             <h3 className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
               {isTeamMode ? 'Mölkky — Équipe 2 vs 2' : 'Mölkky — Individuel'}
             </h3>
-            <p className="text-[10px] text-stone-500 dark:text-slate-400 truncate">
-              Objectif : 50 points pile · Si &gt; 50 ➔ retombe à 25 pts · 3 ratés = éliminé
+            <p className="text-[10px] text-stone-500 dark:text-slate-400 leading-snug">
+              {isTeamMode
+                ? '50 pts pile · Si > 50 ➔ 25 pts · Score d’équipe combiné'
+                : '50 pts pile · Si > 50 ➔ 25 pts · 3 ratés = éliminé'}
             </p>
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setShowRulesMemo(true)}
+          className="p-1.5 rounded-xl border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 transition-colors shrink-0 cursor-pointer"
+          title="Règles officielles du Mölkky"
+        >
+          <HelpCircle size={15} />
+        </button>
       </div>
 
       {/* Cartes de saisie des joueurs */}
@@ -489,6 +502,35 @@ export function MolkkyEngine({ game, onFinish }) {
           </div>
         )}
       </BottomSheet>
+
+      {/* Dialog Mémo des règles officielles du Mölkky */}
+      <Dialog
+        open={showRulesMemo}
+        onClose={() => setShowRulesMemo(false)}
+        title="Règles officielles du Mölkky (F.F.Mölkky)"
+      >
+        <div className="space-y-2.5 text-xs text-stone-600 dark:text-slate-300">
+          <p className="leading-relaxed font-semibold">
+            Objectif : Être le premier à atteindre exactement 50 points !
+          </p>
+          <ul className="space-y-1.5 pl-3 list-disc text-[11px]">
+            <li><strong>Une seule quille abattue :</strong> Le joueur marque la valeur inscrite sur la quille (de 1 à 12 points).</li>
+            <li><strong>Plusieurs quilles abattues :</strong> Le joueur marque le nombre de quilles tombées (ex. 3 quilles = 3 points), quel que soit leur numéro.</li>
+            <li><strong>Dépassement de 50 points :</strong> Si un lancer fait dépasser 50 points, le score retombe immédiatement à 25 points.</li>
+            <li><strong>3 lancers ratés consécutifs :</strong> Si un joueur fait 3 fois de suite 0 point (aucune quille tombée), il est éliminé de la manche.</li>
+            <li><strong>Mode Équipe (2 vs 2) :</strong> Les coéquipiers alternent leurs lancers et cumulent leurs points pour leur équipe vers les 50 points.</li>
+          </ul>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setShowRulesMemo(false)}
+              className="w-full py-2 rounded-xl font-bold text-xs btn-margin-red text-white cursor-pointer"
+            >
+              Compris
+            </button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   )
 }

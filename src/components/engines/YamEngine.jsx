@@ -221,9 +221,9 @@ export function YamEngine({ game, onFinish }) {
           </span>
           <div className="min-w-0">
             <h3 className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
-              Yam's / Yahtzee
+              Yam's
             </h3>
-            <p className="text-[10px] text-stone-500 dark:text-slate-400 truncate">
+            <p className="text-[10px] text-stone-500 dark:text-slate-400 leading-snug">
               Grille de 13 cases · Bonus de 35 pts si section sup &ge; 63
             </p>
           </div>
