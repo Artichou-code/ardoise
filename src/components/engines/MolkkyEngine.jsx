@@ -805,12 +805,12 @@ export function MolkkyEngine({ game, onFinish }) {
                     ) : (
                       <>Score actuel : <strong className="text-stone-700 dark:text-slate-300 tabular-nums">{game.scores?.[editingPlayer.id] || 0} pts</strong></>
                     )}
-                    {editingTargetInfo.warning && (
-                      <span className="text-[#c83b3b] dark:text-red-400 font-bold ml-1.5">
-                        ({editingTargetInfo.shortText})
-                      </span>
-                    )}
                   </span>
+                  {editingTargetInfo.warning && (
+                    <span className="text-[10px] text-[#c83b3b] dark:text-red-400 font-bold block truncate">
+                      {editingTargetInfo.shortText}
+                    </span>
+                  )}
                 </div>
               </div>
 
