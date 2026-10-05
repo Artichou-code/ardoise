@@ -11,6 +11,7 @@ import { formatTeamNames } from '../../utils/gameUtils'
 export function MolkkyEngine({ game, onFinish }) {
   const { updateScores } = useGame()
   const isTeamMode = game.config?.mode === 'team' && game.players.length === 4
+  const roundNum = (game.rounds?.length || 0) + 1
 
   // Points marqués lors de cette manche par chaque joueur (0 à 12 en un lancer standard)
   const [roundPoints, setRoundPoints] = useState(() => {
@@ -325,10 +326,10 @@ export function MolkkyEngine({ game, onFinish }) {
           <div className="flex items-center justify-between px-1">
             <span className="font-serif-title font-bold text-xs text-stone-700 dark:text-slate-300 flex items-center gap-1.5">
               <Users size={13} className="text-[#c83b3b]" />
-              Aperçu des Équipes
+              Aperçu — Manche {roundNum}
             </span>
             <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
-              Objectif 50 pts combinés
+              Points de la manche
             </span>
           </div>
 
@@ -339,23 +340,28 @@ export function MolkkyEngine({ game, onFinish }) {
               const roundT1 = (roundPoints[pNous[0]?.id] || 0) + (roundPoints[pNous[1]?.id] || 0)
               const isOverflow = calculatedResult.overflowPlayers.has('nous')
               const isWinner = calculatedResult.winningPlayers.has('nous')
-              const nextTotal = calculatedResult.projectedNewTotals['nous']
 
               return (
-                <div className={`flex flex-col justify-between rounded-xl px-2.5 py-2 sm:px-3 sm:py-2.5 min-h-[58px] school-card border transition-all ${
+                <div className={`flex flex-col justify-between rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 transition-all min-h-[54px] school-card ${
                   isWinner
                     ? 'border-emerald-500 bg-emerald-500/10'
                     : isOverflow
                     ? 'border-amber-500 bg-amber-500/10'
                     : 'border-[#c83b3b]/30 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
                 }`}>
+                  {/* Ligne 1 : Avatars superposés à gauche (comme dans le header) et Score manche à droite */}
                   <div className="flex items-center justify-between w-full">
                     <div className="shrink-0 relative inline-flex items-center">
                       <div className="flex items-center -space-x-2.5">
-                        <Avatar player={pNous[0]} size="sm-compact" />
-                        <Avatar player={pNous[1]} size="sm-compact" />
+                        <div className="relative rounded-full">
+                          <Avatar player={pNous[0]} size="sm-compact" />
+                        </div>
+                        <div className="relative rounded-full">
+                          <Avatar player={pNous[1]} size="sm-compact" />
+                        </div>
                       </div>
                     </div>
+
                     <div className="flex-1 min-w-0 flex items-center justify-end pl-1">
                       <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl text-[#c83b3b] text-right">
                         +{roundT1}
@@ -364,13 +370,17 @@ export function MolkkyEngine({ game, onFinish }) {
                     </div>
                   </div>
 
-                  <div className="w-full mt-1.5 min-w-0">
-                    <div className="flex items-center justify-between text-[10px] sm:text-[11px]">
-                      <span className="font-bold text-[#c83b3b] dark:text-red-400 truncate">
+                  {/* Ligne 2 : Noms de l'équipe et calcul des points sous les avatars */}
+                  <div className="w-full mt-1 min-w-0">
+                    <div className="flex items-center gap-1 min-w-0 text-[10px] sm:text-[11px]">
+                      <span className="font-bold text-[#c83b3b] dark:text-red-400 truncate leading-tight">
                         {formatTeamNames(pNous, 8)}
                       </span>
-                      <span className="font-bold tabular-nums text-stone-700 dark:text-slate-300">
-                        {isOverflow ? '➔ 25 pts' : isWinner ? '➔ 50 pts (GAGNÉ)' : `➔ ${nextTotal}/50`}
+                      <span className="font-bold text-stone-400 dark:text-slate-500 shrink-0">
+                        :
+                      </span>
+                      <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums">
+                        {(roundPoints[pNous[0]?.id] || 0)} + {(roundPoints[pNous[1]?.id] || 0)}
                       </span>
                     </div>
                   </div>
@@ -384,23 +394,28 @@ export function MolkkyEngine({ game, onFinish }) {
               const roundT2 = (roundPoints[pEux[0]?.id] || 0) + (roundPoints[pEux[1]?.id] || 0)
               const isOverflow = calculatedResult.overflowPlayers.has('eux')
               const isWinner = calculatedResult.winningPlayers.has('eux')
-              const nextTotal = calculatedResult.projectedNewTotals['eux']
 
               return (
-                <div className={`flex flex-col justify-between rounded-xl px-2.5 py-2 sm:px-3 sm:py-2.5 min-h-[58px] school-card border transition-all ${
+                <div className={`flex flex-col justify-between rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 transition-all min-h-[54px] school-card ${
                   isWinner
                     ? 'border-emerald-500 bg-emerald-500/10'
                     : isOverflow
                     ? 'border-amber-500 bg-amber-500/10'
                     : 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5 dark:bg-[#1e3a5f]/10'
                 }`}>
+                  {/* Ligne 1 : Avatars superposés à gauche (comme dans le header) et Score manche à droite */}
                   <div className="flex items-center justify-between w-full">
                     <div className="shrink-0 relative inline-flex items-center">
                       <div className="flex items-center -space-x-2.5">
-                        <Avatar player={pEux[0]} size="sm-compact" />
-                        <Avatar player={pEux[1]} size="sm-compact" />
+                        <div className="relative rounded-full">
+                          <Avatar player={pEux[0]} size="sm-compact" />
+                        </div>
+                        <div className="relative rounded-full">
+                          <Avatar player={pEux[1]} size="sm-compact" />
+                        </div>
                       </div>
                     </div>
+
                     <div className="flex-1 min-w-0 flex items-center justify-end pl-1">
                       <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl text-[#1e3a5f] dark:text-sky-400 text-right">
                         +{roundT2}
@@ -409,13 +424,17 @@ export function MolkkyEngine({ game, onFinish }) {
                     </div>
                   </div>
 
-                  <div className="w-full mt-1.5 min-w-0">
-                    <div className="flex items-center justify-between text-[10px] sm:text-[11px]">
-                      <span className="font-bold text-[#1e3a5f] dark:text-sky-400 truncate">
+                  {/* Ligne 2 : Noms de l'équipe et calcul des points sous les avatars */}
+                  <div className="w-full mt-1 min-w-0">
+                    <div className="flex items-center gap-1 min-w-0 text-[10px] sm:text-[11px]">
+                      <span className="font-bold text-[#1e3a5f] dark:text-sky-400 truncate leading-tight">
                         {formatTeamNames(pEux, 8)}
                       </span>
-                      <span className="font-bold tabular-nums text-stone-700 dark:text-slate-300">
-                        {isOverflow ? '➔ 25 pts' : isWinner ? '➔ 50 pts (GAGNÉ)' : `➔ ${nextTotal}/50`}
+                      <span className="font-bold text-stone-400 dark:text-slate-500 shrink-0">
+                        :
+                      </span>
+                      <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums">
+                        {(roundPoints[pEux[0]?.id] || 0)} + {(roundPoints[pEux[1]?.id] || 0)}
                       </span>
                     </div>
                   </div>
