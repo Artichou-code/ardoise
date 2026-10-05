@@ -75,6 +75,9 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
   const [customGameName, setCustomGameName] = useState('')
   const [beloteVariant, setBeloteVariant] = useState('belote')
   const [targetTeam, setTargetTeam] = useState(1) // 1 = Équipe 1, 2 = Équipe 2
+  const [team1Ids, setTeam1Ids] = useState([])
+  const [team2Ids, setTeam2Ids] = useState([])
+  const [slotPickerTeam, setSlotPickerTeam] = useState(null)
   const [savedSuccessMsg, setSavedSuccessMsg] = useState(null)
   const [showCreator, setShowCreator] = useState(false)
   const [playerSearchQuery, setPlayerSearchQuery] = useState('')
@@ -153,29 +156,80 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
     )
   }, [sortedSavedPlayers, searchQueryTrimmed])
 
-  // Composition des équipes à la Belote (Équipe 1 = index 0 & 1, Équipe 2 = index 2 & 3)
+  // Mode par équipe (Belote ou Symbiose équipe)
+  const isTeamMode = gameType === 'belote' || (gameType === 'symbiose' && config.mode === 'team')
+
+  // Composition des équipes
   const team1Players = useMemo(() => {
-    if (gameType !== 'belote') return []
+    if (!isTeamMode) return []
+    if (team1Ids.length > 0) {
+      return team1Ids.map(id => selectedPlayers.find(p => p.id === id)).filter(Boolean)
+    }
     return selectedPlayers.slice(0, 2)
-  }, [gameType, selectedPlayers])
+  }, [isTeamMode, team1Ids, selectedPlayers])
 
   const team2Players = useMemo(() => {
-    if (gameType !== 'belote') return []
+    if (!isTeamMode) return []
+    if (team2Ids.length > 0) {
+      return team2Ids.map(id => selectedPlayers.find(p => p.id === id)).filter(Boolean)
+    }
     return selectedPlayers.slice(2, 4)
-  }, [gameType, selectedPlayers])
+  }, [isTeamMode, team2Ids, selectedPlayers])
 
-  const cycleBelotePairings = () => {
-    if (selectedPlayers.length === 4) {
-      const [a, b, c, d] = selectedPlayers
+  const cycleTeamPairings = () => {
+    if (team1Players.length === 2 && team2Players.length === 2) {
+      const [a, b] = team1Players
+      const [c, d] = team2Players
       // Rotation cyclique des 3 combinaisons de partenaires (b -> c -> d -> b)
-      setSelectedPlayers([a, c, d, b])
+      const nextPlayers = [a, c, d, b]
+      setSelectedPlayers(nextPlayers)
+      setTeam1Ids([nextPlayers[0].id, nextPlayers[1].id])
+      setTeam2Ids([nextPlayers[2].id, nextPlayers[3].id])
       return
     }
     if (selectedPlayers.length >= 2) {
-      const t1 = selectedPlayers.slice(0, 2)
-      const t2 = selectedPlayers.slice(2, 4)
-      setSelectedPlayers([...t2, ...t1])
+      const t1 = [...team1Players]
+      const t2 = [...team2Players]
+      const nextPlayers = [...t2, ...t1]
+      setSelectedPlayers(nextPlayers)
+      setTeam1Ids(t2.map(p => p.id))
+      setTeam2Ids(t1.map(p => p.id))
     }
+  }
+
+  const handleAddSlot = (teamId) => {
+    setTargetTeam(teamId)
+    const available = sortedSavedPlayers.filter(p => !selectedPlayers.some(sp => sp.id === p.id))
+    if (available.length === 0) {
+      setShowCreator(true)
+    } else {
+      setSlotPickerTeam(teamId)
+    }
+  }
+
+  const handlePickSlotPlayer = (player) => {
+    if (slotPickerTeam === 1 && team1Players.length < 2) {
+      const nextT1 = [...team1Players.filter(p => p.id !== player.id), player]
+      setTeam1Ids(nextT1.map(p => p.id))
+      setSelectedPlayers(prev => [...prev.filter(sp => sp.id !== player.id), player])
+      if (nextT1.length === 2 && team2Players.length < 2) {
+        setTargetTeam(2)
+      }
+    } else if (slotPickerTeam === 2 && team2Players.length < 2) {
+      const nextT2 = [...team2Players.filter(p => p.id !== player.id), player]
+      setTeam2Ids(nextT2.map(p => p.id))
+      setSelectedPlayers(prev => [...prev.filter(sp => sp.id !== player.id), player])
+      if (nextT2.length === 2 && team1Players.length < 2) {
+        setTargetTeam(1)
+      }
+    }
+    setSlotPickerTeam(null)
+  }
+
+  const handleRemovePlayer = (playerId) => {
+    setSelectedPlayers(prev => prev.filter(p => p.id !== playerId))
+    setTeam1Ids(prev => prev.filter(id => id !== playerId))
+    setTeam2Ids(prev => prev.filter(id => id !== playerId))
   }
 
   const handleCreateDemoPlayers = () => {
@@ -185,8 +239,10 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
     const p4 = createPlayer('Pierre', AVATAR_COLORS[3], PRESET_AVATARS[3])
     const demo = [p1, p2, p3, p4]
     demo.forEach(p => savePlayer(p))
-    if (gameType === 'belote') {
+    if (isTeamMode) {
       setSelectedPlayers(demo)
+      setTeam1Ids([p1.id, p2.id])
+      setTeam2Ids([p3.id, p4.id])
       setTargetTeam(2)
       setShowAllPlayers(false)
       setShowSearch(false)
@@ -292,18 +348,21 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
   const toggleSavedPlayer = (p) => {
     if (selectedPlayers.find(sp => sp.id === p.id)) {
       setSelectedPlayers(prev => prev.filter(sp => sp.id !== p.id))
-      if (gameType === 'belote') {
+      if (isTeamMode) {
         if (team1Players.some(sp => sp.id === p.id)) {
+          setTeam1Ids(prev => prev.filter(id => id !== p.id))
           setTargetTeam(1)
         } else {
+          setTeam2Ids(prev => prev.filter(id => id !== p.id))
           setTargetTeam(2)
         }
       }
     } else {
-      if (gameType === 'belote') {
+      if (isTeamMode) {
         if (targetTeam === 1 && team1Players.length < 2) {
           const nextT1 = [...team1Players, p]
-          setSelectedPlayers([...nextT1, ...team2Players])
+          setTeam1Ids(nextT1.map(x => x.id))
+          setSelectedPlayers(prev => [...prev.filter(x => x.id !== p.id), p])
           if (nextT1.length === 2 && team2Players.length < 2) {
             setTargetTeam(2)
           }
@@ -314,7 +373,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
           }
         } else if (team2Players.length < 2) {
           const nextT2 = [...team2Players, p]
-          setSelectedPlayers([...team1Players, ...nextT2])
+          setTeam2Ids(nextT2.map(x => x.id))
+          setSelectedPlayers(prev => [...prev.filter(x => x.id !== p.id), p])
           if (nextT2.length === 2 && team1Players.length < 2) {
             setTargetTeam(1)
           }
@@ -325,14 +385,15 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
           }
         } else if (team1Players.length < 2) {
           const nextT1 = [...team1Players, p]
-          setSelectedPlayers([...nextT1, ...team2Players])
+          setTeam1Ids(nextT1.map(x => x.id))
+          setSelectedPlayers(prev => [...prev.filter(x => x.id !== p.id), p])
           if (nextT1.length === 2 && team2Players.length === 2) {
             setShowAllPlayers(false)
             setShowSearch(false)
             setPlayerSearchQuery('')
           }
         } else {
-          // Équipes complètes à la Belote (2 dans chaque équipe) -> demande qui remplacer
+          // Équipes complètes (2 dans chaque équipe) -> demande qui remplacer
           setPlayerToReplaceCandidate(p)
         }
       } else {
@@ -354,6 +415,10 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
 
   const handleReplacePlayer = (playerToReplace, candidate) => {
     setSelectedPlayers(prev => prev.map(p => p.id === playerToReplace.id ? candidate : p))
+    if (isTeamMode) {
+      setTeam1Ids(prev => prev.map(id => id === playerToReplace.id ? candidate.id : id))
+      setTeam2Ids(prev => prev.map(id => id === playerToReplace.id ? candidate.id : id))
+    }
     setPlayerToReplaceCandidate(null)
     setShowSearch(false)
     setShowAllPlayers(false)
@@ -362,7 +427,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
 
   const handleSelectFromSearch = (p) => {
     const isAlreadySelected = selectedPlayers.some(sp => sp.id === p.id)
-    const isFull = gameType === 'belote'
+    const isFull = isTeamMode
       ? (team1Players.length >= 2 && team2Players.length >= 2)
       : (selectedPlayers.length >= (meta?.maxPlayers || 8))
 
@@ -375,8 +440,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
 
   const renderPlayerCard = (p, onClickCustom) => {
     const isSelected = !!selectedPlayers.find(sp => sp.id === p.id)
-    const inTeam1 = gameType === 'belote' && team1Players.some(sp => sp.id === p.id)
-    const inTeam2 = gameType === 'belote' && team2Players.some(sp => sp.id === p.id)
+    const inTeam1 = isTeamMode && team1Players.some(sp => sp.id === p.id)
+    const inTeam2 = isTeamMode && team2Players.some(sp => sp.id === p.id)
     const act = playerActivityMap.get(normalizePlayerName(p.name))
 
     return (
@@ -394,7 +459,9 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
           isSelected
             ? inTeam1
               ? 'border-[#c83b3b] bg-[#c83b3b]/10 text-stone-900 dark:text-slate-100 ring-1 ring-[#c83b3b]/30 font-bold'
-              : 'border-[#1e3a5f] bg-[#1e3a5f]/10 text-stone-900 dark:text-slate-100 ring-1 ring-[#1e3a5f]/30 font-bold'
+              : inTeam2
+              ? 'border-[#1e3a5f] bg-[#1e3a5f]/10 text-stone-900 dark:text-slate-100 ring-1 ring-[#1e3a5f]/30 font-bold'
+              : 'border-[#c83b3b] bg-[#c83b3b]/10 text-stone-900 dark:text-slate-100 ring-1 ring-[#c83b3b]/30 font-bold'
             : 'border-stone-200 dark:border-slate-800 bg-white/85 dark:bg-slate-800/50 text-stone-800 dark:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800'
         }`}
       >
@@ -403,7 +470,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
           <span className="font-semibold text-xs truncate block leading-tight">
             {p.name}
           </span>
-          {gameType === 'belote' && (inTeam1 || inTeam2) ? (
+          {isTeamMode && (inTeam1 || inTeam2) ? (
             <span className={`text-[9px] font-bold block ${inTeam1 ? 'text-[#c83b3b] dark:text-rose-400' : 'text-[#1e3a5f] dark:text-sky-400'}`}>
               {inTeam1 ? 'Équipe 1' : 'Équipe 2'}
             </span>
@@ -418,7 +485,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
           )}
         </div>
         {isSelected ? (
-          <Check size={13} className={inTeam1 ? 'text-[#c83b3b] flex-shrink-0' : 'text-[#1e3a5f] flex-shrink-0'} />
+          <Check size={13} className={inTeam1 ? 'text-[#c83b3b] flex-shrink-0' : inTeam2 ? 'text-[#1e3a5f] flex-shrink-0' : 'text-[#c83b3b] flex-shrink-0'} />
         ) : (
           <span className="w-3.5 h-3.5 rounded-full border border-stone-300 dark:border-slate-600 flex-shrink-0" />
         )}
@@ -428,10 +495,11 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
 
   const handleAddNew = (player) => {
     savePlayer(player)
-    if (gameType === 'belote') {
+    if (isTeamMode) {
       if (targetTeam === 1 && team1Players.length < 2) {
         const nextT1 = [...team1Players, player]
-        setSelectedPlayers([...nextT1, ...team2Players])
+        setTeam1Ids(nextT1.map(x => x.id))
+        setSelectedPlayers(prev => [...prev.filter(x => x.id !== player.id), player])
         if (nextT1.length === 2 && team2Players.length < 2) {
           setTargetTeam(2)
         }
@@ -442,7 +510,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
         }
       } else if (team2Players.length < 2) {
         const nextT2 = [...team2Players, player]
-        setSelectedPlayers([...team1Players, ...nextT2])
+        setTeam2Ids(nextT2.map(x => x.id))
+        setSelectedPlayers(prev => [...prev.filter(x => x.id !== player.id), player])
         if (nextT2.length === 2 && team1Players.length < 2) {
           setTargetTeam(1)
         }
@@ -453,7 +522,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
         }
       } else if (team1Players.length < 2) {
         const nextT1 = [...team1Players, player]
-        setSelectedPlayers([...nextT1, ...team2Players])
+        setTeam1Ids(nextT1.map(x => x.id))
+        setSelectedPlayers(prev => [...prev.filter(x => x.id !== player.id), player])
         if (nextT1.length === 2 && team2Players.length === 2) {
           setShowAllPlayers(false)
           setShowSearch(false)
@@ -526,8 +596,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
     setTimeout(() => setSavedSuccessMsg(null), 3000)
   }
 
-  const canStart = gameType === 'belote'
-    ? selectedPlayers.length === 4
+  const canStart = isTeamMode
+    ? (team1Players.length === 2 && team2Players.length === 2)
     : selectedPlayers.length >= (meta.minPlayers || 2)
 
   const handleStart = async () => {
@@ -558,7 +628,11 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
         ? (beloteVariant === 'coinche' ? 'Coinche' : 'Belote')
         : undefined,
     }
-    const newGame = createGame(gameType, selectedPlayers, finalConfig)
+    const finalSelectedPlayers = isTeamMode
+      ? [...team1Players, ...team2Players]
+      : selectedPlayers
+
+    const newGame = createGame(gameType, finalSelectedPlayers, finalConfig)
     if (launchAsLiveTable && newGame) {
       try {
         await startLiveSessionForGame(newGame)
@@ -580,6 +654,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
     ? `Modèle personnalisé · ${meta.playersBadge}`
     : gameType === 'belote'
     ? (beloteVariant === 'coinche' ? '2 éq. (4 j.) · Enchères & Coinche' : '2 éq. (4 j.) · Prise classique 32 cartes')
+    : isTeamMode
+    ? '2 éq. (4 j.) · Mode Équipe officiel'
     : `${meta.playersBadge} · ${meta.categoryBadge}`
 
   return (
@@ -671,13 +747,54 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
             </div>
           )}
 
+          {/* Sélecteur de mode Symbiose : Individuel vs Équipe (2 vs 2) */}
+          {gameType === 'symbiose' && (
+            <div className="grid grid-cols-2 p-1 bg-stone-100 dark:bg-slate-800 rounded-xl gap-1 border border-stone-200/70 dark:border-slate-700/70">
+              <button
+                type="button"
+                onClick={() => {
+                  setConfig(c => ({ ...c, mode: 'individual' }))
+                }}
+                className={`py-2 px-3 rounded-lg font-bold text-xs transition-all cursor-pointer text-center ${
+                  (config.mode || 'individual') === 'individual'
+                    ? 'bg-white dark:bg-slate-700 text-[#c83b3b] shadow-xs'
+                    : 'text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white'
+                }`}
+              >
+                Individuel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfig(c => ({ ...c, mode: 'team' }))
+                  if (team1Ids.length === 0 && team2Ids.length === 0 && selectedPlayers.length > 0) {
+                    setTeam1Ids(selectedPlayers.slice(0, 2).map(p => p.id))
+                    setTeam2Ids(selectedPlayers.slice(2, 4).map(p => p.id))
+                  }
+                }}
+                className={`py-2 px-3 rounded-lg font-bold text-xs transition-all cursor-pointer text-center ${
+                  config.mode === 'team'
+                    ? 'bg-white dark:bg-slate-700 text-[#c83b3b] shadow-xs'
+                    : 'text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white'
+                }`}
+              >
+                Équipe (2 vs 2)
+              </button>
+            </div>
+          )}
+
           {/* Affichage des joueurs sélectionnés / Composition des équipes */}
           <div className="min-w-0 w-full">
-            {gameType === 'belote' ? (
+            {isTeamMode ? (
               <div className="flex items-center gap-1.5">
                   {/* Équipe 1 (Rouge) */}
                   <div
-                    onClick={() => setTargetTeam(1)}
+                    onClick={() => {
+                      setTargetTeam(1)
+                      if (team1Players.length < 2) {
+                        handleAddSlot(1)
+                      }
+                    }}
                     className={`flex-1 min-w-0 p-2 rounded-xl border transition-all cursor-pointer school-card space-y-1.5 ${
                       targetTeam === 1 && team1Players.length < 2
                         ? 'border-[#c83b3b] ring-2 ring-[#c83b3b]/25 bg-[#c83b3b]/5'
@@ -703,7 +820,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation()
-                              setSelectedPlayers(prev => prev.filter(sp => sp.id !== p.id))
+                              handleRemovePlayer(p.id)
+                              setTargetTeam(1)
                             }}
                             className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-stone-800 text-white hover:bg-[#c83b3b] flex items-center justify-center text-[9px] shadow-xs cursor-pointer transition-colors"
                             title={`Retirer ${p.name}`}
@@ -722,17 +840,14 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation()
-                              setTargetTeam(1)
-                              if (sortedSavedPlayers.length === 0) {
-                                setShowCreator(true)
-                              }
+                              handleAddSlot(1)
                             }}
                             className="flex items-center justify-center w-9 h-9 rounded-full border border-dashed border-stone-300 dark:border-slate-700 hover:border-[#c83b3b] hover:bg-[#c83b3b]/10 text-stone-400 hover:text-[#c83b3b] dark:text-slate-600 dark:hover:text-rose-400 text-sm font-bold transition-colors cursor-pointer"
-                            title="Cliquer pour ajouter à l'Équipe 1"
+                            title="Cliquer pour ajouter un joueur à l'Équipe 1"
                           >
                             +
                           </button>
-                          <span className="text-[10px] text-transparent select-none mt-0.5">·</span>
+                          <span className="text-[10px] text-stone-400 dark:text-slate-500 mt-0.5 font-medium">Place vide</span>
                         </div>
                       ))}
                     </div>
@@ -741,7 +856,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                   {/* Bouton Permuter entre Équipe 1 et Équipe 2 */}
                   <button
                     type="button"
-                    onClick={cycleBelotePairings}
+                    onClick={cycleTeamPairings}
                     disabled={selectedPlayers.length < 2}
                     className={`shrink-0 w-8 h-8 rounded-full border flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-90 ${
                       selectedPlayers.length >= 2
@@ -760,7 +875,12 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
 
                   {/* Équipe 2 (Bleu) */}
                   <div
-                    onClick={() => setTargetTeam(2)}
+                    onClick={() => {
+                      setTargetTeam(2)
+                      if (team2Players.length < 2) {
+                        handleAddSlot(2)
+                      }
+                    }}
                     className={`flex-1 min-w-0 p-2 rounded-xl border transition-all cursor-pointer school-card space-y-1.5 ${
                       targetTeam === 2 && team2Players.length < 2
                         ? 'border-[#1e3a5f] ring-2 ring-[#1e3a5f]/25 bg-[#1e3a5f]/5'
@@ -786,7 +906,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation()
-                              setSelectedPlayers(prev => prev.filter(sp => sp.id !== p.id))
+                              handleRemovePlayer(p.id)
+                              setTargetTeam(2)
                             }}
                             className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-stone-800 text-white hover:bg-[#c83b3b] flex items-center justify-center text-[9px] shadow-xs cursor-pointer transition-colors"
                             title={`Retirer ${p.name}`}
@@ -805,17 +926,14 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation()
-                              setTargetTeam(2)
-                              if (sortedSavedPlayers.length === 0) {
-                                setShowCreator(true)
-                              }
+                              handleAddSlot(2)
                             }}
                             className="flex items-center justify-center w-9 h-9 rounded-full border border-dashed border-stone-300 dark:border-slate-700 hover:border-[#1e3a5f] hover:bg-[#1e3a5f]/10 text-stone-400 hover:text-[#1e3a5f] dark:text-slate-600 dark:hover:text-sky-400 text-sm font-bold transition-colors cursor-pointer"
-                            title="Cliquer pour ajouter à l'Équipe 2"
+                            title="Cliquer pour ajouter un joueur à l'Équipe 2"
                           >
                             +
                           </button>
-                          <span className="text-[10px] text-transparent select-none mt-0.5">·</span>
+                          <span className="text-[10px] text-stone-400 dark:text-slate-500 mt-0.5 font-medium">Place vide</span>
                         </div>
                       ))}
                     </div>
@@ -2005,13 +2123,13 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
               {launchAsLiveTable && (
                 <Radio size={15} className="animate-pulse shrink-0" />
               )}
-              {gameType === 'belote' ? (
-                selectedPlayers.length === 4 ? (
+              {isTeamMode ? (
+                (team1Players.length === 2 && team2Players.length === 2) ? (
                   <>
                     <span className="text-xs sm:text-sm font-bold truncate">
                       {launchAsLiveTable
-                        ? (beloteVariant === 'coinche' ? 'Lancer en direct (Coinche)' : 'Lancer en direct (Belote)')
-                        : (beloteVariant === 'coinche' ? 'Lancer la Coinche' : 'Lancer la Belote')}
+                        ? (gameType === 'belote' ? (beloteVariant === 'coinche' ? 'Lancer en direct (Coinche)' : 'Lancer en direct (Belote)') : 'Lancer en direct (Équipes)')
+                        : (gameType === 'belote' ? (beloteVariant === 'coinche' ? 'Lancer la Coinche' : 'Lancer la Belote') : 'Lancer la partie')}
                     </span>
                     <span className="text-[11px] font-semibold opacity-85 shrink-0">
                       (2 éq.)
@@ -2019,7 +2137,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                   </>
                 ) : (
                   <span className="text-xs sm:text-sm font-bold truncate">
-                    4 joueurs requis ({selectedPlayers.length}/4)
+                    4 joueurs requis (Éq.1: {team1Players.length}/2 · Éq.2: {team2Players.length}/2)
                   </span>
                 )
               ) : (
@@ -2037,6 +2155,65 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
         onClose={() => setShowCreator(false)}
         onAdd={handleAddNew}
       />
+
+      {/* Sélecteur rapide de joueur pour un emplacement d'équipe libre */}
+      <BottomSheet
+        open={slotPickerTeam !== null}
+        onClose={() => setSlotPickerTeam(null)}
+        title={`Ajouter à l'Équipe ${slotPickerTeam}`}
+        subtitle="Sélectionnez un joueur disponible ou créez-en un nouveau"
+      >
+        <div className="px-4 pb-4 space-y-3">
+          {sortedSavedPlayers.filter(p => !selectedPlayers.some(sp => sp.id === p.id)).length > 0 ? (
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
+                Joueurs disponibles
+              </p>
+              <div className="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto scrollbar-hide p-0.5">
+                {sortedSavedPlayers
+                  .filter(p => !selectedPlayers.some(sp => sp.id === p.id))
+                  .map(p => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => handlePickSlotPlayer(p)}
+                      className={`flex items-center gap-2 px-2.5 py-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 text-stone-900 dark:text-slate-100 text-left transition-all cursor-pointer shadow-2xs hover:scale-[1.02] active:scale-95 ${
+                        slotPickerTeam === 1
+                          ? 'hover:border-[#c83b3b] hover:bg-[#c83b3b]/10'
+                          : 'hover:border-[#1e3a5f] hover:bg-[#1e3a5f]/10'
+                      }`}
+                    >
+                      <Avatar player={p} size="xs" />
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-xs truncate block">
+                          {p.name}
+                        </span>
+                      </div>
+                      <Plus size={14} className="text-stone-400" />
+                    </button>
+                  ))}
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 text-center rounded-xl bg-stone-50 dark:bg-slate-800/40 border border-stone-200/60 dark:border-slate-700/60 text-xs text-stone-500 dark:text-slate-400">
+              Tous vos joueurs enregistrés sont déjà placés dans la partie.
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              const team = slotPickerTeam
+              setSlotPickerTeam(null)
+              setTargetTeam(team)
+              setShowCreator(true)
+            }}
+            className="w-full py-2.5 px-3 rounded-xl border border-dashed border-[#c83b3b]/60 hover:border-[#c83b3b] text-[#c83b3b] hover:bg-[#c83b3b]/10 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Plus size={14} /> Créer un nouveau joueur pour cette place
+          </button>
+        </div>
+      </BottomSheet>
 
       {/* Modale de remplacement quand les équipes sont complètes */}
       {playerToReplaceCandidate && typeof document !== 'undefined' && createPortal(
@@ -2058,7 +2235,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-serif-title text-sm sm:text-base font-bold text-stone-900 dark:text-slate-100 leading-tight truncate">
-                    {gameType === 'belote' ? 'Équipes complètes' : 'Nombre max atteint'}
+                    {isTeamMode ? 'Équipes complètes' : 'Nombre max atteint'}
                   </h3>
                   <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
                     Qui voulez-vous remplacer ?
@@ -2094,7 +2271,7 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
               </div>
 
               {/* Choix du joueur à remplacer */}
-              {gameType === 'belote' ? (
+              {isTeamMode ? (
                 <div className="space-y-3">
                   {/* Équipe 1 (Rouge) */}
                   <div className="space-y-1.5">
