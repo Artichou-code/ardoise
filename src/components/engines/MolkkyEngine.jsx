@@ -182,6 +182,18 @@ export function MolkkyEngine({ game, onFinish }) {
 
       projectedNewTotals['nous'] = totalT1
       projectedNewTotals['eux'] = totalT2
+
+      // Vérification des ratés pour chaque joueur en équipe
+      for (const p of game.players) {
+        const streak = ((roundPoints[p.id] || 0) === 0 ? (pastZeroStreaks[p.id] || 0) + 1 : 0)
+        if (streak >= 3) {
+          eliminatedPlayers.add(p.id)
+        }
+      }
+      const team1Eliminated = eliminatedPlayers.has(pNous[0].id) && eliminatedPlayers.has(pNous[1].id)
+      const team2Eliminated = eliminatedPlayers.has(pEux[0].id) && eliminatedPlayers.has(pEux[1].id)
+      if (team1Eliminated && !team2Eliminated) winningPlayers.add('eux')
+      if (team2Eliminated && !team1Eliminated) winningPlayers.add('nous')
     } else {
       for (const p of game.players) {
         const cur = currentScores[p.id] || 0
@@ -203,6 +215,12 @@ export function MolkkyEngine({ game, onFinish }) {
         projectedNewTotals[p.id] = nextTotal
         newScores[p.id] = nextTotal
         deltas[p.id] = pts
+      }
+
+      // Si tous les joueurs sauf 1 sont éliminés, le survivant l'emporte immédiatement
+      const activePlayers = game.players.filter(p => !eliminatedPlayers.has(p.id))
+      if (activePlayers.length === 1 && game.players.length > 1) {
+        winningPlayers.add(activePlayers[0].id)
       }
     }
 
@@ -313,7 +331,7 @@ export function MolkkyEngine({ game, onFinish }) {
             ? calculatedResult.winningPlayers.has(teamKey)
             : calculatedResult.winningPlayers.has(p.id)
 
-          const isEliminated = !isTeamMode && calculatedResult.eliminatedPlayers.has(p.id)
+          const isEliminated = calculatedResult.eliminatedPlayers.has(p.id)
 
           const projectedTotal = isTeamMode
             ? calculatedResult.projectedNewTotals[teamKey]
@@ -402,7 +420,7 @@ export function MolkkyEngine({ game, onFinish }) {
                 </div>
               </div>
 
-              {/* Ligne 2 : Statut, commentaire sur quoi viser en rouge ardoise et alertes */}
+              {/* Ligne 2 : Statut, commentaire sur quoi viser en rouge ardoise et jauge visuelle des ratés */}
               <div className="pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px]">
                 <div className="flex items-center gap-1.5 min-w-0">
                   {isWinner ? (
@@ -415,6 +433,11 @@ export function MolkkyEngine({ game, onFinish }) {
                       <AlertTriangle size={13} />
                       Dépassement ({unclampedSum} pts) ➔ Chute à 25 pts
                     </span>
+                  ) : isEliminated ? (
+                    <span className="font-bold text-red-600 dark:text-red-400 flex items-center gap-1">
+                      <AlertTriangle size={13} />
+                      Éliminé de la manche (3 ratés consécutifs)
+                    </span>
                   ) : (
                     <span className="font-semibold text-[#c83b3b] dark:text-red-400 flex items-center gap-1">
                       <Target size={13} />
@@ -423,17 +446,46 @@ export function MolkkyEngine({ game, onFinish }) {
                   )}
                 </div>
 
-                {/* Alerte ratés consécutifs */}
-                {nextStreak > 0 && (
-                  <span className={`font-semibold px-1.5 py-0.2 rounded text-[10px] shrink-0 ${
+                {/* Jauge visuelle des 3 ratés consécutifs vers l'élimination */}
+                {(nextStreak > 0 || pastZeros > 0) && (
+                  <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[10px] shrink-0 transition-all ${
                     nextStreak >= 3
-                      ? 'bg-red-500/15 text-red-600 dark:text-red-400'
-                      : 'bg-stone-200/60 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
+                      ? 'bg-red-500/15 border-red-500/30 text-red-600 dark:text-red-400'
+                      : nextStreak === 2
+                      ? 'bg-[#c83b3b]/10 border-[#c83b3b]/25 text-[#c83b3b] dark:text-red-400'
+                      : nextStreak === 1
+                      ? 'bg-stone-100 dark:bg-slate-800/80 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400'
+                      : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                   }`}>
-                    {nextStreak >= 3
-                      ? 'Éliminé (3 ratés d’affilée)'
-                      : `${nextStreak} raté${nextStreak > 1 ? 's' : ''} consécutif${nextStreak > 1 ? 's' : ''}`}
-                  </span>
+                    {/* Les 3 pastilles */}
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3].map((dotIdx) => {
+                        const isFilled = nextStreak >= dotIdx
+                        return (
+                          <span
+                            key={dotIdx}
+                            className={`w-1.5 h-1.5 rounded-full transition-all ${
+                              nextStreak >= 3
+                                ? 'bg-red-600 dark:bg-red-400'
+                                : isFilled
+                                ? 'bg-[#c83b3b] dark:bg-red-400'
+                                : 'bg-stone-300 dark:bg-slate-600'
+                            }`}
+                          />
+                        )
+                      })}
+                    </div>
+
+                    <span className="font-bold tabular-nums">
+                      {nextStreak >= 3
+                        ? 'Éliminé (3/3)'
+                        : nextStreak === 2
+                        ? 'Alerte (2/3)'
+                        : nextStreak === 1
+                        ? 'Raté (1/3)'
+                        : 'Sauvé (0/3)'}
+                    </span>
+                  </div>
                 )}
               </div>
             </div>
