@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Trophy, Target, Users, AlertTriangle, ChevronLeft, ChevronRight, Check, HelpCircle } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
@@ -54,6 +54,7 @@ export function MolkkyEngine({ game, onFinish }) {
   const roundNum = (game.rounds?.length || 0) + 1
 
   // Points marqués lors de cette manche par chaque joueur (0 à 12 en un lancer standard)
+  // null = en attente de lancer (affiche un tiret '—' sans compter comme un raté 0)
   const [roundPoints, setRoundPoints] = useState(() => {
     const init = {}
     for (const p of game.players) {
@@ -62,11 +63,28 @@ export function MolkkyEngine({ game, onFinish }) {
       } else if (game.restoredDelta?.[p.id] != null) {
         init[p.id] = game.restoredDelta[p.id]
       } else {
-        init[p.id] = 0
+        init[p.id] = null
       }
     }
     return init
   })
+
+  // Réinitialiser les scores à null à chaque nouvelle manche
+  useEffect(() => {
+    setRoundPoints(() => {
+      const init = {}
+      for (const p of game.players) {
+        if (game.restoredRound?.roundPoints?.[p.id] != null) {
+          init[p.id] = game.restoredRound.roundPoints[p.id]
+        } else if (game.restoredDelta?.[p.id] != null) {
+          init[p.id] = game.restoredDelta[p.id]
+        } else {
+          init[p.id] = null
+        }
+      }
+      return init
+    })
+  }, [game.rounds?.length, game.players])
 
   // Joueur en cours d'édition dans le ScorePad
   const [editingPlayer, setEditingPlayer] = useState(null)
@@ -101,6 +119,9 @@ export function MolkkyEngine({ game, onFinish }) {
   const prevPlayer = hasPrevPlayer ? game.players[activeIndex - 1] : null
 
   const handleNextInPad = () => {
+    if (editingPlayer && roundPoints[editingPlayer.id] == null) {
+      setRoundPoints(prev => ({ ...prev, [editingPlayer.id]: 0 }))
+    }
     if (hasNextPlayer && nextPlayer) {
       setEditingPlayer(nextPlayer)
     } else {
@@ -154,8 +175,11 @@ export function MolkkyEngine({ game, onFinish }) {
       let totalT1 = oldScoreT1 + roundT1
       let totalT2 = oldScoreT2 + roundT2
 
-      const overflowT1 = totalT1 > 50
-      const overflowT2 = totalT2 > 50
+      const hasPlayedT1 = roundPoints[pNous[0]?.id] != null || roundPoints[pNous[1]?.id] != null
+      const hasPlayedT2 = roundPoints[pEux[0]?.id] != null || roundPoints[pEux[1]?.id] != null
+
+      const overflowT1 = hasPlayedT1 && totalT1 > 50
+      const overflowT2 = hasPlayedT2 && totalT2 > 50
 
       if (overflowT1) {
         totalT1 = 25
@@ -166,8 +190,8 @@ export function MolkkyEngine({ game, onFinish }) {
         overflowPlayers.add('eux')
       }
 
-      if (totalT1 === 50) winningPlayers.add('nous')
-      if (totalT2 === 50) winningPlayers.add('eux')
+      if (totalT1 === 50 && hasPlayedT1) winningPlayers.add('nous')
+      if (totalT2 === 50 && hasPlayedT2) winningPlayers.add('eux')
 
       // Répartition des points pour les stats individuelles
       newScores[pNous[0].id] = overflowT1 ? 25 : (currentScores[pNous[0].id] || 0) + (roundPoints[pNous[0].id] || 0)
@@ -185,7 +209,10 @@ export function MolkkyEngine({ game, onFinish }) {
 
       // Vérification des ratés pour chaque joueur en équipe
       for (const p of game.players) {
-        const streak = ((roundPoints[p.id] || 0) === 0 ? (pastZeroStreaks[p.id] || 0) + 1 : 0)
+        const hasPlayed = roundPoints[p.id] != null
+        const pts = roundPoints[p.id] || 0
+        const pastZeros = pastZeroStreaks[p.id] || 0
+        const streak = hasPlayed ? (pts === 0 ? pastZeros + 1 : 0) : pastZeros
         if (streak >= 3) {
           eliminatedPlayers.add(p.id)
         }
@@ -197,17 +224,19 @@ export function MolkkyEngine({ game, onFinish }) {
     } else {
       for (const p of game.players) {
         const cur = currentScores[p.id] || 0
+        const hasPlayed = roundPoints[p.id] != null
         const pts = roundPoints[p.id] || 0
         let nextTotal = cur + pts
 
-        if (nextTotal > 50) {
+        if (hasPlayed && nextTotal > 50) {
           overflowPlayers.add(p.id)
           nextTotal = 25
-        } else if (nextTotal === 50) {
+        } else if (hasPlayed && nextTotal === 50) {
           winningPlayers.add(p.id)
         }
 
-        const streak = (pts === 0 ? (pastZeroStreaks[p.id] || 0) + 1 : 0)
+        const pastZeros = pastZeroStreaks[p.id] || 0
+        const streak = hasPlayed ? (pts === 0 ? pastZeros + 1 : 0) : pastZeros
         if (streak >= 3) {
           eliminatedPlayers.add(p.id)
         }
@@ -234,7 +263,16 @@ export function MolkkyEngine({ game, onFinish }) {
     }
   }, [game.scores, game.players, roundPoints, isTeamMode, pastZeroStreaks])
 
+  // Validation : tous les lancers de la manche doivent être saisis
+  const unplayedPlayers = useMemo(
+    () => game.players.filter(p => roundPoints[p.id] == null),
+    [game.players, roundPoints]
+  )
+  const canValidate = unplayedPlayers.length === 0
+  const filledCount = game.players.length - unplayedPlayers.length
+
   const handleValidate = () => {
+    if (!canValidate) return
     const { newScores, deltas, winningPlayers } = calculatedResult
 
     updateScores({
@@ -296,9 +334,10 @@ export function MolkkyEngine({ game, onFinish }) {
       <div className="space-y-2.5">
         {game.players.map((p, pIdx) => {
           const currentTotal = game.scores?.[p.id] || 0
-          const pts = roundPoints[p.id] || 0
+          const pts = roundPoints[p.id]
+          const hasPlayed = pts !== null && pts !== undefined
           const pastZeros = pastZeroStreaks[p.id] || 0
-          const nextStreak = pts === 0 ? pastZeros + 1 : 0
+          const nextStreak = hasPlayed ? (pts === 0 ? pastZeros + 1 : 0) : pastZeros
 
           // Contexte équipe vs solo
           const isTeam1 = pIdx < 2
@@ -316,11 +355,11 @@ export function MolkkyEngine({ game, onFinish }) {
 
           const teamRoundTotal = isTeamMode
             ? (roundPoints[game.players[isTeam1 ? 0 : 2]?.id] || 0) + (roundPoints[game.players[isTeam1 ? 1 : 3]?.id] || 0)
-            : pts
+            : (pts || 0)
 
           const unclampedSum = isTeamMode
             ? teamStartScore + teamRoundTotal
-            : currentTotal + pts
+            : currentTotal + (pts || 0)
 
           // Statuts après lancer (prévisionnel)
           const isOverflow = isTeamMode
@@ -341,7 +380,7 @@ export function MolkkyEngine({ game, onFinish }) {
           // Si des points sont marqués cette manche, on vise en fonction du total projeté (sauf si chute), sinon score de départ
           const currentBaseForTarget = isTeamMode
             ? (teamRoundTotal > 0 ? (isOverflow ? 25 : unclampedSum) : teamStartScore)
-            : (pts > 0 ? (isOverflow ? 25 : unclampedSum) : currentTotal)
+            : (hasPlayed && pts > 0 ? (isOverflow ? 25 : unclampedSum) : currentTotal)
 
           const targetInfo = getMolkkyTargetInfo(currentBaseForTarget)
 
@@ -408,7 +447,7 @@ export function MolkkyEngine({ game, onFinish }) {
                 <div className="flex items-center gap-2 shrink-0">
                   <QuickScoreBadge
                     value={pts}
-                    onChange={(val) => setRoundPoints(prev => ({ ...prev, [p.id]: Math.max(0, Number(val) || 0) }))}
+                    onChange={(val) => setRoundPoints(prev => ({ ...prev, [p.id]: val === null ? null : Math.max(0, Number(val) || 0) }))}
                     onOpenPad={() => setEditingPlayer(p)}
                     min={0}
                     max={12}
@@ -480,9 +519,9 @@ export function MolkkyEngine({ game, onFinish }) {
                       {nextStreak >= 3
                         ? 'Éliminé (3/3)'
                         : nextStreak === 2
-                        ? 'Alerte (2/3)'
+                        ? (hasPlayed ? 'Alerte (2/3)' : 'Attention (2/3)')
                         : nextStreak === 1
-                        ? 'Raté (1/3)'
+                        ? (hasPlayed ? 'Raté (1/3)' : '1 raté (1/3)')
                         : 'Sauvé (0/3)'}
                     </span>
                   </div>
@@ -540,7 +579,7 @@ export function MolkkyEngine({ game, onFinish }) {
 
                     <div className="flex-1 min-w-0 flex items-center justify-end pl-1">
                       <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl text-[#c83b3b] text-right">
-                        +{roundT1}
+                        {roundPoints[pNous[0]?.id] == null && roundPoints[pNous[1]?.id] == null ? '—' : `+${roundT1}`}
                         <span className="text-xs font-sans font-bold text-[#c83b3b]/70 ml-0.5">pts</span>
                       </span>
                     </div>
@@ -556,9 +595,9 @@ export function MolkkyEngine({ game, onFinish }) {
                         :
                       </span>
                       <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums inline-flex items-center">
-                        <span>{roundPoints[pNous[0]?.id] || 0}</span>
+                        <span>{roundPoints[pNous[0]?.id] != null ? roundPoints[pNous[0]?.id] : '—'}</span>
                         <span className="mx-0.5 text-stone-400 dark:text-slate-500 font-normal">+</span>
-                        <span>{roundPoints[pNous[1]?.id] || 0}</span>
+                        <span>{roundPoints[pNous[1]?.id] != null ? roundPoints[pNous[1]?.id] : '—'}</span>
                       </span>
                     </div>
                   </div>
@@ -620,7 +659,7 @@ export function MolkkyEngine({ game, onFinish }) {
 
                     <div className="flex-1 min-w-0 flex items-center justify-end pl-1">
                       <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl text-[#1e3a5f] dark:text-sky-400 text-right">
-                        +{roundT2}
+                        {roundPoints[pEux[0]?.id] == null && roundPoints[pEux[1]?.id] == null ? '—' : `+${roundT2}`}
                         <span className="text-xs font-sans font-bold text-[#1e3a5f]/70 dark:text-sky-400/70 ml-0.5">pts</span>
                       </span>
                     </div>
@@ -636,9 +675,9 @@ export function MolkkyEngine({ game, onFinish }) {
                         :
                       </span>
                       <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums inline-flex items-center">
-                        <span>{roundPoints[pEux[0]?.id] || 0}</span>
+                        <span>{roundPoints[pEux[0]?.id] != null ? roundPoints[pEux[0]?.id] : '—'}</span>
                         <span className="mx-0.5 text-stone-400 dark:text-slate-500 font-normal">+</span>
-                        <span>{roundPoints[pEux[1]?.id] || 0}</span>
+                        <span>{roundPoints[pEux[1]?.id] != null ? roundPoints[pEux[1]?.id] : '—'}</span>
                       </span>
                     </div>
                   </div>
@@ -674,11 +713,21 @@ export function MolkkyEngine({ game, onFinish }) {
       <div className="pt-2">
         <button
           type="button"
+          disabled={!canValidate}
           onClick={handleValidate}
-          className="w-full py-3 rounded-xl font-bold text-sm text-white shadow-sm transition-all flex items-center justify-center gap-2 select-none bg-[#c83b3b] hover:bg-[#b03030] cursor-pointer active:scale-[0.99]"
+          className={`w-full py-3 rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 select-none ${
+            canValidate
+              ? 'bg-[#c83b3b] hover:bg-[#b03030] text-white cursor-pointer active:scale-[0.99]'
+              : 'bg-stone-200 dark:bg-slate-800 text-stone-400 dark:text-slate-500 cursor-not-allowed'
+          }`}
         >
           <Trophy size={16} />
           <span>Valider la manche</span>
+          {!canValidate && (
+            <span className="text-xs font-normal opacity-75">
+              ({filledCount}/{game.players.length} saisis)
+            </span>
+          )}
         </button>
       </div>
 
