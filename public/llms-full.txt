@@ -18,7 +18,7 @@ Tarif : 100 % Gratuit, sans publicité, sans abonnement, synchronisation cloud e
 
 ---
 
-## 2. Règles Officielles & Barèmes des 16 Jeux Intégrés
+## 2. Règles Officielles & Barèmes des 20 Jeux Intégrés
 
 ### 2.1. Caracole (2 à 6 joueurs · 52 cartes)
 - **URL dédiée** : https://ardoise.art-crea.fr/jeux/caracole
@@ -250,5 +250,56 @@ Tarif : 100 % Gratuit, sans publicité, sans abonnement, synchronisation cloud e
   - **Mode Duel (1 vs 1)** : Rivière de 8 cartes (4 visibles + 4 cachées), les 2 cartes côté Rivière marquent par rapport aux 8 cartes de la Rivière.
   - **Mode Équipe (2 vs 2)** : Coopération avec son vis-à-vis, les côtés marquent par rapport à la Mare du partenaire, addition des 2 Mares pour le score final d'équipe.
 - **Égalité** : En cas d'égalité, victoire partagée en parfaite symbiose.
+
+---
+
+### 2.18. Mölkky (2 à 8+ joueurs · 12 quilles en bois)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/molkky
+- **Objectif** : Être le premier joueur ou la première équipe à totaliser exactement 50 points en abattant les quilles numérotées de 1 à 12 à l'aide du bâton de lancer (le Mölkky).
+- **Mise en place** : 12 quilles regroupées à une distance officielle de 3,50 mètres du pas de tir (le Mölkkaari). Le lancer doit obligatoirement être effectué par le bas.
+- **Barème des points** :
+  - **1 seule quille abattue** : Le joueur marque la valeur inscrite sur la quille (1 à 12 points).
+  - **Plusieurs quilles abattues** : Le joueur marque un nombre de points égal au nombre de quilles renversées (ex: 4 quilles = 4 points), quels que soient leurs numéros.
+  - **Quille au sol** : Une quille n'est comptabilisée que si elle repose entièrement à plat sur le sol.
+  - **Relèvement** : Les quilles sont redressées à l'endroit exact où elles sont tombées, dispersant le jeu au fil de la partie.
+- **Règles spéciales incontournables** :
+  - **Dépassement des 50 points** : Si un lancer fait franchir la barre des 50 points (51 ou plus), le score du joueur ou de l'équipe retombe immédiatement à **25 points**.
+  - **Élimination** : 3 lancers consécutifs sans faire tomber la moindre quille (0 point) éliminent le joueur de la partie.
+  - **Mode Équipe (2 vs 2)** : Les partenaires additionnent leurs points vers les 50 points, avec retombée à 25 points en cas de dépassement d'équipe.
+
+---
+
+### 2.19. Yam's / Yahtzee (2 à 6 joueurs · 5 dés)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/yams-yahtzee
+- **Objectif** : Remplir les 13 cases de sa feuille de score en effectuant jusqu'à 3 lancers de dés par tour pour maximiser son score total.
+- **Déroulement d'un tour** : 3 lancers de 5 dés au maximum. Le joueur peut conserver certains dés et relancer les autres. À la fin du tour, il doit inscrire un résultat dans l'une des 13 cases (ou 0 s'il la sacrifie).
+- **Section Supérieure (Les Chiffres) & Bonus 35 pts** :
+  - Cases As, Deux, Trois, Quatre, Cinq, Six : Somme des dés de la valeur choisie.
+  - **Prime de +35 points** : Accordée si le total de la section supérieure atteint ou dépasse **63 points**.
+- **Section Inférieure (Les Combinaisons)** :
+  - **Brelan** (3 dés identiques) : Somme totale des 5 dés.
+  - **Carré** (4 dés identiques) : Somme totale des 5 dés.
+  - **Full** (3 + 2 dés) : **25 points fixes**.
+  - **Petite Suite** (4 dés consécutifs) : **30 points fixes**.
+  - **Grande Suite** (5 dés consécutifs) : **40 points fixes**.
+  - **Yam's / Yahtzee** (5 dés identiques) : **50 points fixes**.
+  - **Chance** : Somme totale des 5 dés.
+- **Fin de partie & Vainqueur** : La partie se termine après 13 tours complets. Le plus grand score total (Section Supérieure + Bonus + Section Inférieure) l'emporte.
+
+---
+
+### 2.20. Dixit (3 à 8 joueurs · Cartes illustrées)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/dixit
+- **Objectif** : Atteindre ou dépasser 30 points en retrouvant la carte du Conteur et en incitant les autres joueurs à voter pour sa propre carte.
+- **Déroulement d'un tour** :
+  - Le Conteur choisit une carte de sa main de 6 cartes et énonce un indice énigmatique.
+  - Chaque autre joueur choisit secrètement dans sa main la carte qui correspond le mieux à cet indice.
+  - Les cartes sont mélangées et révélées face visible. Tous les joueurs (sauf le conteur) votent pour retrouver la carte originale.
+- **Barème officiel des points** :
+  - **Tous ou Aucun ne trouvent la carte** : Le conteur marque **0 point**, et tous les autres joueurs marquent **2 points**.
+  - **Au moins un joueur (mais pas tous) trouve** : Le conteur marque **3 points**, et chaque joueur ayant trouvé la carte marque **3 points**.
+  - **Bonus de Bluff (Tromperie)** : Chaque joueur (hormis le conteur) marque **+1 point supplémentaire par vote reçu** sur sa propre carte.
+- **Fin de partie** : Dès qu'un joueur atteint ou franchit le cap des **30 points**, la partie s'achève et le plus haut score est sacré vainqueur.
+
 
 

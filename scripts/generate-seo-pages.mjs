@@ -147,6 +147,30 @@ export const SEO_PAGES = [
       'Feuille de score et règles officielles du jeu Symbiose (Subverti) : agencement de la Mare en 8 cartes, calcul des points fixes et variables, modes Duel et Équipe gratuits sans pub.',
     h1: 'Symbiose — Compteur de Points en Ligne Gratuit & Règles Officielles (Subverti)',
   },
+  {
+    slug: 'molkky',
+    gameId: GAMES.MOLKKY,
+    title: 'Mölkky : Règles Officielles (50 pts, Retour à 25, Élimination) & Compteur — Ardoise',
+    description:
+      'Compteur de points Mölkky gratuit et sans pub : barème des quilles, seuil officiel à 50 points, retombée à 25 pts en cas de dépassement, gestion des 3 ratés consécutifs et mode par équipes.',
+    h1: 'Mölkky — Compteur de Points Gratuit & Règles Officielles (Seuil 50 pts)',
+  },
+  {
+    slug: 'yams-yahtzee',
+    gameId: GAMES.YAM,
+    title: "Yam's / Yahtzee : Règles Officielles (Grille Complète, Bonus 35 pts) & Compteur — Ardoise",
+    description:
+      "Feuille de score Yam's (Yahtzee) en ligne gratuite : grille officielle des 13 combinaisons (Brelan, Carré, Full, Suites, Yam's), calcul automatique du bonus de 35 points et du total.",
+    h1: "Yam's / Yahtzee — Feuille de Score Gratuite & Règles Officielles",
+  },
+  {
+    slug: 'dixit',
+    gameId: GAMES.DIXIT,
+    title: 'Dixit : Règles Officielles de Comptage (Conteur, Votes, 30 pts) & Compteur — Ardoise',
+    description:
+      'Compteur de points en ligne pour Dixit : attribution automatique des points du conteur (+3 ou 0), devins (+3 ou +2), points de bluff (+1 par vote) et fin de partie à 30 points.',
+    h1: 'Dixit — Compteur de Points Gratuit & Règles Officielles de Comptage',
+  },
 ]
 
 function escapeHtml(str = '') {
