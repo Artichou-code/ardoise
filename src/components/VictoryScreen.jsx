@@ -49,9 +49,14 @@ export function VictoryScreen() {
       : 'high'
 
   const ranking = getRanking(activeGame.scores, scoreDir, activeGame)
-  const winner =
-    activeGame.players.find(p => p.id === activeGame.winner) ||
-    activeGame.players.find(p => p.id === ranking[0]?.id)
+  const firstRankEntries = ranking.filter(r => r.rank === 1)
+  const isTie = !isTeamGame && firstRankEntries.length > 1
+  const tiedWinners = firstRankEntries.map(r => activeGame.players.find(p => p.id === r.id)).filter(Boolean)
+
+  const winner = isTie
+    ? null
+    : (activeGame.players.find(p => p.id === activeGame.winner) ||
+       activeGame.players.find(p => p.id === ranking[0]?.id))
 
   const grandDourakEntry = ranking[ranking.length - 1]
   const grandDourak = isDourak
@@ -74,15 +79,14 @@ export function VictoryScreen() {
       ? (activeGame.scores[pEux[0]?.id] || 0) + (activeGame.scores[pEux[1]?.id] || 0)
       : (activeGame.scores[pEux[0]?.id] || 0)
     : 0
+  const isTeamTie = isTeamGame && scoreNous === scoreEux
   const winningTeam = scoreNous >= scoreEux ? 'nous' : 'eux'
-  const winningPlayers = winningTeam === 'nous' ? pNous : pEux
+  const winningPlayers = isTeamTie ? [...pNous, ...pEux] : (winningTeam === 'nous' ? pNous : pEux)
   const losingPlayers = winningTeam === 'nous' ? pEux : pNous
   const winningScore = Math.max(scoreNous, scoreEux)
   const losingScore = Math.min(scoreNous, scoreEux)
 
   const podiumOrder = [ranking[1], ranking[0], ranking[2]].filter(Boolean)
-  const heights = ['h-16', 'h-24', 'h-12']
-  const labels = ['2e', '1er', '3e']
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden school-surface select-none">
@@ -139,15 +143,35 @@ export function VictoryScreen() {
                 ))}
               </div>
               <span className="mt-2 inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-[#c83b3b] text-white text-[11px] font-bold uppercase tracking-wider">
-                <Award size={12} /> Équipe victorieuse
+                <Award size={12} /> {isTeamTie ? 'Égalité parfaite' : 'Équipe victorieuse'}
               </span>
             </div>
             <h1 className="font-serif-title text-xl font-bold mt-1">
-              {winningPlayers.map(p => p.name).join(' & ')} l'emportent !
+              {isTeamTie ? 'Égalité entre Équipe 1 & Équipe 2 !' : `${winningPlayers.map(p => p.name).join(' & ')} l'emportent !`}
             </h1>
             <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
-              {getGameDisplayName(activeGame)} · {winningTeam === 'nous' ? 'Équipe 1' : 'Équipe 2'}
+              {getGameDisplayName(activeGame)} · {isTeamTie ? `${scoreNous} pts partout` : (winningTeam === 'nous' ? 'Équipe 1' : 'Équipe 2')}
               {duration ? ` · ${duration}` : ''} · {activeGame.rounds.length} {activeGame.type === GAMES.BELOTE ? 'donne' : 'manche'}{activeGame.rounds.length > 1 ? 's' : ''}
+            </p>
+          </div>
+        ) : isTie ? (
+          <div className="text-center mt-2 mb-3">
+            <div className="inline-flex flex-col items-center">
+              <div className="flex items-center justify-center -space-x-2">
+                {tiedWinners.map(p => (
+                  <Avatar key={p.id} player={p} size="lg" leader crown />
+                ))}
+              </div>
+              <span className="mt-2 inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-[#c83b3b] text-white text-[11px] font-bold uppercase tracking-wider">
+                <Award size={12} /> Égalité · Ex-æquo
+              </span>
+            </div>
+            <h1 className="font-serif-title text-xl font-bold mt-1">
+              {tiedWinners.map(p => p.name).join(' & ')} à égalité !
+            </h1>
+            <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
+              {getGameDisplayName(activeGame)} · Score final : {firstRankEntries[0]?.score || 50} pts
+              {duration ? ` · ${duration}` : ''} · {activeGame.rounds.length} manche{activeGame.rounds.length > 1 ? 's' : ''}
             </p>
           </div>
         ) : (
@@ -228,6 +252,8 @@ export function VictoryScreen() {
                 const player = activeGame.players.find(p => p.id === r.id)
                 if (!player) return null
                 const isFirst = r.rank === 1
+                const rankLabel = r.rank === 1 ? '1er' : `${r.rank}e`
+                const rankHeight = r.rank === 1 ? 'h-24' : r.rank === 2 ? 'h-16' : 'h-12'
                 return (
                   <div key={r.id} className="flex flex-col items-center gap-1 w-24">
                     <Avatar player={player} size="sm" leader={isFirst} crown={isFirst} />
@@ -238,13 +264,13 @@ export function VictoryScreen() {
                       {r.score} {scoreUnit}
                     </span>
                     <div
-                      className={`${heights[i]} w-full rounded-t-xl flex items-start justify-center pt-2 font-serif-title font-bold text-sm border-t border-x ${
+                      className={`${rankHeight} w-full rounded-t-xl flex items-start justify-center pt-2 font-serif-title font-bold text-sm border-t border-x ${
                         isFirst
                           ? 'bg-[#c83b3b] text-white border-[#c83b3b]'
                           : 'school-card text-stone-600 dark:text-slate-300'
                       }`}
                     >
-                      {labels[i]}
+                      {rankLabel}
                     </div>
                   </div>
                 )

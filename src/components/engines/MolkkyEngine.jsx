@@ -188,30 +188,6 @@ export function MolkkyEngine({ game, onFinish }) {
     return streaks
   }, [isTeamMode, game.rounds, game.players])
 
-  // Navigation dans le ScorePad
-  const activeIndex = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
-  const hasNextPlayer = activeIndex >= 0 && activeIndex < game.players.length - 1
-  const hasPrevPlayer = activeIndex > 0
-  const nextPlayer = hasNextPlayer ? game.players[activeIndex + 1] : null
-  const prevPlayer = hasPrevPlayer ? game.players[activeIndex - 1] : null
-
-  const handleNextInPad = () => {
-    if (editingPlayer && roundPoints[editingPlayer.id] == null) {
-      setRoundPoints(prev => ({ ...prev, [editingPlayer.id]: 0 }))
-    }
-    if (hasNextPlayer && nextPlayer) {
-      setEditingPlayer(nextPlayer)
-    } else {
-      setEditingPlayer(null)
-    }
-  }
-
-  const handlePrevInPad = () => {
-    if (hasPrevPlayer && prevPlayer) {
-      setEditingPlayer(prevPlayer)
-    }
-  }
-
   // Données de l'équipe et cible pour le joueur en cours d'édition dans le ScorePad
   const editingPlayerIdx = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
   const isEditingTeam1 = editingPlayerIdx < 2
@@ -228,6 +204,36 @@ export function MolkkyEngine({ game, onFinish }) {
 
   const editingActiveBaseScore = editingBaseRaw > 50 ? 25 : editingBaseRaw
   const editingTargetInfo = getMolkkyTargetInfo(editingActiveBaseScore)
+
+  // Navigation dans le ScorePad
+  const activeIndex = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
+  const hasNextPlayer = activeIndex >= 0 && activeIndex < game.players.length - 1
+  const hasPrevPlayer = activeIndex > 0
+  const nextPlayer = hasNextPlayer ? game.players[activeIndex + 1] : null
+  const prevPlayer = hasPrevPlayer ? game.players[activeIndex - 1] : null
+
+  const handleNextInPad = () => {
+    if (editingPlayer && roundPoints[editingPlayer.id] == null) {
+      setRoundPoints(prev => ({ ...prev, [editingPlayer.id]: 0 }))
+    }
+    const currentPts = editingPlayer ? (roundPoints[editingPlayer.id] || 0) : 0
+    const projectedAfterThrow = editingActiveBaseScore + currentPts
+    if (projectedAfterThrow === 50) {
+      setEditingPlayer(null)
+      return
+    }
+    if (hasNextPlayer && nextPlayer) {
+      setEditingPlayer(nextPlayer)
+    } else {
+      setEditingPlayer(null)
+    }
+  }
+
+  const handlePrevInPad = () => {
+    if (hasPrevPlayer && prevPlayer) {
+      setEditingPlayer(prevPlayer)
+    }
+  }
 
   // Calcul des scores prévisionnels après cette manche
   const calculatedResult = useMemo(() => {
@@ -336,12 +342,35 @@ export function MolkkyEngine({ game, onFinish }) {
     }
   }, [game.scores, game.players, roundPoints, isTeamMode, pastZeroStreaks, streakT1, streakT2])
 
-  // Validation : tous les lancers de la manche doivent être saisis
+  // Victoire détectée (par 50 points pile ou par élimination)
+  const hasWinner = calculatedResult.winningPlayers.size > 0
+
+  const winningPlayerList = useMemo(() => {
+    if (!hasWinner) return []
+    if (isTeamMode) {
+      const winningTeam = calculatedResult.winningPlayers.has('nous') ? 'nous' : 'eux'
+      return winningTeam === 'nous' ? [game.players[0], game.players[1]] : [game.players[2], game.players[3]]
+    }
+    return Array.from(calculatedResult.winningPlayers)
+      .map(id => game.players.find(p => p.id === id))
+      .filter(Boolean)
+  }, [hasWinner, calculatedResult.winningPlayers, isTeamMode, game.players])
+
+  const winnerPlayer = winningPlayerList[0] || null
+  const isMultipleWinners = !isTeamMode && winningPlayerList.length > 1
+
+  const winningTeamNum = useMemo(() => {
+    if (!isTeamMode || !hasWinner) return null
+    return calculatedResult.winningPlayers.has('nous') ? 1 : 2
+  }, [isTeamMode, hasWinner, calculatedResult.winningPlayers])
+
+  // Validation : un gagnant proclamé (50 pts ou élimination) permet de valider immédiatement,
+  // sinon tous les lancers de la manche doivent être saisis
   const unplayedPlayers = useMemo(
     () => game.players.filter(p => roundPoints[p.id] == null),
     [game.players, roundPoints]
   )
-  const canValidate = unplayedPlayers.length === 0
+  const canValidate = hasWinner || unplayedPlayers.length === 0
   const filledCount = game.players.length - unplayedPlayers.length
 
   const handleValidate = () => {
@@ -365,9 +394,10 @@ export function MolkkyEngine({ game, onFinish }) {
           onFinish?.(winnerPlayerId)
         }, 150)
       } else {
-        const firstWinner = Array.from(winningPlayers)[0]
+        const winnersList = Array.from(winningPlayers)
+        const winnerId = winnersList.length === 1 ? winnersList[0] : null
         setTimeout(() => {
-          onFinish?.(firstWinner)
+          onFinish?.(winnerId)
         }, 150)
       }
     }
@@ -773,13 +803,23 @@ export function MolkkyEngine({ game, onFinish }) {
           disabled={!canValidate}
           onClick={handleValidate}
           className={`w-full py-3 rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 select-none ${
-            canValidate
-              ? 'bg-[#c83b3b] hover:bg-[#b03030] text-white cursor-pointer active:scale-[0.99]'
+            hasWinner
+              ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white cursor-pointer shadow-md'
+              : canValidate
+              ? 'bg-[#c83b3b] hover:bg-[#b03030] active:scale-[0.99] text-white cursor-pointer'
               : 'bg-stone-200 dark:bg-slate-800 text-stone-400 dark:text-slate-500 cursor-not-allowed'
           }`}
         >
           <Trophy size={16} />
-          <span>Valider la manche</span>
+          <span>
+            {hasWinner
+              ? isTeamMode
+                ? `Valider la victoire (Équipe ${winningTeamNum}) !`
+                : isMultipleWinners
+                ? `Valider l'égalité (${winningPlayerList.map(p => p.name).join(' & ')}) !`
+                : `Valider la victoire (${winnerPlayer?.name}) !`
+              : 'Valider la manche'}
+          </span>
           {!canValidate && (
             <span className="text-xs font-normal opacity-75">
               ({filledCount}/{game.players.length} saisis)
@@ -841,7 +881,13 @@ export function MolkkyEngine({ game, onFinish }) {
               value={roundPoints[editingPlayer.id] || 0}
               onChange={(val) => setRoundPoints(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, Number(val) || 0) }))}
               onConfirm={handleNextInPad}
-              confirmLabel={hasNextPlayer && nextPlayer ? `Valider & Suivant (${nextPlayer.name})` : 'Valider'}
+              confirmLabel={
+                (editingActiveBaseScore + (roundPoints[editingPlayer.id] || 0) === 50)
+                  ? 'Valider la victoire !'
+                  : hasNextPlayer && nextPlayer
+                  ? `Valider & Suivant (${nextPlayer.name})`
+                  : 'Valider'
+              }
               label="Points du lancer"
               subLabel={
                 editingTargetInfo.warning
