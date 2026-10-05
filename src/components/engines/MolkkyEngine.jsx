@@ -275,9 +275,9 @@ export function MolkkyEngine({ game, onFinish }) {
               {isTeamMode ? 'Mölkky — Équipe 2 vs 2' : 'Mölkky — Individuel'}
             </h3>
             <p className="text-[10px] text-stone-500 dark:text-slate-400 leading-snug">
-              {isTeamMode
-                ? '50 pts pile · Si > 50 ➔ 25 pts · Score d’équipe combiné'
-                : '50 pts pile · Si > 50 ➔ 25 pts · 3 ratés = éliminé'}
+              <span>50 pts pile · Si &gt; 50 ➔ 25 pts</span>
+              <br />
+              <span>{isTeamMode ? 'Score d’équipe combiné' : '3 ratés consécutifs = éliminé'}</span>
             </p>
           </div>
         </div>
