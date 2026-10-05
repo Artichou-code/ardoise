@@ -22,6 +22,7 @@ import { PlayerDetailSheet } from './PlayerDetailSheet'
 import { TrophiesSheet } from './TrophiesSheet'
 import { SyncModal } from './SyncModal'
 import { BurgerMenuButton } from './BurgerMenu'
+import { MagneticTabsBar } from './ui/MagneticTabsBar'
 import {
   computeStats,
   sortPlayers,
@@ -40,40 +41,9 @@ export function StatsScreen() {
   const [searchQuery, setSearchQuery] = useState('')
   const searchInputRef = useRef(null)
 
-  const tabsContainerRef = useRef(null)
-  const tabButtonRefs = useRef({})
-
   const normalizedQuery = useMemo(() => {
     return searchQuery.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   }, [searchQuery])
-
-  // Centrage fluide de l'onglet actif dans la barre horizontale
-  const scrollToTab = (buttonEl) => {
-    if (!buttonEl || !tabsContainerRef.current) return
-    const container = tabsContainerRef.current
-    const containerRect = container.getBoundingClientRect()
-    const elRect = buttonEl.getBoundingClientRect()
-    const elOffsetLeft = elRect.left - containerRect.left + container.scrollLeft
-    const targetScrollLeft = elOffsetLeft - (container.clientWidth / 2) + (elRect.width / 2)
-    container.scrollTo({
-      left: Math.max(0, targetScrollLeft),
-      behavior: 'smooth',
-    })
-  }
-
-  const handleSelectTab = (tabId, buttonEl) => {
-    setSelectedGameType(tabId)
-    scrollToTab(buttonEl)
-  }
-
-  // Centrage automatique lors de la sélection
-  useEffect(() => {
-    const buttonEl = tabButtonRefs.current[selectedGameType]
-    if (buttonEl) {
-      const timer = setTimeout(() => scrollToTab(buttonEl), 60)
-      return () => clearTimeout(timer)
-    }
-  }, [selectedGameType])
 
   // Calcul des statistiques
   const stats = useMemo(() => {
@@ -307,60 +277,29 @@ export function StatsScreen() {
         )}
       </header>
 
-      {/* Onglets horizontaux de filtre par jeu avec centrage fluide au clic */}
-      <div
-        ref={tabsContainerRef}
-        className="flex-shrink-0 px-4 py-2.5 border-b border-stone-200/60 dark:border-slate-800/60 overflow-x-auto scrollbar-hide scroll-smooth"
-      >
-        <div className="flex items-center gap-2 pr-[50vw]">
-          {!isSearchOpen && (
+      {/* Onglets horizontaux de filtre par jeu avec centrage magnétique, drag souris & chevrons PC */}
+      <MagneticTabsBar
+        tabs={filteredTabs}
+        activeId={selectedGameType}
+        onChange={setSelectedGameType}
+        innerClassName="py-2.5"
+        prepend={
+          !isSearchOpen && (
             <button
               type="button"
               onClick={() => {
                 setIsSearchOpen(true)
                 setTimeout(() => searchInputRef.current?.focus(), 50)
               }}
-              className="flex items-center justify-center w-7 h-7 rounded-full bg-white/80 dark:bg-slate-900/80 border border-stone-200 dark:border-slate-800 hover:border-[#c83b3b] text-[#c83b3b] transition-colors flex-shrink-0 cursor-pointer shadow-2xs"
+              className="flex items-center justify-center w-7 h-7 rounded-full bg-white/80 dark:bg-slate-900/80 border border-stone-200 dark:border-slate-800 hover:border-[#c83b3b] text-[#c83b3b] transition-colors flex-shrink-0 cursor-pointer shadow-2xs mr-0.5"
               title="Rechercher un jeu ou joueur"
               aria-label="Rechercher"
             >
               <Search size={13} />
             </button>
-          )}
-
-          {filteredTabs.map(tab => {
-            const isActive = selectedGameType === tab.id
-            return (
-              <button
-                key={tab.id}
-                ref={el => {
-                  if (el) tabButtonRefs.current[tab.id] = el
-                }}
-                type="button"
-                onClick={(e) => handleSelectTab(tab.id, e.currentTarget)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${
-                  isActive
-                    ? 'bg-[#c83b3b] text-white shadow-xs'
-                    : 'bg-white/80 dark:bg-slate-900/80 text-stone-600 dark:text-slate-300 border border-stone-200 dark:border-slate-800 hover:bg-stone-100 dark:hover:bg-slate-800'
-                }`}
-              >
-                <span>{tab.label}</span>
-                {tab.count > 0 && (
-                  <span
-                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                      isActive
-                        ? 'bg-white/25 text-white'
-                        : 'bg-stone-200/80 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+          )
+        }
+      />
 
       {/* Contenu principal défilant */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3.5 pb-8 scroll-bottom-space space-y-4">

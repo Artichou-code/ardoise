@@ -16,6 +16,7 @@ import { Avatar } from './ui/Avatar'
 import { TrophyIcon } from './ui/TrophyIcon'
 import { PlayerDetailSheet } from './PlayerDetailSheet'
 import { BurgerMenuButton } from './BurgerMenu'
+import { MagneticTabsBar } from './ui/MagneticTabsBar'
 import { computeStats, TROPHIES_CATALOG } from '../utils/statsUtils'
 
 /**
@@ -203,6 +204,24 @@ export function TrophiesScreen() {
     })
     return Array.from(gameMap.values())
   }, [gameTrophies])
+
+  // Onglets pour la barre de navigation horizontale magnétique
+  const categoryTabs = useMemo(() => {
+    const list = [
+      { id: 'all', label: `Tous (${TROPHIES_CATALOG.length})` },
+      { id: 'general', label: `Généraux (${generalTrophies.length})` },
+      { id: 'games', label: `Tous les jeux (${gameTrophies.length})` },
+    ]
+    availableGames.forEach((g) => {
+      list.push({
+        id: g.type,
+        label: g.name,
+        badgeText: g.unlocked > 0 ? `${g.unlocked}/${g.total}` : g.total,
+        badgeVariant: g.unlocked > 0 ? 'emerald' : 'neutral',
+      })
+    })
+    return list
+  }, [generalTrophies.length, gameTrophies.length, availableGames])
 
   // Trophées appartenant à la catégorie actuellement sélectionnée
   const scopedCategoryTrophies = useMemo(() => {
@@ -438,72 +457,12 @@ export function TrophiesScreen() {
         )}
       </header>
 
-      {/* Barre de sélection de catégorie (1 seule ligne horizontale fluide et scrollable) */}
-      <div className="flex-shrink-0 px-4 py-2 border-b border-stone-200/60 dark:border-slate-800/60 bg-[#faf9f5]/70 dark:bg-[#151719]/70 overflow-x-auto scrollbar-hide">
-        <div className="flex items-center gap-1.5 min-w-max">
-          <button
-            type="button"
-            onClick={() => setCategoryFilter('all')}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-              categoryFilter === 'all'
-                ? 'bg-[#c83b3b] text-white shadow-2xs font-bold'
-                : 'bg-white/80 dark:bg-slate-800/80 border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-200'
-            }`}
-          >
-            Tous ({TROPHIES_CATALOG.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setCategoryFilter('general')}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-              categoryFilter === 'general'
-                ? 'bg-[#c83b3b] text-white shadow-2xs font-bold'
-                : 'bg-white/80 dark:bg-slate-800/80 border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-200'
-            }`}
-          >
-            Généraux ({generalTrophies.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setCategoryFilter('games')}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-              categoryFilter === 'games'
-                ? 'bg-[#c83b3b] text-white shadow-2xs font-bold'
-                : 'bg-white/80 dark:bg-slate-800/80 border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-200'
-            }`}
-          >
-            Tous les jeux ({gameTrophies.length})
-          </button>
-          {availableGames.map((g) => {
-            const isSelected = categoryFilter === g.type
-            return (
-              <button
-                key={g.type}
-                type="button"
-                onClick={() => setCategoryFilter(g.type)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer border whitespace-nowrap ${
-                  isSelected
-                    ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs font-bold'
-                    : 'bg-white/80 dark:bg-slate-800/80 border-stone-200 dark:border-slate-700 text-stone-700 dark:text-slate-300 hover:border-[#c83b3b]/60'
-                }`}
-              >
-                <span>{g.name}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold tabular-nums ${
-                    isSelected
-                      ? 'bg-white/20 text-white'
-                      : g.unlocked > 0
-                      ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400'
-                      : 'bg-stone-100 dark:bg-slate-700 text-stone-500 dark:text-slate-400'
-                  }`}
-                >
-                  {g.unlocked > 0 ? `${g.unlocked}/${g.total}` : g.total}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      {/* Barre de sélection de catégorie avec centrage magnétique, swipe souris & chevrons PC */}
+      <MagneticTabsBar
+        tabs={categoryTabs}
+        activeId={categoryFilter}
+        onChange={setCategoryFilter}
+      />
 
       {/* Corps défilant sur fond cahier / ardoise */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-3 pb-8 scroll-bottom-space space-y-3.5 w-full max-w-full overflow-x-hidden">
