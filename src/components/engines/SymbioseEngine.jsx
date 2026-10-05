@@ -416,15 +416,17 @@ export function SymbioseEngine({ game }) {
 
               {/* Ligne 2 : Noms de l'équipe et calcul des mares regroupés avec ":" */}
               <div className="w-full mt-1 min-w-0">
-                <div className="flex items-center gap-1 min-w-0 text-[10px] sm:text-[11px]">
+                <div className="flex items-center gap-0.5 min-w-0 text-[10px] sm:text-[11px]">
                   <span className="font-bold text-[#c83b3b] dark:text-red-400 truncate leading-tight">
                     {formatTeamNames([game.players[0], game.players[1]], 8)}
                   </span>
                   <span className="font-bold text-stone-400 dark:text-slate-500 shrink-0">
                     :
                   </span>
-                  <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums">
-                    {getPlayerTotal(game.players[0]?.id)} + {getPlayerTotal(game.players[1]?.id)}
+                  <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums inline-flex items-center">
+                    <span>{getPlayerTotal(game.players[0]?.id)}</span>
+                    <span className="mx-0.5 text-stone-400 dark:text-slate-500 font-normal">+</span>
+                    <span>{getPlayerTotal(game.players[1]?.id)}</span>
                   </span>
                 </div>
               </div>
@@ -455,15 +457,17 @@ export function SymbioseEngine({ game }) {
 
               {/* Ligne 2 : Noms de l'équipe et calcul des mares regroupés avec ":" */}
               <div className="w-full mt-1 min-w-0">
-                <div className="flex items-center gap-1 min-w-0 text-[10px] sm:text-[11px]">
+                <div className="flex items-center gap-0.5 min-w-0 text-[10px] sm:text-[11px]">
                   <span className="font-bold text-[#1e3a5f] dark:text-sky-400 truncate leading-tight">
                     {formatTeamNames([game.players[2], game.players[3]], 8)}
                   </span>
                   <span className="font-bold text-stone-400 dark:text-slate-500 shrink-0">
                     :
                   </span>
-                  <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums">
-                    {getPlayerTotal(game.players[2]?.id)} + {getPlayerTotal(game.players[3]?.id)}
+                  <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums inline-flex items-center">
+                    <span>{getPlayerTotal(game.players[2]?.id)}</span>
+                    <span className="mx-0.5 text-stone-400 dark:text-slate-500 font-normal">+</span>
+                    <span>{getPlayerTotal(game.players[3]?.id)}</span>
                   </span>
                 </div>
               </div>

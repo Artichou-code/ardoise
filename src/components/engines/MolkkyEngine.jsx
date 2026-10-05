@@ -499,15 +499,17 @@ export function MolkkyEngine({ game, onFinish }) {
 
                   {/* Ligne 2 : Noms de l'équipe et calcul des points sous les avatars */}
                   <div className="w-full mt-1.5 min-w-0">
-                    <div className="flex items-center gap-1 min-w-0 text-[10px] sm:text-[11px]">
+                    <div className="flex items-center gap-0.5 min-w-0 text-[10px] sm:text-[11px]">
                       <span className="font-bold text-[#c83b3b] dark:text-red-400 truncate leading-tight">
                         {formatTeamNames(pNous, 8)}
                       </span>
                       <span className="font-bold text-stone-400 dark:text-slate-500 shrink-0">
                         :
                       </span>
-                      <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums">
-                        {(roundPoints[pNous[0]?.id] || 0)} + {(roundPoints[pNous[1]?.id] || 0)}
+                      <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums inline-flex items-center">
+                        <span>{roundPoints[pNous[0]?.id] || 0}</span>
+                        <span className="mx-0.5 text-stone-400 dark:text-slate-500 font-normal">+</span>
+                        <span>{roundPoints[pNous[1]?.id] || 0}</span>
                       </span>
                     </div>
                   </div>
@@ -577,15 +579,17 @@ export function MolkkyEngine({ game, onFinish }) {
 
                   {/* Ligne 2 : Noms de l'équipe et calcul des points sous les avatars */}
                   <div className="w-full mt-1.5 min-w-0">
-                    <div className="flex items-center gap-1 min-w-0 text-[10px] sm:text-[11px]">
+                    <div className="flex items-center gap-0.5 min-w-0 text-[10px] sm:text-[11px]">
                       <span className="font-bold text-[#1e3a5f] dark:text-sky-400 truncate leading-tight">
                         {formatTeamNames(pEux, 8)}
                       </span>
                       <span className="font-bold text-stone-400 dark:text-slate-500 shrink-0">
                         :
                       </span>
-                      <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums">
-                        {(roundPoints[pEux[0]?.id] || 0)} + {(roundPoints[pEux[1]?.id] || 0)}
+                      <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums inline-flex items-center">
+                        <span>{roundPoints[pEux[0]?.id] || 0}</span>
+                        <span className="mx-0.5 text-stone-400 dark:text-slate-500 font-normal">+</span>
+                        <span>{roundPoints[pEux[1]?.id] || 0}</span>
                       </span>
                     </div>
                   </div>
