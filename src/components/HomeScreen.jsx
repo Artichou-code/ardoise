@@ -181,6 +181,7 @@ export function HomeScreen() {
         if (m.id === 'sea_salt_paper') keywords.push('origami', 'mer', 'sirene')
         if (m.id === 'dame_de_pique') keywords.push('coeur', 'reine', 'grand chelem')
         if (m.id === 'uno') keywords.push('+4', 'plus 4', 'joker', 'cartes')
+        if (m.id === 'symbiose') keywords.push('subverti', 'mare', 'riviere', 'grenouille', 'societe', 'animaux')
         if (m.id === 'universel') keywords.push('libre', 'autre', 'personnalise', 'scrabble', 'molkky', 'yams', 'tarot')
 
         const matchesKeyword = keywords.some(k => k.includes(normalizedQuery))

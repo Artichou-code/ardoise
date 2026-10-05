@@ -403,7 +403,7 @@ export function StatsScreen() {
             {honorsList.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5 px-0.5">
-                  <Award size={15} className="text-amber-600 dark:text-amber-400" />
+                  <Award size={15} className="text-[#c83b3b] dark:text-rose-400" />
                   <h3 className="font-serif-title font-bold text-sm text-stone-800 dark:text-slate-200">
                     Honneurs de la table
                   </h3>
@@ -416,22 +416,20 @@ export function StatsScreen() {
                       <div
                         key={honor.id}
                         onClick={() => setSelectedPlayer(honor.player)}
-                        className={`p-2.5 rounded-xl border ${honor.cardStyle} flex items-center gap-2.5 cursor-pointer active:scale-[0.98] transition-transform ${
+                        className={`p-2.5 rounded-xl border ${honor.cardStyle} flex flex-col items-center text-center cursor-pointer active:scale-[0.98] transition-transform ${
                           isOddLast ? 'col-span-2' : ''
                         }`}
                       >
+                        <span className={`block text-[9px] font-extrabold ${honor.labelStyle} uppercase tracking-wider mb-1.5`}>
+                          {honor.label}
+                        </span>
                         <Avatar player={honor.player} size="sm" />
-                        <div className="min-w-0 flex-1">
-                          <span className={`block text-[9px] font-bold ${honor.labelStyle} uppercase tracking-wider`}>
-                            {honor.label}
-                          </span>
-                          <p className="font-semibold text-xs text-stone-900 dark:text-slate-100 truncate">
-                            {honor.player.name}
-                          </p>
-                          <span className={`text-[10px] ${honor.subStyle}`}>
-                            {honor.sub}
-                          </span>
-                        </div>
+                        <p className="font-bold text-xs text-stone-900 dark:text-slate-100 truncate w-full mt-1.5">
+                          {honor.player.name}
+                        </p>
+                        <span className={`text-[10px] ${honor.subStyle} mt-0.5`}>
+                          {honor.sub}
+                        </span>
                       </div>
                     )
                   })}

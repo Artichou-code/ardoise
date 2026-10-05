@@ -1111,10 +1111,10 @@ export const GAME_META = {
   },
   [GAMES.SYMBIOSE]: {
     id: GAMES.SYMBIOSE,
-    deckType: 'specific',
+    deckType: 'dedicated',
     name: 'Symbiose',
     playersBadge: '2 à 4 j.',
-    categoryBadge: '36 cartes',
+    categoryBadge: 'Jeu de société',
     description:
       'Constituez la plus belle Mare de 8 cartes en associant Animaux et Saisons. Échangez avec la Rivière, anticipez les mares voisines et partagez la victoire en symbiose parfaite !',
     minPlayers: 2,
