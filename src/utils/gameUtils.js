@@ -65,11 +65,20 @@ export function getLowest(scores) {
 export function getRanking(scores, direction = 'high', game = null) {
   if (!scores || Object.keys(scores).length === 0) return []
 
-  // Traitement spécifique Belote / Coinche / Symbiose (mode équipe) (4 joueurs = 2 équipes de 2)
+  // Traitement spécifique Belote / Coinche / Symbiose / Mölkky (mode équipe) (4 joueurs = 2 équipes de 2)
+  const isBeloteTeam = game && (game.type === 'belote' || game.type === 'coinche')
+  const isSymbioseTeam =
+    game &&
+    game.type === 'symbiose' &&
+    (game.config?.mode === 'team' || game.mode === 'team' || game.isTeamMode === true || game.rounds?.some(r => r.isTeamMode))
+  const isMolkkyTeam =
+    game &&
+    game.type === 'molkky' &&
+    (game.config?.mode === 'team' || game.mode === 'team' || game.isTeamMode === true || game.rounds?.some(r => r.isTeamMode))
+
   if (
     game &&
-    ((game.type === 'belote' || game.type === 'coinche') ||
-      (game.type === 'symbiose' && (game.config?.mode === 'team' || game.mode === 'team' || game.isTeamMode === true || game.rounds?.some(r => r.isTeamMode)))) &&
+    (isBeloteTeam || isSymbioseTeam || isMolkkyTeam) &&
     Array.isArray(game.players) &&
     game.players.length === 4
   ) {
@@ -79,28 +88,29 @@ export function getRanking(scores, direction = 'high', game = null) {
     const p4 = game.players[3]
 
     // À la Belote, scores[p1.id] est le score de l'équipe 1.
-    // À Symbiose en mode équipe, le score de l'équipe est la somme des 2 mares des partenaires.
-    const sTeam1 = game.type === 'symbiose'
+    // À Symbiose et Mölkky en mode équipe, le score de l'équipe est la somme des scores des partenaires.
+    const isSumTeam = isSymbioseTeam || isMolkkyTeam
+    const sTeam1 = isSumTeam
       ? (scores[p1?.id] != null ? scores[p1.id] : 0) + (scores[p2?.id] != null ? scores[p2.id] : 0)
       : (scores[p1?.id] != null ? scores[p1.id] : 0)
-    const sTeam2 = game.type === 'symbiose'
+    const sTeam2 = isSumTeam
       ? (scores[p3?.id] != null ? scores[p3.id] : 0) + (scores[p4?.id] != null ? scores[p4.id] : 0)
       : (scores[p3?.id] != null ? scores[p3.id] : 0)
 
     if (sTeam1 >= sTeam2) {
       const isTie = sTeam1 === sTeam2
       return [
-        { id: p1.id, score: game.type === 'symbiose' ? (scores[p1.id] || 0) : sTeam1, teamScore: sTeam1, rank: 1 },
-        { id: p2.id, score: game.type === 'symbiose' ? (scores[p2.id] || 0) : sTeam1, teamScore: sTeam1, rank: 1 },
-        { id: p3.id, score: game.type === 'symbiose' ? (scores[p3.id] || 0) : sTeam2, teamScore: sTeam2, rank: isTie ? 1 : 2 },
-        { id: p4.id, score: game.type === 'symbiose' ? (scores[p4.id] || 0) : sTeam2, teamScore: sTeam2, rank: isTie ? 1 : 2 },
+        { id: p1.id, score: isSumTeam ? (scores[p1.id] || 0) : sTeam1, teamScore: sTeam1, rank: 1 },
+        { id: p2.id, score: isSumTeam ? (scores[p2.id] || 0) : sTeam1, teamScore: sTeam1, rank: 1 },
+        { id: p3.id, score: isSumTeam ? (scores[p3.id] || 0) : sTeam2, teamScore: sTeam2, rank: isTie ? 1 : 2 },
+        { id: p4.id, score: isSumTeam ? (scores[p4.id] || 0) : sTeam2, teamScore: sTeam2, rank: isTie ? 1 : 2 },
       ]
     } else {
       return [
-        { id: p3.id, score: game.type === 'symbiose' ? (scores[p3.id] || 0) : sTeam2, teamScore: sTeam2, rank: 1 },
-        { id: p4.id, score: game.type === 'symbiose' ? (scores[p4.id] || 0) : sTeam2, teamScore: sTeam2, rank: 1 },
-        { id: p1.id, score: game.type === 'symbiose' ? (scores[p1.id] || 0) : sTeam1, teamScore: sTeam1, rank: 2 },
-        { id: p2.id, score: game.type === 'symbiose' ? (scores[p2.id] || 0) : sTeam1, teamScore: sTeam1, rank: 2 },
+        { id: p3.id, score: isSumTeam ? (scores[p3.id] || 0) : sTeam2, teamScore: sTeam2, rank: 1 },
+        { id: p4.id, score: isSumTeam ? (scores[p4.id] || 0) : sTeam2, teamScore: sTeam2, rank: 1 },
+        { id: p1.id, score: isSumTeam ? (scores[p1.id] || 0) : sTeam1, teamScore: sTeam1, rank: 2 },
+        { id: p2.id, score: isSumTeam ? (scores[p2.id] || 0) : sTeam1, teamScore: sTeam1, rank: 2 },
       ]
     }
   }
@@ -119,7 +129,7 @@ export function getRanking(scores, direction = 'high', game = null) {
 }
 
 /**
- * Extrait et structure les données d'équipes pour Belote/Coinche et Symbiose (mode équipe)
+ * Extrait et structure les données d'équipes pour Belote/Coinche, Symbiose et Mölkky (mode équipe)
  * Renvoie null si le jeu n'est pas un jeu en équipe à 4 joueurs.
  */
 export function getTeamGameData(game) {
@@ -128,8 +138,12 @@ export function getTeamGameData(game) {
   const isSymbioseTeam =
     game.type === 'symbiose' &&
     (game.config?.mode === 'team' || game.mode === 'team' || game.isTeamMode === true || game.rounds?.some(r => r.isTeamMode))
-  if (!isBelote && !isSymbioseTeam) return null
+  const isMolkkyTeam =
+    game.type === 'molkky' &&
+    (game.config?.mode === 'team' || game.mode === 'team' || game.isTeamMode === true || game.rounds?.some(r => r.isTeamMode))
+  if (!isBelote && !isSymbioseTeam && !isMolkkyTeam) return null
 
+  const isSumTeam = isSymbioseTeam || isMolkkyTeam
   const pNous = [game.players[0], game.players[1]].filter(Boolean)
   const pEux = [game.players[2], game.players[3]].filter(Boolean)
   const scores = game.scores || {}
@@ -139,8 +153,8 @@ export function getTeamGameData(game) {
   const p2 = scores[pEux[0]?.id] != null ? scores[pEux[0]?.id] : 0
   const p3 = scores[pEux[1]?.id] != null ? scores[pEux[1]?.id] : 0
 
-  const scoreNous = isSymbioseTeam ? p0 + p1 : p0
-  const scoreEux = isSymbioseTeam ? p2 + p3 : p2
+  const scoreNous = isSumTeam ? p0 + p1 : p0
+  const scoreEux = isSumTeam ? p2 + p3 : p2
   const hasRounds = (game.rounds?.length || 0) > 0
   const isFinished = game.status === 'finished'
 
@@ -154,7 +168,7 @@ export function getTeamGameData(game) {
     labelFull: pNous.map(p => p.name).join(' & '),
     players: pNous,
     score: scoreNous,
-    detail: isSymbioseTeam && hasRounds ? `${p0} + ${p1}` : null,
+    detail: isSumTeam && hasRounds ? `${p0} + ${p1}` : null,
     rank: rankNous,
     isWinner: isFinished && (scoreNous > scoreEux || isTie),
     isLeader: hasRounds && !isFinished && (scoreNous >= scoreEux),
@@ -166,7 +180,7 @@ export function getTeamGameData(game) {
     labelFull: pEux.map(p => p.name).join(' & '),
     players: pEux,
     score: scoreEux,
-    detail: isSymbioseTeam && hasRounds ? `${p2} + ${p3}` : null,
+    detail: isSumTeam && hasRounds ? `${p2} + ${p3}` : null,
     rank: rankEux,
     isWinner: isFinished && (scoreEux > scoreNous || isTie),
     isLeader: hasRounds && !isFinished && (scoreEux >= scoreNous),
@@ -178,6 +192,7 @@ export function getTeamGameData(game) {
   return {
     isTeamGame: true,
     isSymbioseTeam,
+    isMolkkyTeam,
     teams,
   }
 }
