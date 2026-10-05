@@ -8,6 +8,46 @@ import { ScorePad } from '../ui/ScorePad'
 import { Dialog } from '../ui/Dialog'
 import { formatTeamNames } from '../../utils/gameUtils'
 
+function getMolkkyTargetInfo(baseScore) {
+  const effectiveBase = baseScore > 50 ? 25 : baseScore
+  const remaining = Math.max(0, 50 - effectiveBase)
+
+  if (remaining === 0) {
+    return {
+      remaining: 0,
+      isClose: false,
+      text: '50 points pile atteints !',
+      shortText: '50 pts pile',
+      warning: false,
+    }
+  }
+  if (remaining === 1) {
+    return {
+      remaining: 1,
+      isClose: true,
+      text: '🎯 Viser 1 pt pile pour 50 (si > 1 ➔ chute à 25 pts)',
+      shortText: '🎯 Viser 1 pt pile (si > 1 ➔ chute à 25)',
+      warning: true,
+    }
+  }
+  if (remaining <= 12) {
+    return {
+      remaining,
+      isClose: true,
+      text: `🎯 Viser ${remaining} pts pile pour 50 (si > ${remaining} ➔ chute à 25 pts)`,
+      shortText: `🎯 Viser ${remaining} pts pile (si > ${remaining} ➔ chute à 25)`,
+      warning: true,
+    }
+  }
+  return {
+    remaining,
+    isClose: false,
+    text: `🎯 Reste ${remaining} pts pour 50`,
+    shortText: `🎯 Reste ${remaining} pts pour 50`,
+    warning: false,
+  }
+}
+
 export function MolkkyEngine({ game, onFinish }) {
   const { updateScores } = useGame()
   const isTeamMode = game.config?.mode === 'team' && game.players.length === 4
@@ -73,6 +113,23 @@ export function MolkkyEngine({ game, onFinish }) {
       setEditingPlayer(prevPlayer)
     }
   }
+
+  // Données de l'équipe et cible pour le joueur en cours d'édition dans le ScorePad
+  const editingPlayerIdx = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
+  const isEditingTeam1 = editingPlayerIdx < 2
+  const editingPartner = isTeamMode && editingPlayerIdx >= 0
+    ? (isEditingTeam1 ? (editingPlayerIdx === 0 ? game.players[1] : game.players[0]) : (editingPlayerIdx === 2 ? game.players[3] : game.players[2]))
+    : null
+  const editingPartnerPts = editingPartner ? (roundPoints[editingPartner.id] || 0) : 0
+
+  const editingBaseRaw = isTeamMode && editingPlayerIdx >= 0
+    ? (isEditingTeam1
+        ? (game.scores?.[game.players[0]?.id] || 0) + (game.scores?.[game.players[1]?.id] || 0)
+        : (game.scores?.[game.players[2]?.id] || 0) + (game.scores?.[game.players[3]?.id] || 0)) + editingPartnerPts
+    : (game.scores?.[editingPlayer?.id] || 0)
+
+  const editingActiveBaseScore = editingBaseRaw > 50 ? 25 : editingBaseRaw
+  const editingTargetInfo = getMolkkyTargetInfo(editingActiveBaseScore)
 
   // Calcul des scores prévisionnels après cette manche
   const calculatedResult = useMemo(() => {
@@ -224,10 +281,52 @@ export function MolkkyEngine({ game, onFinish }) {
           const pts = roundPoints[p.id] || 0
           const pastZeros = pastZeroStreaks[p.id] || 0
           const nextStreak = pts === 0 ? pastZeros + 1 : 0
-          const isOverflow = !isTeamMode && calculatedResult.overflowPlayers.has(p.id)
-          const isWinner = !isTeamMode && calculatedResult.winningPlayers.has(p.id)
+
+          // Contexte équipe vs solo
+          const isTeam1 = pIdx < 2
+          const teamKey = isTeam1 ? 'nous' : 'eux'
+          const partner = isTeamMode
+            ? (isTeam1 ? (pIdx === 0 ? game.players[1] : game.players[0]) : (pIdx === 2 ? game.players[3] : game.players[2]))
+            : null
+          const partnerPts = partner ? (roundPoints[partner.id] || 0) : 0
+
+          const teamStartScore = isTeamMode
+            ? (isTeam1
+                ? (game.scores?.[game.players[0]?.id] || 0) + (game.scores?.[game.players[1]?.id] || 0)
+                : (game.scores?.[game.players[2]?.id] || 0) + (game.scores?.[game.players[3]?.id] || 0))
+            : 0
+
+          // Score de base avant que ce joueur ne lance
+          const effectiveBaseBeforeThrow = isTeamMode
+            ? (partnerPts > 0
+                ? (teamStartScore + partnerPts > 50 ? 25 : teamStartScore + partnerPts)
+                : teamStartScore)
+            : currentTotal
+
+          const targetInfo = getMolkkyTargetInfo(effectiveBaseBeforeThrow)
+
+          // Statuts après lancer (prévisionnel)
+          const isOverflow = isTeamMode
+            ? calculatedResult.overflowPlayers.has(teamKey)
+            : calculatedResult.overflowPlayers.has(p.id)
+
+          const isWinner = isTeamMode
+            ? calculatedResult.winningPlayers.has(teamKey)
+            : calculatedResult.winningPlayers.has(p.id)
+
           const isEliminated = !isTeamMode && calculatedResult.eliminatedPlayers.has(p.id)
-          const projectedTotal = !isTeamMode ? calculatedResult.projectedNewTotals[p.id] : null
+
+          const projectedTotal = isTeamMode
+            ? calculatedResult.projectedNewTotals[teamKey]
+            : calculatedResult.projectedNewTotals[p.id]
+
+          const teamRoundTotal = isTeamMode
+            ? (roundPoints[game.players[isTeam1 ? 0 : 2]?.id] || 0) + (roundPoints[game.players[isTeam1 ? 1 : 3]?.id] || 0)
+            : pts
+
+          const unclampedSum = isTeamMode
+            ? teamStartScore + teamRoundTotal
+            : currentTotal + pts
 
           return (
             <div
@@ -253,17 +352,31 @@ export function MolkkyEngine({ game, onFinish }) {
                       </span>
                       {isTeamMode && (
                         <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-md ${
-                          pIdx < 2
+                          isTeam1
                             ? 'bg-[#c83b3b]/15 text-[#c83b3b]'
                             : 'bg-[#1e3a5f]/15 text-[#1e3a5f] dark:text-sky-400'
                         }`}>
-                          Éq. {pIdx < 2 ? '1' : '2'}
+                          Éq. {isTeam1 ? '1' : '2'}
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                      Score actuel : {currentTotal} pts
-                    </span>
+                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] leading-tight mt-0.5">
+                      <span className="text-stone-400 dark:text-slate-500 shrink-0">
+                        {isTeamMode ? (
+                          <>Équipe : <strong className="text-stone-700 dark:text-slate-300 tabular-nums">{teamStartScore} pts</strong></>
+                        ) : (
+                          <>Score actuel : <strong className="text-stone-700 dark:text-slate-300 tabular-nums">{currentTotal} pts</strong></>
+                        )}
+                      </span>
+                      <span className="text-stone-300 dark:text-slate-600 shrink-0">·</span>
+                      <span className={`shrink-0 ${
+                        targetInfo.warning
+                          ? 'font-bold text-amber-600 dark:text-amber-400'
+                          : 'text-stone-500 dark:text-slate-400 font-medium'
+                      }`}>
+                        {targetInfo.shortText}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -282,39 +395,50 @@ export function MolkkyEngine({ game, onFinish }) {
                 </div>
               </div>
 
-              {/* Statut et alertes pour ce joueur */}
-              {!isTeamMode && (
-                <div className="pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px]">
-                  <div className="flex items-center gap-1.5">
-                    {isWinner ? (
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                        <Trophy size={13} />
-                        50 points pile ! Victoire immédiate !
-                      </span>
-                    ) : isOverflow ? (
-                      <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                        <AlertTriangle size={13} />
-                        Dépassement ({currentTotal + pts} pts) ➔ Chute à 25 points !
-                      </span>
-                    ) : (
-                      <span className="text-stone-500 dark:text-slate-400 font-medium">
-                        Nouveau total : <strong className="text-stone-800 dark:text-slate-200">{projectedTotal}</strong> / 50 pts
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Alerte ratés consécutifs */}
-                  {nextStreak > 0 && (
-                    <span className={`font-semibold px-1.5 py-0.2 rounded text-[10px] ${
-                      nextStreak >= 3
-                        ? 'bg-red-500/15 text-red-600 dark:text-red-400'
-                        : 'bg-stone-200/60 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
-                    }`}>
-                      {nextStreak >= 3 ? 'Éliminé (3 ratés d’affilée)' : `${nextStreak} raté${nextStreak > 1 ? 's' : ''} consécutif${nextStreak > 1 ? 's' : ''}`}
+              {/* Statut et alertes pour ce joueur / équipe */}
+              <div className="pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px]">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  {isWinner ? (
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <Trophy size={13} />
+                      {isTeamMode
+                        ? `50 points pile ! Victoire Équipe ${isTeam1 ? '1' : '2'} !`
+                        : '50 points pile ! Victoire immédiate !'}
+                    </span>
+                  ) : isOverflow ? (
+                    <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                      <AlertTriangle size={13} />
+                      Dépassement ({unclampedSum} pts) ➔ Chute à 25 points !
+                    </span>
+                  ) : (
+                    <span className="text-stone-500 dark:text-slate-400 font-medium">
+                      {isTeamMode ? 'Total équipe' : 'Nouveau total'} :{' '}
+                      <strong className="text-stone-800 dark:text-slate-200 tabular-nums">
+                        {projectedTotal}
+                      </strong>{' '}
+                      / 50 pts
+                      {50 - (projectedTotal || 0) > 0 && (
+                        <span className="text-stone-400 dark:text-slate-500 font-normal ml-1">
+                          (-{50 - (projectedTotal || 0)})
+                        </span>
+                      )}
                     </span>
                   )}
                 </div>
-              )}
+
+                {/* Alerte ratés consécutifs */}
+                {nextStreak > 0 && (
+                  <span className={`font-semibold px-1.5 py-0.2 rounded text-[10px] shrink-0 ${
+                    nextStreak >= 3
+                      ? 'bg-red-500/15 text-red-600 dark:text-red-400'
+                      : 'bg-stone-200/60 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
+                  }`}>
+                    {nextStreak >= 3
+                      ? 'Éliminé (3 ratés d’affilée)'
+                      : `${nextStreak} raté${nextStreak > 1 ? 's' : ''} consécutif${nextStreak > 1 ? 's' : ''}`}
+                  </span>
+                )}
+              </div>
             </div>
           )
         })}
@@ -329,7 +453,7 @@ export function MolkkyEngine({ game, onFinish }) {
               Aperçu — Manche {roundNum}
             </span>
             <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
-              Points de la manche
+              Manche & Total
             </span>
           </div>
 
@@ -337,12 +461,15 @@ export function MolkkyEngine({ game, onFinish }) {
             {/* Équipe 1 */}
             {(() => {
               const pNous = [game.players[0], game.players[1]]
+              const startT1 = (game.scores?.[pNous[0]?.id] || 0) + (game.scores?.[pNous[1]?.id] || 0)
               const roundT1 = (roundPoints[pNous[0]?.id] || 0) + (roundPoints[pNous[1]?.id] || 0)
+              const unclampedT1 = startT1 + roundT1
               const isOverflow = calculatedResult.overflowPlayers.has('nous')
               const isWinner = calculatedResult.winningPlayers.has('nous')
+              const finalT1 = calculatedResult.projectedNewTotals['nous'] ?? (isOverflow ? 25 : unclampedT1)
 
               return (
-                <div className={`flex flex-col justify-between rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 transition-all min-h-[54px] school-card ${
+                <div className={`flex flex-col justify-between rounded-xl p-2.5 sm:p-3 transition-all min-h-[54px] school-card ${
                   isWinner
                     ? 'border-emerald-500 bg-emerald-500/10'
                     : isOverflow
@@ -371,7 +498,7 @@ export function MolkkyEngine({ game, onFinish }) {
                   </div>
 
                   {/* Ligne 2 : Noms de l'équipe et calcul des points sous les avatars */}
-                  <div className="w-full mt-1 min-w-0">
+                  <div className="w-full mt-1.5 min-w-0">
                     <div className="flex items-center gap-1 min-w-0 text-[10px] sm:text-[11px]">
                       <span className="font-bold text-[#c83b3b] dark:text-red-400 truncate leading-tight">
                         {formatTeamNames(pNous, 8)}
@@ -384,6 +511,27 @@ export function MolkkyEngine({ game, onFinish }) {
                       </span>
                     </div>
                   </div>
+
+                  {/* Ligne 3 : Total cumulé après la manche avec statut */}
+                  <div className="w-full mt-2 pt-1.5 border-t border-stone-200/60 dark:border-slate-800/80 flex items-center justify-between text-[10px] sm:text-[11px]">
+                    <span className="text-stone-500 dark:text-slate-400 font-semibold shrink-0">Total :</span>
+                    {isWinner ? (
+                      <span className="font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 shrink-0">
+                        <Trophy size={11} /> 50 pts (Gagné !)
+                      </span>
+                    ) : isOverflow ? (
+                      <span className="font-extrabold text-amber-600 dark:text-amber-400 flex items-center gap-0.5 shrink-0" title={`Dépassement (${unclampedT1} pts) ➔ Chute à 25 points`}>
+                        <AlertTriangle size={11} /> Chute ➔ 25 pts
+                      </span>
+                    ) : (
+                      <span className="font-bold text-stone-800 dark:text-slate-200 tabular-nums shrink-0">
+                        {finalT1} <span className="font-normal text-stone-400 dark:text-slate-500">/ 50 pts</span>
+                        {50 - finalT1 > 0 && (
+                          <span className="text-[9px] font-medium text-stone-400 dark:text-slate-500 ml-1">(-{50 - finalT1})</span>
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </div>
               )
             })()}
@@ -391,12 +539,15 @@ export function MolkkyEngine({ game, onFinish }) {
             {/* Équipe 2 */}
             {(() => {
               const pEux = [game.players[2], game.players[3]]
+              const startT2 = (game.scores?.[pEux[0]?.id] || 0) + (game.scores?.[pEux[1]?.id] || 0)
               const roundT2 = (roundPoints[pEux[0]?.id] || 0) + (roundPoints[pEux[1]?.id] || 0)
+              const unclampedT2 = startT2 + roundT2
               const isOverflow = calculatedResult.overflowPlayers.has('eux')
               const isWinner = calculatedResult.winningPlayers.has('eux')
+              const finalT2 = calculatedResult.projectedNewTotals['eux'] ?? (isOverflow ? 25 : unclampedT2)
 
               return (
-                <div className={`flex flex-col justify-between rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 transition-all min-h-[54px] school-card ${
+                <div className={`flex flex-col justify-between rounded-xl p-2.5 sm:p-3 transition-all min-h-[54px] school-card ${
                   isWinner
                     ? 'border-emerald-500 bg-emerald-500/10'
                     : isOverflow
@@ -425,7 +576,7 @@ export function MolkkyEngine({ game, onFinish }) {
                   </div>
 
                   {/* Ligne 2 : Noms de l'équipe et calcul des points sous les avatars */}
-                  <div className="w-full mt-1 min-w-0">
+                  <div className="w-full mt-1.5 min-w-0">
                     <div className="flex items-center gap-1 min-w-0 text-[10px] sm:text-[11px]">
                       <span className="font-bold text-[#1e3a5f] dark:text-sky-400 truncate leading-tight">
                         {formatTeamNames(pEux, 8)}
@@ -437,6 +588,27 @@ export function MolkkyEngine({ game, onFinish }) {
                         {(roundPoints[pEux[0]?.id] || 0)} + {(roundPoints[pEux[1]?.id] || 0)}
                       </span>
                     </div>
+                  </div>
+
+                  {/* Ligne 3 : Total cumulé après la manche avec statut */}
+                  <div className="w-full mt-2 pt-1.5 border-t border-stone-200/60 dark:border-slate-800/80 flex items-center justify-between text-[10px] sm:text-[11px]">
+                    <span className="text-stone-500 dark:text-slate-400 font-semibold shrink-0">Total :</span>
+                    {isWinner ? (
+                      <span className="font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 shrink-0">
+                        <Trophy size={11} /> 50 pts (Gagné !)
+                      </span>
+                    ) : isOverflow ? (
+                      <span className="font-extrabold text-amber-600 dark:text-amber-400 flex items-center gap-0.5 shrink-0" title={`Dépassement (${unclampedT2} pts) ➔ Chute à 25 points`}>
+                        <AlertTriangle size={11} /> Chute ➔ 25 pts
+                      </span>
+                    ) : (
+                      <span className="font-bold text-stone-800 dark:text-slate-200 tabular-nums shrink-0">
+                        {finalT2} <span className="font-normal text-stone-400 dark:text-slate-500">/ 50 pts</span>
+                        {50 - finalT2 > 0 && (
+                          <span className="text-[9px] font-medium text-stone-400 dark:text-slate-500 ml-1">(-{50 - finalT2})</span>
+                        )}
+                      </span>
+                    )}
                   </div>
                 </div>
               )
@@ -469,7 +641,16 @@ export function MolkkyEngine({ game, onFinish }) {
                     {editingPlayer.name}
                   </span>
                   <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate">
-                    Score cumulé actuel : {game.scores?.[editingPlayer.id] || 0} pts
+                    {isTeamMode ? (
+                      <>Équipe {isEditingTeam1 ? '1' : '2'} : <strong className="text-stone-700 dark:text-slate-300 tabular-nums">{editingActiveBaseScore} pts</strong></>
+                    ) : (
+                      <>Score actuel : <strong className="text-stone-700 dark:text-slate-300 tabular-nums">{game.scores?.[editingPlayer.id] || 0} pts</strong></>
+                    )}
+                    {editingTargetInfo.warning && (
+                      <span className="text-amber-600 dark:text-amber-400 font-bold ml-1.5">
+                        ({editingTargetInfo.shortText})
+                      </span>
+                    )}
                   </span>
                 </div>
               </div>
@@ -503,18 +684,21 @@ export function MolkkyEngine({ game, onFinish }) {
               onConfirm={handleNextInPad}
               confirmLabel={hasNextPlayer && nextPlayer ? `Valider & Suivant (${nextPlayer.name})` : 'Valider'}
               label="Points du lancer"
-              subLabel="1 quille seule = sa valeur (1-12) · Plusieurs quilles = leur nombre (1-12) · 0 = raté"
+              subLabel={
+                editingTargetInfo.warning
+                  ? editingTargetInfo.text
+                  : "1 quille seule = sa valeur (1-12) · Plusieurs quilles = leur nombre (1-12) · 0 = raté"
+              }
               min={0}
               max={12}
               step={1}
               presets={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
-              baseScore={game.scores?.[editingPlayer.id] || 0}
+              baseScore={editingActiveBaseScore}
               formatTotal={(val) => {
-                const cur = game.scores?.[editingPlayer.id] || 0
-                const sum = cur + val
+                const sum = editingActiveBaseScore + val
                 if (sum > 50) return `+${val} pts ➔ Dépassement (${sum} pts) retombe à 25 pts`
                 if (sum === 50) return `+${val} pts ➔ 50 points pile ! VICTOIRE !`
-                return `+${val} pts ➔ Nouveau total : ${sum} / 50 pts`
+                return `+${val} pts ➔ ${isTeamMode ? 'Total équipe' : 'Nouveau total'} : ${sum} / 50 pts (-${50 - sum})`
               }}
               showPlus={true}
             />
