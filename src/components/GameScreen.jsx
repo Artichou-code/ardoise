@@ -119,12 +119,17 @@ export function GameScreen() {
       localStorage.setItem('ardoise_scoreboard_collapsed', String(isScoresCollapsed))
     } catch {}
   }, [isScoresCollapsed])
+  const engineScrollRef = useRef(null)
+  const prevGameIdRef = useRef(activeGame?.id)
   const prevRoundsLengthRef = useRef(activeGame?.rounds?.length ?? 0)
 
   useEffect(() => {
     if (!activeGame) return
     const currentLength = activeGame.rounds?.length ?? 0
-    if (currentLength > prevRoundsLengthRef.current) {
+    const isNewGame = activeGame.id !== prevGameIdRef.current
+    const isNewRound = !isNewGame && currentLength > prevRoundsLengthRef.current
+
+    if (isNewRound) {
       // 1. Retour tactile haptique
       try {
         navigator.vibrate?.([25, 35, 25])
@@ -143,9 +148,23 @@ export function GameScreen() {
           disableForReducedMotion: true,
         })
       } catch {}
+
+      // 3. Remontée automatique au sommet de la page pour la nouvelle manche
+      try {
+        engineScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } catch {
+        if (engineScrollRef.current) engineScrollRef.current.scrollTop = 0
+      }
+    } else if (isNewGame) {
+      // Repositionnement immédiat en haut à l'ouverture d'une partie
+      if (engineScrollRef.current) engineScrollRef.current.scrollTop = 0
+      window.scrollTo(0, 0)
     }
+
+    prevGameIdRef.current = activeGame.id
     prevRoundsLengthRef.current = currentLength
-  }, [activeGame?.rounds?.length])
+  }, [activeGame?.id, activeGame?.rounds?.length])
 
   useEffect(() => {
     const handleSessionChanged = (e) => setLiveSession(e.detail)
@@ -605,7 +624,7 @@ export function GameScreen() {
       </div>
 
       {/* Moteur de saisie de manche */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div ref={engineScrollRef} className="flex-1 overflow-y-auto scrollbar-hide scroll-smooth">
         <div className="px-4 pt-1 pb-8 pb-safe">
           <div
             key={`${activeGame.id}-r-${activeGame.rounds.length}-${activeGame.isCorrection ? 'corr' : 'norm'}`}

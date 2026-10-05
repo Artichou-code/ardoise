@@ -49,7 +49,6 @@ export function SymbioseEngine({ game }) {
 
   // État du modal ScorePad : { playerId, cardIndex: number | null }
   const [padTarget, setPadTarget] = useState(null)
-  const [showZeroConfirm, setShowZeroConfirm] = useState(false)
   const [showRulesMemo, setShowRulesMemo] = useState(false)
 
   // Calcul du total pour un joueur selon le mode
@@ -160,12 +159,15 @@ export function SymbioseEngine({ game }) {
     }
   }, [activePlayer, activePlayerIndex, game.players, inputMode, padTarget?.cardIndex])
 
+  const zeroPlayers = useMemo(
+    () => game.players.filter(p => getPlayerTotal(p.id) === 0),
+    [game.players, cardsByPlayer, directTotals, inputMode]
+  )
+  const canValidate = zeroPlayers.length === 0
+  const filledCount = game.players.length - zeroPlayers.length
+
   const handleValidate = () => {
-    const allZero = game.players.every(p => getPlayerTotal(p.id) === 0)
-    if (allZero) {
-      setShowZeroConfirm(true)
-      return
-    }
+    if (!canValidate) return
     submitScores()
   }
 
@@ -470,52 +472,27 @@ export function SymbioseEngine({ game }) {
         </div>
       )}
 
-      {/* Bouton de validation principale */}
+      {/* Bouton de validation principale : grisé et désactivé tant que tous les scores ne sont pas saisis */}
       <div className="pt-2">
         <button
           type="button"
+          disabled={!canValidate}
           onClick={handleValidate}
-          className="w-full py-3 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+          className={`w-full py-3 rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 select-none ${
+            canValidate
+              ? 'bg-[#c83b3b] hover:bg-[#b03030] text-white cursor-pointer active:scale-[0.99]'
+              : 'bg-stone-200 dark:bg-slate-800 text-stone-400 dark:text-slate-500 cursor-not-allowed'
+          }`}
         >
           <Trophy size={16} />
           <span>Valider les scores</span>
+          {!canValidate && (
+            <span className="text-xs font-normal opacity-75">
+              ({filledCount}/{game.players.length} saisis)
+            </span>
+          )}
         </button>
       </div>
-
-      {/* Dialog d'avertissement scores à 0 */}
-      <Dialog
-        open={showZeroConfirm}
-        onClose={() => setShowZeroConfirm(false)}
-        title="Aucun score renseigné"
-      >
-        <div className="space-y-3 text-xs">
-          <p className="text-stone-600 dark:text-slate-300 leading-relaxed">
-            Tous les joueurs ont un score de <strong>0 point</strong> sur cette manche.
-          </p>
-          <p className="text-stone-500 dark:text-slate-400">
-            Dans Symbiose, chaque joueur marque les points de ses 8 cartes (points fixes et combinaisons d'animaux/saisons).
-          </p>
-          <div className="pt-2 flex gap-2">
-            <button
-              type="button"
-              onClick={() => setShowZeroConfirm(false)}
-              className="flex-1 py-2.5 rounded-xl font-bold text-xs btn-margin-red text-white cursor-pointer"
-            >
-              Saisir les points
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowZeroConfirm(false)
-                submitScores()
-              }}
-              className="py-2.5 px-3 rounded-xl font-semibold text-xs border border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:bg-stone-100 cursor-pointer"
-            >
-              Valider 0 pt
-            </button>
-          </div>
-        </div>
-      </Dialog>
 
       {/* Dialog Mémo des colonnes de la Mare */}
       <Dialog
