@@ -883,11 +883,11 @@ export function MolkkyEngine({ game, onFinish }) {
             <li><strong>Dépassement de 50 points :</strong> Si un lancer fait dépasser 50 points, le score {isTeamMode ? "de l'équipe" : ""} retombe immédiatement à 25 points.</li>
             {isTeamMode ? (
               <>
-                <li><strong>3 lancers ratés consécutifs d'équipe :</strong> Si une équipe cumule 3 lancers ratés consécutifs par ses coéquipiers (0 point), toute l'équipe est éliminée de la manche.</li>
+                <li><strong>3 lancers ratés consécutifs d'équipe :</strong> Si une équipe cumule 3 lancers ratés consécutifs par ses coéquipiers (0 point), l'équipe est éliminée : la partie s'arrête et l'autre équipe gagne.</li>
                 <li><strong>Alternance des lancers (2 vs 2) :</strong> Les coéquipiers alternent leurs lancers et cumulent leurs points pour l'équipe vers les 50 points.</li>
               </>
             ) : (
-              <li><strong>3 lancers ratés consécutifs :</strong> Si un joueur fait 3 fois de suite 0 point (aucune quille tombée), il est éliminé de la manche.</li>
+              <li><strong>3 lancers ratés consécutifs :</strong> Si un joueur fait 3 fois de suite 0 point (aucune quille tombée), il est éliminé.</li>
             )}
           </ul>
           <div className="pt-2">
