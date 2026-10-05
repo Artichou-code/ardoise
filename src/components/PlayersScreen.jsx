@@ -548,8 +548,8 @@ export function PlayersScreen() {
                     {/* Stats et/ou Badge */}
                     {pStat?.badges && pStat.badges.length > 0 ? (
                       <div className="flex flex-col items-center gap-0.5 mt-1 w-full">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200/80 dark:border-amber-800/60 truncate max-w-full">
-                          <Award size={10} className="shrink-0" />
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#c83b3b] dark:text-rose-300 bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 px-1.5 py-0.5 rounded border border-[#c83b3b]/25 dark:border-[#c83b3b]/40 truncate max-w-full">
+                          <Award size={10} className="shrink-0 text-[#c83b3b] dark:text-rose-400" />
                           <span className="truncate">{pStat.badges[0].title}</span>
                         </span>
                         <p className="text-[10px] text-stone-500 dark:text-slate-400 text-center truncate w-full">

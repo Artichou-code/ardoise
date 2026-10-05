@@ -28,12 +28,12 @@ function TrophyCard({ trophy, onSelectPlayer, showGameTag = false }) {
   const colorStyles = {
     gold: {
       emblem: isHeld
-        ? 'bg-amber-100/90 text-amber-800 border border-amber-200/90 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60 shadow-2xs'
+        ? 'bg-[#c83b3b]/15 text-[#c83b3b] border border-[#c83b3b]/30 dark:bg-[#c83b3b]/25 dark:text-rose-300 dark:border-[#c83b3b]/50 shadow-2xs'
         : 'bg-stone-100/90 dark:bg-slate-800/70 text-stone-400 dark:text-slate-500 border border-stone-200/60 dark:border-slate-700/60',
     },
     amber: {
       emblem: isHeld
-        ? 'bg-amber-100/90 text-amber-800 border border-amber-200/90 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60 shadow-2xs'
+        ? 'bg-[#c83b3b]/15 text-[#c83b3b] border border-[#c83b3b]/30 dark:bg-[#c83b3b]/25 dark:text-rose-300 dark:border-[#c83b3b]/50 shadow-2xs'
         : 'bg-stone-100/90 dark:bg-slate-800/70 text-stone-400 dark:text-slate-500 border border-stone-200/60 dark:border-slate-700/60',
     },
     blue: {
@@ -58,7 +58,7 @@ function TrophyCard({ trophy, onSelectPlayer, showGameTag = false }) {
     },
   }[trophy.color || 'gold'] || {
     emblem: isHeld
-      ? 'bg-amber-100/90 text-amber-800 border border-amber-200/90 shadow-2xs'
+      ? 'bg-[#c83b3b]/15 text-[#c83b3b] border border-[#c83b3b]/30 shadow-2xs'
       : 'bg-stone-100 dark:bg-slate-800 text-stone-400',
   }
 
@@ -66,7 +66,7 @@ function TrophyCard({ trophy, onSelectPlayer, showGameTag = false }) {
     <div
       className={`p-3 sm:p-3.5 rounded-2xl school-card transition-all flex flex-col justify-between gap-2.5 ${
         isHeld
-          ? 'border-amber-300/70 dark:border-amber-700/60 bg-white/95 dark:bg-slate-900/95 shadow-2xs'
+          ? 'border-[#c83b3b]/35 dark:border-[#c83b3b]/50 bg-white/95 dark:bg-slate-900/95 shadow-2xs'
           : 'border-stone-200/70 dark:border-slate-800/70 bg-white/75 dark:bg-slate-900/65'
       }`}
     >

@@ -146,9 +146,9 @@ export function StatsScreen() {
         player: titles.bestStrategist,
         label: 'Meilleur stratège',
         sub: `${titles.bestStrategist.winRate}% victoires`,
-        cardStyle: 'border-amber-200/90 dark:border-amber-900/40 bg-amber-50/70 dark:bg-amber-950/20',
-        labelStyle: 'text-amber-700 dark:text-amber-300',
-        subStyle: 'text-amber-800/80 dark:text-amber-400/80',
+        cardStyle: 'border-[#c83b3b]/30 dark:border-[#c83b3b]/40 bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20',
+        labelStyle: 'text-[#c83b3b] dark:text-rose-300',
+        subStyle: 'text-[#c83b3b]/85 dark:text-rose-400/85 font-semibold',
       })
     }
     if (titles.mostActive && titles.mostActive.totalGames >= 2) {

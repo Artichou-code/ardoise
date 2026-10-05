@@ -162,10 +162,10 @@ export function TrophiesSheet({ open, onClose, playersStats = [] }) {
 
               const colorStyles = {
                 gold: isHeld
-                  ? 'bg-amber-100/90 text-amber-800 border border-amber-200/90 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60 shadow-2xs'
+                  ? 'bg-[#c83b3b]/15 text-[#c83b3b] border border-[#c83b3b]/30 dark:bg-[#c83b3b]/25 dark:text-rose-300 dark:border-[#c83b3b]/50 shadow-2xs'
                   : 'bg-stone-100/90 dark:bg-slate-800/70 text-stone-400 dark:text-slate-500 border border-stone-200/60 dark:border-slate-700/60',
                 amber: isHeld
-                  ? 'bg-amber-100/90 text-amber-800 border border-amber-200/90 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60 shadow-2xs'
+                  ? 'bg-[#c83b3b]/15 text-[#c83b3b] border border-[#c83b3b]/30 dark:bg-[#c83b3b]/25 dark:text-rose-300 dark:border-[#c83b3b]/50 shadow-2xs'
                   : 'bg-stone-100/90 dark:bg-slate-800/70 text-stone-400 dark:text-slate-500 border border-stone-200/60 dark:border-slate-700/60',
                 blue: isHeld
                   ? 'bg-sky-100/90 text-sky-800 border border-sky-200/90 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/60 shadow-2xs'
@@ -179,14 +179,14 @@ export function TrophiesSheet({ open, onClose, playersStats = [] }) {
                 purple: isHeld
                   ? 'bg-purple-100/90 text-purple-800 border border-purple-200/90 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/60 shadow-2xs'
                   : 'bg-stone-100/90 dark:bg-slate-800/70 text-stone-400 dark:text-slate-500 border border-stone-200/60 dark:border-slate-700/60',
-              }[trophy.color || 'gold'] || (isHeld ? 'bg-amber-100/90 text-amber-800 border border-amber-200/90 shadow-2xs' : 'bg-stone-100 dark:bg-slate-800 text-stone-400')
+              }[trophy.color || 'gold'] || (isHeld ? 'bg-[#c83b3b]/15 text-[#c83b3b] border border-[#c83b3b]/30 shadow-2xs' : 'bg-stone-100 dark:bg-slate-800 text-stone-400')
 
               return (
                 <div
                   key={trophy.id}
                   className={`p-3 rounded-2xl school-card transition-all flex flex-col justify-between gap-2 border ${
                     isHeld
-                      ? 'border-amber-300/60 dark:border-amber-700/60 bg-white/95 dark:bg-slate-900/95'
+                      ? 'border-[#c83b3b]/35 dark:border-[#c83b3b]/50 bg-white/95 dark:bg-slate-900/95'
                       : 'border-stone-200/70 dark:border-slate-800/70 bg-white/70 dark:bg-slate-900/60'
                   }`}
                 >
