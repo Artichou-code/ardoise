@@ -429,19 +429,19 @@ export function MolkkyEngine({ game, onFinish }) {
                       {isTeamMode ? `50 pts pile ! Victoire Équipe ${isTeam1 ? '1' : '2'} !` : '50 pts pile ! Victoire immédiate !'}
                     </span>
                   ) : isOverflow ? (
-                    <span className="font-bold text-[#c83b3b] dark:text-red-400 flex items-center gap-1">
-                      <AlertTriangle size={13} />
-                      Dépassement ({unclampedSum} pts) ➔ Chute à 25 pts
+                    <span className="font-bold text-[#c83b3b] dark:text-red-400 flex items-center gap-1 truncate">
+                      <AlertTriangle size={13} className="shrink-0" />
+                      <span>Chute ➔ 25 pts ({unclampedSum} pts)</span>
                     </span>
                   ) : isEliminated ? (
-                    <span className="font-bold text-red-600 dark:text-red-400 flex items-center gap-1">
-                      <AlertTriangle size={13} />
-                      Éliminé de la manche (3 ratés consécutifs)
+                    <span className="font-bold text-red-600 dark:text-red-400 flex items-center gap-1 truncate">
+                      <AlertTriangle size={13} className="shrink-0" />
+                      <span>Éliminé (3 ratés)</span>
                     </span>
                   ) : (
-                    <span className="font-semibold text-[#c83b3b] dark:text-red-400 flex items-center gap-1">
-                      <Target size={13} />
-                      {targetInfo.shortText}
+                    <span className="font-semibold text-[#c83b3b] dark:text-red-400 flex items-center gap-1 truncate">
+                      <Target size={13} className="shrink-0" />
+                      <span>{targetInfo.shortText}</span>
                     </span>
                   )}
                 </div>
