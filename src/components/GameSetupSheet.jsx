@@ -254,6 +254,24 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
         scoreDir: 'high',
       })
       setCustomGameName('')
+    } else if (gameType === 'molkky') {
+      setConfig({
+        mode: 'individual',
+        scoreDir: 'high',
+        limit: 50,
+      })
+      setCustomGameName('')
+    } else if (gameType === 'yam') {
+      setConfig({
+        scoreDir: 'high',
+      })
+      setCustomGameName('')
+    } else if (gameType === 'dixit') {
+      setConfig({
+        scoreDir: 'high',
+        limit: 30,
+      })
+      setCustomGameName('')
     } else if (gameType === 'universel') {
       setConfig({
         scoreDir: 'high',
@@ -1549,6 +1567,61 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                         <span>Choix entre Individuel ou Équipe (2 vs 2)</span>
                       </div>
                     </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Config spécifique Mölkky */}
+          {gameType === 'molkky' && (
+            <div className="space-y-3 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+                  Mode de jeu officiel
+                </p>
+                {selectedPlayers.length === 4 ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, mode: 'individual' }))}
+                      className={`py-2 px-3 rounded-xl text-center border transition-all cursor-pointer ${
+                        (config.mode || 'individual') === 'individual'
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      <span className="block font-bold text-xs leading-tight">Individuel</span>
+                      <span className={`block text-[10px] font-semibold mt-0.5 leading-tight ${(config.mode || 'individual') === 'individual' ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
+                        <span className="block">Chacun pour soi</span>
+                        <span className="block mt-0.5 opacity-90">(Lancers individuels)</span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, mode: 'team' }))}
+                      className={`py-2 px-3 rounded-xl text-center border transition-all cursor-pointer ${
+                        config.mode === 'team'
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      <span className="block font-bold text-xs leading-tight">Équipe (2 vs 2)</span>
+                      <span className={`block text-[10px] font-semibold mt-0.5 leading-tight ${config.mode === 'team' ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
+                        <span className="block">2 équipes de 2</span>
+                        <span className="block mt-0.5 opacity-90">(Scores combinés)</span>
+                      </span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-700/60 text-xs text-stone-600 dark:text-slate-300 space-y-1">
+                    <div className="font-bold text-stone-800 dark:text-slate-100 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
+                      Partie {selectedPlayers.length} joueurs (Individuel)
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-relaxed">
+                      Chaque joueur lance à son tour pour atteindre pile 50 points. Sélectionnez 4 joueurs pour débloquer le mode Équipe 2 vs 2 !
+                    </p>
                   </div>
                 )}
               </div>
