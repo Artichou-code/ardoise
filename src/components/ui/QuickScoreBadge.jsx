@@ -23,6 +23,7 @@ export function QuickScoreBadge({
   formatDisplay,
   formatSub,
   values,
+  fillZero = false,
   className = '',
 }) {
   const [isDragging, setIsDragging] = useState(false)
@@ -136,7 +137,7 @@ export function QuickScoreBadge({
   const displaySign = showPlus && cur > 0 ? '+' : ''
   const displayedValue = isUnset ? (formatDisplay ? formatDisplay(null) : '—') : (formatDisplay ? formatDisplay(cur) : `${displaySign}${cur}`)
   const subText = isUnset ? null : (formatSub ? formatSub(cur) : null)
-  const isFilled = !isUnset && (cur !== 0 || formatDisplay != null)
+  const isFilled = !isUnset && (cur !== 0 || formatDisplay != null || fillZero || subText != null)
 
   return (
     <div className={`relative inline-flex items-center select-none flex-shrink-0 ${tall ? 'self-stretch' : ''} ${compact ? 'w-full' : ''}`}>

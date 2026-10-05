@@ -48,6 +48,59 @@ function getMolkkyTargetInfo(baseScore) {
   }
 }
 
+// Calcul des ratés d'équipe consécutifs passés (règle officielle F.F.Mölkky)
+function getTeamPastMissStreak(players, rounds) {
+  if (!Array.isArray(rounds) || rounds.length === 0 || !players || players.length < 2) return 0
+  let streak = 0
+  for (let i = rounds.length - 1; i >= 0; i--) {
+    const round = rounds[i]
+    const p1 = players[0]
+    const p2 = players[1]
+    const d2 = round?.roundPoints?.[p2?.id] ?? round?.delta?.[p2?.id]
+    const d1 = round?.roundPoints?.[p1?.id] ?? round?.delta?.[p1?.id]
+
+    // Dans une manche, P2 lance après P1. On regarde à reculons :
+    if (d2 === 0) {
+      streak++
+      if (d1 === 0) {
+        streak++
+      } else {
+        break
+      }
+    } else {
+      break
+    }
+  }
+  return streak
+}
+
+// Calcul de la série de ratés d'équipe dans la manche en cours
+function computeTeamCurrentStreak(p1Id, p2Id, roundPoints, pastStreak) {
+  const pts1 = roundPoints[p1Id]
+  const pts2 = roundPoints[p2Id]
+  const hasPlayed1 = pts1 !== null && pts1 !== undefined
+  const hasPlayed2 = pts2 !== null && pts2 !== undefined
+
+  if (!hasPlayed1 && !hasPlayed2) {
+    return pastStreak
+  }
+  if (hasPlayed1 && !hasPlayed2) {
+    return pts1 === 0 ? pastStreak + 1 : 0
+  }
+  if (!hasPlayed1 && hasPlayed2) {
+    return pts2 === 0 ? pastStreak + 1 : 0
+  }
+  // Les deux ont joué : P1 puis P2
+  if (pts1 === 0 && pts2 === 0) {
+    return pastStreak + 2
+  }
+  if (pts1 > 0 && pts2 === 0) {
+    return 1
+  }
+  // Si pts2 > 0 : le dernier lancer rapporte des points, série rompue
+  return 0
+}
+
 export function MolkkyEngine({ game, onFinish }) {
   const { updateScores } = useGame()
   const isTeamMode = game.config?.mode === 'team' && game.players.length === 4
@@ -90,8 +143,32 @@ export function MolkkyEngine({ game, onFinish }) {
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [showRulesMemo, setShowRulesMemo] = useState(false)
 
-  // Calcul du nombre de lancers ratés (0 point) consécutifs passés pour chaque joueur
+  // Calcul des ratés consécutifs passés :
+  // En mode équipe : calcul par équipe selon la règle officielle F.F.Mölkky
+  const team1PastZeros = useMemo(() => {
+    if (!isTeamMode) return 0
+    return getTeamPastMissStreak([game.players[0], game.players[1]], game.rounds)
+  }, [isTeamMode, game.players, game.rounds])
+
+  const team2PastZeros = useMemo(() => {
+    if (!isTeamMode) return 0
+    return getTeamPastMissStreak([game.players[2], game.players[3]], game.rounds)
+  }, [isTeamMode, game.players, game.rounds])
+
+  // Série de ratés d'équipe actuelle dans la manche
+  const streakT1 = useMemo(() => {
+    if (!isTeamMode) return 0
+    return computeTeamCurrentStreak(game.players[0]?.id, game.players[1]?.id, roundPoints, team1PastZeros)
+  }, [isTeamMode, game.players, roundPoints, team1PastZeros])
+
+  const streakT2 = useMemo(() => {
+    if (!isTeamMode) return 0
+    return computeTeamCurrentStreak(game.players[2]?.id, game.players[3]?.id, roundPoints, team2PastZeros)
+  }, [isTeamMode, game.players, roundPoints, team2PastZeros])
+
+  // En mode individuel : calcul par joueur
   const pastZeroStreaks = useMemo(() => {
+    if (isTeamMode) return {}
     const streaks = {}
     const rounds = Array.isArray(game.rounds) ? game.rounds : []
 
@@ -99,7 +176,7 @@ export function MolkkyEngine({ game, onFinish }) {
       let count = 0
       for (let i = rounds.length - 1; i >= 0; i--) {
         const round = rounds[i]
-        const d = round?.delta?.[p.id]
+        const d = round?.roundPoints?.[p.id] ?? round?.delta?.[p.id]
         if (d === 0) {
           count++
         } else {
@@ -109,7 +186,7 @@ export function MolkkyEngine({ game, onFinish }) {
       streaks[p.id] = count
     }
     return streaks
-  }, [game.rounds, game.players])
+  }, [isTeamMode, game.rounds, game.players])
 
   // Navigation dans le ScorePad
   const activeIndex = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
@@ -207,20 +284,16 @@ export function MolkkyEngine({ game, onFinish }) {
       projectedNewTotals['nous'] = totalT1
       projectedNewTotals['eux'] = totalT2
 
-      // Vérification des ratés pour chaque joueur en équipe
-      for (const p of game.players) {
-        const hasPlayed = roundPoints[p.id] != null
-        const pts = roundPoints[p.id] || 0
-        const pastZeros = pastZeroStreaks[p.id] || 0
-        const streak = hasPlayed ? (pts === 0 ? pastZeros + 1 : 0) : pastZeros
-        if (streak >= 3) {
-          eliminatedPlayers.add(p.id)
-        }
+      // Vérification des ratés d'équipe (règle officielle F.F.Mölkky : 3 ratés consécutifs = élimination de l'équipe)
+      if (streakT1 >= 3) {
+        eliminatedPlayers.add('nous')
       }
-      const team1Eliminated = eliminatedPlayers.has(pNous[0].id) && eliminatedPlayers.has(pNous[1].id)
-      const team2Eliminated = eliminatedPlayers.has(pEux[0].id) && eliminatedPlayers.has(pEux[1].id)
-      if (team1Eliminated && !team2Eliminated) winningPlayers.add('eux')
-      if (team2Eliminated && !team1Eliminated) winningPlayers.add('nous')
+      if (streakT2 >= 3) {
+        eliminatedPlayers.add('eux')
+      }
+
+      if (streakT1 >= 3 && streakT2 < 3) winningPlayers.add('eux')
+      if (streakT2 >= 3 && streakT1 < 3) winningPlayers.add('nous')
     } else {
       for (const p of game.players) {
         const cur = currentScores[p.id] || 0
@@ -261,7 +334,7 @@ export function MolkkyEngine({ game, onFinish }) {
       winningPlayers,
       eliminatedPlayers,
     }
-  }, [game.scores, game.players, roundPoints, isTeamMode, pastZeroStreaks])
+  }, [game.scores, game.players, roundPoints, isTeamMode, pastZeroStreaks, streakT1, streakT2])
 
   // Validation : tous les lancers de la manche doivent être saisis
   const unplayedPlayers = useMemo(
@@ -315,7 +388,7 @@ export function MolkkyEngine({ game, onFinish }) {
             <p className="text-[10px] text-stone-500 dark:text-slate-400 leading-snug">
               <span>50 pts pile · Si &gt; 50 ➔ 25 pts</span>
               <br />
-              <span>{isTeamMode ? 'Score d’équipe combiné' : '3 ratés consécutifs = éliminé'}</span>
+              <span>{isTeamMode ? '3 ratés d’équipe consécutifs = éliminé' : '3 ratés consécutifs = éliminé'}</span>
             </p>
           </div>
         </div>
@@ -330,97 +403,77 @@ export function MolkkyEngine({ game, onFinish }) {
         </button>
       </div>
 
-      {/* Cartes de saisie des joueurs */}
-      <div className="space-y-2.5">
-        {game.players.map((p, pIdx) => {
-          const currentTotal = game.scores?.[p.id] || 0
-          const pts = roundPoints[p.id]
-          const hasPlayed = pts !== null && pts !== undefined
-          const pastZeros = pastZeroStreaks[p.id] || 0
-          const nextStreak = hasPlayed ? (pts === 0 ? pastZeros + 1 : 0) : pastZeros
+      {/* Cartes de saisie des scores */}
+      {isTeamMode ? (
+        <div className="space-y-2.5">
+          {[
+            {
+              teamKey: 'nous',
+              teamNum: 1,
+              players: [game.players[0], game.players[1]],
+              colorBadge: 'bg-[#c83b3b]/15 text-[#c83b3b]',
+              colorText: 'text-[#c83b3b] dark:text-red-400',
+              pastZeros: team1PastZeros,
+              streak: streakT1,
+            },
+            {
+              teamKey: 'eux',
+              teamNum: 2,
+              players: [game.players[2], game.players[3]],
+              colorBadge: 'bg-[#1e3a5f]/15 text-[#1e3a5f] dark:text-sky-400',
+              colorText: 'text-[#1e3a5f] dark:text-sky-400',
+              pastZeros: team2PastZeros,
+              streak: streakT2,
+            },
+          ].map(({ teamKey, teamNum, players: teamPlayers, colorBadge, colorText, pastZeros, streak }) => {
+            const p1 = teamPlayers[0]
+            const p2 = teamPlayers[1]
 
-          // Contexte équipe vs solo
-          const isTeam1 = pIdx < 2
-          const teamKey = isTeam1 ? 'nous' : 'eux'
-          const partner = isTeamMode
-            ? (isTeam1 ? (pIdx === 0 ? game.players[1] : game.players[0]) : (pIdx === 2 ? game.players[3] : game.players[2]))
-            : null
-          const partnerPts = partner ? (roundPoints[partner.id] || 0) : 0
+            const startScore = (game.scores?.[p1?.id] || 0) + (game.scores?.[p2?.id] || 0)
+            const pts1 = roundPoints[p1?.id]
+            const pts2 = roundPoints[p2?.id]
+            const hasPlayed1 = pts1 !== null && pts1 !== undefined
+            const hasPlayed2 = pts2 !== null && pts2 !== undefined
+            const hasPlayedAny = hasPlayed1 || hasPlayed2
 
-          const teamStartScore = isTeamMode
-            ? (isTeam1
-                ? (game.scores?.[game.players[0]?.id] || 0) + (game.scores?.[game.players[1]?.id] || 0)
-                : (game.scores?.[game.players[2]?.id] || 0) + (game.scores?.[game.players[3]?.id] || 0))
-            : 0
+            const teamRoundTotal = (pts1 || 0) + (pts2 || 0)
+            const unclampedSum = startScore + teamRoundTotal
 
-          const teamRoundTotal = isTeamMode
-            ? (roundPoints[game.players[isTeam1 ? 0 : 2]?.id] || 0) + (roundPoints[game.players[isTeam1 ? 1 : 3]?.id] || 0)
-            : (pts || 0)
+            const isOverflow = calculatedResult.overflowPlayers.has(teamKey)
+            const isWinner = calculatedResult.winningPlayers.has(teamKey)
+            const isEliminated = calculatedResult.eliminatedPlayers.has(teamKey)
+            const projectedTotal = calculatedResult.projectedNewTotals[teamKey]
 
-          const unclampedSum = isTeamMode
-            ? teamStartScore + teamRoundTotal
-            : currentTotal + (pts || 0)
+            const currentBaseForTarget = teamRoundTotal > 0
+              ? (isOverflow ? 25 : unclampedSum)
+              : startScore
 
-          // Statuts après lancer (prévisionnel)
-          const isOverflow = isTeamMode
-            ? calculatedResult.overflowPlayers.has(teamKey)
-            : calculatedResult.overflowPlayers.has(p.id)
+            const targetInfo = getMolkkyTargetInfo(currentBaseForTarget)
 
-          const isWinner = isTeamMode
-            ? calculatedResult.winningPlayers.has(teamKey)
-            : calculatedResult.winningPlayers.has(p.id)
+            return (
+              <div
+                key={teamKey}
+                className={`p-3 rounded-2xl school-card border transition-all ${
+                  isWinner
+                    ? 'border-emerald-500 bg-emerald-500/5 ring-1 ring-emerald-500/40'
+                    : isOverflow
+                    ? 'border-[#c83b3b]/70 bg-[#c83b3b]/5'
+                    : isEliminated
+                    ? 'border-red-500/80 bg-red-500/5 opacity-80'
+                    : 'border-stone-200/90 dark:border-slate-800'
+                }`}
+              >
+                {/* Ligne 1 : Nom de l'équipe, Total dynamique et Score cumulé de la manche */}
+                <div className="flex items-center justify-between gap-2 pb-2 border-b border-stone-100 dark:border-slate-800/80">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shrink-0 ${colorBadge}`}>
+                      Équipe {teamNum}
+                    </span>
 
-          const isEliminated = calculatedResult.eliminatedPlayers.has(p.id)
-
-          const projectedTotal = isTeamMode
-            ? calculatedResult.projectedNewTotals[teamKey]
-            : calculatedResult.projectedNewTotals[p.id]
-
-          // Score de référence pour le conseil de visée :
-          // Si des points sont marqués cette manche, on vise en fonction du total projeté (sauf si chute), sinon score de départ
-          const currentBaseForTarget = isTeamMode
-            ? (teamRoundTotal > 0 ? (isOverflow ? 25 : unclampedSum) : teamStartScore)
-            : (hasPlayed && pts > 0 ? (isOverflow ? 25 : unclampedSum) : currentTotal)
-
-          const targetInfo = getMolkkyTargetInfo(currentBaseForTarget)
-
-          return (
-            <div
-              key={p.id}
-              className={`p-3 rounded-2xl school-card border transition-all ${
-                isWinner
-                  ? 'border-emerald-500 bg-emerald-500/5 ring-1 ring-emerald-500/40'
-                  : isOverflow
-                  ? 'border-[#c83b3b]/70 bg-[#c83b3b]/5'
-                  : isEliminated
-                  ? 'border-red-500/80 bg-red-500/5 opacity-80'
-                  : 'border-stone-200/90 dark:border-slate-800'
-              }`}
-            >
-              {/* Ligne 1 : Joueur, Total dynamique selon les points marqués, et Champ de score */}
-              <div className="flex items-center justify-between gap-2 pb-2 border-b border-stone-100 dark:border-slate-800/80">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Avatar player={p} size="sm" />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate">
-                        {p.name}
-                      </span>
-                      {isTeamMode && (
-                        <span className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded-md ${
-                          isTeam1
-                            ? 'bg-[#c83b3b]/15 text-[#c83b3b]'
-                            : 'bg-[#1e3a5f]/15 text-[#1e3a5f] dark:text-sky-400'
-                        }`}>
-                          Éq. {isTeam1 ? '1' : '2'}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Total dynamique en fonction du score marqué */}
-                    <div className="flex items-center gap-1 text-[11px] leading-tight mt-0.5">
+                    {/* Total dynamique équipe */}
+                    <div className="flex items-center gap-1 text-[11px] leading-tight min-w-0">
                       <span className="text-stone-400 dark:text-slate-500 font-medium shrink-0">
-                        {isTeamMode ? 'Total équipe :' : 'Total :'}
+                        Total :
                       </span>
                       {isWinner ? (
                         <span className="font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
@@ -431,7 +484,7 @@ export function MolkkyEngine({ game, onFinish }) {
                           Chute ➔ 25 pts
                         </span>
                       ) : (
-                        <span className="font-bold text-stone-700 dark:text-slate-200 tabular-nums">
+                        <span className="font-bold text-stone-700 dark:text-slate-200 tabular-nums truncate">
                           {projectedTotal} <span className="font-normal text-stone-400 dark:text-slate-500">/ 50 pts</span>
                           {50 - (projectedTotal || 0) > 0 && (
                             <span className="text-[10px] font-normal text-stone-400 dark:text-slate-500 ml-1">
@@ -442,270 +495,276 @@ export function MolkkyEngine({ game, onFinish }) {
                       )}
                     </div>
                   </div>
+
+                  {/* Score cumulé de la manche pour l'équipe */}
+                  <div className="shrink-0 flex items-center justify-end pl-1">
+                    <span className={`font-black tabular-nums leading-none text-xl sm:text-2xl ${colorText}`}>
+                      {!hasPlayedAny ? '—' : `+${teamRoundTotal}`}
+                      <span className="text-xs font-sans font-bold opacity-75 ml-0.5">pts</span>
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <QuickScoreBadge
-                    value={pts}
-                    onChange={(val) => setRoundPoints(prev => ({ ...prev, [p.id]: val === null ? null : Math.max(0, Number(val) || 0) }))}
-                    onOpenPad={() => setEditingPlayer(p)}
-                    min={0}
-                    max={12}
-                    step={1}
-                    values={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
-                    formatSub={(v) => (v === 0 ? 'Raté' : null)}
-                    showPlus={true}
-                  />
+                {/* Ligne 2 : Les deux joueurs sur la même ligne avec leurs zones de saisie distinctes */}
+                <div className="grid grid-cols-2 gap-2 my-2.5">
+                  {[p1, p2].map((p) => {
+                    const pVal = roundPoints[p.id]
+                    return (
+                      <div
+                        key={p.id}
+                        className="flex items-center justify-between gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-xl bg-stone-50/90 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-700/60 min-w-0"
+                      >
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Avatar player={p} size="xs" />
+                          <span className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
+                            {p.name}
+                          </span>
+                        </div>
+                        <QuickScoreBadge
+                          value={pVal}
+                          onChange={(val) => setRoundPoints(prev => ({ ...prev, [p.id]: val === null ? null : Math.max(0, Number(val) || 0) }))}
+                          onOpenPad={() => setEditingPlayer(p)}
+                          min={0}
+                          max={12}
+                          step={1}
+                          values={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
+                          formatSub={(v) => (v === 0 ? 'Raté' : null)}
+                          showPlus={true}
+                          fillZero={true}
+                        />
+                      </div>
+                    )
+                  })}
                 </div>
-              </div>
 
-              {/* Ligne 2 : Statut, commentaire sur quoi viser en rouge ardoise et jauge visuelle des ratés */}
-              <div className="pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px]">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  {isWinner ? (
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                      <Trophy size={13} />
-                      {isTeamMode ? `50 pts pile ! Victoire Équipe ${isTeam1 ? '1' : '2'} !` : '50 pts pile ! Victoire immédiate !'}
-                    </span>
-                  ) : isOverflow ? (
-                    <span className="font-bold text-[#c83b3b] dark:text-red-400 flex items-center gap-1 truncate">
-                      <AlertTriangle size={13} className="shrink-0" />
-                      <span>Chute ➔ 25 pts ({unclampedSum} pts)</span>
-                    </span>
-                  ) : isEliminated ? (
-                    <span className="font-bold text-red-600 dark:text-red-400 flex items-center gap-1 truncate">
-                      <AlertTriangle size={13} className="shrink-0" />
-                      <span>Éliminé (3 ratés)</span>
-                    </span>
-                  ) : (
-                    <span className="font-semibold text-[#c83b3b] dark:text-red-400 flex items-center gap-1 truncate">
-                      <Target size={13} className="shrink-0" />
-                      <span>{targetInfo.shortText}</span>
-                    </span>
+                {/* Ligne 3 : Conseil de visée unifié pour l'équipe et Jauge des 3 ratés unifiée */}
+                <div className="pt-2 border-t border-stone-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-1 text-[11px]">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {isWinner ? (
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <Trophy size={13} />
+                        50 pts pile ! Victoire Équipe {teamNum} !
+                      </span>
+                    ) : isOverflow ? (
+                      <span className="font-bold text-[#c83b3b] dark:text-red-400 flex items-center gap-1 truncate">
+                        <AlertTriangle size={13} className="shrink-0" />
+                        <span>Chute ➔ 25 pts ({unclampedSum} pts)</span>
+                      </span>
+                    ) : isEliminated ? (
+                      <span className="font-bold text-red-600 dark:text-red-400 flex items-center gap-1 truncate">
+                        <AlertTriangle size={13} className="shrink-0" />
+                        <span>Équipe éliminée (3 ratés)</span>
+                      </span>
+                    ) : (
+                      <span className="font-semibold text-[#c83b3b] dark:text-red-400 flex items-center gap-1 truncate">
+                        <Target size={13} className="shrink-0" />
+                        <span>{targetInfo.shortText}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Jauge des 3 ratés d'équipe vers l'élimination */}
+                  {(streak > 0 || pastZeros > 0) && (
+                    <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[10px] shrink-0 transition-all ${
+                      streak >= 3
+                        ? 'bg-red-500/15 border-red-500/30 text-red-600 dark:text-red-400'
+                        : streak === 2
+                        ? 'bg-[#c83b3b]/10 border-[#c83b3b]/25 text-[#c83b3b] dark:text-red-400'
+                        : streak === 1
+                        ? 'bg-stone-100 dark:bg-slate-800/80 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400'
+                        : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                    }`}>
+                      <div className="flex items-center gap-0.5">
+                        {[1, 2, 3].map((dotIdx) => {
+                          const isFilled = streak >= dotIdx
+                          return (
+                            <span
+                              key={dotIdx}
+                              className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                streak >= 3
+                                  ? 'bg-red-600 dark:bg-red-400'
+                                  : isFilled
+                                  ? 'bg-[#c83b3b] dark:bg-red-400'
+                                  : 'bg-stone-300 dark:bg-slate-600'
+                              }`}
+                            />
+                          )
+                        })}
+                      </div>
+
+                      <span className="font-bold tabular-nums">
+                        {streak >= 3
+                          ? 'Éliminé (3/3)'
+                          : streak === 2
+                          ? (hasPlayedAny ? 'Alerte (2/3)' : 'Attention (2/3)')
+                          : streak === 1
+                          ? (hasPlayedAny ? 'Raté (1/3)' : '1 raté (1/3)')
+                          : 'Sauvé (0/3)'}
+                      </span>
+                    </div>
                   )}
                 </div>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        /* Cartes de saisie des joueurs en mode individuel */
+        <div className="space-y-2.5">
+          {game.players.map((p) => {
+            const currentTotal = game.scores?.[p.id] || 0
+            const pts = roundPoints[p.id]
+            const hasPlayed = pts !== null && pts !== undefined
+            const pastZeros = pastZeroStreaks[p.id] || 0
+            const nextStreak = hasPlayed ? (pts === 0 ? pastZeros + 1 : 0) : pastZeros
 
-                {/* Jauge visuelle des 3 ratés consécutifs vers l'élimination */}
-                {(nextStreak > 0 || pastZeros > 0) && (
-                  <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[10px] shrink-0 transition-all ${
-                    nextStreak >= 3
-                      ? 'bg-red-500/15 border-red-500/30 text-red-600 dark:text-red-400'
-                      : nextStreak === 2
-                      ? 'bg-[#c83b3b]/10 border-[#c83b3b]/25 text-[#c83b3b] dark:text-red-400'
-                      : nextStreak === 1
-                      ? 'bg-stone-100 dark:bg-slate-800/80 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400'
-                      : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                  }`}>
-                    {/* Les 3 pastilles */}
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3].map((dotIdx) => {
-                        const isFilled = nextStreak >= dotIdx
-                        return (
-                          <span
-                            key={dotIdx}
-                            className={`w-1.5 h-1.5 rounded-full transition-all ${
-                              nextStreak >= 3
-                                ? 'bg-red-600 dark:bg-red-400'
-                                : isFilled
-                                ? 'bg-[#c83b3b] dark:bg-red-400'
-                                : 'bg-stone-300 dark:bg-slate-600'
-                            }`}
-                          />
-                        )
-                      })}
+            const unclampedSum = currentTotal + (pts || 0)
+            const isOverflow = calculatedResult.overflowPlayers.has(p.id)
+            const isWinner = calculatedResult.winningPlayers.has(p.id)
+            const isEliminated = calculatedResult.eliminatedPlayers.has(p.id)
+            const projectedTotal = calculatedResult.projectedNewTotals[p.id]
+
+            const currentBaseForTarget = hasPlayed && pts > 0
+              ? (isOverflow ? 25 : unclampedSum)
+              : currentTotal
+
+            const targetInfo = getMolkkyTargetInfo(currentBaseForTarget)
+
+            return (
+              <div
+                key={p.id}
+                className={`p-3 rounded-2xl school-card border transition-all ${
+                  isWinner
+                    ? 'border-emerald-500 bg-emerald-500/5 ring-1 ring-emerald-500/40'
+                    : isOverflow
+                    ? 'border-[#c83b3b]/70 bg-[#c83b3b]/5'
+                    : isEliminated
+                    ? 'border-red-500/80 bg-red-500/5 opacity-80'
+                    : 'border-stone-200/90 dark:border-slate-800'
+                }`}
+              >
+                {/* Ligne 1 : Joueur, Total dynamique selon les points marqués, et Champ de score */}
+                <div className="flex items-center justify-between gap-2 pb-2 border-b border-stone-100 dark:border-slate-800/80">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Avatar player={p} size="sm" />
+                    <div className="min-w-0">
+                      <span className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate block">
+                        {p.name}
+                      </span>
+
+                      {/* Total dynamique en fonction du score marqué */}
+                      <div className="flex items-center gap-1 text-[11px] leading-tight mt-0.5">
+                        <span className="text-stone-400 dark:text-slate-500 font-medium shrink-0">
+                          Total :
+                        </span>
+                        {isWinner ? (
+                          <span className="font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                            50 pts (Gagné !)
+                          </span>
+                        ) : isOverflow ? (
+                          <span className="font-extrabold text-[#c83b3b] dark:text-red-400 tabular-nums">
+                            Chute ➔ 25 pts
+                          </span>
+                        ) : (
+                          <span className="font-bold text-stone-700 dark:text-slate-200 tabular-nums">
+                            {projectedTotal} <span className="font-normal text-stone-400 dark:text-slate-500">/ 50 pts</span>
+                            {50 - (projectedTotal || 0) > 0 && (
+                              <span className="text-[10px] font-normal text-stone-400 dark:text-slate-500 ml-1">
+                                (-{50 - (projectedTotal || 0)})
+                              </span>
+                            )}
+                          </span>
+                        )}
+                      </div>
                     </div>
+                  </div>
 
-                    <span className="font-bold tabular-nums">
-                      {nextStreak >= 3
-                        ? 'Éliminé (3/3)'
+                  <div className="flex items-center gap-2 shrink-0">
+                    <QuickScoreBadge
+                      value={pts}
+                      onChange={(val) => setRoundPoints(prev => ({ ...prev, [p.id]: val === null ? null : Math.max(0, Number(val) || 0) }))}
+                      onOpenPad={() => setEditingPlayer(p)}
+                      min={0}
+                      max={12}
+                      step={1}
+                      values={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
+                      formatSub={(v) => (v === 0 ? 'Raté' : null)}
+                      showPlus={true}
+                      fillZero={true}
+                    />
+                  </div>
+                </div>
+
+                {/* Ligne 2 : Statut, commentaire sur quoi viser en rouge ardoise et jauge visuelle des ratés */}
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-1 text-[11px]">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {isWinner ? (
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <Trophy size={13} />
+                        50 pts pile ! Victoire immédiate !
+                      </span>
+                    ) : isOverflow ? (
+                      <span className="font-bold text-[#c83b3b] dark:text-red-400 flex items-center gap-1 truncate">
+                        <AlertTriangle size={13} className="shrink-0" />
+                        <span>Chute ➔ 25 pts ({unclampedSum} pts)</span>
+                      </span>
+                    ) : isEliminated ? (
+                      <span className="font-bold text-red-600 dark:text-red-400 flex items-center gap-1 truncate">
+                        <AlertTriangle size={13} className="shrink-0" />
+                        <span>Éliminé (3 ratés)</span>
+                      </span>
+                    ) : (
+                      <span className="font-semibold text-[#c83b3b] dark:text-red-400 flex items-center gap-1 truncate">
+                        <Target size={13} className="shrink-0" />
+                        <span>{targetInfo.shortText}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Jauge visuelle des 3 ratés consécutifs vers l'élimination */}
+                  {(nextStreak > 0 || pastZeros > 0) && (
+                    <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[10px] shrink-0 transition-all ${
+                      nextStreak >= 3
+                        ? 'bg-red-500/15 border-red-500/30 text-red-600 dark:text-red-400'
                         : nextStreak === 2
                         ? (hasPlayed ? 'Alerte (2/3)' : 'Attention (2/3)')
                         : nextStreak === 1
                         ? (hasPlayed ? 'Raté (1/3)' : '1 raté (1/3)')
                         : 'Sauvé (0/3)'}
-                    </span>
-                  </div>
-                )}
+                    `}>
+                      <div className="flex items-center gap-0.5">
+                        {[1, 2, 3].map((dotIdx) => {
+                          const isFilled = nextStreak >= dotIdx
+                          return (
+                            <span
+                              key={dotIdx}
+                              className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                nextStreak >= 3
+                                  ? 'bg-red-600 dark:bg-red-400'
+                                  : isFilled
+                                  ? 'bg-[#c83b3b] dark:bg-red-400'
+                                  : 'bg-stone-300 dark:bg-slate-600'
+                              }`}
+                            />
+                          )
+                        })}
+                      </div>
+
+                      <span className="font-bold tabular-nums">
+                        {nextStreak >= 3
+                          ? 'Éliminé (3/3)'
+                          : nextStreak === 2
+                          ? (hasPlayed ? 'Alerte (2/3)' : 'Attention (2/3)')
+                          : nextStreak === 1
+                          ? (hasPlayed ? 'Raté (1/3)' : '1 raté (1/3)')
+                          : 'Sauvé (0/3)'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Aperçu de la manche par équipe si mode équipe actif */}
-      {isTeamMode && (
-        <div className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between px-1">
-            <span className="font-serif-title font-bold text-xs text-stone-700 dark:text-slate-300 flex items-center gap-1.5">
-              <Users size={13} className="text-[#c83b3b]" />
-              Aperçu — Manche {roundNum}
-            </span>
-            <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
-              Manche & Total
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            {/* Équipe 1 */}
-            {(() => {
-              const pNous = [game.players[0], game.players[1]]
-              const startT1 = (game.scores?.[pNous[0]?.id] || 0) + (game.scores?.[pNous[1]?.id] || 0)
-              const roundT1 = (roundPoints[pNous[0]?.id] || 0) + (roundPoints[pNous[1]?.id] || 0)
-              const unclampedT1 = startT1 + roundT1
-              const isOverflow = calculatedResult.overflowPlayers.has('nous')
-              const isWinner = calculatedResult.winningPlayers.has('nous')
-              const finalT1 = calculatedResult.projectedNewTotals['nous'] ?? (isOverflow ? 25 : unclampedT1)
-
-              return (
-                <div className={`flex flex-col justify-between rounded-xl p-2.5 sm:p-3 transition-all min-h-[54px] school-card ${
-                  isWinner
-                    ? 'border-emerald-500 bg-emerald-500/10'
-                    : isOverflow
-                    ? 'border-amber-500 bg-amber-500/10'
-                    : 'border-[#c83b3b]/30 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
-                }`}>
-                  {/* Ligne 1 : Avatars superposés à gauche (comme dans le header) et Score manche à droite */}
-                  <div className="flex items-center justify-between w-full">
-                    <div className="shrink-0 relative inline-flex items-center">
-                      <div className="flex items-center -space-x-2.5">
-                        <div className="relative rounded-full">
-                          <Avatar player={pNous[0]} size="sm-compact" />
-                        </div>
-                        <div className="relative rounded-full">
-                          <Avatar player={pNous[1]} size="sm-compact" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex-1 min-w-0 flex items-center justify-end pl-1">
-                      <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl text-[#c83b3b] text-right">
-                        {roundPoints[pNous[0]?.id] == null && roundPoints[pNous[1]?.id] == null ? '—' : `+${roundT1}`}
-                        <span className="text-xs font-sans font-bold text-[#c83b3b]/70 ml-0.5">pts</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Ligne 2 : Noms de l'équipe et calcul des points sous les avatars */}
-                  <div className="w-full mt-1.5 min-w-0">
-                    <div className="flex items-center gap-0.5 min-w-0 text-[10px] sm:text-[11px]">
-                      <span className="font-bold text-[#c83b3b] dark:text-red-400 truncate leading-tight">
-                        {formatTeamNames(pNous, 8)}
-                      </span>
-                      <span className="font-bold text-stone-400 dark:text-slate-500 shrink-0">
-                        :
-                      </span>
-                      <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums inline-flex items-center">
-                        <span>{roundPoints[pNous[0]?.id] != null ? roundPoints[pNous[0]?.id] : '—'}</span>
-                        <span className="mx-0.5 text-stone-400 dark:text-slate-500 font-normal">+</span>
-                        <span>{roundPoints[pNous[1]?.id] != null ? roundPoints[pNous[1]?.id] : '—'}</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Ligne 3 : Total cumulé après la manche avec statut */}
-                  <div className="w-full mt-2 pt-1.5 border-t border-stone-200/60 dark:border-slate-800/80 flex items-center justify-between text-[10px] sm:text-[11px]">
-                    <span className="text-stone-500 dark:text-slate-400 font-semibold shrink-0">Total :</span>
-                    {isWinner ? (
-                      <span className="font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 shrink-0">
-                        <Trophy size={11} /> 50 pts (Gagné !)
-                      </span>
-                    ) : isOverflow ? (
-                      <span className="font-extrabold text-[#c83b3b] dark:text-red-400 flex items-center gap-0.5 shrink-0" title={`Dépassement (${unclampedT1} pts) ➔ Chute à 25 points`}>
-                        <AlertTriangle size={11} /> Chute ➔ 25 pts
-                      </span>
-                    ) : (
-                      <span className="font-bold text-stone-800 dark:text-slate-200 tabular-nums shrink-0">
-                        {finalT1} <span className="font-normal text-stone-400 dark:text-slate-500">/ 50 pts</span>
-                        {50 - finalT1 > 0 && (
-                          <span className="text-[9px] font-medium text-stone-400 dark:text-slate-500 ml-1">(-{50 - finalT1})</span>
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )
-            })()}
-
-            {/* Équipe 2 */}
-            {(() => {
-              const pEux = [game.players[2], game.players[3]]
-              const startT2 = (game.scores?.[pEux[0]?.id] || 0) + (game.scores?.[pEux[1]?.id] || 0)
-              const roundT2 = (roundPoints[pEux[0]?.id] || 0) + (roundPoints[pEux[1]?.id] || 0)
-              const unclampedT2 = startT2 + roundT2
-              const isOverflow = calculatedResult.overflowPlayers.has('eux')
-              const isWinner = calculatedResult.winningPlayers.has('eux')
-              const finalT2 = calculatedResult.projectedNewTotals['eux'] ?? (isOverflow ? 25 : unclampedT2)
-
-              return (
-                <div className={`flex flex-col justify-between rounded-xl p-2.5 sm:p-3 transition-all min-h-[54px] school-card ${
-                  isWinner
-                    ? 'border-emerald-500 bg-emerald-500/10'
-                    : isOverflow
-                    ? 'border-[#c83b3b]/60 bg-[#c83b3b]/10'
-                    : 'border-[#1e3a5f]/30 bg-[#1e3a5f]/5 dark:bg-[#1e3a5f]/10'
-                }`}>
-                  {/* Ligne 1 : Avatars superposés à gauche (comme dans le header) et Score manche à droite */}
-                  <div className="flex items-center justify-between w-full">
-                    <div className="shrink-0 relative inline-flex items-center">
-                      <div className="flex items-center -space-x-2.5">
-                        <div className="relative rounded-full">
-                          <Avatar player={pEux[0]} size="sm-compact" />
-                        </div>
-                        <div className="relative rounded-full">
-                          <Avatar player={pEux[1]} size="sm-compact" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex-1 min-w-0 flex items-center justify-end pl-1">
-                      <span className="font-black tabular-nums leading-none text-2xl sm:text-3xl text-[#1e3a5f] dark:text-sky-400 text-right">
-                        {roundPoints[pEux[0]?.id] == null && roundPoints[pEux[1]?.id] == null ? '—' : `+${roundT2}`}
-                        <span className="text-xs font-sans font-bold text-[#1e3a5f]/70 dark:text-sky-400/70 ml-0.5">pts</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Ligne 2 : Noms de l'équipe et calcul des points sous les avatars */}
-                  <div className="w-full mt-1.5 min-w-0">
-                    <div className="flex items-center gap-0.5 min-w-0 text-[10px] sm:text-[11px]">
-                      <span className="font-bold text-[#1e3a5f] dark:text-sky-400 truncate leading-tight">
-                        {formatTeamNames(pEux, 8)}
-                      </span>
-                      <span className="font-bold text-stone-400 dark:text-slate-500 shrink-0">
-                        :
-                      </span>
-                      <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums inline-flex items-center">
-                        <span>{roundPoints[pEux[0]?.id] != null ? roundPoints[pEux[0]?.id] : '—'}</span>
-                        <span className="mx-0.5 text-stone-400 dark:text-slate-500 font-normal">+</span>
-                        <span>{roundPoints[pEux[1]?.id] != null ? roundPoints[pEux[1]?.id] : '—'}</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Ligne 3 : Total cumulé après la manche avec statut */}
-                  <div className="w-full mt-2 pt-1.5 border-t border-stone-200/60 dark:border-slate-800/80 flex items-center justify-between text-[10px] sm:text-[11px]">
-                    <span className="text-stone-500 dark:text-slate-400 font-semibold shrink-0">Total :</span>
-                    {isWinner ? (
-                      <span className="font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 shrink-0">
-                        <Trophy size={11} /> 50 pts (Gagné !)
-                      </span>
-                    ) : isOverflow ? (
-                      <span className="font-extrabold text-[#c83b3b] dark:text-red-400 flex items-center gap-0.5 shrink-0" title={`Dépassement (${unclampedT2} pts) ➔ Chute à 25 points`}>
-                        <AlertTriangle size={11} /> Chute ➔ 25 pts
-                      </span>
-                    ) : (
-                      <span className="font-bold text-stone-800 dark:text-slate-200 tabular-nums shrink-0">
-                        {finalT2} <span className="font-normal text-stone-400 dark:text-slate-500">/ 50 pts</span>
-                        {50 - finalT2 > 0 && (
-                          <span className="text-[9px] font-medium text-stone-400 dark:text-slate-500 ml-1">(-{50 - finalT2})</span>
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )
-            })()}
-          </div>
+            )
+          })}
         </div>
       )}
 
