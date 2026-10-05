@@ -36,14 +36,31 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
     return getTeamGameData(game)
   }, [game])
 
+  const firstRankEntries = useMemo(() => {
+    return ranking.filter(r => r.rank === 1)
+  }, [ranking])
+
+  const isTie = !teamData && firstRankEntries.length > 1
+  const tiedWinners = useMemo(() => {
+    if (!game) return []
+    return firstRankEntries.map(r => game.players.find(p => p.id === r.id)).filter(Boolean)
+  }, [game, firstRankEntries])
+
+  const isTeamTie = Boolean(
+    teamData &&
+    teamData.teams.length >= 2 &&
+    teamData.teams[0].score === teamData.teams[1].score
+  )
+
   const winner = useMemo(() => {
     if (!game) return null
+    if (isTie) return null
     return (
       game.players.find(p => p.id === game.winner) ||
       game.players.find(p => p.id === ranking[0]?.id) ||
       null
     )
-  }, [game, ranking])
+  }, [game, ranking, isTie])
 
   const duration = useMemo(() => {
     if (!game?.finishedAt) return null
@@ -86,14 +103,28 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             {teamData ? (
               <div className="relative shrink-0 flex items-center -space-x-2">
-                {teamData.teams[0].players.map((p, pIdx) => (
+                {(isTeamTie ? [...teamData.teams[0].players, ...teamData.teams[1].players] : teamData.teams[0].players).map((p, pIdx) => (
                   <div key={p.id} className="relative rounded-full ring-2 ring-white dark:ring-slate-900">
                     <Avatar
                       player={p}
                       size="sm"
                       leader={game.status === 'finished' || teamData.teams[0].isLeader}
                       leaderColor="#10b981"
-                      crown={(game.status === 'finished' || teamData.teams[0].isLeader) && pIdx === 0}
+                      crown={(game.status === 'finished' || teamData.teams[0].isLeader) && (isTeamTie || pIdx === 0)}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : isTie ? (
+              <div className="relative shrink-0 flex items-center -space-x-2">
+                {tiedWinners.map(p => (
+                  <div key={p.id} className="relative rounded-full ring-2 ring-white dark:ring-slate-900">
+                    <Avatar
+                      player={p}
+                      size="sm"
+                      leader={game.status === 'finished'}
+                      leaderColor="#10b981"
+                      crown={game.status === 'finished'}
                     />
                   </div>
                 ))}
@@ -108,22 +139,28 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                     ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30'
                     : 'bg-[#c83b3b]/15 text-[#c83b3b] border border-[#c83b3b]/30'
                 }`}>
-                  {game.status === 'finished' ? 'Partie terminée' : 'En cours'}
+                  {game.status === 'finished'
+                    ? (isTie || isTeamTie ? 'Égalité · Ex-æquo' : 'Partie terminée')
+                    : 'En cours'}
                 </span>
               </div>
               <p className="font-serif-title font-bold text-sm sm:text-base leading-snug break-words mt-1 text-stone-900 dark:text-slate-100">
                 {teamData
-                  ? (teamData.teams[0].labelFull || teamData.teams[0].label)
+                  ? (isTeamTie ? 'Équipe 1 & Équipe 2 (Égalité)' : (teamData.teams[0].labelFull || teamData.teams[0].label))
+                  : isTie
+                  ? `${tiedWinners.map(p => p.name).join(' & ')} (Égalité)`
                   : (winner?.name || '—')}
               </p>
             </div>
           </div>
           <div className="text-right shrink-0">
             <span className="text-xs font-bold text-stone-500 dark:text-slate-400 block whitespace-nowrap">
-              {teamData ? (game.status === 'finished' ? 'Score vainqueurs' : 'Score leader') : (game.status === 'finished' ? 'Score vainqueur' : 'Score leader')}
+              {teamData
+                ? (game.status === 'finished' ? (isTeamTie ? 'Score égalité' : 'Score vainqueurs') : 'Score leader')
+                : (game.status === 'finished' ? (isTie ? 'Score égalité' : 'Score vainqueur') : 'Score leader')}
             </span>
             <span className="font-black text-base text-emerald-700 dark:text-emerald-400 tabular-nums">
-              {teamData ? teamData.teams[0].score : (winner ? game.scores[winner.id] || 0 : 0)} {scoreUnit}
+              {teamData ? teamData.teams[0].score : (firstRankEntries[0]?.score ?? (winner ? game.scores[winner.id] || 0 : 0))} {scoreUnit}
             </span>
           </div>
         </div>
@@ -454,8 +491,8 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                           : (game.scores[p2?.id] || 0)
 
                         const isFinished = game.status === 'finished'
-                        const isWin1 = isFinished && total1 >= total2
-                        const isWin2 = isFinished && total2 >= total1
+                        const isWin1 = isFinished && (isTeamTie || (!isTeamTie && total1 > total2))
+                        const isWin2 = isFinished && (isTeamTie || (!isTeamTie && total2 > total1))
 
                         return (
                           <>
@@ -468,7 +505,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                                 </span>
                                 {isWin1 && (
                                   <span className="text-[7.5px] font-bold uppercase text-emerald-600 dark:text-emerald-400 px-1 py-0.2 rounded bg-emerald-500/15">
-                                    Gagnant
+                                    {isTeamTie ? '1er' : 'Gagnant'}
                                   </span>
                                 )}
                               </div>
@@ -482,7 +519,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                                 </span>
                                 {isWin2 && (
                                   <span className="text-[7.5px] font-bold uppercase text-emerald-600 dark:text-emerald-400 px-1 py-0.2 rounded bg-emerald-500/15">
-                                    Gagnant
+                                    {isTeamTie ? '1er' : 'Gagnant'}
                                   </span>
                                 )}
                               </div>
@@ -494,7 +531,8 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                       game.players.map(p => {
                         const finalScore = game.scores[p.id] || 0
                         const isFinished = game.status === 'finished'
-                        const isWin = isFinished && p.id === winner?.id
+                        const pRank = ranking.find(r => r.id === p.id)?.rank
+                        const isWin = isFinished && pRank === 1
                         return (
                           <td key={p.id} className="py-1 px-0.5 text-center tabular-nums sticky bottom-0 bg-stone-100 dark:bg-slate-800 z-20">
                             <div className="flex items-center justify-center gap-0.5 leading-tight">
@@ -507,7 +545,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                               </span>
                               {isWin && (
                                 <span className="text-[7.5px] font-bold uppercase text-emerald-600 dark:text-emerald-400 px-0.5 py-0.2 rounded bg-emerald-500/15">
-                                  Gagnant
+                                  {isTie ? '1er' : 'Gagnant'}
                                 </span>
                               )}
                             </div>

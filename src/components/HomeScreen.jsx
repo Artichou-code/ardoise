@@ -6,7 +6,7 @@ import { ThemeToggle } from './ui/ThemeToggle'
 import { AppLogo } from './ui/AppLogo'
 import { BurgerMenuButton } from './BurgerMenu'
 import { ArtCreaLogo } from './ui/ArtCreaLogo'
-import { formatDate, formatGameStart, getTeamGameData } from '../utils/gameUtils'
+import { formatDate, formatGameStart, getTeamGameData, getRanking } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
 import { formatTypography } from '../utils/typography'
 import { getActiveSession } from '../store/liveSession'
@@ -670,7 +670,14 @@ export function HomeScreen() {
             </div>
             <div className="space-y-2">
               {finishedGames.map(game => {
-                const winner = game.players.find(p => p.id === (game.winner?.id || game.winner))
+                const teamData = getTeamGameData(game)
+                const ranking = getRanking(game.scores || {}, game.config?.scoreDir || 'high', game)
+                const firstRankEntries = ranking.filter(r => r.rank === 1)
+                const isTie = !teamData && firstRankEntries.length > 1
+                const tiedWinners = isTie ? firstRankEntries.map(e => game.players.find(p => p.id === e.id)).filter(Boolean) : []
+                const isTeamTie = teamData && teamData.teams[0].score === teamData.teams[1].score
+                const winner = game.players.find(p => p.id === (game.winner?.id || game.winner)) || (firstRankEntries.length > 0 ? game.players.find(p => p.id === firstRankEntries[0].id) : null)
+
                 return (
                   <div
                     key={game.id}
@@ -693,14 +700,40 @@ export function HomeScreen() {
                         {formatDate(game.finishedAt || game.startedAt)}
                       </p>
                     </div>
-                    {winner && (
+                    {isTie ? (
+                      <div className="flex flex-col items-center shrink-0 min-w-[56px] pt-1">
+                        <div className="relative shrink-0 flex items-center -space-x-2">
+                          {tiedWinners.map(p => (
+                            <div key={p.id} className="relative rounded-full ring-2 ring-white dark:ring-slate-900">
+                              <Avatar player={p} size="xs" leader leaderColor="#10b981" crown />
+                            </div>
+                          ))}
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 truncate max-w-[80px] text-center leading-none mt-2">
+                          Égalité
+                        </span>
+                      </div>
+                    ) : isTeamTie ? (
+                      <div className="flex flex-col items-center shrink-0 min-w-[56px] pt-1">
+                        <div className="relative shrink-0 flex items-center -space-x-2">
+                          {game.players.map(p => (
+                            <div key={p.id} className="relative rounded-full ring-2 ring-white dark:ring-slate-900">
+                              <Avatar player={p} size="xs" leader leaderColor="#10b981" crown />
+                            </div>
+                          ))}
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 truncate max-w-[80px] text-center leading-none mt-2">
+                          Égalité
+                        </span>
+                      </div>
+                    ) : winner ? (
                       <div className="flex flex-col items-center shrink-0 min-w-[56px] pt-1">
                         <Avatar player={winner} size="xs" leader leaderColor="#10b981" crown />
                         <span className="text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate max-w-[64px] text-center leading-none mt-2">
                           {winner.name}
                         </span>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )
               })}
