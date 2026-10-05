@@ -6,7 +6,7 @@ import { ThemeToggle } from './ui/ThemeToggle'
 import { AppLogo } from './ui/AppLogo'
 import { BurgerMenuButton } from './BurgerMenu'
 import { ArtCreaLogo } from './ui/ArtCreaLogo'
-import { formatDate, formatGameStart } from '../utils/gameUtils'
+import { formatDate, formatGameStart, getTeamGameData } from '../utils/gameUtils'
 import { Avatar } from './ui/Avatar'
 import { formatTypography } from '../utils/typography'
 import { getActiveSession } from '../store/liveSession'
@@ -312,7 +312,10 @@ export function HomeScreen() {
                   <div className="flex items-center justify-between gap-3 w-full">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-stone-500 dark:text-slate-400 truncate">
-                        {game.players.map(p => p.name).join(' · ')}
+                        {(() => {
+                          const td = getTeamGameData(game)
+                          return td ? `${td.teams[0].label} vs ${td.teams[1].label}` : game.players.map(p => p.name).join(' · ')
+                        })()}
                       </p>
                       {game.startedAt && (
                         <p className="text-[11px] text-stone-400 dark:text-slate-500 flex items-center gap-1 mt-0.5 truncate">

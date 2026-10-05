@@ -20,7 +20,7 @@ import { ConfirmDialog } from './ui/Dialog'
 import { GameDetailSheet } from './GameDetailSheet'
 import { ShareGamesModal } from './ShareGamesModal'
 import { BurgerMenuButton } from './BurgerMenu'
-import { getRanking, formatDate, formatDuration, computePlayDuration } from '../utils/gameUtils'
+import { getRanking, formatDate, formatDuration, computePlayDuration, getTeamGameData } from '../utils/gameUtils'
 
 export function HistoryScreen() {
   const { games, setScreen, removeGame, resumeGame, createGame } = useGame()
@@ -224,6 +224,7 @@ export function HistoryScreen() {
                   ? 'low'
                   : 'high'
               const ranking = getRanking(game.scores, scoreDir, game)
+              const teamData = getTeamGameData(game)
               const duration = game.finishedAt
                 ? formatDuration(computePlayDuration(game))
                 : null
@@ -304,50 +305,137 @@ export function HistoryScreen() {
 
                   {/* Scores */}
                   <div className="px-3.5 py-2.5">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                      {ranking.map(({ id, score, rank }) => {
-                        const player = game.players.find((p) => p.id === id)
-                        if (!player) return null
-                        const isWinner = rank === 1 && game.status === 'finished'
-                        return (
-                          <div
-                            key={id}
-                            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs transition-colors ${
-                              isWinner
-                                ? 'bg-emerald-500/10 border-emerald-500/30 text-stone-900 dark:text-slate-100 font-bold'
-                                : 'bg-stone-50/60 dark:bg-slate-800/40 border-stone-200/60 dark:border-slate-800 text-stone-700 dark:text-slate-300'
-                            }`}
-                          >
-                            <div className="relative shrink-0">
-                              <Avatar
-                                player={player}
-                                size="xs"
-                                leader={isWinner}
-                                leaderColor="#10b981"
-                                crown={rank === 1}
-                              />
-                              {rank > 1 && (
-                                <span
-                                  className="absolute -top-1.5 -left-1 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white"
-                                >
-                                  {`${rank}e`}
-                                </span>
-                              )}
-                            </div>
-                            <span className="flex-1 truncate font-semibold text-xs min-w-0">
-                              {player.name}
-                            </span>
-                            <span
-                              className={`font-black tabular-nums text-xs shrink-0 ${
-                                isWinner ? 'text-emerald-700 dark:text-emerald-400' : ''
+                    {teamData ? (
+                      /* Affichage par équipes (Belote, Coinche & Symbiose 2v2) : style Aperçu Symbiose (Noms sous les avatars) */
+                      <div className="grid grid-cols-2 gap-2">
+                        {teamData.teams.map((t) => {
+                          const hasRounds = (game.rounds?.length || 0) > 0
+                          const isLead = t.isWinner || t.isLeader
+                          return (
+                            <div
+                              key={t.id}
+                              className={`flex flex-col justify-between rounded-xl px-2 py-1.5 sm:px-2.5 sm:py-2 border text-xs transition-colors min-h-[56px] ${
+                                t.isWinner
+                                  ? 'bg-emerald-500/10 border-emerald-500/30 text-stone-900 dark:text-slate-100'
+                                  : t.isLeader
+                                  ? 'bg-amber-500/10 border-amber-500/30 text-stone-900 dark:text-slate-100'
+                                  : 'bg-stone-50/60 dark:bg-slate-800/40 border-stone-200/60 dark:border-slate-800 text-stone-700 dark:text-slate-300'
                               }`}
                             >
-                              {score}
-                            </span>
-                          </div>
-                        )
-                      })}
-                    </div>
+                              {/* Ligne 1 : Avatars groupés à gauche & Score centré dans l'espace restant */}
+                              <div className="flex items-center w-full">
+                                <div className="relative shrink-0 flex items-center -space-x-2">
+                                  {t.players.map((p, pIdx) => (
+                                    <div
+                                      key={p.id}
+                                      className="relative rounded-full ring-1.5 ring-white dark:ring-slate-900"
+                                    >
+                                      <Avatar
+                                        player={p}
+                                        size="xs"
+                                        leader={isLead}
+                                        crown={hasRounds && pIdx === 0 && isLead}
+                                      />
+                                    </div>
+                                  ))}
+                                  {hasRounds && t.rank > 1 && !isLead && (
+                                    <span
+                                      className="absolute -top-1.5 -left-1 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-20 pointer-events-none select-none"
+                                    >
+                                      {t.rank}e
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex-1 min-w-0 flex items-center justify-center pl-1">
+                                  <span
+                                    className={`font-black tabular-nums text-xl sm:text-2xl leading-none text-center ${
+                                      t.isWinner
+                                        ? 'text-emerald-700 dark:text-emerald-400'
+                                        : t.isLeader
+                                        ? 'text-[#c83b3b]'
+                                        : 'text-stone-800 dark:text-slate-200'
+                                    }`}
+                                  >
+                                    {t.score}
+                                    <span className="text-[11px] font-bold font-sans opacity-70 ml-0.5">pts</span>
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Ligne 2 : Noms de l'équipe et calcul des mares regroupés sur une ligne */}
+                              <div className="w-full mt-1 min-w-0">
+                                <div className="flex items-center gap-0.5 min-w-0 text-[10px] sm:text-[11px] tracking-tight leading-tight">
+                                  <span className={`font-bold truncate ${
+                                    isLead
+                                      ? 'text-stone-900 dark:text-slate-100'
+                                      : 'text-stone-700 dark:text-slate-300'
+                                  }`}>
+                                    {t.labelFull || t.label}
+                                  </span>
+                                  {t.detail && (
+                                    <>
+                                      <span className="font-bold text-stone-400 dark:text-slate-500 shrink-0">
+                                        :
+                                      </span>
+                                      <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums">
+                                        {t.detail}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      /* Affichage individuel standard pour tous les autres jeux */
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                        {ranking.map(({ id, score, rank }) => {
+                          const player = game.players.find((p) => p.id === id)
+                          if (!player) return null
+                          const isWinner = rank === 1 && game.status === 'finished'
+                          return (
+                            <div
+                              key={id}
+                              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs transition-colors ${
+                                isWinner
+                                  ? 'bg-emerald-500/10 border-emerald-500/30 text-stone-900 dark:text-slate-100 font-bold'
+                                  : 'bg-stone-50/60 dark:bg-slate-800/40 border-stone-200/60 dark:border-slate-800 text-stone-700 dark:text-slate-300'
+                              }`}
+                            >
+                              <div className="relative shrink-0">
+                                <Avatar
+                                  player={player}
+                                  size="xs"
+                                  leader={isWinner}
+                                  leaderColor="#10b981"
+                                  crown={rank === 1}
+                                />
+                                {rank > 1 && (
+                                  <span
+                                    className="absolute -top-1.5 -left-1 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white"
+                                  >
+                                    {`${rank}e`}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="flex-1 truncate font-semibold text-xs min-w-0">
+                                {player.name}
+                              </span>
+                              <span
+                                className={`font-black tabular-nums text-xs shrink-0 ${
+                                  isWinner ? 'text-emerald-700 dark:text-emerald-400' : ''
+                                }`}
+                              >
+                                {score}
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions (masquées pendant la sélection multiple pour éviter les faux clics) */}

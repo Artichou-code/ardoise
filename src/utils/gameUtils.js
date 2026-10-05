@@ -69,7 +69,7 @@ export function getRanking(scores, direction = 'high', game = null) {
   if (
     game &&
     ((game.type === 'belote' || game.type === 'coinche') ||
-      (game.type === 'symbiose' && game.config?.mode === 'team')) &&
+      (game.type === 'symbiose' && (game.config?.mode === 'team' || game.mode === 'team' || game.isTeamMode === true || game.rounds?.some(r => r.isTeamMode)))) &&
     Array.isArray(game.players) &&
     game.players.length === 4
   ) {
@@ -116,6 +116,70 @@ export function getRanking(scores, direction = 'high', game = null) {
     }
     return { id, score, rank: currentRank }
   })
+}
+
+/**
+ * Extrait et structure les données d'équipes pour Belote/Coinche et Symbiose (mode équipe)
+ * Renvoie null si le jeu n'est pas un jeu en équipe à 4 joueurs.
+ */
+export function getTeamGameData(game) {
+  if (!game || !Array.isArray(game.players) || game.players.length !== 4) return null
+  const isBelote = game.type === 'belote' || game.type === 'coinche'
+  const isSymbioseTeam =
+    game.type === 'symbiose' &&
+    (game.config?.mode === 'team' || game.mode === 'team' || game.isTeamMode === true || game.rounds?.some(r => r.isTeamMode))
+  if (!isBelote && !isSymbioseTeam) return null
+
+  const pNous = [game.players[0], game.players[1]].filter(Boolean)
+  const pEux = [game.players[2], game.players[3]].filter(Boolean)
+  const scores = game.scores || {}
+
+  const p0 = scores[pNous[0]?.id] != null ? scores[pNous[0]?.id] : 0
+  const p1 = scores[pNous[1]?.id] != null ? scores[pNous[1]?.id] : 0
+  const p2 = scores[pEux[0]?.id] != null ? scores[pEux[0]?.id] : 0
+  const p3 = scores[pEux[1]?.id] != null ? scores[pEux[1]?.id] : 0
+
+  const scoreNous = isSymbioseTeam ? p0 + p1 : p0
+  const scoreEux = isSymbioseTeam ? p2 + p3 : p2
+  const hasRounds = (game.rounds?.length || 0) > 0
+  const isFinished = game.status === 'finished'
+
+  const isTie = scoreNous === scoreEux
+  const rankNous = !hasRounds ? 1 : scoreNous >= scoreEux ? 1 : 2
+  const rankEux = !hasRounds ? 1 : scoreEux >= scoreNous ? 1 : 2
+
+  const teamNous = {
+    id: 'nous',
+    label: formatTeamNames(pNous, 12),
+    labelFull: pNous.map(p => p.name).join(' & '),
+    players: pNous,
+    score: scoreNous,
+    detail: isSymbioseTeam && hasRounds ? `${p0} + ${p1}` : null,
+    rank: rankNous,
+    isWinner: isFinished && (scoreNous > scoreEux || isTie),
+    isLeader: hasRounds && !isFinished && (scoreNous >= scoreEux),
+  }
+
+  const teamEux = {
+    id: 'eux',
+    label: formatTeamNames(pEux, 12),
+    labelFull: pEux.map(p => p.name).join(' & '),
+    players: pEux,
+    score: scoreEux,
+    detail: isSymbioseTeam && hasRounds ? `${p2} + ${p3}` : null,
+    rank: rankEux,
+    isWinner: isFinished && (scoreEux > scoreNous || isTie),
+    isLeader: hasRounds && !isFinished && (scoreEux >= scoreNous),
+  }
+
+  // Trier pour présenter l'équipe en tête à gauche
+  const teams = scoreEux > scoreNous ? [teamEux, teamNous] : [teamNous, teamEux]
+
+  return {
+    isTeamGame: true,
+    isSymbioseTeam,
+    teams,
+  }
 }
 
 const MAX_GAP_MS = 15 * 60 * 1000 // 15 min — pauses au-delà ignorées

@@ -3,7 +3,7 @@ import { Play, RotateCcw, FileText, QrCode } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
 import { Avatar } from './ui/Avatar'
 import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
-import { getRanking, formatDate, formatDuration, computePlayDuration } from '../utils/gameUtils'
+import { getRanking, formatDate, formatDuration, computePlayDuration, getTeamGameData } from '../utils/gameUtils'
 import { ShareGameModal } from './ShareGameModal'
 
 /**
@@ -30,6 +30,11 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
     if (!game) return []
     return getRanking(game.scores || {}, scoreDir, game)
   }, [game, scoreDir])
+
+  const teamData = useMemo(() => {
+    if (!game) return null
+    return getTeamGameData(game)
+  }, [game])
 
   const winner = useMemo(() => {
     if (!game) return null
@@ -79,7 +84,23 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
         {/* Statut & Vainqueur */}
         <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/80">
           <div className="flex items-center gap-2.5 min-w-0">
-            {winner && <Avatar player={winner} size="sm" leader={game.status === 'finished'} leaderColor="#10b981" crown={game.status === 'finished'} />}
+            {teamData ? (
+              <div className="relative shrink-0 flex items-center -space-x-2">
+                {teamData.teams[0].players.map((p, pIdx) => (
+                  <div key={p.id} className="relative rounded-full ring-2 ring-white dark:ring-slate-900">
+                    <Avatar
+                      player={p}
+                      size="sm"
+                      leader={game.status === 'finished' || teamData.teams[0].isLeader}
+                      leaderColor="#10b981"
+                      crown={(game.status === 'finished' || teamData.teams[0].isLeader) && pIdx === 0}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              winner && <Avatar player={winner} size="sm" leader={game.status === 'finished'} leaderColor="#10b981" crown={game.status === 'finished'} />
+            )}
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
@@ -91,7 +112,11 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                 </span>
               </div>
               <p className="font-serif-title font-bold text-sm truncate mt-1">
-                {game.status === 'finished' && winner ? (
+                {teamData ? (
+                  game.status === 'finished'
+                    ? `${teamData.teams[0].labelFull || teamData.teams[0].label} l'emportent`
+                    : `Leader actuel : ${teamData.teams[0].labelFull || teamData.teams[0].label}`
+                ) : game.status === 'finished' && winner ? (
                   isDourak ? `${winner.name} invaincu` : `${winner.name} l'emporte`
                 ) : (
                   `Leader actuel : ${winner?.name || '—'}`
@@ -101,75 +126,130 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
           </div>
           <div className="text-right shrink-0">
             <span className="text-xs font-bold text-stone-500 dark:text-slate-400 block">
-              Score vainqueur
+              {teamData ? (game.status === 'finished' ? 'Score vainqueurs' : 'Score leader') : (game.status === 'finished' ? 'Score vainqueur' : 'Score leader')}
             </span>
             <span className="font-black text-base text-emerald-700 dark:text-emerald-400 tabular-nums">
-              {winner ? game.scores[winner.id] || 0 : 0} {scoreUnit}
+              {teamData ? teamData.teams[0].score : (winner ? game.scores[winner.id] || 0 : 0)} {scoreUnit}
             </span>
           </div>
         </div>
 
-        {/* Classement des joueurs */}
+        {/* Classement des joueurs ou des équipes */}
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
-            Classement des joueurs
+            {teamData ? 'Classement des équipes' : 'Classement des joueurs'}
           </p>
-          <div className={`grid ${
-            ranking.length <= 2 ? 'grid-cols-2 gap-2' :
-            ranking.length === 3 ? 'grid-cols-3 gap-2' :
-            ranking.length === 4 ? 'grid-cols-4 gap-1.5 sm:gap-2' :
-            ranking.length === 5 ? 'grid-cols-5 gap-1.5' :
-            ranking.length === 6 ? 'grid-cols-6 gap-1' :
-            'grid-cols-3 sm:grid-cols-4 gap-2'
-          }`}>
-            {ranking.map(({ id, score, rank }) => {
-              const player = game.players.find(p => p.id === id)
-              if (!player) return null
-              const isFirst = rank === 1
-              const isLast = isDourak && rank === ranking.length
-              const isCrowded = ranking.length >= 5
-              return (
-                <div
-                  key={id}
-                  className={`rounded-xl border flex flex-col items-center text-center transition-all ${
-                    isCrowded ? 'p-1.5 gap-0.5' : 'p-2.5'
-                  } ${
-                    isFirst
-                      ? 'bg-emerald-500/10 border-emerald-500/30 dark:bg-emerald-950/20'
-                      : isLast
-                      ? 'bg-[#c83b3b]/10 border-[#c83b3b]/30 dark:bg-rose-950/20'
-                      : 'school-card border-stone-200 dark:border-slate-800'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full mb-0.5 px-0.5">
-                    <span className={`text-[9px] font-extrabold uppercase ${
+          {teamData ? (
+            <div className="grid grid-cols-2 gap-2">
+              {teamData.teams.map((t) => {
+                const isFirst = t.rank === 1
+                return (
+                  <div
+                    key={t.id}
+                    className={`rounded-xl border flex flex-col items-center text-center p-2.5 transition-all ${
                       isFirst
-                        ? 'text-emerald-700 dark:text-emerald-400'
-                        : isLast
-                        ? 'text-[#c83b3b]'
-                        : 'text-stone-400 dark:text-slate-500'
-                    }`}>
-                      {rank === 1 ? '1er' : `${rank}e`}
+                        ? 'bg-emerald-500/10 border-emerald-500/30 dark:bg-emerald-950/20'
+                        : 'school-card border-stone-200 dark:border-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full mb-1 px-0.5">
+                      <span className={`text-[9px] font-extrabold uppercase ${
+                        isFirst
+                          ? 'text-emerald-700 dark:text-emerald-400'
+                          : 'text-stone-400 dark:text-slate-500'
+                      }`}>
+                        {t.rank === 1 ? '1er' : `${t.rank}e`}
+                      </span>
+                    </div>
+                    {/* Avatars groupés côte à côte */}
+                    <div className="relative shrink-0 flex items-center -space-x-2 my-1">
+                      {t.players.map((p, idx) => (
+                        <div key={p.id} className="relative rounded-full ring-2 ring-white dark:ring-slate-900">
+                          <Avatar
+                            player={p}
+                            size="xs"
+                            leader={isFirst}
+                            leaderColor="#10b981"
+                            crown={isFirst && idx === 0}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <span className="text-xs font-semibold truncate w-full mt-0.5 px-0.5">
+                      {t.labelFull || t.label}
                     </span>
-                    {isLast && (
-                      <span className="text-[8px] font-bold text-[#c83b3b] uppercase tracking-tight">
-                        Dourak
+                    {t.detail && (
+                      <span className="text-[11px] text-stone-500 dark:text-slate-400 font-medium tabular-nums mt-0.5">
+                        {t.detail}
                       </span>
                     )}
+                    <span className={`font-black text-sm sm:text-base tabular-nums mt-0.5 ${
+                      isFirst ? 'text-emerald-700 dark:text-emerald-400' : ''
+                    }`}>
+                      {t.score} {scoreUnit}
+                    </span>
                   </div>
-                  <Avatar player={player} size="xs" leader={isFirst} leaderColor="#10b981" crown={isFirst && game.status === 'finished'} />
-                  <span className="text-[11px] sm:text-xs font-semibold truncate w-full mt-0.5 px-0.5">
-                    {player.name}
-                  </span>
-                  <span className={`font-black text-xs sm:text-sm tabular-nums mt-0.5 ${
-                    isFirst ? 'text-emerald-700 dark:text-emerald-400' : isLast ? 'text-[#c83b3b]' : ''
-                  }`}>
-                    {score} {scoreUnit}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className={`grid ${
+              ranking.length <= 2 ? 'grid-cols-2 gap-2' :
+              ranking.length === 3 ? 'grid-cols-3 gap-2' :
+              ranking.length === 4 ? 'grid-cols-4 gap-1.5 sm:gap-2' :
+              ranking.length === 5 ? 'grid-cols-5 gap-1.5' :
+              ranking.length === 6 ? 'grid-cols-6 gap-1' :
+              'grid-cols-3 sm:grid-cols-4 gap-2'
+            }`}>
+              {ranking.map(({ id, score, rank }) => {
+                const player = game.players.find(p => p.id === id)
+                if (!player) return null
+                const isFirst = rank === 1
+                const isLast = isDourak && rank === ranking.length
+                const isCrowded = ranking.length >= 5
+                return (
+                  <div
+                    key={id}
+                    className={`rounded-xl border flex flex-col items-center text-center transition-all ${
+                      isCrowded ? 'p-1.5 gap-0.5' : 'p-2.5'
+                    } ${
+                      isFirst
+                        ? 'bg-emerald-500/10 border-emerald-500/30 dark:bg-emerald-950/20'
+                        : isLast
+                        ? 'bg-[#c83b3b]/10 border-[#c83b3b]/30 dark:bg-rose-950/20'
+                        : 'school-card border-stone-200 dark:border-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full mb-0.5 px-0.5">
+                      <span className={`text-[9px] font-extrabold uppercase ${
+                        isFirst
+                          ? 'text-emerald-700 dark:text-emerald-400'
+                          : isLast
+                          ? 'text-[#c83b3b]'
+                          : 'text-stone-400 dark:text-slate-500'
+                      }`}>
+                        {rank === 1 ? '1er' : `${rank}e`}
+                      </span>
+                      {isLast && (
+                        <span className="text-[8px] font-bold text-[#c83b3b] uppercase tracking-tight">
+                          Dourak
+                        </span>
+                      )}
+                    </div>
+                    <Avatar player={player} size="xs" leader={isFirst} leaderColor="#10b981" crown={isFirst && game.status === 'finished'} />
+                    <span className="text-[11px] sm:text-xs font-semibold truncate w-full mt-0.5 px-0.5">
+                      {player.name}
+                    </span>
+                    <span className={`font-black text-xs sm:text-sm tabular-nums mt-0.5 ${
+                      isFirst ? 'text-emerald-700 dark:text-emerald-400' : isLast ? 'text-[#c83b3b]' : ''
+                    }`}>
+                      {score} {scoreUnit}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Déroulement complet manche par manche */}
@@ -192,11 +272,19 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                     <th className="py-1.5 px-1.5 sticky left-0 top-0 z-30 bg-stone-100 dark:bg-slate-800 w-9 text-center border-r border-stone-200/80 dark:border-slate-700">
                       M.
                     </th>
-                    {game.players.map(p => (
-                      <th key={p.id} className="py-1.5 px-0.5 text-center min-w-[50px] sm:min-w-[64px] sticky top-0 bg-stone-100 dark:bg-slate-800 z-20">
-                        <span className="truncate max-w-[48px] sm:max-w-[60px] font-bold block mx-auto text-[11px]">{p.name}</span>
-                      </th>
-                    ))}
+                    {game.players.map((p, pIdx) => {
+                      const isTeam1 = teamData && (pIdx === 0 || pIdx === 1)
+                      return (
+                        <th key={p.id} className="py-1.5 px-0.5 text-center min-w-[50px] sm:min-w-[64px] sticky top-0 bg-stone-100 dark:bg-slate-800 z-20">
+                          {teamData && (
+                            <span className={`text-[8.5px] font-bold block uppercase tracking-wider ${isTeam1 ? 'text-[#c83b3b]' : 'text-stone-500 dark:text-slate-400'}`}>
+                              {isTeam1 ? 'Éq. 1' : 'Éq. 2'}
+                            </span>
+                          )}
+                          <span className="truncate max-w-[48px] sm:max-w-[60px] font-bold block mx-auto text-[11px]">{p.name}</span>
+                        </th>
+                      )
+                    })}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100 dark:divide-slate-800/60 font-sans">
@@ -276,7 +364,12 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                     </td>
                     {game.players.map(p => {
                       const finalScore = game.scores[p.id] || 0
-                      const isWin = p.id === winner?.id
+                      const isFinished = game.status === 'finished'
+                      const isWin = isFinished && (
+                        teamData
+                          ? teamData.teams[0]?.isWinner && teamData.teams[0]?.players.some(tp => tp.id === p.id)
+                          : p.id === winner?.id
+                      )
                       return (
                         <td key={p.id} className="py-1 px-0.5 text-center tabular-nums sticky bottom-0 bg-stone-100 dark:bg-slate-800 z-20">
                           <div className="flex items-center justify-center gap-0.5 leading-tight">
@@ -297,6 +390,26 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                       )
                     })}
                   </tr>
+                  {/* Ligne d'équipe pour Symbiose mode équipe */}
+                  {teamData?.isSymbioseTeam && (
+                    <tr className="bg-stone-50 dark:bg-slate-900 border-t border-stone-200 dark:border-slate-800 font-bold text-xs">
+                      <td className="py-1 px-1.5 font-bold text-stone-500 dark:text-slate-400 sticky bottom-0 left-0 z-30 bg-stone-50 dark:bg-slate-900 border-r border-stone-200 dark:border-slate-800 text-[10px] text-center uppercase">
+                        Éq.
+                      </td>
+                      <td colSpan={2} className="py-1 px-1 text-center tabular-nums text-xs font-black border-r border-stone-200/50 dark:border-slate-800/50 text-[#c83b3b]">
+                        {(() => {
+                          const t1 = teamData.teams.find(t => t.id === 'nous')
+                          return `${t1?.score ?? 0} pts`
+                        })()}
+                      </td>
+                      <td colSpan={2} className="py-1 px-1 text-center tabular-nums text-xs font-black text-stone-700 dark:text-slate-300">
+                        {(() => {
+                          const t2 = teamData.teams.find(t => t.id === 'eux')
+                          return `${t2?.score ?? 0} pts`
+                        })()}
+                      </td>
+                    </tr>
+                  )}
                 </tfoot>
               </table>
             </div>
