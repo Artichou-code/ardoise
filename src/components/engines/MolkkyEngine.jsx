@@ -512,9 +512,9 @@ export function MolkkyEngine({ game, onFinish }) {
                         key={p.id}
                         className="flex items-center justify-between gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-xl bg-stone-50/90 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-700/60 min-w-0"
                       >
-                        <div className="flex items-center gap-1.5 min-w-0">
+                        <div className="flex flex-col items-center justify-center shrink-0 min-w-0 max-w-[62px] sm:max-w-[76px] text-center">
                           <Avatar player={p} size="xs" />
-                          <span className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
+                          <span className="font-serif-title font-bold text-[11px] sm:text-xs text-stone-900 dark:text-slate-100 truncate w-full mt-0.5 leading-tight">
                             {p.name}
                           </span>
                         </div>
