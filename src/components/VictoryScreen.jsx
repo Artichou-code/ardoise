@@ -32,7 +32,9 @@ export function VictoryScreen() {
   const isDourakCards = isDourak && activeGame.config?.mode === 'cards'
   const isBelote = activeGame.type === GAMES.BELOTE && activeGame.players.length === 4
   const isSymbioseTeam = activeGame.type === GAMES.SYMBIOSE && activeGame.config?.mode === 'team' && activeGame.players.length === 4
-  const isTeamGame = isBelote || isSymbioseTeam
+  const isMolkkyTeam = activeGame.type === GAMES.MOLKKY && activeGame.config?.mode === 'team' && activeGame.players.length === 4
+  const isSumTeam = isSymbioseTeam || isMolkkyTeam
+  const isTeamGame = isBelote || isSumTeam
   const scoreUnit = isDourak
     ? isDourakCards
       ? 'cartes'
@@ -63,12 +65,12 @@ export function VictoryScreen() {
   const pNous = isTeamGame ? [activeGame.players[0], activeGame.players[1]].filter(Boolean) : []
   const pEux = isTeamGame ? [activeGame.players[2], activeGame.players[3]].filter(Boolean) : []
   const scoreNous = isTeamGame
-    ? isSymbioseTeam
+    ? isSumTeam
       ? (activeGame.scores[pNous[0]?.id] || 0) + (activeGame.scores[pNous[1]?.id] || 0)
       : (activeGame.scores[pNous[0]?.id] || 0)
     : 0
   const scoreEux = isTeamGame
-    ? isSymbioseTeam
+    ? isSumTeam
       ? (activeGame.scores[pEux[0]?.id] || 0) + (activeGame.scores[pEux[1]?.id] || 0)
       : (activeGame.scores[pEux[0]?.id] || 0)
     : 0
@@ -188,7 +190,7 @@ export function VictoryScreen() {
               <p className="font-black tabular-nums text-lg text-[#c83b3b] mt-1">
                 {winningScore} pts
               </p>
-              {isSymbioseTeam && (
+              {isSumTeam && (
                 <p className="text-[10px] font-medium text-stone-400 dark:text-slate-500 tabular-nums mt-0.5">
                   {winningPlayers.map(p => `${p.name}: ${activeGame.scores[p.id] || 0}`).join(' · ')}
                 </p>
@@ -211,7 +213,7 @@ export function VictoryScreen() {
               <p className="font-black tabular-nums text-lg text-stone-700 dark:text-slate-300 mt-1">
                 {losingScore} pts
               </p>
-              {isSymbioseTeam && (
+              {isSumTeam && (
                 <p className="text-[10px] font-medium text-stone-400 dark:text-slate-500 tabular-nums mt-0.5">
                   {losingPlayers.map(p => `${p.name}: ${activeGame.scores[p.id] || 0}`).join(' · ')}
                 </p>

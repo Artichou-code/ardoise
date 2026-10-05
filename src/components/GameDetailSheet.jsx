@@ -327,19 +327,19 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                             const p1 = game.players[1]
                             const p2 = game.players[2]
                             const p3 = game.players[3]
-                            const isSymbioseTeam = teamData.isSymbioseTeam
+                            const isSumTeam = teamData.isSymbioseTeam || teamData.isMolkkyTeam
 
                             const d0 = round.delta?.[p0?.id] || 0
                             const d1 = round.delta?.[p1?.id] || 0
-                            const delta1 = isSymbioseTeam ? (d0 + d1) : (round.teamScores?.nous ?? d0)
-                            const cumul1 = isSymbioseTeam
+                            const delta1 = isSumTeam ? (d0 + d1) : (round.teamScores?.nous ?? d0)
+                            const cumul1 = isSumTeam
                               ? ((cumuls[p0?.id] || 0) + (cumuls[p1?.id] || 0))
                               : (cumuls[p0?.id] || 0)
 
                             const d2 = round.delta?.[p2?.id] || 0
                             const d3 = round.delta?.[p3?.id] || 0
-                            const delta2 = isSymbioseTeam ? (d2 + d3) : (round.teamScores?.eux ?? d2)
-                            const cumul2 = isSymbioseTeam
+                            const delta2 = isSumTeam ? (d2 + d3) : (round.teamScores?.eux ?? d2)
+                            const cumul2 = isSumTeam
                               ? ((cumuls[p2?.id] || 0) + (cumuls[p3?.id] || 0))
                               : (cumuls[p2?.id] || 0)
 
@@ -355,7 +355,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                                         ({cumul1})
                                       </span>
                                     </div>
-                                    {isSymbioseTeam && (
+                                    {isSumTeam && (
                                       <span className="text-[8.5px] text-stone-400 dark:text-slate-500 font-medium">
                                         {d0} + {d1}
                                       </span>
@@ -372,7 +372,7 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                                         ({cumul2})
                                       </span>
                                     </div>
-                                    {isSymbioseTeam && (
+                                    {isSumTeam && (
                                       <span className="text-[8.5px] text-stone-400 dark:text-slate-500 font-medium">
                                         {d2} + {d3}
                                       </span>
@@ -444,12 +444,12 @@ export function GameDetailSheet({ game, open, onClose, onResume, onRematch }) {
                         const p1 = game.players[1]
                         const p2 = game.players[2]
                         const p3 = game.players[3]
-                        const isSymbioseTeam = teamData.isSymbioseTeam
+                        const isSumTeam = teamData.isSymbioseTeam || teamData.isMolkkyTeam
 
-                        const total1 = isSymbioseTeam
+                        const total1 = isSumTeam
                           ? (game.scores[p0?.id] || 0) + (game.scores[p1?.id] || 0)
                           : (game.scores[p0?.id] || 0)
-                        const total2 = isSymbioseTeam
+                        const total2 = isSumTeam
                           ? (game.scores[p2?.id] || 0) + (game.scores[p3?.id] || 0)
                           : (game.scores[p2?.id] || 0)
 

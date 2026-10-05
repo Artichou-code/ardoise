@@ -26,6 +26,9 @@ import { BarbuEngine } from './engines/BarbuEngine'
 import { UniverselEngine } from './engines/UniverselEngine'
 import { UnoEngine } from './engines/UnoEngine'
 import { SymbioseEngine } from './engines/SymbioseEngine'
+import { MolkkyEngine } from './engines/MolkkyEngine'
+import { YamEngine } from './engines/YamEngine'
+import { DixitEngine } from './engines/DixitEngine'
 
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
 
@@ -47,6 +50,9 @@ const ENGINE_MAP = {
   [GAMES.UNIVERSEL]: UniverselEngine,
   [GAMES.UNO]: UnoEngine,
   [GAMES.SYMBIOSE]: SymbioseEngine,
+  [GAMES.MOLKKY]: MolkkyEngine,
+  [GAMES.YAM]: YamEngine,
+  [GAMES.DIXIT]: DixitEngine,
 }
 
 function AnimatedRoundIndicator({ roundNumber }) {
@@ -200,7 +206,9 @@ export function GameScreen() {
   const leaderId = hasStarted ? ranking[0]?.id : null
   const isBelote4 = activeGame.type === GAMES.BELOTE && activeGame.players.length === 4
   const isSymbioseTeam = activeGame.type === GAMES.SYMBIOSE && activeGame.config?.mode === 'team' && activeGame.players.length === 4
-  const isTeamGame = isBelote4 || isSymbioseTeam
+  const isMolkkyTeam = activeGame.type === GAMES.MOLKKY && activeGame.config?.mode === 'team' && activeGame.players.length === 4
+  const isSumTeam = isSymbioseTeam || isMolkkyTeam
+  const isTeamGame = isBelote4 || isSumTeam
 
   const Engine = ENGINE_MAP[activeGame.type] || UniverselEngine
 
@@ -329,10 +337,10 @@ export function GameScreen() {
                   if (isTeamGame) {
                     const pNous = [activeGame.players[0], activeGame.players[1]].filter(Boolean)
                     const pEux = [activeGame.players[2], activeGame.players[3]].filter(Boolean)
-                    const scoreNous = isSymbioseTeam
+                    const scoreNous = isSumTeam
                       ? (activeGame.scores[pNous[0]?.id] || 0) + (activeGame.scores[pNous[1]?.id] || 0)
                       : (activeGame.scores[pNous[0]?.id] || 0)
-                    const scoreEux = isSymbioseTeam
+                    const scoreEux = isSumTeam
                       ? (activeGame.scores[pEux[0]?.id] || 0) + (activeGame.scores[pEux[1]?.id] || 0)
                       : (activeGame.scores[pEux[0]?.id] || 0)
                     const leadTeamPlayers = scoreNous >= scoreEux ? pNous : pEux
@@ -387,10 +395,10 @@ export function GameScreen() {
             {(() => {
               const pNous = [activeGame.players[0], activeGame.players[1]].filter(Boolean)
               const pEux = [activeGame.players[2], activeGame.players[3]].filter(Boolean)
-              const scoreNous = isSymbioseTeam
+              const scoreNous = isSumTeam
                 ? (activeGame.scores[pNous[0]?.id] || 0) + (activeGame.scores[pNous[1]?.id] || 0)
                 : (activeGame.scores[pNous[0]?.id] || 0)
-              const scoreEux = isSymbioseTeam
+              const scoreEux = isSumTeam
                 ? (activeGame.scores[pEux[0]?.id] || 0) + (activeGame.scores[pEux[1]?.id] || 0)
                 : (activeGame.scores[pEux[0]?.id] || 0)
               const isNousLeader = hasStarted && scoreNous > scoreEux
@@ -474,7 +482,7 @@ export function GameScreen() {
                       >
                         {formatTeamNames(t.players, 8)}
                       </span>
-                      {isSymbioseTeam && hasStarted && (
+                      {isSumTeam && hasStarted && (
                         <>
                           <span className="font-bold text-stone-400 dark:text-slate-500 shrink-0">
                             :
@@ -696,7 +704,7 @@ export function GameScreen() {
                           </span>
                         </span>
                       </>
-                    ) : isSymbioseTeam ? (
+                    ) : isSumTeam ? (
                       <>
                         {(() => {
                           const p0 = activeGame.players[0]
