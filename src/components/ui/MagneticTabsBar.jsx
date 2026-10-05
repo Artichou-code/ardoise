@@ -24,6 +24,9 @@ export function MagneticTabsBar({
   const startXRef = useRef(0)
   const scrollLeftStartRef = useRef(0)
   const hasMovedRef = useRef(false)
+  const lastXRef = useRef(0)
+  const lastTimeRef = useRef(0)
+  const velocityRef = useRef(0)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
@@ -93,39 +96,81 @@ export function MagneticTabsBar({
     }
   }, [])
 
-  // Drag-to-scroll à la souris sur PC
+  // Drag-to-scroll à la souris sur PC (0ms de latence, réactivité 1:1 immédiate)
   const handleMouseDown = (e) => {
     if (e.button !== 0) return
     const container = containerRef.current
     if (!container) return
 
     isDraggingRef.current = true
-    setIsDragging(true)
     hasMovedRef.current = false
     startXRef.current = e.pageX
     scrollLeftStartRef.current = container.scrollLeft
+    lastXRef.current = e.pageX
+    lastTimeRef.current = performance.now()
+    velocityRef.current = 0
+
+    // Débrayage synchrone immédiat du smooth-scroll et du snap CSS pour réactivité instantanée à 0ms
+    container.style.scrollBehavior = 'auto'
+    container.style.scrollSnapType = 'none'
+    setIsDragging(true)
   }
 
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDraggingRef.current || !containerRef.current) return
       const container = containerRef.current
-      const walk = (e.pageX - startXRef.current) * 1.3
-      if (Math.abs(walk) > 4) {
+      const walk = e.pageX - startXRef.current // Ratio 1:1 parfait sans décalage
+      if (Math.abs(walk) > 3) {
         hasMovedRef.current = true
       }
+
+      // Suivi de la vélocité pour une inertie naturelle au relâchement
+      const now = performance.now()
+      const dt = now - lastTimeRef.current
+      if (dt > 0 && dt < 80) {
+        const curVelocity = (e.pageX - lastXRef.current) / dt
+        velocityRef.current = velocityRef.current * 0.4 + curVelocity * 0.6
+      }
+      lastXRef.current = e.pageX
+      lastTimeRef.current = now
+
       container.scrollLeft = scrollLeftStartRef.current - walk
       updateScrollIndicators()
     }
 
     const handleMouseUp = () => {
-      if (isDraggingRef.current) {
-        isDraggingRef.current = false
-        setIsDragging(false)
-        setTimeout(() => {
-          hasMovedRef.current = false
-        }, 80)
+      if (!isDraggingRef.current) return
+      isDraggingRef.current = false
+      setIsDragging(false)
+
+      const container = containerRef.current
+      const now = performance.now()
+      const isRecentMove = now - lastTimeRef.current < 60
+      const velocity = velocityRef.current
+
+      if (container) {
+        // Si l'utilisateur a relâché avec un mouvement vif (flick) : application d'une légère inertie fluide
+        if (hasMovedRef.current && isRecentMove && Math.abs(velocity) > 0.25) {
+          container.style.scrollBehavior = 'smooth'
+          const momentum = -velocity * 220
+          container.scrollBy({ left: momentum, behavior: 'smooth' })
+          setTimeout(() => {
+            if (container) {
+              container.style.scrollBehavior = ''
+              container.style.scrollSnapType = ''
+            }
+          }, 260)
+        } else {
+          container.style.scrollBehavior = ''
+          container.style.scrollSnapType = ''
+        }
       }
+
+      // Délai pour que le onClick du bouton puisse vérifier si un swipe a eu lieu
+      setTimeout(() => {
+        hasMovedRef.current = false
+      }, 80)
     }
 
     window.addEventListener('mousemove', handleMouseMove)
@@ -174,7 +219,7 @@ export function MagneticTabsBar({
         ref={containerRef}
         onMouseDown={handleMouseDown}
         onDragStart={(e) => e.preventDefault()}
-        className={`px-4 py-2 overflow-x-auto scrollbar-hide select-none transition-colors scroll-smooth ${
+        className={`px-4 py-2 overflow-x-auto scrollbar-hide select-none ${
           isDragging ? 'cursor-grabbing' : 'cursor-grab'
         } ${innerClassName}`}
         style={{
