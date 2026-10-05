@@ -17,6 +17,7 @@ export const GAMES = {
   BARBU: 'barbu',
   UNIVERSEL: 'universel',
   UNO: 'uno',
+  SYMBIOSE: 'symbiose',
 }
 
 export const GAME_META = {
@@ -1108,6 +1109,99 @@ export const GAME_META = {
       ],
     },
   },
+  [GAMES.SYMBIOSE]: {
+    id: GAMES.SYMBIOSE,
+    deckType: 'specific',
+    name: 'Symbiose',
+    playersBadge: '2 à 4 j.',
+    categoryBadge: '36 cartes',
+    description:
+      'Constituez la plus belle Mare de 8 cartes en associant Animaux et Saisons. Échangez avec la Rivière, anticipez les mares voisines et partagez la victoire en symbiose parfaite !',
+    minPlayers: 2,
+    maxPlayers: 4,
+    scoreDir: 'high',
+    rules: {
+      sections: [
+        {
+          title: 'Présentation & But du jeu',
+          items: [
+            'Auteurs : Jérémy Partinico & Christelle Partinico — Éditeur : Subverti.',
+            'Nombre de personnes : 2 à 4 personnes (8 ans et +, environ 15 minutes).',
+            'Matériel : 36 grandes cartes et 1 bloc de score.',
+            'But du jeu : Chaque personne collectionne 8 cartes devant elle afin de constituer sa Mare (disposée en grille de 2 lignes × 4 colonnes). Le but est d’avoir la Mare avec le plus grand nombre de points.',
+          ],
+        },
+        {
+          title: 'Mise en place & Début de partie',
+          items: [
+            'Distribuez 8 cartes face cachée à chaque personne afin de constituer les Mares (grille de 2 lignes sur 4 colonnes).',
+            'Placez 4 cartes face visible au centre de la table afin de former la Rivière.',
+            'Chaque personne révèle simultanément 1 carte de sa Mare face visible.',
+            'Déterminez l’ordre de jeu : la dernière personne à avoir vu une grenouille commence, puis jouez à tour de rôle dans le sens horaire.',
+          ],
+        },
+        {
+          title: 'Tour de jeu & Échange avec la Rivière',
+          items: [
+            '1. Prenez 1 carte de la Rivière.',
+            '2. Choisissez 1 carte de votre Mare.',
+            '3. Échangez la carte de votre Mare par la carte prise dans la Rivière.',
+            '4. Laissez la nouvelle carte face visible dans votre Mare.',
+            '5. Placez la carte retirée face visible dans la Rivière.',
+            'Règle d’or : Si la carte choisie dans votre Mare était DÉJÀ face visible, révélez en plus une autre de vos cartes cachées.',
+            'À la fin de chaque tour, vous avez ainsi toujours au moins une nouvelle carte face visible dans votre Mare.',
+          ],
+        },
+        {
+          title: 'Comptage des points (Grille de la Mare)',
+          items: [
+            'Chacune de vos cartes rapporte des points variables ou des points fixes :',
+            'Points fixes : La carte vous rapporte les points indiqués quel que soit son emplacement.',
+            'Points variables (selon un Animal ou une Saison) :',
+            '• Colonne de gauche (2 cartes) : marque par rapport à toute la Mare de la personne à votre gauche.',
+            '• Deux colonnes centrales (4 cartes) : marquent par rapport à toute votre propre Mare.',
+            '• Colonne de droite (2 cartes) : marque par rapport à toute la Mare de la personne à votre droite.',
+          ],
+        },
+        {
+          title: 'Fin de partie & Victoire',
+          items: [
+            'La partie se termine dès que toutes les personnes ont leurs 8 cartes face visible dans leur Mare.',
+            'Chacun compte les points marqués par chacune de ses 8 cartes sur la feuille de score.',
+            'Additionnez les points de toutes vos cartes : la personne avec le plus haut score remporte la partie.',
+            'Égalité parfaite : En cas d’égalité, la victoire est partagée. Vous vivez alors en parfaite symbiose, félicitations !',
+          ],
+        },
+        {
+          title: 'Variante : Mode Duel (1 vs 1)',
+          items: [
+            'La Rivière est composée de 8 cartes : 4 cartes face cachée en plus des 4 cartes face visible.',
+            'À votre tour, choisissez n’importe laquelle des 8 cartes de la Rivière (si vous prenez une face cachée, replacez la vôtre face visible).',
+            'À la fin de la partie, retournez les cartes restantes de la Rivière face visible.',
+            'Au décompte : Vos 2 cartes situées du côté Rivière marquent par rapport aux 8 cartes de la Rivière.',
+          ],
+        },
+        {
+          title: 'Variante : Mode Équipe (2 vs 2)',
+          items: [
+            'Coopération avec la personne installée en face de vous.',
+            'Décompte des points : Vos cartes sur les côtés marquent par rapport aux 8 cartes de votre partenaire en face.',
+            'Score d’équipe : À la fin de la partie, additionnez les points des deux Mares de votre équipe. L’équipe avec le plus haut score l’emporte.',
+          ],
+        },
+      ],
+      summaryTable: [
+        { item: 'Composition de la Mare', value: '8 cartes (grille 2×4)' },
+        { item: 'Rivière standard', value: '4 cartes face visible' },
+        { item: 'Colonne de gauche', value: 'Compte selon la Mare de gauche' },
+        { item: 'Colonnes centrales', value: 'Compte selon votre propre Mare' },
+        { item: 'Colonne de droite', value: 'Compte selon la Mare de droite' },
+        { item: 'Mode Duel (1v1)', value: 'Rivière 8 cartes (côté Rivière)' },
+        { item: 'Mode Équipe (2v2)', value: 'Côtés comptent selon partenaire (somme des 2 Mares)' },
+        { item: 'Égalité', value: 'Victoire partagée en symbiose' },
+      ],
+    },
+  },
   [GAMES.UNIVERSEL]: {
     id: GAMES.UNIVERSEL,
     deckType: 'any',
@@ -1263,6 +1357,9 @@ export function getGameDisplayName(game) {
   }
   if (typeLower === GAMES.UNO || nameLower === 'uno') {
     return 'UNO'
+  }
+  if (typeLower === GAMES.SYMBIOSE || nameLower.includes('symbiose')) {
+    return 'Symbiose'
   }
   // Pour tout jeu, ne garder qu'un seul nom sans parenthèses alternatives ni slashs (ex: "Nom (Alias)" -> "Nom")
   if (game.name) {

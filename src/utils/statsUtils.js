@@ -102,28 +102,48 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
   // On crée une table d'association basée sur l'identifiant du joueur (avec fallback rétrocompatible)
   const playerStatsMap = new Map()
 
+  const createPlayerStat = (pId, pName, color = null, avatar = null, registered = false, archived = false) => ({
+    id: pId,
+    name: pName,
+    color,
+    avatar,
+    registered,
+    archived,
+    totalGames: 0,
+    finishedGames: 0,
+    activeGames: 0,
+    wins: 0,
+    podiums: 0,
+    dourakLosses: 0,
+    phoenixWins: 0,
+    closeCallWins: 0,
+    nightOwlGames: 0,
+    maxGameRounds: 0,
+    symbioseDuoWins: 0,
+    maxSymbiosePond: 0,
+    skyjoFreezerCount: 0,
+    skyjoDoubledCount: 0,
+    caracoleReprieveCount: 0,
+    dameChelemCount: 0,
+    sixTightropeCount: 0,
+    bestSixTightrope: 0,
+    maxSixGluttonBulls: 0,
+    flip7BonusCount: 0,
+    yanivAssafCount: 0,
+    beloteCapotCount: 0,
+    tarotPetitCount: 0,
+    seasaltSirensCount: 0,
+    gameBreakdown: {}, // type -> { played, wins }
+    opponents: {}, // oppKey -> { id, name, count, winsAgainst }
+    recentHistory: [], // { gameId, gameType, rank, isWinner, date }
+  })
+
   // Initialiser avec les joueurs enregistrés pour conserver leurs préférences d'avatar/couleur
   safeRegisteredPlayers.forEach(p => {
     if (!p) return
     const key = p.id || normalizePlayerName(p.name)
     if (!key) return
-    playerStatsMap.set(key, {
-      id: p.id,
-      name: p.name,
-      color: p.color,
-      avatar: p.avatar,
-      registered: !p.archived,
-      archived: Boolean(p.archived),
-      totalGames: 0,
-      finishedGames: 0,
-      activeGames: 0,
-      wins: 0,
-      podiums: 0,
-      dourakLosses: 0,
-      gameBreakdown: {}, // type -> { played, wins }
-      opponents: {}, // oppKey -> { id, name, count, winsAgainst }
-      recentHistory: [], // { gameId, gameType, rank, isWinner, date }
-    })
+    playerStatsMap.set(key, createPlayerStat(p.id, p.name, p.color, p.avatar, !p.archived, Boolean(p.archived)))
   })
 
   // Traiter toutes les parties filtrées
@@ -157,23 +177,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
 
       let stat = playerStatsMap.get(key)
       if (!stat) {
-        stat = {
-          id: pId || key,
-          name: pName,
-          color: player.color,
-          avatar: player.avatar,
-          registered: false,
-          archived: false,
-          totalGames: 0,
-          finishedGames: 0,
-          activeGames: 0,
-          wins: 0,
-          podiums: 0,
-          dourakLosses: 0,
-          gameBreakdown: {},
-          opponents: {},
-          recentHistory: [],
-        }
+        stat = createPlayerStat(pId || key, pName, player.color, player.avatar, false, false)
         playerStatsMap.set(key, stat)
       } else {
         // Mettre à jour avec l'avatar/couleur la plus récente si manquante
@@ -241,6 +245,236 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         stat.activeGames += 1
       }
     })
+
+    // Helper de recherche de joueur dans la table des statistiques
+    const getStatForPlayer = (pIdOrName) => {
+      if (!pIdOrName) return null
+      if (playerStatsMap.has(pIdOrName)) return playerStatsMap.get(pIdOrName)
+      for (const s of playerStatsMap.values()) {
+        if (s.id === pIdOrName || s.name === pIdOrName || normalizePlayerName(s.name) === normalizePlayerName(pIdOrName)) {
+          return s
+        }
+      }
+      return null
+    }
+
+    const gType = game.type || 'universel'
+
+    // --- 1. Exploits au niveau de la partie complète ---
+    if (isFinished) {
+      // Sur le Fil : Victoire avec seulement 1 point d'écart
+      if (ranking.length >= 2) {
+        const gap = Math.abs((ranking[0].score || 0) - (ranking[1].score || 0))
+        if (gap === 1) {
+          const wStat = getStatForPlayer(ranking[0].id) || getStatForPlayer(ranking[0].name)
+          if (wStat) wStat.closeCallWins = (wStat.closeCallWins || 0) + 1
+        }
+      }
+
+      // Le Phénix : Le vainqueur était dernier lors d'au moins une manche intermédiaire
+      if (Array.isArray(game.rounds) && game.rounds.length >= 2 && ranking.length >= 2) {
+        const winnerRef = ranking[0].id || ranking[0].name
+        let wasLastDuringGame = false
+        for (let rIdx = 0; rIdx < game.rounds.length - 1; rIdx++) {
+          const r = game.rounds[rIdx]
+          if (r && r.scores) {
+            const rRanking = getRanking(r.scores, scoreDir, game)
+            if (rRanking.length >= 2) {
+              const lastInR = rRanking[rRanking.length - 1]
+              if (lastInR && (lastInR.id === winnerRef || lastInR.name === ranking[0].name)) {
+                wasLastDuringGame = true
+                break
+              }
+            }
+          }
+        }
+        if (wasLastDuringGame) {
+          const wStat = getStatForPlayer(winnerRef) || getStatForPlayer(ranking[0].name)
+          if (wStat) wStat.phoenixWins = (wStat.phoenixWins || 0) + 1
+        }
+      }
+
+      // Funambule (6 qui prend) : Fini entre 55 et 65 têtes sans être éliminé
+      if (gType === GAMES.SIX_QUI_PREND) {
+        gamePlayers.forEach(p => {
+          const pId = p.id || p
+          const pName = p.name || p
+          const finalScore = game.scores?.[pId] ?? game.scores?.[pName]
+          if (typeof finalScore === 'number' && finalScore >= 55 && finalScore <= 65) {
+            const pStat = getStatForPlayer(pId) || getStatForPlayer(pName)
+            if (pStat) {
+              pStat.sixTightropeCount = (pStat.sixTightropeCount || 0) + 1
+              pStat.bestSixTightrope = Math.max(pStat.bestSixTightrope || 0, finalScore)
+            }
+          }
+        })
+      }
+
+      // Duo Fusionnel (Symbiose 2v2) : Victoire en mode équipe
+      if (gType === GAMES.SYMBIOSE) {
+        const isTeam = game.config?.mode === 'team' || game.rounds?.some(r => r?.isTeamMode)
+        if (isTeam && game.players?.length === 4 && ranking.length > 0) {
+          const wId = ranking[0].id || ranking[0].name
+          const wIdx = game.players.findIndex(p => p.id === wId || p.name === ranking[0].name)
+          if (wIdx !== -1) {
+            const winningDuo = wIdx < 2
+              ? [game.players[0], game.players[1]]
+              : [game.players[2], game.players[3]]
+            winningDuo.forEach(tp => {
+              const tpStat = getStatForPlayer(tp.id) || getStatForPlayer(tp.name)
+              if (tpStat) tpStat.symbioseDuoWins = (tpStat.symbioseDuoWins || 0) + 1
+            })
+          }
+        }
+      }
+    }
+
+    // Le Marathonien : Partie disputée en 8 manches ou plus
+    const totalRoundsCount = game.rounds?.length || 0
+    if (totalRoundsCount >= 8) {
+      gamePlayers.forEach(p => {
+        const pStat = getStatForPlayer(p.id) || getStatForPlayer(p.name || p)
+        if (pStat) pStat.maxGameRounds = Math.max(pStat.maxGameRounds || 0, totalRoundsCount)
+      })
+    }
+
+    // Oiseau de Nuit : Partie disputée entre 00h00 et 05h00
+    const gameTime = game.finishedAt || game.updatedAt || game.createdAt || game.startedAt
+    if (gameTime) {
+      const hour = new Date(gameTime).getHours()
+      if (hour >= 0 && hour < 5) {
+        gamePlayers.forEach(p => {
+          const pStat = getStatForPlayer(p.id) || getStatForPlayer(p.name || p)
+          if (pStat) pStat.nightOwlGames = (pStat.nightOwlGames || 0) + 1
+        })
+      }
+    }
+
+    // --- 2. Exploits spécifiques au niveau des manches (rounds) ---
+    if (Array.isArray(game.rounds)) {
+      game.rounds.forEach(round => {
+        if (!round) return
+
+        // Symbiose : Écosystème Idéal (score de mare individuel >= 35)
+        if (gType === GAMES.SYMBIOSE) {
+          gamePlayers.forEach(p => {
+            const pId = p.id || p
+            const pName = p.name || p
+            let pondScore = 0
+            if (round.directTotals && round.directTotals[pId] != null) {
+              pondScore = Number(round.directTotals[pId]) || 0
+            } else if (round.cardsByPlayer && Array.isArray(round.cardsByPlayer[pId])) {
+              pondScore = round.cardsByPlayer[pId].reduce((a, b) => a + (Number(b) || 0), 0)
+            } else if (round.delta && round.delta[pId] != null) {
+              pondScore = Number(round.delta[pId]) || 0
+            }
+            if (pondScore >= 35) {
+              const pStat = getStatForPlayer(pId) || getStatForPlayer(pName)
+              if (pStat) pStat.maxSymbiosePond = Math.max(pStat.maxSymbiosePond || 0, pondScore)
+            }
+          })
+        }
+
+        // Skyjo : Le Frigo (manche <= 0) & L'Arroseur Arrosé (fermeture x2)
+        if (gType === GAMES.SKYJO) {
+          gamePlayers.forEach(p => {
+            const pId = p.id || p
+            const pName = p.name || p
+            const d = round.delta?.[pId] ?? round.delta?.[pName]
+            if (d !== undefined && d !== null && d <= 0) {
+              const pStat = getStatForPlayer(pId) || getStatForPlayer(pName)
+              if (pStat) pStat.skyjoFreezerCount = (pStat.skyjoFreezerCount || 0) + 1
+            }
+          })
+
+          if (round.closerId) {
+            let isCloserDoubled = round.closerDoubled === true
+            if (!isCloserDoubled && round.delta && round.delta[round.closerId] > 0) {
+              const closerVal = round.delta[round.closerId]
+              isCloserDoubled = Object.entries(round.delta).some(([oid, val]) => oid !== round.closerId && val <= closerVal)
+            }
+            if (isCloserDoubled) {
+              const closerStat = getStatForPlayer(round.closerId)
+              if (closerStat) closerStat.skyjoDoubledCount = (closerStat.skyjoDoubledCount || 0) + 1
+            }
+          }
+        }
+
+        // Caracole : Sursis officiel
+        if (gType === GAMES.CARACOLE && Array.isArray(round.reprieves)) {
+          round.reprieves.forEach(rep => {
+            if (!rep?.playerId) return
+            const pStat = getStatForPlayer(rep.playerId)
+            if (pStat) pStat.caracoleReprieveCount = (pStat.caracoleReprieveCount || 0) + 1
+          })
+        }
+
+        // Dame de Pique : Grand Chelem (Shoot the Moon)
+        if (gType === GAMES.DAME_DE_PIQUE && round.chelemWinnerId) {
+          const pStat = getStatForPlayer(round.chelemWinnerId)
+          if (pStat) pStat.dameChelemCount = (pStat.dameChelemCount || 0) + 1
+        }
+
+        // 6 qui prend : Goinfre de bœufs (>= 18 bœufs en 1 manche)
+        if (gType === GAMES.SIX_QUI_PREND && round.delta) {
+          Object.entries(round.delta).forEach(([pid, bulls]) => {
+            const b = Number(bulls) || 0
+            if (b >= 18) {
+              const pStat = getStatForPlayer(pid)
+              if (pStat) {
+                pStat.maxSixGluttonBulls = Math.max(pStat.maxSixGluttonBulls || 0, b)
+                pStat.sixGluttonCount = (pStat.sixGluttonCount || 0) + 1
+              }
+            }
+          })
+        }
+
+        // Flip 7 : Bonus Flip 7
+        if (gType === GAMES.FLIP_7 && round.flip7BonusPlayers) {
+          Object.entries(round.flip7BonusPlayers).forEach(([pid, hasBonus]) => {
+            if (hasBonus) {
+              const pStat = getStatForPlayer(pid)
+              if (pStat) pStat.flip7BonusCount = (pStat.flip7BonusCount || 0) + 1
+            }
+          })
+        }
+
+        // Yaniv : Contre-ASSAF
+        if (gType === GAMES.YANIV && round.isAssaf && round.assafRivalId) {
+          const pStat = getStatForPlayer(round.assafRivalId)
+          if (pStat) pStat.yanivAssafCount = (pStat.yanivAssafCount || 0) + 1
+        }
+
+        // Belote : Capot (252 pts ou 162 pts de plis)
+        if (gType === GAMES.BELOTE && (round.pointsTaker === 162 || round.contract === 252) && round.takerTeam) {
+          const teamNous = [game.players[0], game.players[1]].filter(Boolean)
+          const teamEux = [game.players[2], game.players[3]].filter(Boolean)
+          const winners = round.takerTeam === 'nous' ? teamNous : teamEux
+          winners.forEach(p => {
+            const pStat = getStatForPlayer(p.id) || getStatForPlayer(p.name || p)
+            if (pStat) pStat.beloteCapotCount = (pStat.beloteCapotCount || 0) + 1
+          })
+        }
+
+        // Tarot : Petit au bout en attaque
+        if (gType === GAMES.TAROT && round.petitAuBout === 'attack') {
+          if (round.attackerId) {
+            const aStat = getStatForPlayer(round.attackerId)
+            if (aStat) aStat.tarotPetitCount = (aStat.tarotPetitCount || 0) + 1
+          }
+          if (round.partnerId) {
+            const pStat = getStatForPlayer(round.partnerId)
+            if (pStat) pStat.tarotPetitCount = (pStat.tarotPetitCount || 0) + 1
+          }
+        }
+
+        // Sea Salt & Paper : 4 Sirènes
+        if (gType === GAMES.SEA_SALT_PAPER && round.specialWin === 'four_sirens' && round.winnerId) {
+          const pStat = getStatForPlayer(round.winnerId)
+          if (pStat) pStat.seasaltSirensCount = (pStat.seasaltSirensCount || 0) + 1
+        }
+      })
+    }
   })
 
   // Conversion en tableau et calcul des ratios
@@ -436,6 +670,14 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       explanation: 'Attribué au joueur ayant remporté le plus de victoires sur les compteurs et jeux personnalisés.',
       iconName: 'Dices',
     },
+    [GAMES.SYMBIOSE]: {
+      player: null,
+      wins: 0,
+      title: 'Symbiose Parfaite',
+      desc: 'Maître de la Mare',
+      explanation: 'Attribué au joueur ayant créé les plus beaux écosystèmes et cumulé le plus de victoires à Symbiose.',
+      iconName: 'Waves',
+    },
   }
 
   playersStats.forEach(p => {
@@ -446,6 +688,139 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         info.player = p
       }
     })
+  })
+
+  // Leaders pour les trophées avancés
+  let phoenixLeader = null; let maxPhoenix = 0
+  let chameleonLeader = null; let maxDistinctGames = 0
+  let closeCallLeader = null; let maxCloseCall = 0
+  let nightOwlLeader = null; let maxNightOwl = 0
+  let marathonLeader = null; let maxMarathonRounds = 0
+
+  let symbioseDuoLeader = null; let maxSymbioseDuo = 0
+  let symbiosePondLeader = null; let maxSymbiosePond = 0
+  let skyjoFreezerLeader = null; let maxSkyjoFreezer = 0
+  let skyjoDoubledLeader = null; let maxSkyjoDoubled = 0
+  let caracoleReprieveLeader = null; let maxCaracoleReprieve = 0
+  let dameChelemLeader = null; let maxDameChelem = 0
+  let sixTightropeLeader = null; let bestSixTightropeScore = 0
+  let sixGluttonLeader = null; let maxSixGluttonBulls = 0
+  let flip7BonusLeader = null; let maxFlip7Bonus = 0
+  let yanivAssafLeader = null; let maxYanivAssaf = 0
+  let beloteCapotLeader = null; let maxBeloteCapot = 0
+  let tarotPetitLeader = null; let maxTarotPetit = 0
+  let seasaltSirensLeader = null; let maxSeasaltSirens = 0
+
+  playersStats.forEach(p => {
+    // Phénix (Remontada)
+    if (p.phoenixWins > maxPhoenix) {
+      maxPhoenix = p.phoenixWins
+      phoenixLeader = p
+    }
+
+    // Caméléon (minimum 5 jeux différents)
+    const distinctCount = Object.keys(p.gameBreakdown || {}).filter(k => p.gameBreakdown[k].played >= 1).length
+    p.distinctGamesCount = distinctCount
+    if (distinctCount >= 5 && distinctCount > maxDistinctGames) {
+      maxDistinctGames = distinctCount
+      chameleonLeader = p
+    }
+
+    // Sur le Fil (victoires avec 1 pt d'écart)
+    if (p.closeCallWins > maxCloseCall) {
+      maxCloseCall = p.closeCallWins
+      closeCallLeader = p
+    }
+
+    // Oiseau de Nuit (parties jouées entre 00h et 05h)
+    if (p.nightOwlGames > maxNightOwl) {
+      maxNightOwl = p.nightOwlGames
+      nightOwlLeader = p
+    }
+
+    // Le Marathonien (minimum 8 manches)
+    if (p.maxGameRounds >= 8 && p.maxGameRounds > maxMarathonRounds) {
+      maxMarathonRounds = p.maxGameRounds
+      marathonLeader = p
+    }
+
+    // Symbiose Duo Fusionnel (victoires en 2v2)
+    if (p.symbioseDuoWins > maxSymbioseDuo) {
+      maxSymbioseDuo = p.symbioseDuoWins
+      symbioseDuoLeader = p
+    }
+
+    // Symbiose Écosystème Idéal (score de mare >= 35)
+    if (p.maxSymbiosePond >= 35 && p.maxSymbiosePond > maxSymbiosePond) {
+      maxSymbiosePond = p.maxSymbiosePond
+      symbiosePondLeader = p
+    }
+
+    // Skyjo Le Frigo (manche <= 0)
+    if (p.skyjoFreezerCount > maxSkyjoFreezer) {
+      maxSkyjoFreezer = p.skyjoFreezerCount
+      skyjoFreezerLeader = p
+    }
+
+    // Skyjo L'Arroseur Arrosé (fermeture x2)
+    if (p.skyjoDoubledCount > maxSkyjoDoubled) {
+      maxSkyjoDoubled = p.skyjoDoubledCount
+      skyjoDoubledLeader = p
+    }
+
+    // Caracole Sursis
+    if (p.caracoleReprieveCount > maxCaracoleReprieve) {
+      maxCaracoleReprieve = p.caracoleReprieveCount
+      caracoleReprieveLeader = p
+    }
+
+    // Dame de Pique Grand Chelem
+    if (p.dameChelemCount > maxDameChelem) {
+      maxDameChelem = p.dameChelemCount
+      dameChelemLeader = p
+    }
+
+    // 6 qui prend Funambule (score entre 55 et 65 têtes)
+    if (p.bestSixTightrope >= 55 && p.bestSixTightrope > bestSixTightropeScore) {
+      bestSixTightropeScore = p.bestSixTightrope
+      sixTightropeLeader = p
+    }
+
+    // 6 qui prend Goinfre de Bœufs (>= 18 bœufs en 1 manche)
+    if (p.maxSixGluttonBulls >= 18 && p.maxSixGluttonBulls > maxSixGluttonBulls) {
+      maxSixGluttonBulls = p.maxSixGluttonBulls
+      sixGluttonLeader = p
+    }
+
+    // Flip 7 Septième Ciel
+    if (p.flip7BonusCount > maxFlip7Bonus) {
+      maxFlip7Bonus = p.flip7BonusCount
+      flip7BonusLeader = p
+    }
+
+    // Yaniv Contre-ASSAF
+    if (p.yanivAssafCount > maxYanivAssaf) {
+      maxYanivAssaf = p.yanivAssafCount
+      yanivAssafLeader = p
+    }
+
+    // Belote Le Capot Magique
+    if (p.beloteCapotCount > maxBeloteCapot) {
+      maxBeloteCapot = p.beloteCapotCount
+      beloteCapotLeader = p
+    }
+
+    // Tarot Le Petit au Bout
+    if (p.tarotPetitCount > maxTarotPetit) {
+      maxTarotPetit = p.tarotPetitCount
+      tarotPetitLeader = p
+    }
+
+    // Sea Salt & Paper 4 Sirènes
+    if (p.seasaltSirensCount > maxSeasaltSirens) {
+      maxSeasaltSirens = p.seasaltSirensCount
+      seasaltSirensLeader = p
+    }
   })
 
   // Titres pour chaque joueur
@@ -508,7 +883,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       })
     }
 
-    // Titres thématiques par jeu
+    // Titres thématiques par jeu (Masters)
     Object.entries(gameWinners).forEach(([type, info]) => {
       if (info.player && (p.id ? p.id === info.player.id : p.name === info.player.name) && info.wins >= 1) {
         p.badges.push({
@@ -521,6 +896,206 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         })
       }
     })
+
+    // Nouveaux Trophées Généraux
+    if (phoenixLeader && (p.id ? p.id === phoenixLeader.id : p.name === phoenixLeader.name) && maxPhoenix > 0) {
+      p.badges.push({
+        id: 'general_phoenix',
+        title: 'Le Phénix',
+        desc: `${p.phoenixWins} remontada${p.phoenixWins > 1 ? 's' : ''}`,
+        explanation: 'Attribué pour avoir renversé une partie en étant classé dernier avant de triompher à la première place.',
+        type: 'amber',
+        iconName: 'TrendingUp',
+      })
+    }
+
+    if (chameleonLeader && (p.id ? p.id === chameleonLeader.id : p.name === chameleonLeader.name) && maxDistinctGames >= 5) {
+      p.badges.push({
+        id: 'general_chameleon',
+        title: 'Le Caméléon',
+        desc: `${p.distinctGamesCount} jeux explorés`,
+        explanation: 'Attribué au joueur le plus polyvalent ayant disputé au moins 5 jeux différents de l’Ardoise.',
+        type: 'blue',
+        iconName: 'Compass',
+      })
+    }
+
+    if (closeCallLeader && (p.id ? p.id === closeCallLeader.id : p.name === closeCallLeader.name) && maxCloseCall > 0) {
+      p.badges.push({
+        id: 'general_close_call',
+        title: 'Sur le Fil',
+        desc: `${p.closeCallWins} vict. à 1 pt`,
+        explanation: 'Attribué au joueur ayant remporté le plus de victoires à l’arraché avec seulement 1 point d’écart sur le deuxième.',
+        type: 'emerald',
+        iconName: 'Zap',
+      })
+    }
+
+    if (nightOwlLeader && (p.id ? p.id === nightOwlLeader.id : p.name === nightOwlLeader.name) && maxNightOwl > 0) {
+      p.badges.push({
+        id: 'general_night_owl',
+        title: 'Oiseau de Nuit',
+        desc: `${p.nightOwlGames} nocturne${p.nightOwlGames > 1 ? 's' : ''}`,
+        explanation: 'Attribué au joueur ayant disputé le plus de parties au cœur de la nuit (entre 0h00 et 5h00 du matin).',
+        type: 'purple',
+        iconName: 'Moon',
+      })
+    }
+
+    if (marathonLeader && (p.id ? p.id === marathonLeader.id : p.name === marathonLeader.name) && maxMarathonRounds >= 8) {
+      p.badges.push({
+        id: 'general_marathon',
+        title: 'Le Marathonien',
+        desc: `Partie en ${p.maxGameRounds} manches`,
+        explanation: 'Attribué au joueur ayant disputé la plus longue confrontation enregistrée (au moins 8 manches).',
+        type: 'gold',
+        iconName: 'Timer',
+      })
+    }
+
+    // Nouveaux Trophées par Jeu
+    if (symbioseDuoLeader && (p.id ? p.id === symbioseDuoLeader.id : p.name === symbioseDuoLeader.name) && maxSymbioseDuo > 0) {
+      p.badges.push({
+        id: 'symbiose_duo',
+        title: 'Duo Fusionnel',
+        desc: `${p.symbioseDuoWins} vict. en duo`,
+        explanation: 'Attribué au joueur cumulant le plus de victoires en mode Équipe 2v2 à Symbiose.',
+        type: 'rose',
+        iconName: 'Users',
+      })
+    }
+
+    if (symbiosePondLeader && (p.id ? p.id === symbiosePondLeader.id : p.name === symbiosePondLeader.name) && maxSymbiosePond >= 35) {
+      p.badges.push({
+        id: 'symbiose_master_pond',
+        title: 'Écosystème Idéal',
+        desc: `Record : ${p.maxSymbiosePond} pts`,
+        explanation: 'Attribué pour avoir réalisé le score de Mare individuel le plus élevé sur une seule manche à Symbiose.',
+        type: 'emerald',
+        iconName: 'FrogFace',
+      })
+    }
+
+    if (skyjoFreezerLeader && (p.id ? p.id === skyjoFreezerLeader.id : p.name === skyjoFreezerLeader.name) && maxSkyjoFreezer > 0) {
+      p.badges.push({
+        id: 'skyjo_freezer',
+        title: 'Le Frigo',
+        desc: `${p.skyjoFreezerCount} manche${p.skyjoFreezerCount > 1 ? 's' : ''} ≤ 0 pt`,
+        explanation: 'Attribué pour avoir réalisé le plus grand nombre de manches parfaites à 0 point ou moins au Skyjo.',
+        type: 'blue',
+        iconName: 'Snowflake',
+      })
+    }
+
+    if (skyjoDoubledLeader && (p.id ? p.id === skyjoDoubledLeader.id : p.name === skyjoDoubledLeader.name) && maxSkyjoDoubled > 0) {
+      p.badges.push({
+        id: 'skyjo_doubled',
+        title: "L'Arroseur Arrosé",
+        desc: `${p.skyjoDoubledCount} clôture${p.skyjoDoubledCount > 1 ? 's' : ''} doublée${p.skyjoDoubledCount > 1 ? 's' : ''}`,
+        explanation: 'Attribué au joueur ayant le plus souvent subi le score doublé pour clôture hâtive au Skyjo.',
+        type: 'rose',
+        iconName: 'AlertTriangle',
+      })
+    }
+
+    if (caracoleReprieveLeader && (p.id ? p.id === caracoleReprieveLeader.id : p.name === caracoleReprieveLeader.name) && maxCaracoleReprieve > 0) {
+      p.badges.push({
+        id: 'caracole_reprieve',
+        title: 'Le Miraculé du Sursis',
+        desc: `${p.caracoleReprieveCount} sursis obtenu${p.caracoleReprieveCount > 1 ? 's' : ''}`,
+        explanation: 'Attribué au joueur ayant le plus souvent bénéficié du sursis en tombant pile sur la limite de points à la Caracole.',
+        type: 'blue',
+        iconName: 'ShieldAlert',
+      })
+    }
+
+    if (dameChelemLeader && (p.id ? p.id === dameChelemLeader.id : p.name === dameChelemLeader.name) && maxDameChelem > 0) {
+      p.badges.push({
+        id: 'dame_grand_chelem',
+        title: 'Grand Chelemard',
+        desc: `${p.dameChelemCount} Grand${p.dameChelemCount > 1 ? 's' : ''} Chelem`,
+        explanation: 'Attribué pour avoir réussi le Grand Chelem (Shoot the Moon) en prenant tous les Cœurs et la Dame de Pique.',
+        type: 'purple',
+        iconName: 'Target',
+      })
+    }
+
+    if (sixTightropeLeader && (p.id ? p.id === sixTightropeLeader.id : p.name === sixTightropeLeader.name) && bestSixTightropeScore >= 55) {
+      p.badges.push({
+        id: 'six_tightrope',
+        title: 'Funambule',
+        desc: `Fini à ${p.bestSixTightrope} têtes`,
+        explanation: 'Attribué pour avoir terminé une partie de 6 qui prend au plus près des 66 têtes de bœuf sans se faire éliminer.',
+        type: 'emerald',
+        iconName: 'ShieldCheck',
+      })
+    }
+
+    if (sixGluttonLeader && (p.id ? p.id === sixGluttonLeader.id : p.name === sixGluttonLeader.name) && maxSixGluttonBulls >= 18) {
+      p.badges.push({
+        id: 'six_glutton',
+        title: 'Goinfre de Bœufs',
+        desc: `Record : ${p.maxSixGluttonBulls} bœufs`,
+        explanation: 'Attribué pour avoir encaissé le plus grand nombre de têtes de bœuf en une seule manche à 6 qui prend.',
+        type: 'rose',
+        iconName: 'Skull',
+      })
+    }
+
+    if (flip7BonusLeader && (p.id ? p.id === flip7BonusLeader.id : p.name === flip7BonusLeader.name) && maxFlip7Bonus > 0) {
+      p.badges.push({
+        id: 'flip7_bonus',
+        title: 'Le Septième Ciel',
+        desc: `${p.flip7BonusCount} bonus Flip 7`,
+        explanation: 'Attribué pour avoir validé le plus grand nombre de bonus Flip 7 (+15 points pour 7 cartes distinctes).',
+        type: 'amber',
+        iconName: 'Flame',
+      })
+    }
+
+    if (yanivAssafLeader && (p.id ? p.id === yanivAssafLeader.id : p.name === yanivAssafLeader.name) && maxYanivAssaf > 0) {
+      p.badges.push({
+        id: 'yaniv_assaf',
+        title: 'Contre-ASSAF',
+        desc: `${p.yanivAssafCount} contre-ASSAF`,
+        explanation: 'Attribué pour avoir infligé le plus de contres ASSAF à un joueur ayant imprudemment annoncé Yaniv.',
+        type: 'rose',
+        iconName: 'Swords',
+      })
+    }
+
+    if (beloteCapotLeader && (p.id ? p.id === beloteCapotLeader.id : p.name === beloteCapotLeader.name) && maxBeloteCapot > 0) {
+      p.badges.push({
+        id: 'belote_capot',
+        title: 'Le Capot Magique',
+        desc: `${p.beloteCapotCount} capot${p.beloteCapotCount > 1 ? 's' : ''} réussi${p.beloteCapotCount > 1 ? 's' : ''}`,
+        explanation: 'Attribué pour avoir mené son camp au plus grand nombre de Capots complets à la Belote / Coinche.',
+        type: 'gold',
+        iconName: 'Crown',
+      })
+    }
+
+    if (tarotPetitLeader && (p.id ? p.id === tarotPetitLeader.id : p.name === tarotPetitLeader.name) && maxTarotPetit > 0) {
+      p.badges.push({
+        id: 'tarot_petit_bout',
+        title: 'Le Petit au Bout',
+        desc: `${p.tarotPetitCount} Petit${p.tarotPetitCount > 1 ? 's' : ''} au bout`,
+        explanation: 'Attribué pour avoir emmené le plus souvent le Petit au dernier pli en attaque au Tarot.',
+        type: 'purple',
+        iconName: 'Wand2',
+      })
+    }
+
+    if (seasaltSirensLeader && (p.id ? p.id === seasaltSirensLeader.id : p.name === seasaltSirensLeader.name) && maxSeasaltSirens > 0) {
+      p.badges.push({
+        id: 'seasalt_sirens',
+        title: 'Le Chant des Sirènes',
+        desc: `${p.seasaltSirensCount} victoire${p.seasaltSirensCount > 1 ? 's' : ''} aux Sirènes`,
+        explanation: 'Attribué pour avoir réussi la mythique victoire immédiate aux 4 Sirènes à Sea Salt & Paper.',
+        type: 'blue',
+        iconName: 'Anchor',
+      })
+    }
   })
 
   return {
@@ -819,5 +1394,190 @@ export const TROPHIES_CATALOG = [
     description: 'Le joueur caméléon capable de triompher sur n’importe quelle règle personnalisée.',
     color: 'gold',
     iconName: 'Dices',
+  },
+  {
+    id: 'master_symbiose',
+    gameType: GAMES.SYMBIOSE,
+    title: 'Symbiose Parfaite',
+    category: 'Symbiose',
+    condition: 'Avoir remporté le plus grand nombre de victoires à Symbiose.',
+    description: 'L’expert de la mare capable d’harmoniser animaux et saisons pour créer l’écosystème le plus florissant.',
+    color: 'emerald',
+    iconName: 'FrogFace',
+  },
+  {
+    id: 'general_phoenix',
+    title: 'Le Phénix',
+    category: 'Général',
+    condition: 'Avoir été dernier en cours de partie (au moins 2 manches disputées) et remporter la victoire finale.',
+    description: 'La consécration de la plus belle remontada : ne jamais abandonner, même au fond du gouffre.',
+    color: 'amber',
+    iconName: 'TrendingUp',
+  },
+  {
+    id: 'general_chameleon',
+    title: 'Le Caméléon',
+    category: 'Général',
+    condition: 'Avoir disputé au moins une partie sur au moins 5 jeux différents de l’Ardoise.',
+    description: 'Célèbre les joueurs polyvalents et curieux capables de s’adapter à toutes les mécaniques.',
+    color: 'blue',
+    iconName: 'Compass',
+  },
+  {
+    id: 'general_close_call',
+    title: 'Sur le Fil',
+    category: 'Général',
+    condition: 'Avoir remporté une partie terminée avec exactement 1 seul point d’écart sur le deuxième.',
+    description: 'Récompense le sang-froid absolu et la victoire la plus serrée dans le money-time.',
+    color: 'emerald',
+    iconName: 'Zap',
+  },
+  {
+    id: 'general_night_owl',
+    title: 'Oiseau de Nuit',
+    category: 'Général',
+    condition: 'Avoir terminé une partie enregistrée entre minuit et 5 heures du matin.',
+    description: 'Clin d’œil complice aux couche-tard et aux fins de soirées mémorables autour de la table.',
+    color: 'purple',
+    iconName: 'Moon',
+  },
+  {
+    id: 'general_marathon',
+    title: 'Le Marathonien',
+    category: 'Général',
+    condition: 'Avoir disputé la plus longue partie enregistrée de la table (minimum 8 manches).',
+    description: 'L’hommage à l’endurance et aux batailles acharnées qui s’étirent manche après manche.',
+    color: 'gold',
+    iconName: 'Timer',
+  },
+  {
+    id: 'symbiose_duo',
+    gameType: GAMES.SYMBIOSE,
+    title: 'Duo Fusionnel',
+    category: 'Symbiose',
+    condition: 'Avoir remporté le plus grand nombre de victoires en mode Équipe 2v2 à Symbiose.',
+    description: 'L’harmonie collective parfaite : synchroniser deux mares pour triompher en équipe.',
+    color: 'rose',
+    iconName: 'Users',
+  },
+  {
+    id: 'symbiose_master_pond',
+    gameType: GAMES.SYMBIOSE,
+    title: 'Écosystème Idéal',
+    category: 'Symbiose',
+    condition: 'Détenir le record du score de Mare individuel sur une manche à Symbiose (minimum 35 points).',
+    description: 'Une mare d’exception combinant biodiversité végétale et harmonie animale sans gaspillage.',
+    color: 'emerald',
+    iconName: 'FrogFace',
+  },
+  {
+    id: 'skyjo_freezer',
+    gameType: GAMES.SKYJO,
+    title: 'Le Frigo',
+    category: 'Skyjo',
+    condition: 'Avoir réussi une manche avec un score inférieur ou égal à 0 point au Skyjo.',
+    description: 'L’art du gel absolu : colonnes éliminées et cartes négatives alignées au cordeau.',
+    color: 'blue',
+    iconName: 'Snowflake',
+  },
+  {
+    id: 'skyjo_doubled',
+    gameType: GAMES.SKYJO,
+    title: "L'Arroseur Arrosé",
+    category: 'Skyjo',
+    condition: 'Avoir subi le score doublé pour avoir clôturé la manche sans avoir le score le plus bas au Skyjo.',
+    description: 'Un hommage bienveillant au joueur qui a voulu fermer trop vite et en a payé le prix fort.',
+    color: 'rose',
+    iconName: 'AlertTriangle',
+  },
+  {
+    id: 'caracole_reprieve',
+    gameType: GAMES.CARACOLE,
+    title: 'Le Miraculé du Sursis',
+    category: 'Caracole',
+    condition: 'Avoir bénéficié du sursis officiel en tombant exactement sur la limite de points à la Caracole.',
+    description: 'Sauvé in extremis des mâchoires de l’élimination pour retomber miraculeusement à 50 points.',
+    color: 'blue',
+    iconName: 'ShieldAlert',
+  },
+  {
+    id: 'dame_grand_chelem',
+    gameType: GAMES.DAME_DE_PIQUE,
+    title: 'Grand Chelemard',
+    category: 'Dame de Pique',
+    condition: 'Avoir réussi le Grand Chelem (Shoot the Moon) en ramassant les 13 Cœurs et la Dame de Pique.',
+    description: 'Le coup de poker ultime qui inflige 26 points de pénalité à tous les adversaires.',
+    color: 'purple',
+    iconName: 'Target',
+  },
+  {
+    id: 'six_tightrope',
+    gameType: GAMES.SIX_QUI_PREND,
+    title: 'Funambule',
+    category: '6 qui prend',
+    condition: 'Avoir terminé une partie de 6 qui prend avec un score entre 55 et 65 têtes de bœuf sans sauter.',
+    description: 'Marcher sur la corde raide au bord de la falaise des 66 têtes sans jamais chuter.',
+    color: 'emerald',
+    iconName: 'ShieldCheck',
+  },
+  {
+    id: 'six_glutton',
+    gameType: GAMES.SIX_QUI_PREND,
+    title: 'Goinfre de Bœufs',
+    category: '6 qui prend',
+    condition: 'Avoir ramassé 18 têtes de bœuf ou plus en une seule manche à 6 qui prend.',
+    description: 'Le festin indigeste qu’on aurait préféré éviter, mais dont la tablée se souviendra longtemps !',
+    color: 'rose',
+    iconName: 'Skull',
+  },
+  {
+    id: 'flip7_bonus',
+    gameType: GAMES.FLIP_7,
+    title: 'Le Septième Ciel',
+    category: 'Flip 7',
+    condition: 'Avoir déclenché le bonus Flip 7 (+15 points pour 7 cartes différentes posées).',
+    description: 'Le graal du stop-ou-encore : aligner 7 valeurs distinctes sans jamais piocher de doublon.',
+    color: 'amber',
+    iconName: 'Flame',
+  },
+  {
+    id: 'yaniv_assaf',
+    gameType: GAMES.YANIV,
+    title: 'Contre-ASSAF',
+    category: 'Yaniv',
+    condition: 'Avoir contré un joueur ayant annoncé Yaniv et lui infliger les 30 points de pénalité ASSAF.',
+    description: 'La contre-attaque cinglante qui foudroie l’adversaire persuadé d’avoir la main la plus basse.',
+    color: 'rose',
+    iconName: 'Swords',
+  },
+  {
+    id: 'belote_capot',
+    gameType: GAMES.BELOTE,
+    title: 'Le Capot Magique',
+    category: 'Belote / Coinche',
+    condition: 'Avoir réussi un Capot complet (252 points ou 162 pts de plis) en tant que preneur à la Belote.',
+    description: 'La domination absolue : remporter l’intégralité des 8 plis sans rien laisser aux adversaires.',
+    color: 'gold',
+    iconName: 'Crown',
+  },
+  {
+    id: 'tarot_petit_bout',
+    gameType: GAMES.TAROT,
+    title: 'Le Petit au Bout',
+    category: 'Tarot',
+    condition: 'Avoir mené victorieusement le Petit au dernier pli en attaque au Tarot.',
+    description: 'L’exploit aristocratique du Tarot : faire triompher le numéro 1 d’atout sur l’ultime levée.',
+    color: 'purple',
+    iconName: 'Wand2',
+  },
+  {
+    id: 'seasalt_sirens',
+    gameType: GAMES.SEA_SALT_PAPER,
+    title: 'Le Chant des Sirènes',
+    category: 'Sea Salt & Paper',
+    condition: 'Avoir remporté immédiatement une manche en réunissant les 4 cartes Sirène.',
+    description: 'La légende des mers : une victoire éclair foudroyante qui met fin à la manche sur le champ.',
+    color: 'blue',
+    iconName: 'Anchor',
   },
 ]

@@ -65,10 +65,11 @@ export function getLowest(scores) {
 export function getRanking(scores, direction = 'high', game = null) {
   if (!scores || Object.keys(scores).length === 0) return []
 
-  // Traitement spécifique Belote / Coinche par équipe (4 joueurs = 2 équipes de 2)
+  // Traitement spécifique Belote / Coinche / Symbiose (mode équipe) (4 joueurs = 2 équipes de 2)
   if (
     game &&
-    (game.type === 'belote' || game.type === 'coinche') &&
+    ((game.type === 'belote' || game.type === 'coinche') ||
+      (game.type === 'symbiose' && game.config?.mode === 'team')) &&
     Array.isArray(game.players) &&
     game.players.length === 4
   ) {
@@ -76,23 +77,30 @@ export function getRanking(scores, direction = 'high', game = null) {
     const p2 = game.players[1]
     const p3 = game.players[2]
     const p4 = game.players[3]
-    const sTeam1 = scores[p1?.id] != null ? scores[p1.id] : 0
-    const sTeam2 = scores[p3?.id] != null ? scores[p3.id] : 0
+
+    // À la Belote, scores[p1.id] est le score de l'équipe 1.
+    // À Symbiose en mode équipe, le score de l'équipe est la somme des 2 mares des partenaires.
+    const sTeam1 = game.type === 'symbiose'
+      ? (scores[p1?.id] != null ? scores[p1.id] : 0) + (scores[p2?.id] != null ? scores[p2.id] : 0)
+      : (scores[p1?.id] != null ? scores[p1.id] : 0)
+    const sTeam2 = game.type === 'symbiose'
+      ? (scores[p3?.id] != null ? scores[p3.id] : 0) + (scores[p4?.id] != null ? scores[p4.id] : 0)
+      : (scores[p3?.id] != null ? scores[p3.id] : 0)
 
     if (sTeam1 >= sTeam2) {
       const isTie = sTeam1 === sTeam2
       return [
-        { id: p1.id, score: sTeam1, rank: 1 },
-        { id: p2.id, score: sTeam1, rank: 1 },
-        { id: p3.id, score: sTeam2, rank: isTie ? 1 : 2 },
-        { id: p4.id, score: sTeam2, rank: isTie ? 1 : 2 },
+        { id: p1.id, score: game.type === 'symbiose' ? (scores[p1.id] || 0) : sTeam1, teamScore: sTeam1, rank: 1 },
+        { id: p2.id, score: game.type === 'symbiose' ? (scores[p2.id] || 0) : sTeam1, teamScore: sTeam1, rank: 1 },
+        { id: p3.id, score: game.type === 'symbiose' ? (scores[p3.id] || 0) : sTeam2, teamScore: sTeam2, rank: isTie ? 1 : 2 },
+        { id: p4.id, score: game.type === 'symbiose' ? (scores[p4.id] || 0) : sTeam2, teamScore: sTeam2, rank: isTie ? 1 : 2 },
       ]
     } else {
       return [
-        { id: p3.id, score: sTeam2, rank: 1 },
-        { id: p4.id, score: sTeam2, rank: 1 },
-        { id: p1.id, score: sTeam1, rank: 2 },
-        { id: p2.id, score: sTeam1, rank: 2 },
+        { id: p3.id, score: game.type === 'symbiose' ? (scores[p3.id] || 0) : sTeam2, teamScore: sTeam2, rank: 1 },
+        { id: p4.id, score: game.type === 'symbiose' ? (scores[p4.id] || 0) : sTeam2, teamScore: sTeam2, rank: 1 },
+        { id: p1.id, score: game.type === 'symbiose' ? (scores[p1.id] || 0) : sTeam1, teamScore: sTeam1, rank: 2 },
+        { id: p2.id, score: game.type === 'symbiose' ? (scores[p2.id] || 0) : sTeam1, teamScore: sTeam1, rank: 2 },
       ]
     }
   }

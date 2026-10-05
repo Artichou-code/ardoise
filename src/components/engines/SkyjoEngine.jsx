@@ -29,12 +29,13 @@ export function SkyjoEngine({ game, onFinish }) {
 
   const submitRound = () => {
     if (!closerId) return
+    const isDoubled = isSkyjoScoreDoubled(roundScores, closerId)
     const { newScores, adjusted } = computeSkyjoRound(game.scores, roundScores, closerId)
     const delta = {}
     for (const p of game.players) {
       delta[p.id] = adjusted[p.id] || 0
     }
-    updateScores({ scores: newScores, delta, closerId, type: 'skyjo' })
+    updateScores({ scores: newScores, delta, closerId, closerDoubled: isDoubled, type: 'skyjo' })
 
     const endPlayer = checkSkyjoEnd(newScores)
     if (endPlayer) {

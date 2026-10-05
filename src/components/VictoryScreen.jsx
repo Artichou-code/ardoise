@@ -31,6 +31,8 @@ export function VictoryScreen() {
   const isDourak = activeGame.type === GAMES.DOURAK
   const isDourakCards = isDourak && activeGame.config?.mode === 'cards'
   const isBelote = activeGame.type === GAMES.BELOTE && activeGame.players.length === 4
+  const isSymbioseTeam = activeGame.type === GAMES.SYMBIOSE && activeGame.config?.mode === 'team' && activeGame.players.length === 4
+  const isTeamGame = isBelote || isSymbioseTeam
   const scoreUnit = isDourak
     ? isDourakCards
       ? 'cartes'
@@ -58,10 +60,18 @@ export function VictoryScreen() {
     ? formatDuration(computePlayDuration(activeGame))
     : null
 
-  const pNous = isBelote ? [activeGame.players[0], activeGame.players[1]].filter(Boolean) : []
-  const pEux = isBelote ? [activeGame.players[2], activeGame.players[3]].filter(Boolean) : []
-  const scoreNous = isBelote ? (activeGame.scores[pNous[0]?.id] || 0) : 0
-  const scoreEux = isBelote ? (activeGame.scores[pEux[0]?.id] || 0) : 0
+  const pNous = isTeamGame ? [activeGame.players[0], activeGame.players[1]].filter(Boolean) : []
+  const pEux = isTeamGame ? [activeGame.players[2], activeGame.players[3]].filter(Boolean) : []
+  const scoreNous = isTeamGame
+    ? isSymbioseTeam
+      ? (activeGame.scores[pNous[0]?.id] || 0) + (activeGame.scores[pNous[1]?.id] || 0)
+      : (activeGame.scores[pNous[0]?.id] || 0)
+    : 0
+  const scoreEux = isTeamGame
+    ? isSymbioseTeam
+      ? (activeGame.scores[pEux[0]?.id] || 0) + (activeGame.scores[pEux[1]?.id] || 0)
+      : (activeGame.scores[pEux[0]?.id] || 0)
+    : 0
   const winningTeam = scoreNous >= scoreEux ? 'nous' : 'eux'
   const winningPlayers = winningTeam === 'nous' ? pNous : pEux
   const losingPlayers = winningTeam === 'nous' ? pEux : pNous
@@ -118,7 +128,7 @@ export function VictoryScreen() {
               </div>
             )}
           </div>
-        ) : isBelote ? (
+        ) : isTeamGame ? (
           <div className="text-center mt-2 mb-3">
             <div className="inline-flex flex-col items-center">
               <div className="flex items-center justify-center -space-x-2">
@@ -135,7 +145,7 @@ export function VictoryScreen() {
             </h1>
             <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
               {getGameDisplayName(activeGame)} · {winningTeam === 'nous' ? 'Équipe 1' : 'Équipe 2'}
-              {duration ? ` · ${duration}` : ''} · {activeGame.rounds.length} donne{activeGame.rounds.length > 1 ? 's' : ''}
+              {duration ? ` · ${duration}` : ''} · {activeGame.rounds.length} {activeGame.type === GAMES.BELOTE ? 'donne' : 'manche'}{activeGame.rounds.length > 1 ? 's' : ''}
             </p>
           </div>
         ) : (
@@ -160,7 +170,7 @@ export function VictoryScreen() {
         )}
 
         {/* Podium ou face-à-face par équipes */}
-        {isBelote ? (
+        {isTeamGame ? (
           <div className="grid grid-cols-2 gap-2.5 mb-3">
             {/* Équipe gagnante */}
             <div className="school-card rounded-xl p-3 flex flex-col items-center text-center border-t-4 border-t-[#c83b3b] bg-[#c83b3b]/5">
@@ -178,6 +188,11 @@ export function VictoryScreen() {
               <p className="font-black tabular-nums text-lg text-[#c83b3b] mt-1">
                 {winningScore} pts
               </p>
+              {isSymbioseTeam && (
+                <p className="text-[10px] font-medium text-stone-400 dark:text-slate-500 tabular-nums mt-0.5">
+                  {winningPlayers.map(p => `${p.name}: ${activeGame.scores[p.id] || 0}`).join(' · ')}
+                </p>
+              )}
             </div>
 
             {/* Équipe adverse */}
@@ -196,6 +211,11 @@ export function VictoryScreen() {
               <p className="font-black tabular-nums text-lg text-stone-700 dark:text-slate-300 mt-1">
                 {losingScore} pts
               </p>
+              {isSymbioseTeam && (
+                <p className="text-[10px] font-medium text-stone-400 dark:text-slate-500 tabular-nums mt-0.5">
+                  {losingPlayers.map(p => `${p.name}: ${activeGame.scores[p.id] || 0}`).join(' · ')}
+                </p>
+              )}
             </div>
           </div>
         ) : (
@@ -256,7 +276,7 @@ export function VictoryScreen() {
                 <Avatar player={player} size="xs" />
                 <span className="flex-1 font-semibold text-xs sm:text-sm truncate">
                   {player.name}
-                  {isBelote && (
+                  {isTeamGame && (
                     <span className="text-[10px] font-normal text-stone-400 dark:text-slate-500 ml-1.5">
                       ({pNous.some(p => p.id === player.id) ? 'Équipe 1' : 'Équipe 2'})
                     </span>

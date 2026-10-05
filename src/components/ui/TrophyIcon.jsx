@@ -29,9 +29,17 @@ import {
   Meh,
   Ghost,
   ThumbsDown,
+  Waves,
+  Fish,
+  TrendingUp,
+  Moon,
+  Users,
+  Snowflake,
+  AlertTriangle,
 } from 'lucide-react'
 
 import { Mustache } from './MustacheIcon'
+import { FrogFace } from './FrogFaceIcon'
 
 const ICON_MAP = {
   Award,
@@ -64,10 +72,20 @@ const ICON_MAP = {
   Meh,
   Ghost,
   ThumbsDown,
+  Waves,
+  Fish,
+  TrendingUp,
+  Moon,
+  Users,
+  Snowflake,
+  AlertTriangle,
   Mustache,
   mustache: Mustache,
   Moustache: Mustache,
   moustache: Mustache,
+  FrogFace,
+  frogFace: FrogFace,
+  'frog-face': FrogFace,
 }
 
 /**

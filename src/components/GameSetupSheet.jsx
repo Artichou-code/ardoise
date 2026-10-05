@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { Plus, X, Check, BookOpen, Bookmark, BookmarkPlus, Flame, ArrowLeftRight, Search, ChevronDown, ChevronUp, Radio } from 'lucide-react'
 import { BottomSheet } from './ui/BottomSheet'
 import { Avatar, AvatarPicker } from './ui/Avatar'
@@ -245,6 +246,12 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
         mode: 'official',
         scoreDir: 'high',
         limit: 500,
+      })
+      setCustomGameName('')
+    } else if (gameType === 'symbiose') {
+      setConfig({
+        mode: 'individual',
+        scoreDir: 'high',
       })
       setCustomGameName('')
     } else if (gameType === 'universel') {
@@ -1462,6 +1469,92 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
             </div>
           )}
 
+          {/* Config spécifique Symbiose */}
+          {gameType === 'symbiose' && (
+            <div className="space-y-3 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 mb-2">
+                  Mode de jeu officiel
+                </p>
+                {selectedPlayers.length === 4 ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, mode: 'individual' }))}
+                      className={`py-2 px-3 rounded-xl text-center border transition-all cursor-pointer ${
+                        (config.mode || 'individual') === 'individual'
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      <span className="block font-bold text-xs leading-tight">Individuel</span>
+                      <span className={`block text-[10px] font-semibold mt-0.5 leading-tight ${(config.mode || 'individual') === 'individual' ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
+                        <span className="block">Chacun pour soi</span>
+                        <span className="block mt-0.5 opacity-90">(4 mares)</span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfig(c => ({ ...c, mode: 'team' }))}
+                      className={`py-2 px-3 rounded-xl text-center border transition-all cursor-pointer ${
+                        config.mode === 'team'
+                          ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
+                          : 'school-subtle'
+                      }`}
+                    >
+                      <span className="block font-bold text-xs leading-tight">Équipe (2 vs 2)</span>
+                      <span className={`block text-[10px] font-semibold mt-0.5 leading-tight ${config.mode === 'team' ? 'text-white/85' : 'text-stone-400 dark:text-slate-500'}`}>
+                        <span className="block">Partenaires face-à-face</span>
+                        <span className="block mt-0.5 opacity-90">(Somme des mares)</span>
+                      </span>
+                    </button>
+                  </div>
+                ) : selectedPlayers.length === 3 ? (
+                  <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-700/60 text-xs text-stone-600 dark:text-slate-300 space-y-1">
+                    <div className="font-bold text-stone-800 dark:text-slate-100 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
+                      Partie à 3 joueurs (Standard)
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-relaxed">
+                      Vos colonnes de gauche et droite marquent par rapport aux mares respectives de vos voisins immédiats de table.
+                    </p>
+                  </div>
+                ) : selectedPlayers.length === 2 ? (
+                  <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-700/60 text-xs text-stone-600 dark:text-slate-300 space-y-1">
+                    <div className="font-bold text-stone-800 dark:text-slate-100 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
+                      Mode Duel officiel (1 vs 1)
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-relaxed">
+                      Rivière de 8 cartes (4 visibles + 4 cachées). Vos cartes côté Rivière marquent par rapport aux 8 cartes de la Rivière.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-700/60 text-xs text-stone-600 dark:text-slate-300 space-y-2">
+                    <div className="font-bold text-stone-800 dark:text-slate-100 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#c83b3b]" />
+                      Modes selon le nombre de joueurs (2 à 4)
+                    </div>
+                    <div className="space-y-1 text-[11px] text-stone-500 dark:text-slate-400 leading-relaxed">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="font-bold text-stone-700 dark:text-slate-300 shrink-0">2 joueurs :</span>
+                        <span>Mode Duel (Rivière de 8 cartes)</span>
+                      </div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="font-bold text-stone-700 dark:text-slate-300 shrink-0">3 joueurs :</span>
+                        <span>Mode Standard (voisins de gauche et droite)</span>
+                      </div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="font-bold text-stone-700 dark:text-slate-300 shrink-0">4 joueurs :</span>
+                        <span>Choix entre Individuel ou Équipe (2 vs 2)</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Config spécifique Universel */}
           {gameType === 'universel' && (
             <div className="space-y-4 pt-2 border-t border-stone-200/70 dark:border-slate-800/70">
@@ -1873,9 +1966,9 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
       />
 
       {/* Modale de remplacement quand les équipes sont complètes */}
-      {playerToReplaceCandidate && (
+      {playerToReplaceCandidate && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-70 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in"
+          className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fade-in"
           onClick={() => setPlayerToReplaceCandidate(null)}
         >
           <div
@@ -2035,7 +2128,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

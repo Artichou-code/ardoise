@@ -231,3 +231,24 @@ Tarif : 100 % Gratuit, sans publicité, sans abonnement, synchronisation cloud e
   - La Salade : tous les contrats négatifs réunis en une seule manche (-130 pts)
   - Les Dominos : contrat positif où le premier à poser ses cartes marque +65 pts.
 
+---
+
+### 2.17. Symbiose (2 à 4 joueurs · 36 cartes · Subverti)
+- **URL dédiée** : https://ardoise.art-crea.fr/jeux/symbiose
+- **Auteurs & Éditeur** : Jérémy Partinico & Christelle Partinico — Éditions Subverti.
+- **Objectif** : Constituer une Mare de 8 cartes (grille de 2 lignes × 4 colonnes) générant le plus de points grâce à l'association des animaux et des saisons.
+- **Déroulement d'un tour** :
+  - Échanger 1 carte de sa Mare avec 1 carte de la Rivière centrale (laisser la nouvelle carte visible).
+  - Si la carte retirée de sa Mare était déjà face visible, révéler en plus une autre de ses cartes cachées.
+- **Comptage des points (Grille 2×4)** :
+  - **Points fixes** : Marquent leur valeur sans condition de position.
+  - **Points variables** :
+    - Colonne de gauche (2 cartes) : marque selon toute la Mare du joueur à sa gauche.
+    - Colonnes centrales (4 cartes) : marquent selon toute sa propre Mare.
+    - Colonne de droite (2 cartes) : marque selon toute la Mare du joueur à sa droite.
+- **Variantes officielles** :
+  - **Mode Duel (1 vs 1)** : Rivière de 8 cartes (4 visibles + 4 cachées), les 2 cartes côté Rivière marquent par rapport aux 8 cartes de la Rivière.
+  - **Mode Équipe (2 vs 2)** : Coopération avec son vis-à-vis, les côtés marquent par rapport à la Mare du partenaire, addition des 2 Mares pour le score final d'équipe.
+- **Égalité** : En cas d'égalité, victoire partagée en parfaite symbiose.
+
+

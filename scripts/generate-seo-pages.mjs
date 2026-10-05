@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { GAME_META, GAMES } from '../src/constants/games.js'
+import { generateCatalogExcel } from './generate-catalog-excel.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const distDir = path.resolve(__dirname, '../dist')
@@ -137,6 +138,14 @@ export const SEO_PAGES = [
     description:
       'Feuille de score et règles officielles du UNO : comptage des points des cartes restantes (Action 20 pts, Noires 50 pts), seuil officiel à 500 points ou règle maison par élimination.',
     h1: 'UNO — Compteur de Points Gratuit & Règles Officielles (Seuil 500 pts)',
+  },
+  {
+    slug: 'symbiose',
+    gameId: GAMES.SYMBIOSE,
+    title: 'Symbiose : Règles Officielles du Jeu (Subverti) & Compteur de Points en Ligne — Ardoise',
+    description:
+      'Feuille de score et règles officielles du jeu Symbiose (Subverti) : agencement de la Mare en 8 cartes, calcul des points fixes et variables, modes Duel et Équipe gratuits sans pub.',
+    h1: 'Symbiose — Compteur de Points en Ligne Gratuit & Règles Officielles (Subverti)',
   },
 ]
 
@@ -403,6 +412,9 @@ function generateSeoFiles() {
   }
 
   console.log(`✓ SEO/GEO + App Shell : dist/index.html enrichi + ${SEO_PAGES.length} pages /jeux/<slug> pré-rendues.`)
+
+  // Régénère également le catalogue Excel dans public/ (et synchronise dans dist/)
+  generateCatalogExcel()
 }
 
 generateSeoFiles()

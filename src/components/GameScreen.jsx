@@ -25,6 +25,7 @@ import { YanivEngine } from './engines/YanivEngine'
 import { BarbuEngine } from './engines/BarbuEngine'
 import { UniverselEngine } from './engines/UniverselEngine'
 import { UnoEngine } from './engines/UnoEngine'
+import { SymbioseEngine } from './engines/SymbioseEngine'
 
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
 
@@ -45,6 +46,7 @@ const ENGINE_MAP = {
   [GAMES.BARBU]: BarbuEngine,
   [GAMES.UNIVERSEL]: UniverselEngine,
   [GAMES.UNO]: UnoEngine,
+  [GAMES.SYMBIOSE]: SymbioseEngine,
 }
 
 function AnimatedRoundIndicator({ roundNumber }) {
@@ -177,6 +179,9 @@ export function GameScreen() {
   )
   const hasStarted = (activeGame.rounds?.length ?? 0) > 0
   const leaderId = hasStarted ? ranking[0]?.id : null
+  const isBelote4 = activeGame.type === GAMES.BELOTE && activeGame.players.length === 4
+  const isSymbioseTeam = activeGame.type === GAMES.SYMBIOSE && activeGame.config?.mode === 'team' && activeGame.players.length === 4
+  const isTeamGame = isBelote4 || isSymbioseTeam
 
   const Engine = ENGINE_MAP[activeGame.type] || UniverselEngine
 
@@ -300,14 +305,17 @@ export function GameScreen() {
               {/* Leader actuel (individuel ou équipe) et son score */}
               <div className="flex items-center gap-1.5 min-w-0 text-left overflow-hidden">
                 {(() => {
-                  const isBelote4 = activeGame.type === GAMES.BELOTE && activeGame.players.length === 4
                   const hasManyPlayers = ranking.length > 6
 
-                  if (isBelote4) {
+                  if (isTeamGame) {
                     const pNous = [activeGame.players[0], activeGame.players[1]].filter(Boolean)
                     const pEux = [activeGame.players[2], activeGame.players[3]].filter(Boolean)
-                    const scoreNous = activeGame.scores[pNous[0]?.id] || 0
-                    const scoreEux = activeGame.scores[pEux[0]?.id] || 0
+                    const scoreNous = isSymbioseTeam
+                      ? (activeGame.scores[pNous[0]?.id] || 0) + (activeGame.scores[pNous[1]?.id] || 0)
+                      : (activeGame.scores[pNous[0]?.id] || 0)
+                    const scoreEux = isSymbioseTeam
+                      ? (activeGame.scores[pEux[0]?.id] || 0) + (activeGame.scores[pEux[1]?.id] || 0)
+                      : (activeGame.scores[pEux[0]?.id] || 0)
                     const leadTeamPlayers = scoreNous >= scoreEux ? pNous : pEux
                     const leadScore = scoreNous >= scoreEux ? scoreNous : scoreEux
                     return (
@@ -355,13 +363,17 @@ export function GameScreen() {
               className="cursor-pointer transition-opacity active:opacity-90"
               title="Cliquer sur la section pour masquer les scores"
             >
-              {activeGame.type === GAMES.BELOTE && activeGame.players.length === 4 ? (
+              {isTeamGame ? (
           <div className="grid grid-cols-2 gap-2">
             {(() => {
               const pNous = [activeGame.players[0], activeGame.players[1]].filter(Boolean)
               const pEux = [activeGame.players[2], activeGame.players[3]].filter(Boolean)
-              const scoreNous = activeGame.scores[pNous[0]?.id] || 0
-              const scoreEux = activeGame.scores[pEux[0]?.id] || 0
+              const scoreNous = isSymbioseTeam
+                ? (activeGame.scores[pNous[0]?.id] || 0) + (activeGame.scores[pNous[1]?.id] || 0)
+                : (activeGame.scores[pNous[0]?.id] || 0)
+              const scoreEux = isSymbioseTeam
+                ? (activeGame.scores[pEux[0]?.id] || 0) + (activeGame.scores[pEux[1]?.id] || 0)
+                : (activeGame.scores[pEux[0]?.id] || 0)
               const isNousLeader = hasStarted && scoreNous > scoreEux
               const isEuxLeader = hasStarted && scoreEux > scoreNous
               const isTie = scoreNous === scoreEux
@@ -433,15 +445,27 @@ export function GameScreen() {
                     </div>
                   </div>
 
-                  {/* Ligne 2 : Noms de l'équipe sur toute la largeur disponible de la carte */}
+                  {/* Ligne 2 : Noms de l'équipe et calcul des mares regroupés avec ":" */}
                   <div className="w-full mt-1 min-w-0">
-                    <span
-                      className={`text-[10px] sm:text-[11px] font-bold truncate max-w-full block leading-tight ${
-                        t.id === 'nous' ? 'text-[#c83b3b] dark:text-red-400' : 'text-[#1e3a5f] dark:text-sky-400'
-                      }`}
-                    >
-                      {formatTeamNames(t.players, 8)}
-                    </span>
+                    <div className="flex items-center gap-1 min-w-0 text-[10px] sm:text-[11px]">
+                      <span
+                        className={`font-bold truncate leading-tight ${
+                          t.id === 'nous' ? 'text-[#c83b3b] dark:text-red-400' : 'text-[#1e3a5f] dark:text-sky-400'
+                        }`}
+                      >
+                        {formatTeamNames(t.players, 8)}
+                      </span>
+                      {isSymbioseTeam && hasStarted && (
+                        <>
+                          <span className="font-bold text-stone-400 dark:text-slate-500 shrink-0">
+                            :
+                          </span>
+                          <span className="font-semibold text-stone-500 dark:text-slate-400 shrink-0 tabular-nums">
+                            {t.players.map(p => `${activeGame.scores[p.id] || 0}`).join(' + ')}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))
@@ -638,7 +662,7 @@ export function GameScreen() {
                     M.{activeGame.rounds.length - i}
                   </span>
                   <div className="flex flex-wrap gap-x-3 gap-y-1">
-                    {activeGame.type === GAMES.BELOTE && activeGame.players.length === 4 ? (
+                    {isBelote4 ? (
                       <>
                         <span className="flex items-center gap-1 tabular-nums">
                           <span className="font-semibold text-stone-700 dark:text-slate-300">Éq. 1:</span>
@@ -652,6 +676,33 @@ export function GameScreen() {
                             +{round.teamScores?.eux ?? round.delta?.[activeGame.players[2]?.id] ?? 0}
                           </span>
                         </span>
+                      </>
+                    ) : isSymbioseTeam ? (
+                      <>
+                        {(() => {
+                          const p0 = activeGame.players[0]
+                          const p1 = activeGame.players[1]
+                          const p2 = activeGame.players[2]
+                          const p3 = activeGame.players[3]
+                          const d0 = round.delta?.[p0?.id] || 0
+                          const d1 = round.delta?.[p1?.id] || 0
+                          const d2 = round.delta?.[p2?.id] || 0
+                          const d3 = round.delta?.[p3?.id] || 0
+                          return (
+                            <>
+                              <span className="flex items-center gap-1 tabular-nums">
+                                <span className="font-semibold text-stone-700 dark:text-slate-300">Éq. 1:</span>
+                                <span className="font-bold text-[#c83b3b]">+{d0 + d1}</span>
+                                <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">({d0}+{d1})</span>
+                              </span>
+                              <span className="flex items-center gap-1 tabular-nums">
+                                <span className="font-semibold text-stone-700 dark:text-slate-300">Éq. 2:</span>
+                                <span className="font-bold text-[#c83b3b]">+{d2 + d3}</span>
+                                <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">({d2}+{d3})</span>
+                              </span>
+                            </>
+                          )
+                        })()}
                       </>
                     ) : (
                       activeGame.players.map(p => {
