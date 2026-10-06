@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { ArrowUpDown } from 'lucide-react'
 
 /**
@@ -26,6 +26,9 @@ export function ScorePad({
   customButtons,
   disabled = false,
   disabledMessage,
+  allowNull = false,
+  nullLabel = '—',
+  nullText = 'Sans score',
 }) {
   const [isDragging, setIsDragging] = useState(false)
 
@@ -35,6 +38,8 @@ export function ScorePad({
   const hasMovedRef = useRef(false)
   const isDraggingRef = useRef(false)
 
+  const dragStep = step || 1
+
   // Maintient la référence synchronisée avec la prop value
   useEffect(() => {
     if (!isDraggingRef.current) {
@@ -43,11 +48,40 @@ export function ScorePad({
   }, [value])
 
   const clampValue = (val) => {
+    if (allowNull && (val === null || val === undefined)) return null
     let num = Number(val)
-    if (isNaN(num)) num = min !== undefined ? min : 0
+    if (isNaN(num)) {
+      if (allowNull) return null
+      num = min !== undefined ? min : 0
+    }
+    if (allowNull && min !== undefined && num < min) {
+      return null
+    }
     if (min !== undefined && num < min) num = min
     if (max !== undefined && num > max) num = max
     return num
+  }
+
+  const valToStepIndex = (val) => {
+    if (allowNull && (val === null || val === undefined)) {
+      return -1
+    }
+    const num = Number(val) || 0
+    const baseMin = min !== undefined ? min : 0
+    return Math.round((num - baseMin) / dragStep)
+  }
+
+  const stepIndexToVal = (idx) => {
+    if (allowNull && idx < 0) {
+      return null
+    }
+    const baseMin = min !== undefined ? min : 0
+    const safeIdx = Math.max(0, idx)
+    let calculated = baseMin + safeIdx * dragStep
+    if (max !== undefined && calculated > max) {
+      calculated = max
+    }
+    return calculated
   }
 
   // Déclinaison monochrome rouge Ardoise avec transparences graduées (#c83b3b)
@@ -109,9 +143,10 @@ export function ScorePad({
     }
 
     // Sensibilité : ~14px par pas de score
-    const dragStep = step || 1
-    const stepsCount = Math.round(totalDeltaY / 14) * dragStep
-    const nextVal = clampValue(dragStartValueRef.current + stepsCount)
+    const stepsDelta = Math.round(totalDeltaY / 14)
+    const startIdx = valToStepIndex(dragStartValueRef.current)
+    const targetIdx = startIdx + stepsDelta
+    const nextVal = stepIndexToVal(targetIdx)
 
     if (nextVal !== currentValueRef.current) {
       currentValueRef.current = nextVal
@@ -146,10 +181,12 @@ export function ScorePad({
     } catch {}
   }
 
-  const dragStep = step || 1
   const cur = isDragging ? currentValueRef.current : value
-  const totalScore = baseScore !== undefined ? baseScore + cur : null
-  const totalObj = formatTotal
+  const isCurNull = allowNull && (cur === null || cur === undefined)
+  const totalScore = !isCurNull && baseScore !== undefined ? baseScore + cur : null
+  const totalObj = isCurNull
+    ? { text: nullText || 'Sans score', variant: 'default' }
+    : formatTotal
     ? (typeof formatTotal(cur) === 'object' && formatTotal(cur) !== null
         ? formatTotal(cur)
         : { text: formatTotal(cur), variant: undefined })
@@ -169,7 +206,11 @@ export function ScorePad({
   )
 
   const displayVal = (v) => {
+    if (v === null || v === undefined) {
+      return nullLabel
+    }
     const clamped = clampValue(v)
+    if (clamped === null) return nullLabel
     if (formatDisplay) return formatDisplay(clamped)
     const sign = showPlus && clamped > 0 ? '+' : ''
     return `${sign}${clamped}`
@@ -182,17 +223,23 @@ export function ScorePad({
     return 3
   }
 
-  const valAbove2 = cur + dragStep * 2
-  const isAbove2Valid = (min === undefined || valAbove2 >= min) && (max === undefined || valAbove2 <= max)
+  const curIdx = valToStepIndex(cur)
+  const maxIdx = max !== undefined ? valToStepIndex(max) : Infinity
 
-  const valAbove1 = cur + dragStep
-  const isAbove1Valid = (min === undefined || valAbove1 >= min) && (max === undefined || valAbove1 <= max)
+  const valAbove1 = stepIndexToVal(curIdx + 1)
+  const isAbove1Valid = valAbove1 !== null && curIdx + 1 <= maxIdx
 
-  const valBelow1 = cur - dragStep
-  const isBelow1Valid = (min === undefined || valBelow1 >= min) && (max === undefined || valBelow1 <= max)
+  const valBelow1 = curIdx > (allowNull ? -1 : 0) ? stepIndexToVal(curIdx - 1) : null
+  const isBelow1Valid = curIdx > (allowNull ? -1 : 0)
 
-  const valBelow2 = cur - dragStep * 2
-  const isBelow2Valid = (min === undefined || valBelow2 >= min) && (max === undefined || valBelow2 <= max)
+  // Raccourcis prédéfinis incluant le bouton sans score avant le zéro si allowNull est activé
+  const effectivePresets = useMemo(() => {
+    if (!presets || presets.length === 0) return presets
+    if (!allowNull) return presets
+    const hasNull = presets.some(p => (typeof p === 'object' && p !== null ? p.value : p) === null)
+    if (hasNull) return presets
+    return [{ value: null, label: nullLabel }, ...presets]
+  }, [presets, allowNull, nullLabel])
 
   return (
     <div className="flex flex-col gap-3 pt-2">
@@ -220,7 +267,7 @@ export function ScorePad({
           onPointerCancel={disabled ? undefined : handlePointerCancel}
           style={{ touchAction: disabled ? 'auto' : 'none' }}
           className={`relative select-none flex flex-col items-center justify-center transition-colors duration-150 rounded-2xl border-2 ${
-            presets && presets.length > 7
+            effectivePresets && effectivePresets.length > 7
               ? 'h-[156px] sm:h-[174px]'
               : 'h-[174px]'
           } ${
@@ -237,7 +284,9 @@ export function ScorePad({
               <div className="shrink-0 flex items-center justify-center w-full px-3">
                 {totalText ? (
                   <div className={`inline-flex items-center justify-center gap-1 px-3 py-0.5 rounded-full text-white text-[11px] font-bold shadow-xs max-w-full truncate ${
-                    totalVariant === 'danger'
+                    isCurNull
+                      ? 'bg-stone-500 dark:bg-slate-600'
+                      : totalVariant === 'danger'
                       ? 'bg-[#c83b3b]'
                       : 'bg-emerald-600'
                   }`}>
@@ -255,7 +304,11 @@ export function ScorePad({
                 {/* Mire centrale */}
                 <div className="h-11 shrink-0 my-1 relative flex items-center justify-center px-6 rounded-xl bg-white dark:bg-slate-900 border border-[#c83b3b]/40 shadow-xs">
                   <span className="absolute left-2.5 text-[#c83b3b] font-mono text-xs font-black">▶</span>
-                  <span className={`font-black text-[#c83b3b] dark:text-red-400 tabular-nums tracking-tight ${
+                  <span className={`font-black tabular-nums tracking-tight ${
+                    isCurNull
+                      ? 'text-stone-400 dark:text-slate-500 text-3xl sm:text-4xl'
+                      : 'text-[#c83b3b] dark:text-red-400'
+                  } ${
                     getDisplayLength(displayVal(cur)) > 8 ? 'text-2xl sm:text-3xl' : getDisplayLength(displayVal(cur)) > 5 ? 'text-3xl sm:text-4xl' : 'text-3xl sm:text-4xl'
                   }`}>
                     {displayVal(cur)}
@@ -273,6 +326,8 @@ export function ScorePad({
               <span className={`font-black tabular-nums tracking-tight ${
                 disabled
                   ? 'text-emerald-700 dark:text-emerald-400'
+                  : isCurNull
+                  ? 'text-stone-400 dark:text-slate-500'
                   : 'text-stone-900 dark:text-slate-100'
               } ${
                 getDisplayLength(displayVal(value)) > 8 ? 'text-2xl sm:text-3xl' : getDisplayLength(displayVal(value)) > 5 ? 'text-3xl sm:text-4xl' : 'text-4xl'
@@ -292,7 +347,9 @@ export function ScorePad({
               ) : totalText !== null ? (
                 <div className="flex flex-col items-center max-w-full px-3">
                   <span className={`text-xs font-bold text-center truncate max-w-full ${
-                    totalVariant === 'danger'
+                    isCurNull
+                      ? 'text-stone-500 dark:text-slate-400'
+                      : totalVariant === 'danger'
                       ? 'text-[#c83b3b] dark:text-red-400'
                       : totalVariant === 'success'
                       ? 'text-emerald-700 dark:text-emerald-400'
@@ -317,24 +374,24 @@ export function ScorePad({
       </div>
 
       {/* Raccourcis prédéfinis */}
-      {presets && presets.length > 0 && (() => {
-        const isMultiRow = presets.length > 7
-        const cols = isMultiRow ? Math.ceil(presets.length / 2) : presets.length
+      {effectivePresets && effectivePresets.length > 0 && (() => {
+        const isMultiRow = effectivePresets.length > 7
+        const cols = isMultiRow ? Math.ceil(effectivePresets.length / 2) : effectivePresets.length
 
         return (
           <div
-            className={`grid w-full py-0.5 transition-opacity ${isMultiRow ? 'gap-1 sm:gap-1.5' : 'gap-1.5'} ${
+            className={`grid w-full py-0.5 transition-opacity ${isMultiRow ? 'gap-1 sm:gap-1.5' : 'gap-1 sm:gap-1.5'} ${
               disabled ? 'opacity-30 pointer-events-none select-none grayscale' : ''
             }`}
             style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
           >
-            {presets.map(p => {
-              const pVal = typeof p === 'object' ? p.value : p
-              const pLabel = typeof p === 'object' ? p.label : `${showPlus && pVal > 0 ? '+' : ''}${pVal}`
-              const isSelected = value === pVal
+            {effectivePresets.map((p, idx) => {
+              const pVal = typeof p === 'object' && p !== null ? p.value : p
+              const pLabel = typeof p === 'object' && p !== null ? p.label : (pVal === null ? nullLabel : `${showPlus && pVal > 0 ? '+' : ''}${pVal}`)
+              const isSelected = value === pVal || (value == null && pVal == null)
               return (
                 <button
-                  key={pVal}
+                  key={pVal !== null ? pVal : `preset-null-${idx}`}
                   type="button"
                   disabled={disabled}
                   onClick={() => {
@@ -343,8 +400,8 @@ export function ScorePad({
                   }}
                   className={`min-w-0 text-center rounded-lg font-bold border transition-all cursor-pointer select-none active:scale-95 flex items-center justify-center ${
                     isMultiRow
-                      ? 'h-8 sm:h-9 text-xs sm:text-sm px-1'
-                      : 'h-8.5 sm:h-9.5 text-xs sm:text-sm px-2'
+                      ? 'h-8 sm:h-9 text-xs sm:text-sm px-0.5 sm:px-1'
+                      : 'h-8.5 sm:h-9.5 text-xs sm:text-sm px-1 sm:px-1.5'
                   } ${
                     isSelected
                       ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-2xs font-black'

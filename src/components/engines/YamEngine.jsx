@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react'
-import { Trophy, Dices, Check, ChevronLeft, ChevronRight, HelpCircle, RotateCcw } from 'lucide-react'
+import { Trophy, Dices, Check, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -995,22 +995,22 @@ export function YamEngine({ game, onFinish }) {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => {
                       handleCategoryValueChange(activePlayer.id, activeCategory.id, activeCategory.fixed)
                       try { navigator.vibrate?.(12) } catch {}
                     }}
-                    className={`p-4 rounded-2xl border-2 font-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-95 ${
+                    className={`p-3 rounded-2xl border-2 font-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-95 ${
                       currentCategoryValue === activeCategory.fixed
                         ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-md'
                         : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-800 dark:text-slate-200 hover:border-[#c83b3b]/60'
                     }`}
                   >
-                    <span className="text-2xl sm:text-3xl">{activeCategory.fixed} pts</span>
-                    <span className="text-[10.5px] font-bold uppercase tracking-wider opacity-90">
-                      {activeCategory.name} réussi
+                    <span className="text-xl sm:text-2xl">{activeCategory.fixed} pts</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">
+                      Réussi
                     </span>
                   </button>
 
@@ -1020,34 +1020,36 @@ export function YamEngine({ game, onFinish }) {
                       handleCategoryValueChange(activePlayer.id, activeCategory.id, 0)
                       try { navigator.vibrate?.(12) } catch {}
                     }}
-                    className={`p-4 rounded-2xl border-2 font-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-95 ${
+                    className={`p-3 rounded-2xl border-2 font-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-95 ${
                       currentCategoryValue === 0
                         ? 'bg-stone-800 dark:bg-stone-700 text-white border-stone-800 dark:border-stone-600 shadow-md'
                         : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400 hover:border-red-400'
                     }`}
                   >
-                    <span className="text-2xl sm:text-3xl line-through decoration-red-500 decoration-2">0 pt</span>
-                    <span className="text-[10.5px] font-bold uppercase tracking-wider opacity-90">
-                      Barrer la case
+                    <span className="text-xl sm:text-2xl line-through decoration-red-500 decoration-2">0 pt</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">
+                      Barrer
                     </span>
                   </button>
-                </div>
 
-                {/* Bouton pour réinitialiser / remettre la barre sans score */}
-                {currentCategoryValue != null && (
                   <button
                     type="button"
                     onClick={() => {
                       handleClearCategory(activePlayer.id, activeCategory.id)
-                      setPadTarget(null)
-                      try { navigator.vibrate?.(10) } catch {}
+                      try { navigator.vibrate?.(12) } catch {}
                     }}
-                    className="w-full py-2.5 px-3 rounded-xl border border-stone-200 dark:border-slate-700 bg-stone-100/70 dark:bg-slate-800/60 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 text-stone-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    className={`p-3 rounded-2xl border-2 font-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-95 ${
+                      currentCategoryValue == null
+                        ? 'bg-stone-800 dark:bg-stone-700 text-white border-stone-800 dark:border-stone-600 shadow-md'
+                        : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-400 dark:text-slate-500 hover:border-stone-400'
+                    }`}
                   >
-                    <RotateCcw size={13} />
-                    <span>Remettre la barre sans score (—)</span>
+                    <span className="text-xl sm:text-2xl">—</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">
+                      Sans score
+                    </span>
                   </button>
-                )}
+                </div>
 
                 <button
                   type="button"
@@ -1058,11 +1060,11 @@ export function YamEngine({ game, onFinish }) {
                 </button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div>
                 <ScorePad
                   value={
                     activeCategory
-                      ? (gridByPlayer[activePlayer.id]?.[activeCategory.id] ?? 0)
+                      ? (gridByPlayer[activePlayer.id]?.[activeCategory.id] ?? null)
                       : (directDelta[activePlayer.id] || 0)
                   }
                   onChange={(val) => {
@@ -1082,24 +1084,12 @@ export function YamEngine({ game, onFinish }) {
                   presets={activeCategory ? activeCategory.presets : [0, 5, 10, 15, 20, 25, 30, 35, 40, 50]}
                   customButtons={[]}
                   baseScore={0}
-                  formatTotal={(val) => `${val} point${val > 1 ? 's' : ''}`}
+                  formatTotal={(val) => (val == null ? 'Sans score' : `${val} point${val > 1 ? 's' : ''}`)}
                   showPlus={false}
+                  allowNull={true}
+                  nullLabel="—"
+                  nullText="Sans score"
                 />
-
-                {activeCategory && gridByPlayer[activePlayer.id]?.[activeCategory.id] != null && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleClearCategory(activePlayer.id, activeCategory.id)
-                      setPadTarget(null)
-                      try { navigator.vibrate?.(10) } catch {}
-                    }}
-                    className="w-full py-2.5 px-3 rounded-xl border border-stone-200 dark:border-slate-700 bg-stone-100/70 dark:bg-slate-800/60 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 text-stone-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    <RotateCcw size={13} />
-                    <span>Remettre la barre sans score (—)</span>
-                  </button>
-                )}
               </div>
             )}
           </div>
