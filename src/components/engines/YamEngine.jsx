@@ -660,9 +660,9 @@ export function YamEngine({ game, onFinish }) {
                 {/* 2. Ligne SOUS-TOTAL Supérieur */}
                 <tr className="bg-stone-100/75 dark:bg-slate-800/60 font-semibold border-t-2 border-stone-200 dark:border-slate-700">
                   <td className="sticky left-0 z-10 bg-stone-100 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
-                    <div className="flex flex-col items-center justify-center leading-none py-0.5">
-                      <span className="text-[8.5px] font-black text-stone-700 dark:text-slate-300">TOT.</span>
-                      <span className="text-[7.5px] font-semibold text-stone-400 dark:text-slate-500">/63</span>
+                    <div className="flex flex-col items-center justify-center gap-0.5 py-0.5">
+                      <span className="text-[8.5px] font-black text-stone-700 dark:text-slate-300 leading-none">TOT.</span>
+                      <span className="text-[7.5px] font-semibold text-stone-400 dark:text-slate-500 leading-none">/63</span>
                     </div>
                   </td>
                   {game.players.map((p) => {
@@ -680,9 +680,9 @@ export function YamEngine({ game, onFinish }) {
                 {/* 3. Ligne BONUS (+35 si >= 63) */}
                 <tr className="bg-stone-50/60 dark:bg-slate-800/40">
                   <td className="sticky left-0 z-10 bg-stone-50 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
-                    <div className="flex flex-col items-center justify-center leading-none py-0.5">
-                      <span className="text-[8px] font-black text-stone-600 dark:text-slate-400">BONUS</span>
-                      <span className="text-[7.5px] font-bold text-emerald-600 dark:text-emerald-400">+35</span>
+                    <div className="flex flex-col items-center justify-center gap-0.5 py-0.5">
+                      <span className="text-[8px] font-black text-stone-600 dark:text-slate-400 leading-none">BONUS</span>
+                      <span className="text-[7.5px] font-bold text-emerald-600 dark:text-emerald-400 leading-none">+35</span>
                     </div>
                   </td>
                   {game.players.map((p) => {
@@ -729,8 +729,8 @@ export function YamEngine({ game, onFinish }) {
                       className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
                       title={`${cat.name} · ${cat.desc}`}
                     >
-                      <div className="flex flex-col items-center justify-center leading-none py-0.5">
-                        <span className="font-bold text-stone-800 dark:text-slate-200 text-[9px] sm:text-[9.5px] truncate max-w-[42px] sm:max-w-[48px] tracking-tight">
+                      <div className="flex flex-col items-center justify-center gap-0.5 py-0.5">
+                        <span className="font-bold text-stone-800 dark:text-slate-200 text-[9px] sm:text-[9.5px] truncate max-w-[42px] sm:max-w-[48px] tracking-tight leading-none">
                           {cat.id === 'small_straight'
                             ? 'P.Suite'
                             : cat.id === 'large_straight'
@@ -738,7 +738,7 @@ export function YamEngine({ game, onFinish }) {
                             : cat.name}
                         </span>
                         {cat.fixed && (
-                          <span className="text-[7.5px] font-extrabold text-stone-400 dark:text-slate-500 tabular-nums mt-0.5">
+                          <span className="text-[7.5px] font-extrabold text-stone-400 dark:text-slate-500 tabular-nums leading-none">
                             {cat.fixed}
                           </span>
                         )}
