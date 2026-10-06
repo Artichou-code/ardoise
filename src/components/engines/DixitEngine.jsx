@@ -190,17 +190,11 @@ function DixitOrderSheet({
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Ordre du tour (qui commence)">
+    <BottomSheet open={open} onClose={onClose} title="Ordre du tour">
       <div className="px-4 pt-1 pb-6 space-y-3">
-        <div className="p-2.5 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60 text-xs text-stone-600 dark:text-slate-300 space-y-1">
-          <p className="font-semibold text-stone-800 dark:text-slate-200">
-            Qui commence et rotation des conteurs :
-          </p>
-          <p className="text-[11px] leading-relaxed text-stone-500 dark:text-slate-400">
-            Le joueur <strong>1er</strong> commence la partie (Manche 1). À chaque manche, la main passe au joueur suivant dans l&apos;ordre de la liste.
-            Glissez-déposez ou utilisez les flèches pour réorganiser les positions.
-          </p>
-        </div>
+        <p className="text-xs text-center text-stone-400 dark:text-slate-500 font-medium">
+          Glissez pour modifier l&apos;ordre
+        </p>
 
         <div className="space-y-1.5 relative select-none">
           {localPlayers.map((p, index) => {
@@ -283,19 +277,16 @@ function DixitOrderSheet({
                       <span className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
                         {p.name}
                       </span>
-                      {isFirst ? (
+                      {isCurrentStoryteller ? (
                         <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white shrink-0">
-                          1er · Commence
+                          Conteur
                         </span>
-                      ) : isCurrentStoryteller ? (
-                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-stone-700 dark:bg-slate-600 text-white shrink-0">
-                          Conteur M.{roundNum}
+                      ) : isFirst ? (
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-stone-600 dark:bg-slate-600 text-white shrink-0">
+                          Commence
                         </span>
                       ) : null}
                     </div>
-                    <span className="text-[10px] text-stone-400 dark:text-slate-500 block truncate leading-tight mt-0.5">
-                      {isFirst ? 'Manche 1 (Départ)' : `Manche ${effectiveIndex + 1}`} · tour {effectiveIndex + 1}/{localPlayers.length}
-                    </span>
                   </div>
                 </div>
 
