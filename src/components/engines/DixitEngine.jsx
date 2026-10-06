@@ -37,6 +37,16 @@ export function DixitEngine({ game, onFinish }) {
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [showRulesMemo, setShowRulesMemo] = useState(false)
 
+  // Calcul du score maximum théorique par manche selon les règles officielles Dixit :
+  // - Conteur : 0 pt ou 3 pts (max 3)
+  // - Devins : 3 pts (si trouvé) + 1 pt par vote de bluff reçu sur sa carte.
+  //   Nombre max de votants = nombre de joueurs - 2 (le conteur ne vote pas, on ne vote pas pour soi).
+  //   En règles officielles (notamment Dixit Odyssey), le bluff est plafonné à 3 pts max.
+  const playerCount = game.players?.length || 4
+  const maxBluff = playerCount <= 5 ? Math.max(1, playerCount - 2) : 3
+  const maxGuesserPoints = 3 + maxBluff // 5 pts à 4 joueurs, 6 pts à 5+ joueurs
+  const guesserValues = Array.from({ length: maxGuesserPoints + 1 }, (_, i) => i)
+
   // Navigation dans le ScorePad
   const activeIndex = editingPlayer ? game.players.findIndex(p => p.id === editingPlayer.id) : -1
   const hasNextPlayer = activeIndex >= 0 && activeIndex < game.players.length - 1
@@ -259,9 +269,9 @@ export function DixitEngine({ game, onFinish }) {
                     onChange={(val) => setRoundPoints(prev => ({ ...prev, [p.id]: Math.max(0, Number(val) || 0) }))}
                     onOpenPad={() => setEditingPlayer(p)}
                     min={0}
-                    max={12}
+                    max={isStoryteller ? 3 : maxGuesserPoints}
                     step={1}
-                    values={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
+                    values={isStoryteller ? [0, 1, 2, 3] : guesserValues}
                     showPlus={true}
                   />
                 </div>
@@ -321,72 +331,81 @@ export function DixitEngine({ game, onFinish }) {
 
       {/* BottomSheet avec ScorePad pour saisie tactile au pavé numérique */}
       <BottomSheet open={!!editingPlayer} onClose={() => setEditingPlayer(null)}>
-        {editingPlayer && (
-          <div className="px-4 pt-1 pb-6 space-y-3">
-            <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Avatar player={editingPlayer} size="sm" />
-                <div className="min-w-0 flex flex-col justify-center">
-                  <div className="flex items-center gap-1.5 leading-tight">
-                    <span className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate leading-tight">
-                      {editingPlayer.name}
-                    </span>
-                    {editingPlayer.id === storytellerId && (
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white leading-none shrink-0">
-                        Conteur
+        {editingPlayer && (() => {
+          const editingIsStoryteller = editingPlayer.id === storytellerId
+          const padMax = editingIsStoryteller ? 3 : maxGuesserPoints
+          const padPresets = editingIsStoryteller ? [0, 1, 2, 3] : guesserValues
+          const padSubLabel = editingIsStoryteller
+            ? 'Conteur : 0 pt ou 3 pts'
+            : `Trouvé (+3) · Bluff (max +${maxBluff})`
+
+          return (
+            <div className="px-4 pt-1 pb-6 space-y-3">
+              <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Avatar player={editingPlayer} size="sm" />
+                  <div className="min-w-0 flex flex-col justify-center">
+                    <div className="flex items-center gap-1.5 leading-tight">
+                      <span className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate leading-tight">
+                        {editingPlayer.name}
                       </span>
-                    )}
+                      {editingPlayer.id === storytellerId && (
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white leading-none shrink-0">
+                          Conteur
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate leading-tight mt-0.5">
+                      Score cumulé actuel : {game.scores?.[editingPlayer.id] || 0} pts
+                    </span>
                   </div>
-                  <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate leading-tight mt-0.5">
-                    Score cumulé actuel : {game.scores?.[editingPlayer.id] || 0} pts
-                  </span>
+                </div>
+
+                {/* Navigation précédente / suivante */}
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={handlePrevInPad}
+                    disabled={!hasPrevPlayer}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-30 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 cursor-pointer"
+                    title="Précédent"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextInPad}
+                    disabled={!hasNextPlayer}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-30 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 cursor-pointer"
+                    title="Suivant"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
                 </div>
               </div>
 
-              {/* Navigation précédente / suivante */}
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={handlePrevInPad}
-                  disabled={!hasPrevPlayer}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-30 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 cursor-pointer"
-                  title="Précédent"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNextInPad}
-                  disabled={!hasNextPlayer}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-30 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 cursor-pointer"
-                  title="Suivant"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
+              <ScorePad
+                value={roundPoints[editingPlayer.id] || 0}
+                onChange={(val) => setRoundPoints(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, Number(val) || 0) }))}
+                onConfirm={handleNextInPad}
+                confirmLabel={hasNextPlayer && nextPlayer ? `Valider & Suivant (${nextPlayer.name})` : 'Valider'}
+                label="Points de la manche"
+                subLabel={padSubLabel}
+                min={0}
+                max={padMax}
+                step={1}
+                presets={padPresets}
+                customButtons={[]}
+                baseScore={game.scores?.[editingPlayer.id] || 0}
+                formatTotal={(val) => {
+                  const cur = game.scores?.[editingPlayer.id] || 0
+                  return `+${val} pts · Nouveau total : ${cur + val} / ${WIN_SCORE} pts`
+                }}
+                showPlus={true}
+              />
             </div>
-
-            <ScorePad
-              value={roundPoints[editingPlayer.id] || 0}
-              onChange={(val) => setRoundPoints(prev => ({ ...prev, [editingPlayer.id]: Math.max(0, Number(val) || 0) }))}
-              onConfirm={handleNextInPad}
-              confirmLabel={hasNextPlayer && nextPlayer ? `Valider & Suivant (${nextPlayer.name})` : 'Valider'}
-              label="Points de la manche"
-              subLabel="Trouvé (+3) · Bluff (+1)"
-              min={0}
-              max={15}
-              step={1}
-              presets={[0, 1, 2, 3, 4, 5, 6]}
-              customButtons={[]}
-              baseScore={game.scores?.[editingPlayer.id] || 0}
-              formatTotal={(val) => {
-                const cur = game.scores?.[editingPlayer.id] || 0
-                return `+${val} pts · Nouveau total : ${cur + val} / ${WIN_SCORE} pts`
-              }}
-              showPlus={true}
-            />
-          </div>
-        )}
+          )
+        })()}
       </BottomSheet>
     </div>
   )
