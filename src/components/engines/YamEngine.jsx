@@ -951,26 +951,12 @@ export function YamEngine({ game, onFinish }) {
                 </div>
               </div>
 
-              {/* Navigation et actions */}
-              <div className="flex items-center gap-1.5">
-                {activeCategory && gridByPlayer[activePlayer.id]?.[activeCategory.id] != null && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleClearCategory(activePlayer.id, activeCategory.id)
-                      setPadTarget(null)
-                    }}
-                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold text-stone-600 hover:text-red-600 hover:bg-red-50 dark:text-slate-400 dark:hover:bg-red-950/40 border border-stone-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center gap-1"
-                    title="Remettre la barre sans score (—)"
-                  >
-                    <RotateCcw size={11} />
-                    <span>Remettre —</span>
-                  </button>
-                )}
+              {/* Navigation des joueurs / catégories */}
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
                   onClick={handlePadPrev}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 cursor-pointer"
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 cursor-pointer text-stone-600 dark:text-slate-300"
                   title="Précédent"
                 >
                   <ChevronLeft size={14} />
@@ -978,7 +964,7 @@ export function YamEngine({ game, onFinish }) {
                 <button
                   type="button"
                   onClick={handlePadNext}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 cursor-pointer"
+                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 cursor-pointer text-stone-600 dark:text-slate-300"
                   title="Suivant"
                 >
                   <ChevronRight size={14} />
