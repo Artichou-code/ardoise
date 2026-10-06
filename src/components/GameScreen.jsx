@@ -527,9 +527,7 @@ export function GameScreen() {
                   return (
                     <div
                       key={id}
-                      className={`relative flex ${
-                        isCardWide ? 'items-center justify-between' : 'flex-col justify-between'
-                      } rounded-xl ${
+                      className={`relative flex items-center justify-between rounded-xl ${
                         isCardWide ? (count <= 2 ? 'px-3 py-2' : 'px-3 py-1.5') : 'px-2 py-1.5'
                       } transition-all min-h-[46px] ${colSpan} ${
                         isLeader
@@ -537,72 +535,39 @@ export function GameScreen() {
                           : 'school-card'
                       }`}
                     >
-                      {isCardWide ? (
-                        <>
-                          {/* Zone gauche : Avatar centré par rapport au nom */}
-                          <div className="flex-1 flex flex-col items-center justify-center min-w-0">
-                            <div className="relative inline-flex items-center justify-center">
-                              <Avatar
-                                player={player}
-                                size={count <= 2 ? 'sm-compact' : 'xs'}
-                                leader={isLeader}
-                                crown={hasStarted && (isLeader || rank === 1)}
-                              />
+                      {/* Zone gauche : Avatar centré par rapport au nom */}
+                      <div className="flex-1 flex flex-col items-center justify-center min-w-0 pr-1">
+                        <div className="relative inline-flex items-center justify-center">
+                          <Avatar
+                            player={player}
+                            size={count <= 2 ? 'sm-compact' : 'xs'}
+                            leader={isLeader}
+                            crown={hasStarted && (isLeader || rank === 1)}
+                          />
 
-                              {/* Pastille de rang 2e, 3e, etc. */}
-                              {hasStarted && rank > 1 && (
-                                <span className="absolute top-0.5 -left-2.5 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-10 pointer-events-none select-none">
-                                  {rank}e
-                                </span>
-                              )}
-                            </div>
-
-                            <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center leading-tight mt-0.5 text-stone-900 dark:text-slate-100 block">
-                              {player.name}
+                          {/* Pastille de rang 2e, 3e, etc. */}
+                          {hasStarted && rank > 1 && (
+                            <span className="absolute top-0.5 -left-2.5 px-1 min-w-[15px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-10 pointer-events-none select-none">
+                              {rank}e
                             </span>
-                          </div>
+                          )}
+                        </div>
 
-                          {/* Zone droite restante : Score centré */}
-                          <div className="flex-1 min-w-0 flex items-center justify-center">
-                            <span className={`font-black tabular-nums leading-none ${
-                              count <= 2 ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'
-                            } ${
-                              isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
-                            }`}>
-                              {score}
-                            </span>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          {/* Ligne 1 : Avatar à gauche + Score à droite */}
-                          <div className="flex items-center justify-between w-full">
-                            <div className="relative inline-flex items-center">
-                              <Avatar
-                                player={player}
-                                size="xs"
-                                leader={isLeader}
-                                crown={hasStarted && (isLeader || rank === 1)}
-                              />
-                              {hasStarted && rank > 1 && (
-                                <span className="absolute top-0.5 -left-2 px-1 min-w-[14px] h-3.5 rounded-full flex items-center justify-center text-[8px] font-black leading-none shadow-2xs ring-1 ring-white dark:ring-slate-900 bg-stone-500/90 dark:bg-slate-600 text-white z-10 pointer-events-none select-none">
-                                  {rank}e
-                                </span>
-                              )}
-                            </div>
-                            <span className={`font-black tabular-nums leading-none text-base sm:text-lg ${
-                              isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
-                            }`}>
-                              {score}
-                            </span>
-                          </div>
+                        <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center leading-tight mt-0.5 text-stone-900 dark:text-slate-100 block">
+                          {player.name}
+                        </span>
+                      </div>
 
-                          {/* Ligne 2 : Nom du joueur sur TOUTE la largeur de la carte */}
-                          <span className="text-[10px] sm:text-[11px] font-bold truncate w-full block text-left leading-tight mt-1 text-stone-900 dark:text-slate-100">
-                            {player.name}
-                          </span>
-                        </>
-                      )}
+                      {/* Zone droite : Score centré verticalement et horizontalement */}
+                      <div className={`${isCardWide ? 'flex-1' : 'w-8 sm:w-9 shrink-0'} min-w-0 flex items-center justify-center`}>
+                        <span className={`font-black tabular-nums leading-none ${
+                          count <= 2 ? 'text-2xl sm:text-3xl' : (isCardWide ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl')
+                        } ${
+                          isLeader ? 'text-[#c83b3b]' : 'text-stone-900 dark:text-slate-100'
+                        }`}>
+                          {score}
+                        </span>
+                      </div>
                     </div>
                   )
                 })}
