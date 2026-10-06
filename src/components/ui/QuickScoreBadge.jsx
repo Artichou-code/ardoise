@@ -157,7 +157,7 @@ export function QuickScoreBadge({
           tall
             ? 'flex flex-col items-center justify-between min-w-[4.8rem] w-20 sm:w-24 h-full self-stretch py-2 px-1.5 rounded-2xl'
             : compact
-            ? 'flex items-center justify-between gap-1 w-full min-w-0 h-8 sm:h-9 px-2 py-0.5 rounded-lg'
+            ? 'flex items-center justify-between gap-1 w-full min-w-0 h-8 sm:h-9 px-1.5 sm:px-2 py-0.5 rounded-lg'
             : 'flex items-center justify-between gap-1.5 min-w-[4.2rem] h-10 px-2.5 py-1 rounded-xl'
         } ${
           isDragging

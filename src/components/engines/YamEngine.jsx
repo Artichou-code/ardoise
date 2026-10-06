@@ -377,7 +377,7 @@ export function YamEngine({ game, onFinish }) {
                       <span>Section Supérieure (1 à 6)</span>
                       <span>{stats.upperSubtotal}/63 pts</span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2">
                       {YAM_CATEGORIES.filter(c => c.section === 'upper').map((cat) => {
                         const val = pGrid[cat.id]
                         const isSet = val != null
@@ -385,14 +385,14 @@ export function YamEngine({ game, onFinish }) {
                         return (
                           <div
                             key={cat.id}
-                            className={`p-2 rounded-xl border flex flex-col justify-between gap-1.5 transition-all ${
+                            className={`p-1.5 sm:p-2 rounded-xl border flex flex-col justify-between gap-1 sm:gap-1.5 transition-all ${
                               isSet
                                 ? 'border-[#c83b3b]/35 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
                                 : 'border-stone-200/80 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30'
                             }`}
                           >
                             <div className="flex items-center justify-between w-full px-0.5">
-                              <span className="text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate">
+                              <span className="text-[10px] sm:text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate">
                                 {cat.name}
                               </span>
                               {isSet && (
@@ -427,7 +427,7 @@ export function YamEngine({ game, onFinish }) {
                       <span>Section Inférieure (Combinaisons)</span>
                       <span>{stats.lowerSubtotal} pts</span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1.5 sm:gap-2">
                       {YAM_CATEGORIES.filter(c => c.section === 'lower').map((cat) => {
                         const val = pGrid[cat.id]
                         const isSet = val != null
@@ -435,14 +435,14 @@ export function YamEngine({ game, onFinish }) {
                         return (
                           <div
                             key={cat.id}
-                            className={`p-2 rounded-xl border flex flex-col justify-between gap-1.5 transition-all ${
+                            className={`p-1.5 sm:p-2 rounded-xl border flex flex-col justify-between gap-1 sm:gap-1.5 transition-all ${
                               isSet
                                 ? 'border-[#c83b3b]/35 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
                                 : 'border-stone-200/80 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30'
                             }`}
                           >
                             <div className="flex items-center justify-between w-full px-0.5">
-                              <span className="text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate">
+                              <span className="text-[10px] sm:text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate">
                                 {cat.name}
                               </span>
                               {isSet && (
