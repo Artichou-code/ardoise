@@ -604,14 +604,6 @@ export function DixitEngine({ game, onFinish }) {
 
                 <div className="relative shrink-0">
                   <Avatar player={p} size="xs" />
-                  {isStoryteller && (
-                    <span
-                      className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-white text-[#c83b3b] shadow-2xs flex items-center justify-center ring-1 ring-[#c83b3b]/30"
-                      title="Conteur de la manche"
-                    >
-                      <VenetianMask size={8} className="stroke-[2.5]" />
-                    </span>
-                  )}
                 </div>
                 <span className={`text-[11px] font-semibold truncate w-full text-center leading-tight ${isStoryteller ? 'text-white' : ''}`}>
                   {p.name}
