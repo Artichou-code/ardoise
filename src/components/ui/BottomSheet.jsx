@@ -22,15 +22,26 @@ export function BottomSheet({
   const startY = useRef(null)
   const openTimeRef = useRef(0)
 
+  const backdropPointerDownRef = useRef(false)
+
   useEffect(() => {
     if (open) {
       openTimeRef.current = Date.now()
+      backdropPointerDownRef.current = false
     }
   }, [open])
 
+  const handleBackdropPointerDown = (e) => {
+    if (e.target === e.currentTarget) {
+      backdropPointerDownRef.current = true
+    }
+  }
+
   const handleBackdropClick = (e) => {
-    // Ignore les ghost-clicks générés par le geste/tap qui a ouvert la modale (délai de 350ms)
-    if (Date.now() - openTimeRef.current < 350) return
+    // Ne ferme que si le pointerdown a bien démarré sur le backdrop (pas un clic fantôme provenant de l'ouverture)
+    if (!backdropPointerDownRef.current) return
+    backdropPointerDownRef.current = false
+    if (Date.now() - openTimeRef.current < 250) return
     onClose?.()
   }
 
@@ -93,6 +104,7 @@ export function BottomSheet({
           style={{
             paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 1.5rem), 2.5rem)',
           }}
+          onPointerDown={handleBackdropPointerDown}
           onClick={(e) => e.target === e.currentTarget && handleBackdropClick(e)}
         >
           <div
@@ -144,9 +156,14 @@ export function BottomSheet({
     return (
       <div
         className="fixed inset-0 z-50 flex items-end justify-center"
+        onPointerDown={handleBackdropPointerDown}
         onClick={(e) => e.target === e.currentTarget && handleBackdropClick(e)}
       >
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleBackdropClick} />
+        <div
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          onPointerDown={handleBackdropPointerDown}
+          onClick={handleBackdropClick}
+        />
         <div
           ref={sheetRef}
           className={`relative w-full max-w-lg school-surface rounded-t-2xl shadow-2xl border-t border-stone-200 dark:border-slate-800 transition-transform duration-200 max-h-[88dvh] flex flex-col ${className}`}

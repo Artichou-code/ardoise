@@ -33,6 +33,7 @@ export function QuickScoreBadge({
   const [isDragging, setIsDragging] = useState(false)
   const dragStartXRef = useRef(0)
   const dragStartYRef = useRef(0)
+  const lastClientYRef = useRef(0)
   const dragStartValueRef = useRef(value ?? 0)
   const currentValueRef = useRef(value ?? 0)
   const hasMovedRef = useRef(false)
@@ -65,12 +66,9 @@ export function QuickScoreBadge({
     if (disabled) return
     dragStartXRef.current = e.clientX
     dragStartYRef.current = e.clientY
+    lastClientYRef.current = e.clientY
     hasMovedRef.current = false
     wasDraggingOrMovedRef.current = false
-
-    // En mode grille compacte (Yam's), on ne capture pas le défilement tactile :
-    // le scroll vertical natif de la page et horizontal du tableau restent 100% fluides.
-    if (compact) return
 
     const initVal = value == null
       ? (allowClear ? null : (values && values.length > 0 ? values[0] : (min !== undefined ? min : 0)))
@@ -84,17 +82,6 @@ export function QuickScoreBadge({
 
   const handlePointerMove = (e) => {
     if (disabled || isHorizontalScrollRef.current) return
-
-    // Sur badge compact, on détecte juste si l'utilisateur scroll pour éviter d'ouvrir le pad au lâcher
-    if (compact) {
-      const deltaX = Math.abs(e.clientX - dragStartXRef.current)
-      const deltaY = Math.abs(e.clientY - dragStartYRef.current)
-      if (deltaX > 8 || deltaY > 8) {
-        hasMovedRef.current = true
-        wasDraggingOrMovedRef.current = true
-      }
-      return
-    }
 
     const deltaX = e.clientX - dragStartXRef.current
     const totalDeltaY = dragStartYRef.current - e.clientY // Vers le haut = augmentation
@@ -116,7 +103,7 @@ export function QuickScoreBadge({
         return
       }
 
-      // Si le geste est vertical : prise en charge tactile du score
+      // Si le geste est vertical : prise en charge tactile de la roulette
       try {
         e.currentTarget.setPointerCapture(e.pointerId)
       } catch {}
@@ -132,6 +119,21 @@ export function QuickScoreBadge({
     if (!isDraggingRef.current) return
     hasMovedRef.current = true
 
+    // Accompagnement fluide du défilement parent sur badge compact :
+    // Dès que le geste dépasse la course d'un cran de roulette (> 26px),
+    // on transmet le mouvement au conteneur de scroll parent pour faire descendre la feuille
+    const deltaYFromLast = lastClientYRef.current - e.clientY
+    lastClientYRef.current = e.clientY
+    if (compact && Math.abs(totalDeltaY) > 26) {
+      const scrollParent = e.currentTarget.closest('.overflow-y-auto')
+      if (scrollParent) {
+        scrollParent.scrollTop += deltaYFromLast
+      }
+    }
+
+    const stepHeight = compact ? 24 : 22
+    const freeStep = compact ? 24 : 14
+
     let nextVal
     if (values && values.length > 0) {
       if (allowClear) {
@@ -139,13 +141,13 @@ export function QuickScoreBadge({
         const states = [null, ...values]
         const startIndex = states.indexOf(dragStartValueRef.current)
         const safeIndex = startIndex !== -1 ? startIndex : 0
-        const indexSteps = Math.round(totalDeltaY / 22)
+        const indexSteps = Math.round(totalDeltaY / stepHeight)
         const targetIndex = Math.max(0, Math.min(states.length - 1, safeIndex + indexSteps))
         nextVal = states[targetIndex]
       } else {
         const startIndex = values.indexOf(dragStartValueRef.current)
         const safeIndex = startIndex !== -1 ? startIndex : 0
-        const indexSteps = Math.round(totalDeltaY / 22)
+        const indexSteps = Math.round(totalDeltaY / stepHeight)
         const targetIndex = Math.max(0, Math.min(values.length - 1, safeIndex + indexSteps))
         nextVal = values[targetIndex]
       }
@@ -156,12 +158,12 @@ export function QuickScoreBadge({
           if (totalDeltaY < 12) {
             nextVal = null
           } else {
-            const stepsCount = Math.floor((totalDeltaY - 12) / 14) * step
+            const stepsCount = Math.floor((totalDeltaY - 12) / freeStep) * step
             const tentative = minBound + stepsCount
             nextVal = max !== undefined ? Math.min(max, tentative) : tentative
           }
         } else {
-          const stepsCount = Math.round(totalDeltaY / 14) * step
+          const stepsCount = Math.round(totalDeltaY / freeStep) * step
           const tentativeVal = dragStartValueRef.current + stepsCount
           if (tentativeVal < minBound) {
             nextVal = null
@@ -170,8 +172,8 @@ export function QuickScoreBadge({
           }
         }
       } else {
-        // Sensibilité : ~14px par pas de score (identique à ScorePad)
-        const stepsCount = Math.round(totalDeltaY / 14) * step
+        // Sensibilité calibrée à ~24px par pas de score sur badge compact
+        const stepsCount = Math.round(totalDeltaY / freeStep) * step
         nextVal = clampValue((dragStartValueRef.current ?? (min !== undefined ? min : 0)) + stepsCount)
       }
     }
@@ -186,16 +188,6 @@ export function QuickScoreBadge({
   }
 
   const handlePointerUp = (e) => {
-    if (compact) {
-      if (hasMovedRef.current) {
-        wasDraggingOrMovedRef.current = true
-        setTimeout(() => {
-          wasDraggingOrMovedRef.current = false
-        }, 180)
-      }
-      return
-    }
-
     const wasDragging = isDraggingRef.current
     const wasHorizontal = isHorizontalScrollRef.current
     const hasMoved = hasMovedRef.current
@@ -213,7 +205,7 @@ export function QuickScoreBadge({
       wasDraggingOrMovedRef.current = true
       setTimeout(() => {
         wasDraggingOrMovedRef.current = false
-      }, 180)
+      }, 350)
       try {
         navigator.vibrate?.(15)
       } catch {}
@@ -234,11 +226,11 @@ export function QuickScoreBadge({
     setIsDragging(false)
     isGestureDecidedRef.current = false
     isHorizontalScrollRef.current = false
-    if (compact && hasMovedRef.current) {
+    if (hasMovedRef.current) {
       wasDraggingOrMovedRef.current = true
       setTimeout(() => {
         wasDraggingOrMovedRef.current = false
-      }, 180)
+      }, 350)
     }
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
@@ -246,15 +238,23 @@ export function QuickScoreBadge({
   }
 
   const handleClick = (e) => {
-    if (disabled) return
+    if (disabled) {
+      e.stopPropagation()
+      return
+    }
     if (wasDraggingOrMovedRef.current) {
-      wasDraggingOrMovedRef.current = false
+      e.preventDefault()
+      e.stopPropagation()
+      setTimeout(() => {
+        wasDraggingOrMovedRef.current = false
+      }, 60)
       return
     }
     if (openPadTimeoutRef.current) {
       clearTimeout(openPadTimeoutRef.current)
       openPadTimeoutRef.current = null
     }
+    e.stopPropagation()
     onOpenPad?.()
   }
 

@@ -209,7 +209,7 @@ function FixedScoreBadge({
 
     if (wasDragging && hasMoved) {
       wasDraggingOrMovedRef.current = true
-      setTimeout(() => { wasDraggingOrMovedRef.current = false }, 180)
+      setTimeout(() => { wasDraggingOrMovedRef.current = false }, 350)
       try { navigator.vibrate?.(15) } catch {}
     } else if (!wasHorizontal && !hasMoved) {
       // Tap sans glisser : prépare le cycle direct null ➔ fixedScore ➔ 0 ➔ null
@@ -228,22 +228,31 @@ function FixedScoreBadge({
     setIsDragging(false)
     isGestureDecidedRef.current = false
     isHorizontalScrollRef.current = false
-    wasDraggingOrMovedRef.current = true
+    if (hasMovedRef.current) {
+      wasDraggingOrMovedRef.current = true
+      setTimeout(() => { wasDraggingOrMovedRef.current = false }, 350)
+    }
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
     } catch {}
   }
 
   const handleClick = (e) => {
-    if (disabled) return
+    if (disabled) {
+      e.stopPropagation()
+      return
+    }
     if (wasDraggingOrMovedRef.current) {
-      wasDraggingOrMovedRef.current = false
+      e.preventDefault()
+      e.stopPropagation()
+      setTimeout(() => { wasDraggingOrMovedRef.current = false }, 60)
       return
     }
     if (cycleTimeoutRef.current) {
       clearTimeout(cycleTimeoutRef.current)
       cycleTimeoutRef.current = null
     }
+    e.stopPropagation()
     cycleScore()
   }
 
@@ -694,7 +703,8 @@ export function YamEngine({ game, onFinish }) {
                       return (
                         <td
                           key={p.id}
-                          onClick={() => {
+                          onClick={(e) => {
+                            if (e.defaultPrevented) return
                             if (!status.disabled) {
                               setPadTarget({ playerId: p.id, catId: cat.id })
                             }
@@ -823,7 +833,8 @@ export function YamEngine({ game, onFinish }) {
                       return (
                         <td
                           key={p.id}
-                          onClick={() => {
+                          onClick={(e) => {
+                            if (e.defaultPrevented) return
                             if (!status.disabled && !cat.fixed) {
                               setPadTarget({ playerId: p.id, catId: cat.id })
                             }
