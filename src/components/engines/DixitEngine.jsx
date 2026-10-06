@@ -605,9 +605,9 @@ export function DixitEngine({ game, onFinish }) {
                 key={p.id}
                 ref={el => { itemRefs.current[p.id] = el }}
                 onClick={() => handlePlayerCardClick(p)}
-                className={`relative flex flex-col items-center justify-center gap-1 py-1.5 px-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer border select-none shrink-0 min-w-[68px] max-w-[80px] ${
+                className={`relative flex flex-col items-center justify-center gap-1 py-1.5 px-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer border select-none shrink-0 min-w-[66px] max-w-[78px] ${
                   isStoryteller
-                    ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-md scale-105 z-10 ring-2 ring-[#c83b3b]/20'
+                    ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs z-10'
                     : 'border-stone-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 text-stone-700 dark:text-slate-300 hover:border-stone-300 opacity-90 hover:opacity-100'
                 }`}
                 title={`Tour ${idx + 1} : ${p.name}${isStoryteller ? ' (Conteur de cette manche)' : ''} · Cliquer pour voir sa saisie`}
@@ -616,22 +616,25 @@ export function DixitEngine({ game, onFinish }) {
                 <span className={`absolute -top-1.5 -left-1 px-1.5 py-0.2 rounded-full text-[8px] font-black leading-tight shadow-2xs z-20 ${
                   isFirst
                     ? isStoryteller ? 'bg-white text-[#c83b3b]' : 'bg-[#c83b3b] text-white'
-                    : isStoryteller ? 'bg-white/90 text-stone-800' : 'bg-stone-200/90 dark:bg-slate-700 text-stone-600 dark:text-slate-300'
+                    : isStoryteller ? 'bg-white text-[#c83b3b]' : 'bg-stone-200/90 dark:bg-slate-700 text-stone-600 dark:text-slate-300'
                 }`}>
                   {isFirst ? '1er' : `${idx + 1}e`}
                 </span>
 
                 <div className="relative shrink-0">
                   <Avatar player={p} size="xs" />
+                  {isStoryteller && (
+                    <span
+                      className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-white text-[#c83b3b] shadow-2xs flex items-center justify-center ring-1 ring-[#c83b3b]/30"
+                      title="Conteur de la manche"
+                    >
+                      <VenetianMask size={8} className="stroke-[2.5]" />
+                    </span>
+                  )}
                 </div>
                 <span className={`text-[11px] font-semibold truncate w-full text-center leading-tight ${isStoryteller ? 'text-white' : ''}`}>
                   {p.name}
                 </span>
-                {isStoryteller && (
-                  <span className="text-[8px] font-extrabold uppercase tracking-wide px-1 rounded bg-white/20 text-white leading-tight">
-                    Conteur
-                  </span>
-                )}
               </div>
             )
           })}
