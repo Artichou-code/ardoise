@@ -244,11 +244,15 @@ export function ScorePad({
   return (
     <div className="flex flex-col gap-3 pt-2">
       {(label || subLabel) && (
-        <div className="flex items-baseline justify-between gap-2 min-w-0">
+        <div className="flex items-center justify-between gap-2 min-w-0">
           {label && (
-            <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-slate-400 shrink-0">
-              {label}
-            </p>
+            <div className="text-xs font-semibold text-stone-500 dark:text-slate-400 shrink-0">
+              {typeof label === 'string' ? (
+                <span className="uppercase tracking-wider">{label}</span>
+              ) : (
+                label
+              )}
+            </div>
           )}
           {subLabel && (
             <span className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 text-right leading-tight min-w-0">

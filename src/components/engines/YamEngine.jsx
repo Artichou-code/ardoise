@@ -1076,7 +1076,20 @@ export function YamEngine({ game, onFinish }) {
                   }}
                   onConfirm={() => setPadTarget(null)}
                   confirmLabel="Valider la case"
-                  label={activeCategory ? activeCategory.name : 'Score de la manche'}
+                  label={
+                    activeCategory?.diceValue ? (
+                      <div className="flex items-center gap-2">
+                        <DiceFace value={activeCategory.diceValue} size={24} />
+                        <span className="font-extrabold text-sm text-stone-800 dark:text-slate-200">
+                          {activeCategory.name}
+                        </span>
+                      </div>
+                    ) : activeCategory ? (
+                      activeCategory.name
+                    ) : (
+                      'Score de la manche'
+                    )
+                  }
                   subLabel={activeCategory ? activeCategory.desc : 'Total des points'}
                   min={0}
                   max={activeCategory ? activeCategory.max : 50}
