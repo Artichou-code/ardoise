@@ -1438,7 +1438,7 @@ export const GAME_META = {
           items: [
             'Indice trop évident ou trop obscur : Si TOUS les joueurs trouvent la carte du conteur, OU si AUCUN joueur ne la trouve, le conteur marque 0 point et tous les autres joueurs marquent 2 points.',
             'Indice équilibré : Si AU MOINS un joueur (mais pas tous) trouve la carte du conteur, le conteur marque 3 points et chaque joueur ayant trouvé la bonne carte marque également 3 points.',
-            'Bonus de bluff (Tromperie) : Chaque joueur (hormis le conteur) marque 1 point supplémentaire par vote reçu sur sa propre carte (jusqu’à concurrence du nombre de votants).',
+            'Bonus de bluff (Tromperie) : Chaque joueur (hormis le conteur) marque 1 point supplémentaire par vote reçu sur sa propre carte (limité au nombre d’autres devins votants, soit max N-2 votes, et plafonné à 3 points max en variante officielle 6+ joueurs / Odyssey).',
           ],
         },
         {
@@ -1453,7 +1453,7 @@ export const GAME_META = {
       summaryTable: [
         { item: 'Tous ou Aucun trouvent', value: 'Conteur = 0 pt · Autres = 2 pts' },
         { item: 'Certains trouvent (1 à n-1)', value: 'Conteur = 3 pts · Devins = 3 pts' },
-        { item: 'Vote sur sa fausse carte', value: '+1 point par vote reçu' },
+        { item: 'Vote sur sa fausse carte (Bluff)', value: '+1 pt / vote (max N-2, plafonné à 3 pts)' },
         { item: 'Taille de la main', value: '6 cartes par joueur' },
         { item: 'Fin de partie', value: 'Premier joueur à 30 points' },
       ],

@@ -341,7 +341,7 @@ export function DixitEngine({ game, onFinish }) {
               <strong>Au moins un joueur (mais pas tous) trouve :</strong> Le conteur marque <strong>3 pts</strong>, et chaque joueur ayant trouvé marque <strong>3 pts</strong>.
             </li>
             <li>
-              <strong>Bonus de tromperie (Bluff) :</strong> Chaque joueur (hormis le conteur) marque <strong>+1 pt</strong> pour chaque vote reçu sur sa propre carte.
+              <strong>Bonus de tromperie (Bluff) :</strong> Chaque joueur (hormis le conteur) marque <strong>+1 pt</strong> pour chaque vote reçu sur sa propre carte (max <strong>+{maxBluff} pts</strong> à {playerCount} joueurs, plafonné à 3 pts en règles Odyssey).
             </li>
             <li>
               <strong>Fin de partie :</strong> Le premier joueur à atteindre ou dépasser <strong>30 points</strong> remporte la partie.
