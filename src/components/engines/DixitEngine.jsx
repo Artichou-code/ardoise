@@ -32,7 +32,6 @@ function DixitOrderSheet({
   players,
   onReorder,
   currentStorytellerId,
-  onSelectStoryteller,
   roundNum
 }) {
   const [localPlayers, setLocalPlayers] = useState(players)
@@ -258,63 +257,52 @@ function DixitOrderSheet({
 
                   <Avatar player={p} size="xs" />
 
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 leading-tight">
                       <span className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
                         {p.name}
                       </span>
-                      {isFirst && (
+                      {isFirst ? (
                         <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white shrink-0">
-                          Commence
+                          1er · Commence
                         </span>
-                      )}
-                      {isCurrentStoryteller && (
-                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white shrink-0">
+                      ) : isCurrentStoryteller ? (
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-stone-700 dark:bg-slate-600 text-white shrink-0">
                           Conteur M.{roundNum}
                         </span>
-                      )}
+                      ) : null}
                     </div>
-                    <span className="text-[10px] text-stone-400 dark:text-slate-500 block truncate">
-                      {isFirst ? 'Manche 1' : `Manche ${effectiveIndex + 1}`} · tour {effectiveIndex + 1}/{localPlayers.length}
+                    <span className="text-[10px] text-stone-400 dark:text-slate-500 block truncate leading-tight mt-0.5">
+                      {isFirst ? 'Manche 1 (Départ)' : `Manche ${effectiveIndex + 1}`} · tour {effectiveIndex + 1}/{localPlayers.length}
                     </span>
                   </div>
                 </div>
 
-                {/* Droite : Bouton Désigner + Flèches haut/bas + poignée */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {!isCurrentStoryteller && (
-                    <button
-                      type="button"
-                      onClick={() => onSelectStoryteller?.(p.id)}
-                      className="px-2 py-1 rounded-lg border border-stone-200 dark:border-slate-700 hover:border-[#c83b3b] hover:text-[#c83b3b] text-[10px] font-bold text-stone-600 dark:text-slate-300 cursor-pointer transition-colors shrink-0"
-                      title="Désigner ce joueur comme conteur de cette manche"
-                    >
-                      Désigner
-                    </button>
-                  )}
+                {/* Droite : Flèches haut/bas + poignée */}
+                <div className="flex items-center gap-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => movePlayer(index, -1)}
                     disabled={index === 0}
-                    className="p-1 rounded-md border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:pointer-events-none cursor-pointer"
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:pointer-events-none cursor-pointer"
                     title="Monter d'une position"
                   >
-                    <ChevronUp size={13} />
+                    <ChevronUp size={14} />
                   </button>
                   <button
                     type="button"
                     onClick={() => movePlayer(index, 1)}
                     disabled={index === localPlayers.length - 1}
-                    className="p-1 rounded-md border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:pointer-events-none cursor-pointer"
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:pointer-events-none cursor-pointer"
                     title="Descendre d'une position"
                   >
-                    <ChevronDown size={13} />
+                    <ChevronDown size={14} />
                   </button>
                   <div
-                    className="p-1 text-stone-400 dark:text-slate-500 hover:text-stone-700 dark:hover:text-slate-300 cursor-grab active:cursor-grabbing"
+                    className="p-1 text-stone-400 dark:text-slate-500 hover:text-stone-700 dark:hover:text-slate-300 cursor-grab active:cursor-grabbing shrink-0"
                     title="Glisser-déposer pour réorganiser"
                   >
-                    <GripVertical size={15} />
+                    <GripVertical size={16} />
                   </div>
                 </div>
               </div>
@@ -435,14 +423,6 @@ export function DixitEngine({ game, onFinish }) {
     }
   }
 
-  // Désigner un conteur manuellement depuis la feuille "Ordre du tour"
-  const handleSelectStorytellerFromSheet = (pId) => {
-    setStorytellerId(pId)
-    setTimeout(() => scrollToPlayer(pId, true), 60)
-    try {
-      navigator.vibrate?.(10)
-    } catch {}
-  }
 
   // Calcul du score maximum théorique par manche selon les règles officielles Dixit :
   // - Conteur : 0 pt ou 3 pts (max 3)
@@ -562,10 +542,10 @@ export function DixitEngine({ game, onFinish }) {
     <div className="space-y-3 pb-8">
       {/* Sélection du Conteur de la manche avec centrage magnétique & réorganisation de l'ordre */}
       <div className="p-3 rounded-2xl school-card border border-stone-200/80 dark:border-slate-800 space-y-2">
-        <div className="flex items-center justify-between gap-1">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-slate-300 min-w-0">
             <VenetianMask size={14} className="text-[#c83b3b] shrink-0" />
-            <span className="truncate">Conteur de la manche :</span>
+            <span className="shrink-0">Conteur :</span>
             <span className="font-extrabold text-[#c83b3b] truncate">
               {activeStoryteller?.name}
             </span>
@@ -578,7 +558,8 @@ export function DixitEngine({ game, onFinish }) {
               title="Modifier qui commence et l'ordre des conteurs suivants"
             >
               <ArrowLeftRight size={11} className="text-[#c83b3b]" />
-              <span>Ordre du tour</span>
+              <span>Ordre</span>
+              <span className="hidden sm:inline">du tour</span>
             </button>
             <button
               type="button"
@@ -787,7 +768,6 @@ export function DixitEngine({ game, onFinish }) {
         players={game.players}
         onReorder={handleReorder}
         currentStorytellerId={storytellerId}
-        onSelectStoryteller={handleSelectStorytellerFromSheet}
         roundNum={roundNum}
       />
 
