@@ -10,7 +10,7 @@ import { ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react'
  * - Un simple clic/tap sans glisser ouvre la feuille complète (ScorePad).
  */
 export function QuickScoreBadge({
-  value = 0,
+  value,
   onChange,
   onOpenPad,
   min,

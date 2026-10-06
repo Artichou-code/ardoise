@@ -108,6 +108,44 @@ export function YamEngine({ game, onFinish }) {
     }
   }
 
+  // Grille enregistrée lors des manches précédentes (pour détecter les nouveautés de cette manche)
+  const previousGrid = useMemo(() => {
+    const accum = {}
+    const rounds = Array.isArray(game.rounds) ? game.rounds : []
+    for (const p of game.players) {
+      accum[p.id] = {}
+      for (const round of rounds) {
+        if (round?.gridByPlayer?.[p.id]) {
+          Object.assign(accum[p.id], round.gridByPlayer[p.id])
+        }
+      }
+    }
+    return accum
+  }, [game.rounds, game.players])
+
+  // Nombre de cases nouvellement saisies ou modifiées dans cette manche
+  const newlyFilledCount = useMemo(() => {
+    let count = 0
+    for (const p of game.players) {
+      const pGrid = gridByPlayer[p.id] || {}
+      const prevPGrid = previousGrid[p.id] || {}
+      for (const cat of YAM_CATEGORIES) {
+        if (pGrid[cat.id] != null && (prevPGrid[cat.id] == null || pGrid[cat.id] !== prevPGrid[cat.id])) {
+          count++
+        }
+      }
+    }
+    return count
+  }, [gridByPlayer, previousGrid, game.players])
+
+  // Condition de validation : au moins une nouvelle case saisie/barrée en mode grille, ou au moins un score > 0 en mode direct
+  const canValidate = useMemo(() => {
+    if (inputMode === 'grid') {
+      return newlyFilledCount > 0
+    }
+    return game.players.some(p => (directDelta[p.id] || 0) > 0)
+  }, [inputMode, newlyFilledCount, directDelta, game.players])
+
   // Navigation dans le ScorePad
   const activePlayer = padTarget ? game.players.find(p => p.id === padTarget.playerId) : null
   const activePlayerIndex = activePlayer ? game.players.findIndex(p => p.id === activePlayer.id) : -1
@@ -164,6 +202,7 @@ export function YamEngine({ game, onFinish }) {
   }
 
   const handleValidate = () => {
+    if (!canValidate) return
     const newScores = {}
     const delta = {}
     let allFinished = true
@@ -443,11 +482,23 @@ export function YamEngine({ game, onFinish }) {
         <button
           type="button"
           onClick={handleValidate}
-          className="w-full py-3 rounded-xl font-bold text-sm text-white shadow-sm transition-all flex items-center justify-center gap-2 select-none bg-[#c83b3b] hover:bg-[#b03030] cursor-pointer active:scale-[0.99]"
+          disabled={!canValidate}
+          className={`w-full py-3 rounded-xl font-bold text-sm text-white shadow-sm transition-all flex items-center justify-center gap-2 select-none ${
+            canValidate
+              ? 'bg-[#c83b3b] hover:bg-[#b03030] cursor-pointer active:scale-[0.99]'
+              : 'bg-stone-300 dark:bg-slate-700 text-stone-500 dark:text-slate-400 cursor-not-allowed opacity-60'
+          }`}
         >
           <Trophy size={16} />
           <span>Valider les scores</span>
         </button>
+        {!canValidate && (
+          <p className="text-[11px] text-stone-400 dark:text-slate-500 text-center mt-1.5 font-medium">
+            {inputMode === 'grid'
+              ? 'Renseignez au moins un résultat ou une case à barrer pour valider'
+              : 'Saisissez au moins un score pour valider la manche'}
+          </p>
+        )}
       </div>
 
       {/* Dialog Mémo des combinaisons officielles */}
