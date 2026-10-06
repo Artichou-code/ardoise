@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Trophy, VenetianMask, Check, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
+import { Trophy, VenetianMask, Check, ChevronLeft, ChevronRight, HelpCircle, Sparkles, Users } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -68,24 +68,35 @@ export function DixitEngine({ game, onFinish }) {
     }
   }
 
-  // Raccourcis officiels en un clic
+  // État des raccourcis officiels
+  const isConteurApplied = roundPoints[storytellerId] === 3
+  const isAllOrNoneApplied =
+    roundPoints[storytellerId] === 0 &&
+    game.players.length > 1 &&
+    game.players.filter(p => p.id !== storytellerId).every(p => roundPoints[p.id] === 2)
+
+  // Raccourcis officiels en un clic avec bascule intelligente
+  const applyBalancedClueBase = () => {
+    // Indice réussi de base : Conteur = 3 pts (ou réinitialise à 0 si déjà actif)
+    setRoundPoints(prev => ({
+      ...prev,
+      [storytellerId]: prev[storytellerId] === 3 ? 0 : 3,
+    }))
+  }
+
   const applyAllOrNoneFound = () => {
-    // Tous ou aucun ont trouvé : Conteur = 0, Autres = 2 pts
+    // Tous ou aucun ont trouvé : Conteur = 0, Autres = 2 pts (ou réinitialise si déjà actif)
     setRoundPoints(prev => {
+      const already =
+        prev[storytellerId] === 0 &&
+        game.players.filter(p => p.id !== storytellerId).every(p => prev[p.id] === 2)
+
       const next = { ...prev }
       for (const p of game.players) {
-        next[p.id] = p.id === storytellerId ? 0 : 2
+        next[p.id] = already ? 0 : (p.id === storytellerId ? 0 : 2)
       }
       return next
     })
-  }
-
-  const applyBalancedClueBase = () => {
-    // Indice réussi de base : Conteur = 3 pts
-    setRoundPoints(prev => ({
-      ...prev,
-      [storytellerId]: 3,
-    }))
   }
 
   // Calcul des nouveaux scores et détection de victoire
@@ -202,22 +213,41 @@ export function DixitEngine({ game, onFinish }) {
         </div>
 
         {/* Raccourcis officiels rapides */}
-        <div className="flex items-center gap-1.5 pt-1">
-          <button
-            type="button"
-            onClick={applyAllOrNoneFound}
-            className="flex-1 py-1.5 px-2 rounded-lg text-[10px] font-semibold bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 text-stone-600 dark:text-slate-400 transition-colors cursor-pointer text-center whitespace-nowrap truncate"
-            title="Le conteur n'a trouvé personne ou a fait l'unanimité : Conteur 0 pt, Autres 2 pts"
-          >
-            Tous ou aucun (2 pts)
-          </button>
+        <div className="flex items-center gap-2 pt-1">
           <button
             type="button"
             onClick={applyBalancedClueBase}
-            className="py-1.5 px-2.5 rounded-lg text-[10px] font-semibold bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 text-stone-600 dark:text-slate-400 transition-colors cursor-pointer text-center whitespace-nowrap shrink-0"
-            title="Donne 3 points au conteur"
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer border active:scale-[0.98] select-none whitespace-nowrap shadow-2xs ${
+              isConteurApplied
+                ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-xs'
+                : 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 hover:bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 border border-[#c83b3b]/35'
+            }`}
+            title="Donne 3 points au conteur (indice réussi)"
           >
-            Conteur +3 pts
+            {isConteurApplied ? (
+              <Check size={13} className="shrink-0 stroke-[3]" />
+            ) : (
+              <Sparkles size={13} className="shrink-0 text-[#c83b3b] dark:text-red-300" />
+            )}
+            <span>Conteur +3 pts</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={applyAllOrNoneFound}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer border active:scale-[0.98] select-none whitespace-nowrap shadow-2xs ${
+              isAllOrNoneApplied
+                ? 'bg-stone-800 dark:bg-slate-200 text-white dark:text-slate-900 border-stone-800 dark:border-slate-200 shadow-xs'
+                : 'bg-stone-100 dark:bg-slate-800 hover:bg-stone-200/80 dark:hover:bg-slate-700/80 text-stone-700 dark:text-slate-200 border border-stone-300 dark:border-slate-600'
+            }`}
+            title="Le conteur n'a trouvé personne ou a fait l'unanimité : Conteur 0 pt, Autres 2 pts"
+          >
+            {isAllOrNoneApplied ? (
+              <Check size={13} className="shrink-0 stroke-[3]" />
+            ) : (
+              <Users size={13} className="shrink-0 text-stone-500 dark:text-slate-400" />
+            )}
+            <span>Tous ou aucun (2 pts)</span>
           </button>
         </div>
       </div>
