@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Trophy, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
+import { Trophy, Dices, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -334,7 +334,7 @@ export function YamEngine({ game, onFinish }) {
             <table className="w-full border-collapse text-left text-xs min-w-full">
               <thead>
                 <tr className="border-b border-stone-200 dark:border-slate-800 bg-stone-50/95 dark:bg-slate-900/95 backdrop-blur-xs">
-                  {/* Cellule d'en-tête supérieure gauche avec bouton mini-règles (?) */}
+                  {/* Cellule d'en-tête supérieure gauche : bouton rond avec icône de dés & badge (?) */}
                   <th
                     scope="col"
                     className="sticky left-0 z-20 bg-stone-50 dark:bg-slate-900 p-1 w-11 sm:w-13 min-w-[42px] sm:min-w-[48px] border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
@@ -342,11 +342,14 @@ export function YamEngine({ game, onFinish }) {
                     <button
                       type="button"
                       onClick={() => setShowRulesMemo(true)}
-                      className="w-full h-8 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b]/50 text-stone-500 hover:text-[#c83b3b] dark:text-slate-400 dark:hover:text-red-400 flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95"
+                      className="w-8 h-8 rounded-full border border-stone-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b]/50 text-[#c83b3b] dark:text-red-400 flex items-center justify-center relative mx-auto transition-all cursor-pointer shadow-2xs active:scale-95"
                       title="Mini-règles & Aide aux combinaisons"
                       aria-label="Mini-règles et aide aux combinaisons"
                     >
-                      <HelpCircle size={15} />
+                      <Dices size={16} />
+                      <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#c83b3b] text-white text-[8px] font-black flex items-center justify-center shadow-xs">
+                        ?
+                      </span>
                     </button>
                   </th>
                   {/* Colonnes des joueurs */}
