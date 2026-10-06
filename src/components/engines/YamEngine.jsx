@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Trophy, Dices, ChevronLeft, ChevronRight, HelpCircle, RotateCcw } from 'lucide-react'
+import { Trophy, Dices, Check, ChevronLeft, ChevronRight, HelpCircle, RotateCcw } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -73,6 +73,101 @@ function DiceFace({ value, size = 28, className = '' }) {
         />
       ))}
     </svg>
+  )
+}
+
+// Composant tactile direct pour combinaisons à score fixe (Full, Suites, Yam's)
+// Permet un toggle direct à 3 états sans flèches ni roulette : Non joué (—) ➔ Validé (score fixe ✓) ➔ Barré (0) ➔ Non joué (—)
+function FixedScoreBadge({
+  value,
+  fixedScore,
+  onChange,
+  disabled = false,
+  isPast = false,
+  isCurrentChoice = false,
+  className = '',
+}) {
+  const handleClick = (e) => {
+    e.stopPropagation()
+    if (disabled) return
+
+    try { navigator.vibrate?.(12) } catch {}
+
+    if (value == null) {
+      // 1er tap : Valider les points fixes
+      onChange(fixedScore)
+    } else if (value === fixedScore) {
+      // 2ème tap : Barrer la case à 0
+      onChange(0)
+    } else {
+      // 3ème tap : Remettre la barre à vide (null)
+      onChange(null)
+    }
+  }
+
+  const isValidated = value === fixedScore
+  const isZero = value === 0
+  const isUnset = value == null
+
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={handleClick}
+      title={
+        disabled
+          ? isPast
+            ? isValidated
+              ? `${fixedScore} pts validés`
+              : 'Case barrée (0 pt)'
+            : 'Une seule case autorisée par manche'
+          : isUnset
+          ? `Cliquer pour valider (${fixedScore} pts)`
+          : isValidated
+          ? `Validé (${fixedScore} pts). Cliquer pour barrer à 0`
+          : 'Barré (0 pt). Cliquer pour remettre à vide'
+      }
+      className={`group relative border transition-all select-none w-full min-w-0 h-7.5 sm:h-8 px-1 sm:px-1.5 py-0.5 rounded-lg flex items-center justify-center gap-1 active:scale-95 ${
+        disabled
+          ? isPast
+            ? isValidated
+              ? 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-extrabold cursor-default opacity-90'
+              : 'bg-stone-100/70 dark:bg-slate-800/60 border-stone-200/60 text-stone-400 dark:text-slate-500 font-bold cursor-default opacity-85'
+            : 'bg-stone-50/50 dark:bg-slate-900/40 border-stone-200/40 text-stone-300 dark:text-slate-600 opacity-35 cursor-not-allowed'
+          : isCurrentChoice
+          ? isValidated
+            ? 'bg-emerald-500/15 dark:bg-emerald-500/25 border-emerald-500 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/60 shadow-xs cursor-pointer'
+            : isZero
+            ? 'bg-stone-200/60 dark:bg-slate-800 border-stone-400 text-stone-600 dark:text-slate-300 ring-2 ring-[#c83b3b]/60 shadow-xs cursor-pointer'
+            : 'bg-white dark:bg-slate-900 border-stone-200 ring-2 ring-[#c83b3b]/60 shadow-xs cursor-pointer'
+          : isValidated
+          ? 'bg-emerald-500/12 dark:bg-emerald-500/20 border-emerald-500/50 text-emerald-700 dark:text-emerald-300 hover:border-emerald-500 shadow-2xs cursor-pointer'
+          : isZero
+          ? 'bg-stone-100 dark:bg-slate-800/80 border-stone-300 dark:border-slate-700 text-stone-500 dark:text-slate-400 hover:border-stone-400 shadow-2xs cursor-pointer'
+          : 'bg-white/80 dark:bg-slate-900/80 border-stone-200 dark:border-slate-800 text-stone-400 dark:text-slate-500 hover:border-emerald-500/60 hover:text-emerald-600 shadow-2xs cursor-pointer'
+      } ${className}`}
+    >
+      {isValidated && (
+        <>
+          <Check size={11} strokeWidth={3} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span className="text-xs sm:text-sm font-black text-emerald-700 dark:text-emerald-300 tabular-nums leading-none">
+            {fixedScore}
+          </span>
+        </>
+      )}
+
+      {isZero && (
+        <span className="text-xs sm:text-sm font-bold line-through decoration-red-500 decoration-2 text-stone-400 dark:text-slate-500 tabular-nums leading-none">
+          0
+        </span>
+      )}
+
+      {isUnset && (
+        <span className="text-xs sm:text-sm font-bold text-stone-300 dark:text-slate-600 tabular-nums leading-none">
+          —
+        </span>
+      )}
+    </button>
   )
 }
 
@@ -549,23 +644,33 @@ export function YamEngine({ game, onFinish }) {
                           key={p.id}
                           className="p-0.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
                         >
-                          <QuickScoreBadge
-                            value={val}
-                            onChange={(v) => handleCategoryValueChange(p.id, cat.id, v)}
-                            onOpenPad={() => setPadTarget({ playerId: p.id, catId: cat.id })}
-                            values={cat.fixed ? cat.presets : undefined}
-                            min={0}
-                            max={cat.max}
-                            step={1}
-                            compact={true}
-                            allowClear={true}
-                            disabled={status.disabled}
-                            isPast={status.isPast}
-                            isCurrentChoice={status.isCurrentChoice}
-                            formatDisplay={(v) => (v != null ? `${v}` : '—')}
-                            showPlus={false}
-                            className="w-full"
-                          />
+                          {cat.fixed ? (
+                            <FixedScoreBadge
+                              value={val}
+                              fixedScore={cat.fixed}
+                              onChange={(v) => handleCategoryValueChange(p.id, cat.id, v)}
+                              disabled={status.disabled}
+                              isPast={status.isPast}
+                              isCurrentChoice={status.isCurrentChoice}
+                            />
+                          ) : (
+                            <QuickScoreBadge
+                              value={val}
+                              onChange={(v) => handleCategoryValueChange(p.id, cat.id, v)}
+                              onOpenPad={() => setPadTarget({ playerId: p.id, catId: cat.id })}
+                              min={0}
+                              max={cat.max}
+                              step={1}
+                              compact={true}
+                              allowClear={true}
+                              disabled={status.disabled}
+                              isPast={status.isPast}
+                              isCurrentChoice={status.isCurrentChoice}
+                              formatDisplay={(v) => (v != null ? `${v}` : '—')}
+                              showPlus={false}
+                              className="w-full"
+                            />
+                          )}
                         </td>
                       )
                     })}
