@@ -293,7 +293,7 @@ function DixitOrderSheet({
                       ) : null}
                     </div>
                     <span className="text-[10px] text-stone-400 dark:text-slate-500 block truncate leading-tight mt-0.5">
-                      {isFirst ? 'Manche 1 (Départ)' : `Manche ${effectiveIndex + 1}`} · ordre ${effectiveIndex + 1}/${localPlayers.length}
+                      {isFirst ? 'Tour 1 (Départ)' : `Tour ${effectiveIndex + 1}`}
                     </span>
                   </div>
                 </div>
