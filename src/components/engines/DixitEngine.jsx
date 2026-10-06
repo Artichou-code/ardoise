@@ -21,11 +21,20 @@ import { Dialog } from '../ui/Dialog'
 /**
  * Feuille de réglage tactile de l'ordre du tour pour Dixit :
  * - Définit qui commence la partie (1er conteur) et l'ordre des conteurs suivants
+ * - Permet de désigner exceptionnellement le conteur de la manche en cours
  * - Drag & drop fluide à 60fps avec translation continue au doigt et à la souris
  * - Boutons flèches chevron pour monter/descendre en un clic
  * - Retour haptique lors du changement de position
  */
-function DixitOrderSheet({ open, onClose, players, onReorder, currentStorytellerId, roundNum }) {
+function DixitOrderSheet({
+  open,
+  onClose,
+  players,
+  onReorder,
+  currentStorytellerId,
+  onSelectStoryteller,
+  roundNum
+}) {
   const [localPlayers, setLocalPlayers] = useState(players)
   const [draggingIndex, setDraggingIndex] = useState(null)
   const [overIndex, setOverIndex] = useState(null)
@@ -175,7 +184,7 @@ function DixitOrderSheet({ open, onClose, players, onReorder, currentStoryteller
             Qui commence et rotation des conteurs :
           </p>
           <p className="text-[11px] leading-relaxed text-stone-500 dark:text-slate-400">
-            Le joueur <strong>1er</strong> commence la partie (Manche 1). Les suivants prendront la main dans l&apos;ordre de la liste.
+            Le joueur <strong>1er</strong> commence la partie (Manche 1). À chaque manche, la main passe au joueur suivant dans l&apos;ordre de la liste.
             Glissez-déposez ou utilisez les flèches pour réorganiser les positions.
           </p>
         </div>
@@ -259,8 +268,8 @@ function DixitOrderSheet({ open, onClose, players, onReorder, currentStoryteller
                           Commence
                         </span>
                       )}
-                      {isCurrentStoryteller && !isFirst && (
-                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-stone-700 dark:bg-slate-600 text-white shrink-0">
+                      {isCurrentStoryteller && (
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white shrink-0">
                           Conteur M.{roundNum}
                         </span>
                       )}
@@ -271,8 +280,18 @@ function DixitOrderSheet({ open, onClose, players, onReorder, currentStoryteller
                   </div>
                 </div>
 
-                {/* Droite : Flèches haut/bas + poignée */}
-                <div className="flex items-center gap-1 shrink-0">
+                {/* Droite : Bouton Désigner + Flèches haut/bas + poignée */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {!isCurrentStoryteller && (
+                    <button
+                      type="button"
+                      onClick={() => onSelectStoryteller?.(p.id)}
+                      className="px-2 py-1 rounded-lg border border-stone-200 dark:border-slate-700 hover:border-[#c83b3b] hover:text-[#c83b3b] text-[10px] font-bold text-stone-600 dark:text-slate-300 cursor-pointer transition-colors shrink-0"
+                      title="Désigner ce joueur comme conteur de cette manche"
+                    >
+                      Désigner
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => movePlayer(index, -1)}
@@ -322,11 +341,13 @@ export function DixitEngine({ game, onFinish }) {
   const roundNum = (game.rounds?.length || 0) + 1
   const WIN_SCORE = game.config?.limit || 30
 
-  // Conteur de la manche : par défaut, rotation selon le numéro de manche
+  // Conteur de la manche : déterminé automatiquement par l'ordre du tour
+  const defaultStorytellerIdx = (game.rounds?.length || 0) % (game.players?.length || 1)
+  const defaultStorytellerId = game.players[defaultStorytellerIdx]?.id || game.players[0]?.id
+
   const [storytellerId, setStorytellerId] = useState(() => {
     if (game.restoredRound?.storytellerId) return game.restoredRound.storytellerId
-    const defaultIdx = (game.rounds?.length || 0) % game.players.length
-    return game.players[defaultIdx]?.id || game.players[0]?.id
+    return defaultStorytellerId
   })
 
   // Points marqués dans cette manche par chaque joueur
@@ -348,15 +369,11 @@ export function DixitEngine({ game, onFinish }) {
   const [showRulesMemo, setShowRulesMemo] = useState(false)
   const [showOrderSheet, setShowOrderSheet] = useState(false)
 
-  // Drag & drop desktop dans le carousel horizontal
-  const [draggedPlayerIdx, setDraggedPlayerIdx] = useState(null)
-  const [dragOverPlayerIdx, setDragOverPlayerIdx] = useState(null)
-
   // Refs pour le centrage magnétique du carousel
   const carouselRef = useRef(null)
   const itemRefs = useRef({})
 
-  // Fonction de centrage magnétique fluide
+  // Fonction de centrage magnétique fluide (sans espaces blancs vides)
   const scrollToPlayer = (id, smooth = true) => {
     const el = itemRefs.current[id]
     const container = carouselRef.current
@@ -374,7 +391,7 @@ export function DixitEngine({ game, onFinish }) {
     })
   }
 
-  // Centrage magnétique automatique à chaque changement de conteur ou au chargement
+  // Centrage automatique sur le conteur actif dès que storytellerId change ou au chargement
   useEffect(() => {
     const t1 = setTimeout(() => scrollToPlayer(storytellerId, true), 60)
     const t2 = setTimeout(() => scrollToPlayer(storytellerId, true), 220)
@@ -398,13 +415,13 @@ export function DixitEngine({ game, onFinish }) {
     }
   }, [game.rounds?.length, game.players])
 
-  // Sélection manuelle au clic avec magnétisme immédiat
-  const handleSelectStoryteller = (pId) => {
-    setStorytellerId(pId)
-    scrollToPlayer(pId, true)
-    try {
-      navigator.vibrate?.(8)
-    } catch {}
+  // Clic sur une carte du carousel : fait défiler jusqu'à la carte de saisie du joueur
+  // (NE change PAS le conteur par simple clic pour éviter toute modification accidentelle)
+  const handlePlayerCardClick = (p) => {
+    const el = document.getElementById(`player-card-${p.id}`)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
   }
 
   // Réordonner les joueurs (ordre qui commence et les suivants)
@@ -418,18 +435,13 @@ export function DixitEngine({ game, onFinish }) {
     }
   }
 
-  const handleCarouselDrop = (targetIdx) => {
-    if (draggedPlayerIdx === null || draggedPlayerIdx === targetIdx) {
-      setDraggedPlayerIdx(null)
-      setDragOverPlayerIdx(null)
-      return
-    }
-    const newPlayers = [...game.players]
-    const [moved] = newPlayers.splice(draggedPlayerIdx, 1)
-    newPlayers.splice(targetIdx, 0, moved)
-    handleReorder(newPlayers)
-    setDraggedPlayerIdx(null)
-    setDragOverPlayerIdx(null)
+  // Désigner un conteur manuellement depuis la feuille "Ordre du tour"
+  const handleSelectStorytellerFromSheet = (pId) => {
+    setStorytellerId(pId)
+    setTimeout(() => scrollToPlayer(pId, true), 60)
+    try {
+      navigator.vibrate?.(10)
+    } catch {}
   }
 
   // Calcul du score maximum théorique par manche selon les règles officielles Dixit :
@@ -544,6 +556,8 @@ export function DixitEngine({ game, onFinish }) {
     }
   }
 
+  const activeStoryteller = game.players.find(p => p.id === storytellerId) || game.players[0]
+
   return (
     <div className="space-y-3 pb-8">
       {/* Sélection du Conteur de la manche avec centrage magnétique & réorganisation de l'ordre */}
@@ -552,6 +566,9 @@ export function DixitEngine({ game, onFinish }) {
           <div className="flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-slate-300 min-w-0">
             <VenetianMask size={14} className="text-[#c83b3b] shrink-0" />
             <span className="truncate">Conteur de la manche :</span>
+            <span className="font-extrabold text-[#c83b3b] truncate">
+              {activeStoryteller?.name}
+            </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <button
@@ -574,59 +591,26 @@ export function DixitEngine({ game, onFinish }) {
           </div>
         </div>
 
-        {/* Carousel horizontal magnétique défilant avec snap et drag & drop */}
+        {/* Carousel horizontal propre sans espaces vides aux extrémités */}
         <div
           ref={carouselRef}
-          className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 scroll-smooth select-none relative"
-          style={{
-            paddingLeft: 'calc(50% - 38px)',
-            paddingRight: 'calc(50% - 38px)',
-            scrollSnapType: draggedPlayerIdx !== null ? 'none' : 'x proximity',
-          }}
+          className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1.5 px-1 scroll-smooth select-none relative"
         >
           {game.players.map((p, idx) => {
             const isStoryteller = p.id === storytellerId
             const isFirst = idx === 0
-            const isDragging = draggedPlayerIdx === idx
-            const isDragOver = dragOverPlayerIdx === idx
 
             return (
-              <button
+              <div
                 key={p.id}
                 ref={el => { itemRefs.current[p.id] = el }}
-                type="button"
-                onClick={() => handleSelectStoryteller(p.id)}
-                draggable={true}
-                onDragStart={(e) => {
-                  e.dataTransfer.setData('text/plain', String(idx))
-                  setDraggedPlayerIdx(idx)
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault()
-                  e.dataTransfer.dropEffect = 'move'
-                  if (dragOverPlayerIdx !== idx) setDragOverPlayerIdx(idx)
-                }}
-                onDragLeave={() => {
-                  if (dragOverPlayerIdx === idx) setDragOverPlayerIdx(null)
-                }}
-                onDrop={(e) => {
-                  e.preventDefault()
-                  handleCarouselDrop(idx)
-                }}
-                onDragEnd={() => {
-                  setDraggedPlayerIdx(null)
-                  setDragOverPlayerIdx(null)
-                }}
-                className={`relative flex flex-col items-center justify-center gap-1 py-1.5 px-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer border select-none shrink-0 min-w-[70px] max-w-[82px] snap-center active:scale-95 ${
-                  isDragging ? 'opacity-30 scale-90 border-dashed border-[#c83b3b]' : ''
-                } ${
-                  isDragOver ? 'ring-2 ring-[#c83b3b] ring-offset-2 scale-105' : ''
-                } ${
+                onClick={() => handlePlayerCardClick(p)}
+                className={`relative flex flex-col items-center justify-center gap-1 py-1.5 px-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer border select-none shrink-0 min-w-[68px] max-w-[80px] ${
                   isStoryteller
-                    ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-md scale-105 z-10'
+                    ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-md scale-105 z-10 ring-2 ring-[#c83b3b]/20'
                     : 'border-stone-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 text-stone-700 dark:text-slate-300 hover:border-stone-300 opacity-90 hover:opacity-100'
                 }`}
-                title={`Tour ${idx + 1} : ${p.name}${isFirst ? ' (Commence la partie)' : ''}`}
+                title={`Tour ${idx + 1} : ${p.name}${isStoryteller ? ' (Conteur de cette manche)' : ''} · Cliquer pour voir sa saisie`}
               >
                 {/* Pastille discrète d'ordre du tour */}
                 <span className={`absolute -top-1.5 -left-1 px-1.5 py-0.2 rounded-full text-[8px] font-black leading-tight shadow-2xs z-20 ${
@@ -648,7 +632,7 @@ export function DixitEngine({ game, onFinish }) {
                     Conteur
                   </span>
                 )}
-              </button>
+              </div>
             )
           })}
         </div>
@@ -697,6 +681,7 @@ export function DixitEngine({ game, onFinish }) {
           return (
             <div
               key={p.id}
+              id={`player-card-${p.id}`}
               className={`p-3 rounded-2xl school-card border transition-all ${
                 willWin
                   ? 'border-emerald-500 bg-emerald-500/5 ring-1 ring-emerald-500/40'
@@ -799,6 +784,7 @@ export function DixitEngine({ game, onFinish }) {
         players={game.players}
         onReorder={handleReorder}
         currentStorytellerId={storytellerId}
+        onSelectStoryteller={handleSelectStorytellerFromSheet}
         roundNum={roundNum}
       />
 
