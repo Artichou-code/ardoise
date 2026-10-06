@@ -261,8 +261,8 @@ function DixitOrderSheet({
                 }`}
               >
                 {/* Gauche : Rang + Avatar + Nom */}
-                <div className="flex items-center gap-2.5 min-w-0 pointer-events-none">
-                  <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 ${
+                <div className="flex items-center gap-2 min-w-0 flex-1 pointer-events-none">
+                  <span className={`w-5.5 h-5.5 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 ${
                     isFirst
                       ? 'bg-[#c83b3b] text-white shadow-2xs'
                       : 'bg-stone-200/90 dark:bg-slate-700 text-stone-700 dark:text-slate-300'
@@ -277,13 +277,13 @@ function DixitOrderSheet({
                       <span className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
                         {p.name}
                       </span>
-                      {isCurrentStoryteller ? (
+                      {isFirst ? (
                         <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white shrink-0">
-                          Conteur
+                          1er
                         </span>
-                      ) : isFirst ? (
-                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-stone-600 dark:bg-slate-600 text-white shrink-0">
-                          Commence
+                      ) : isCurrentStoryteller ? (
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-stone-700 dark:bg-slate-600 text-white shrink-0">
+                          Conteur
                         </span>
                       ) : null}
                     </div>
@@ -296,19 +296,19 @@ function DixitOrderSheet({
                     type="button"
                     onClick={() => movePlayer(index, -1)}
                     disabled={index === 0}
-                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:pointer-events-none cursor-pointer"
+                    className="w-7 h-7 flex items-center justify-center rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:pointer-events-none cursor-pointer"
                     title="Monter d'une position"
                   >
-                    <ChevronUp size={14} />
+                    <ChevronUp size={13} />
                   </button>
                   <button
                     type="button"
                     onClick={() => movePlayer(index, 1)}
                     disabled={index === localPlayers.length - 1}
-                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:pointer-events-none cursor-pointer"
+                    className="w-7 h-7 flex items-center justify-center rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:pointer-events-none cursor-pointer"
                     title="Descendre d'une position"
                   >
-                    <ChevronDown size={14} />
+                    <ChevronDown size={13} />
                   </button>
                   <div
                     className="p-1 text-stone-400 dark:text-slate-500 hover:text-stone-700 dark:hover:text-slate-300 cursor-grab active:cursor-grabbing shrink-0"
