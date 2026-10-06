@@ -24,6 +24,10 @@ export function QuickScoreBadge({
   formatSub,
   values,
   fillZero = false,
+  allowClear = false,
+  disabled = false,
+  isPast = false,
+  isCurrentChoice = false,
   className = '',
 }) {
   const [isDragging, setIsDragging] = useState(false)
@@ -56,9 +60,12 @@ export function QuickScoreBadge({
   }
 
   const handlePointerDown = (e) => {
+    if (disabled) return
     dragStartXRef.current = e.clientX
     dragStartYRef.current = e.clientY
-    const initVal = value == null ? (values && values.length > 0 ? values[0] : (min !== undefined ? min : 0)) : value
+    const initVal = value == null
+      ? (allowClear ? null : (values && values.length > 0 ? values[0] : (min !== undefined ? min : 0)))
+      : value
     dragStartValueRef.current = initVal
     currentValueRef.current = initVal
     hasMovedRef.current = false
@@ -68,7 +75,7 @@ export function QuickScoreBadge({
   }
 
   const handlePointerMove = (e) => {
-    if (isHorizontalScrollRef.current) return
+    if (disabled || isHorizontalScrollRef.current) return
 
     const deltaX = e.clientX - dragStartXRef.current
     const totalDeltaY = dragStartYRef.current - e.clientY // Vers le haut = augmentation
@@ -107,15 +114,46 @@ export function QuickScoreBadge({
 
     let nextVal
     if (values && values.length > 0) {
-      const startIndex = values.indexOf(dragStartValueRef.current)
-      const safeIndex = startIndex !== -1 ? startIndex : 0
-      const indexSteps = Math.round(totalDeltaY / 22)
-      const targetIndex = Math.max(0, Math.min(values.length - 1, safeIndex + indexSteps))
-      nextVal = values[targetIndex]
+      if (allowClear) {
+        // En mode allowClear, la liste commence à null (case non notée / tiret)
+        const states = [null, ...values]
+        const startIndex = states.indexOf(dragStartValueRef.current)
+        const safeIndex = startIndex !== -1 ? startIndex : 0
+        const indexSteps = Math.round(totalDeltaY / 22)
+        const targetIndex = Math.max(0, Math.min(states.length - 1, safeIndex + indexSteps))
+        nextVal = states[targetIndex]
+      } else {
+        const startIndex = values.indexOf(dragStartValueRef.current)
+        const safeIndex = startIndex !== -1 ? startIndex : 0
+        const indexSteps = Math.round(totalDeltaY / 22)
+        const targetIndex = Math.max(0, Math.min(values.length - 1, safeIndex + indexSteps))
+        nextVal = values[targetIndex]
+      }
     } else {
-      // Sensibilité : ~14px par pas de score (identique à ScorePad)
-      const stepsCount = Math.round(totalDeltaY / 14) * step
-      nextVal = clampValue(dragStartValueRef.current + stepsCount)
+      if (allowClear) {
+        const minBound = min !== undefined ? min : 0
+        if (dragStartValueRef.current === null) {
+          if (totalDeltaY < 12) {
+            nextVal = null
+          } else {
+            const stepsCount = Math.floor((totalDeltaY - 12) / 14) * step
+            const tentative = minBound + stepsCount
+            nextVal = max !== undefined ? Math.min(max, tentative) : tentative
+          }
+        } else {
+          const stepsCount = Math.round(totalDeltaY / 14) * step
+          const tentativeVal = dragStartValueRef.current + stepsCount
+          if (tentativeVal < minBound) {
+            nextVal = null
+          } else {
+            nextVal = max !== undefined ? Math.min(max, tentativeVal) : tentativeVal
+          }
+        }
+      } else {
+        // Sensibilité : ~14px par pas de score (identique à ScorePad)
+        const stepsCount = Math.round(totalDeltaY / 14) * step
+        nextVal = clampValue((dragStartValueRef.current ?? (min !== undefined ? min : 0)) + stepsCount)
+      }
     }
 
     if (nextVal !== currentValueRef.current) {
@@ -146,8 +184,10 @@ export function QuickScoreBadge({
         navigator.vibrate?.(15)
       } catch {}
     } else if (!wasHorizontal && !hasMoved) {
-      // Simple tap sans glissement : ouvrir la modale complète
-      onOpenPad?.()
+      // Simple tap sans glissement : ouvrir la modale complète si non désactivé
+      if (!disabled) {
+        onOpenPad?.()
+      }
     }
   }
 
@@ -162,7 +202,7 @@ export function QuickScoreBadge({
   }
 
   const cur = isDragging ? currentValueRef.current : value
-  const isUnset = !isDragging && (value === null || value === undefined)
+  const isUnset = cur === null || cur === undefined
   const displaySign = showPlus && cur > 0 ? '+' : ''
   const displayedValue = isUnset ? (formatDisplay ? formatDisplay(null) : '—') : (formatDisplay ? formatDisplay(cur) : `${displaySign}${cur}`)
   const subText = isUnset ? null : (formatSub ? formatSub(cur) : null)
@@ -174,26 +214,38 @@ export function QuickScoreBadge({
       {/* Zone interactive compacte ou haute */}
       <div
         role="button"
-        tabIndex={0}
-        aria-label={`Score : ${typeof displayedValue === 'string' || typeof displayedValue === 'number' ? displayedValue : cur}${subText ? ` (${subText})` : ''}. Glisser vers le haut ou le bas pour ajuster.`}
-        title="Glisser vers le haut ou le bas pour ajuster rapidement, ou cliquer pour ouvrir le pavé"
+        tabIndex={disabled ? -1 : 0}
+        aria-label={`Score : ${typeof displayedValue === 'string' || typeof displayedValue === 'number' ? displayedValue : cur}${subText ? ` (${subText})` : ''}.${disabled ? '' : ' Glisser vers le haut ou le bas pour ajuster.'}`}
+        title={
+          disabled
+            ? isPast
+              ? 'Score validé lors d\'une manche précédente'
+              : 'Une seule case autorisée par manche'
+            : 'Glisser vers le haut ou le bas pour ajuster rapidement, ou cliquer pour ouvrir le pavé'
+        }
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
-        style={{ touchAction: 'pan-x' }}
-        className={`group relative border transition-all cursor-ns-resize select-none ${
+        style={{ touchAction: disabled ? 'auto' : 'pan-x' }}
+        className={`group relative border transition-all select-none ${
           tall
             ? 'flex flex-col items-center justify-between min-w-[4.8rem] w-20 sm:w-24 h-full self-stretch py-2 px-1.5 rounded-2xl'
             : compact
             ? 'flex items-center justify-between gap-0.5 w-full min-w-0 h-7.5 sm:h-8 px-1 sm:px-1.5 py-0.5 rounded-lg'
             : 'flex items-center justify-between gap-1.5 min-w-[4.2rem] h-10 px-2.5 py-1 rounded-xl'
         } ${
-          isDragging
-            ? `${tall ? 'scale-103' : 'scale-105'} border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b] ring-2 ring-[#c83b3b]/40 shadow-md z-30`
+          disabled
+            ? isPast
+              ? 'bg-stone-100/70 dark:bg-slate-800/60 border-stone-200/60 dark:border-slate-800 text-stone-700 dark:text-slate-200 font-extrabold cursor-default opacity-90'
+              : 'bg-stone-50/50 dark:bg-slate-900/40 border-stone-200/40 dark:border-slate-800/40 text-stone-300 dark:text-slate-600 opacity-35 cursor-not-allowed'
+            : isDragging
+            ? `${tall ? 'scale-103' : 'scale-105'} border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b] ring-2 ring-[#c83b3b]/40 shadow-md z-30 cursor-ns-resize`
+            : isCurrentChoice
+            ? 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border-[#c83b3b] text-[#c83b3b] dark:text-red-300 ring-2 ring-[#c83b3b]/60 shadow-xs cursor-ns-resize'
             : isFilled
-            ? 'bg-[#c83b3b]/8 dark:bg-[#c83b3b]/15 border-[#c83b3b]/35 text-[#c83b3b] dark:text-red-300 hover:border-[#c83b3b] shadow-2xs'
-            : 'bg-white/80 dark:bg-slate-900/80 border-stone-200 dark:border-slate-800 text-stone-400 dark:text-slate-500 hover:border-[#c83b3b]/60 hover:text-[#c83b3b] shadow-2xs'
+            ? 'bg-[#c83b3b]/8 dark:bg-[#c83b3b]/15 border-[#c83b3b]/35 text-[#c83b3b] dark:text-red-300 hover:border-[#c83b3b] shadow-2xs cursor-ns-resize'
+            : 'bg-white/80 dark:bg-slate-900/80 border-stone-200 dark:border-slate-800 text-stone-400 dark:text-slate-500 hover:border-[#c83b3b]/60 hover:text-[#c83b3b] shadow-2xs cursor-ns-resize'
         } ${className}`}
       >
         {tall ? (
@@ -230,9 +282,11 @@ export function QuickScoreBadge({
                 </span>
               )}
             </div>
-            <div className="flex flex-col items-center justify-center -mr-0.5 opacity-40 group-hover:opacity-100 transition-opacity shrink-0">
-              <ArrowUpDown size={compact ? 8.5 : 11} strokeWidth={2.5} />
-            </div>
+            {!disabled && (
+              <div className="flex flex-col items-center justify-center -mr-0.5 opacity-40 group-hover:opacity-100 transition-opacity shrink-0">
+                <ArrowUpDown size={compact ? 8.5 : 11} strokeWidth={2.5} />
+              </div>
+            )}
           </>
         )}
       </div>

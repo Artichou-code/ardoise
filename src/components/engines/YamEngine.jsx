@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Trophy, Dices, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
+import { Trophy, Dices, ChevronLeft, ChevronRight, HelpCircle, RotateCcw } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -209,6 +209,36 @@ export function YamEngine({ game, onFinish }) {
     return count
   }, [gridByPlayer, previousGrid, game.players])
 
+  // Catégorie choisie par chaque joueur pour la manche en cours (règle officielle : 1 seule case par manche)
+  const currentRoundCatByPlayer = useMemo(() => {
+    const map = {}
+    for (const p of game.players) {
+      const pGrid = gridByPlayer[p.id] || {}
+      const prevPGrid = previousGrid[p.id] || {}
+      const chosen = YAM_CATEGORIES.find(
+        cat => pGrid[cat.id] != null && prevPGrid[cat.id] == null
+      )
+      map[p.id] = chosen ? chosen.id : null
+    }
+    return map
+  }, [gridByPlayer, previousGrid, game.players])
+
+  // Détermine le statut d'une cellule pour l'interaction, le verrouillage et le style
+  const getCellStatus = (playerId, catId) => {
+    const isPast = previousGrid[playerId]?.[catId] != null
+    const chosenCatId = currentRoundCatByPlayer[playerId]
+    const isCurrentChoice = chosenCatId === catId
+    const isBlocked = !isPast && !isCurrentChoice && chosenCatId != null
+    return {
+      isPast,
+      isCurrentChoice,
+      isBlocked,
+      disabled: isPast || isBlocked,
+    }
+  }
+
+  const currentRoundNumber = Math.min(13, (game.rounds?.length || 0) + 1)
+
   // Condition de validation : au moins une nouvelle case saisie/barrée en mode grille, ou au moins un score > 0 en mode direct
   const canValidate = useMemo(() => {
     if (inputMode === 'grid') {
@@ -259,7 +289,11 @@ export function YamEngine({ game, onFinish }) {
   const handleCategoryValueChange = (playerId, catId, value) => {
     setGridByPlayer(prev => {
       const current = prev[playerId] ? { ...prev[playerId] } : {}
-      current[catId] = Math.max(0, Number(value) || 0)
+      if (value === null || value === undefined) {
+        delete current[catId]
+      } else {
+        current[catId] = Math.max(0, Number(value) || 0)
+      }
       return { ...prev, [playerId]: current }
     })
   }
@@ -329,7 +363,8 @@ export function YamEngine({ game, onFinish }) {
     <div className="space-y-3 pb-8">
       {/* Mode Grille : Grille Croisée classique façon feuille de score papier */}
       {inputMode === 'grid' && (
-        <div className="rounded-2xl border border-stone-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+        <div className="space-y-1.5">
+          <div className="rounded-2xl border border-stone-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
           <div className="overflow-x-auto overscroll-x-contain touch-pan-x">
             <table className="w-full border-collapse text-left text-xs min-w-full">
               <thead>
@@ -390,6 +425,7 @@ export function YamEngine({ game, onFinish }) {
                     </td>
                     {game.players.map((p) => {
                       const val = gridByPlayer[p.id]?.[cat.id]
+                      const status = getCellStatus(p.id, cat.id)
                       return (
                         <td
                           key={p.id}
@@ -404,6 +440,10 @@ export function YamEngine({ game, onFinish }) {
                             max={cat.max}
                             step={1}
                             compact={true}
+                            allowClear={true}
+                            disabled={status.disabled}
+                            isPast={status.isPast}
+                            isCurrentChoice={status.isCurrentChoice}
                             formatDisplay={(v) => (v != null ? `${v}` : '—')}
                             showPlus={false}
                             className="w-full"
@@ -503,6 +543,7 @@ export function YamEngine({ game, onFinish }) {
                     </td>
                     {game.players.map((p) => {
                       const val = gridByPlayer[p.id]?.[cat.id]
+                      const status = getCellStatus(p.id, cat.id)
                       return (
                         <td
                           key={p.id}
@@ -517,6 +558,10 @@ export function YamEngine({ game, onFinish }) {
                             max={cat.max}
                             step={1}
                             compact={true}
+                            allowClear={true}
+                            disabled={status.disabled}
+                            isPast={status.isPast}
+                            isCurrentChoice={status.isCurrentChoice}
                             formatDisplay={(v) => (v != null ? `${v}` : '—')}
                             showPlus={false}
                             className="w-full"
@@ -571,6 +616,20 @@ export function YamEngine({ game, onFinish }) {
             </table>
           </div>
         </div>
+
+        {/* Résumé de manche & règle officielle */}
+        <div className="flex items-center justify-between px-1.5 text-[11px] text-stone-500 dark:text-slate-400 font-medium">
+          <span className="flex items-center gap-1">
+            <span className="font-bold text-stone-800 dark:text-slate-200">
+              Tour {currentRoundNumber}/13
+            </span>
+            <span>· 1 case par joueur</span>
+          </span>
+          <span className="font-bold text-[#c83b3b] dark:text-red-400 tabular-nums">
+            {newlyFilledCount}/{game.players.length} joueur{game.players.length > 1 ? 's' : ''} prêt{newlyFilledCount > 1 ? 's' : ''}
+          </span>
+        </div>
+      </div>
       )}
 
       {/* Mode Direct : Saisie simplifiée des totaux par manche */}
@@ -620,12 +679,18 @@ export function YamEngine({ game, onFinish }) {
           }`}
         >
           <Trophy size={16} />
-          <span>Valider les scores</span>
+          <span>
+            {inputMode === 'grid'
+              ? newlyFilledCount >= game.players.length
+                ? `Valider le tour ${currentRoundNumber} (${newlyFilledCount}/${game.players.length})`
+                : `Valider la manche (${newlyFilledCount}/${game.players.length} prêt${newlyFilledCount > 1 ? 's' : ''})`
+              : 'Valider les scores'}
+          </span>
         </button>
         {!canValidate && (
           <p className="text-[11px] text-stone-400 dark:text-slate-500 text-center mt-1.5 font-medium">
             {inputMode === 'grid'
-              ? 'Renseignez au moins un résultat ou une case à barrer pour valider'
+              ? 'Chaque joueur choisit 1 case par manche (points ou barrer avec 0)'
               : 'Saisissez au moins un score pour valider la manche'}
           </p>
         )}
@@ -689,10 +754,11 @@ export function YamEngine({ game, onFinish }) {
                       handleClearCategory(activePlayer.id, activeCategory.id)
                       setPadTarget(null)
                     }}
-                    className="px-2 py-1 rounded-lg text-[10px] font-bold text-stone-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 border border-stone-200 dark:border-slate-700 transition-colors cursor-pointer"
-                    title="Effacer et réinitialiser cette case"
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-bold text-stone-600 hover:text-red-600 hover:bg-red-50 dark:text-slate-400 dark:hover:bg-red-950/40 border border-stone-200 dark:border-slate-700 transition-colors cursor-pointer flex items-center gap-1"
+                    title="Remettre la barre sans score (—)"
                   >
-                    Effacer
+                    <RotateCcw size={11} />
+                    <span>Remettre —</span>
                   </button>
                 )}
                 <button
@@ -768,6 +834,22 @@ export function YamEngine({ game, onFinish }) {
                   </button>
                 </div>
 
+                {/* Bouton pour réinitialiser / remettre la barre sans score */}
+                {currentCategoryValue != null && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleClearCategory(activePlayer.id, activeCategory.id)
+                      setPadTarget(null)
+                      try { navigator.vibrate?.(10) } catch {}
+                    }}
+                    className="w-full py-2.5 px-3 rounded-xl border border-stone-200 dark:border-slate-700 bg-stone-100/70 dark:bg-slate-800/60 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 text-stone-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <RotateCcw size={13} />
+                    <span>Remettre la barre sans score (—)</span>
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => setPadTarget(null)}
@@ -777,32 +859,49 @@ export function YamEngine({ game, onFinish }) {
                 </button>
               </div>
             ) : (
-              <ScorePad
-                value={
-                  activeCategory
-                    ? (gridByPlayer[activePlayer.id]?.[activeCategory.id] ?? 0)
-                    : (directDelta[activePlayer.id] || 0)
-                }
-                onChange={(val) => {
-                  if (activeCategory) {
-                    handleCategoryValueChange(activePlayer.id, activeCategory.id, val)
-                  } else {
-                    setDirectDelta(prev => ({ ...prev, [activePlayer.id]: Math.max(0, Number(val) || 0) }))
+              <div className="space-y-3">
+                <ScorePad
+                  value={
+                    activeCategory
+                      ? (gridByPlayer[activePlayer.id]?.[activeCategory.id] ?? 0)
+                      : (directDelta[activePlayer.id] || 0)
                   }
-                }}
-                onConfirm={() => setPadTarget(null)}
-                confirmLabel="Valider la case"
-                label={activeCategory ? activeCategory.name : 'Score de la manche'}
-                subLabel={activeCategory ? activeCategory.desc : 'Total des points'}
-                min={0}
-                max={activeCategory ? activeCategory.max : 50}
-                step={1}
-                presets={activeCategory ? activeCategory.presets : [0, 5, 10, 15, 20, 25, 30, 35, 40, 50]}
-                customButtons={[]}
-                baseScore={0}
-                formatTotal={(val) => `${val} point${val > 1 ? 's' : ''}`}
-                showPlus={false}
-              />
+                  onChange={(val) => {
+                    if (activeCategory) {
+                      handleCategoryValueChange(activePlayer.id, activeCategory.id, val)
+                    } else {
+                      setDirectDelta(prev => ({ ...prev, [activePlayer.id]: Math.max(0, Number(val) || 0) }))
+                    }
+                  }}
+                  onConfirm={() => setPadTarget(null)}
+                  confirmLabel="Valider la case"
+                  label={activeCategory ? activeCategory.name : 'Score de la manche'}
+                  subLabel={activeCategory ? activeCategory.desc : 'Total des points'}
+                  min={0}
+                  max={activeCategory ? activeCategory.max : 50}
+                  step={1}
+                  presets={activeCategory ? activeCategory.presets : [0, 5, 10, 15, 20, 25, 30, 35, 40, 50]}
+                  customButtons={[]}
+                  baseScore={0}
+                  formatTotal={(val) => `${val} point${val > 1 ? 's' : ''}`}
+                  showPlus={false}
+                />
+
+                {activeCategory && gridByPlayer[activePlayer.id]?.[activeCategory.id] != null && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleClearCategory(activePlayer.id, activeCategory.id)
+                      setPadTarget(null)
+                      try { navigator.vibrate?.(10) } catch {}
+                    }}
+                    className="w-full py-2.5 px-3 rounded-xl border border-stone-200 dark:border-slate-700 bg-stone-100/70 dark:bg-slate-800/60 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 text-stone-600 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <RotateCcw size={13} />
+                    <span>Remettre la barre sans score (—)</span>
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}
