@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Trophy, Dices, LayoutGrid, Hash, Check, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
+import { Trophy, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -327,64 +327,6 @@ export function YamEngine({ game, onFinish }) {
 
   return (
     <div className="space-y-3 pb-8">
-      {/* Barre d'en-tête du jeu & bascule Grille / Direct */}
-      <div className="flex items-center justify-between gap-2 p-2.5 rounded-2xl school-card border border-stone-200/80 dark:border-slate-800">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="p-1.5 rounded-xl bg-[#c83b3b]/10 text-[#c83b3b] shrink-0">
-            <Dices size={16} />
-          </span>
-          <div className="min-w-0">
-            <h3 className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
-              Yam's
-            </h3>
-            <p className="text-[10px] text-stone-500 dark:text-slate-400 leading-snug">
-              Feuille officielle 13 cases · Bonus de 35 pts si sup &ge; 63
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => setShowRulesMemo(true)}
-            className="p-1.5 rounded-xl border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 transition-colors cursor-pointer"
-            title="Aide aux combinaisons"
-          >
-            <HelpCircle size={15} />
-          </button>
-
-          {/* Commutateur Grille croisée vs Total direct */}
-          <div className="flex items-center p-0.5 bg-stone-100 dark:bg-slate-800 rounded-xl border border-stone-200/80 dark:border-slate-700/80">
-            <button
-              type="button"
-              onClick={() => setInputMode('grid')}
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                inputMode === 'grid'
-                  ? 'bg-white dark:bg-slate-700 text-[#c83b3b] shadow-2xs'
-                  : 'text-stone-500 hover:text-stone-800 dark:text-slate-400'
-              }`}
-              title="Grille officielle des 13 cases (feuille de marque)"
-            >
-              <LayoutGrid size={12} />
-              <span className="hidden sm:inline">Grille</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setInputMode('direct')}
-              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                inputMode === 'direct'
-                  ? 'bg-white dark:bg-slate-700 text-[#c83b3b] shadow-2xs'
-                  : 'text-stone-500 hover:text-stone-800 dark:text-slate-400'
-              }`}
-              title="Saisie directe par manche"
-            >
-              <Hash size={12} />
-              <span className="hidden sm:inline">Total</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Mode Grille : Grille Croisée classique façon feuille de score papier */}
       {inputMode === 'grid' && (
         <div className="rounded-2xl border border-stone-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
@@ -392,15 +334,20 @@ export function YamEngine({ game, onFinish }) {
             <table className="w-full border-collapse text-left text-xs min-w-full">
               <thead>
                 <tr className="border-b border-stone-200 dark:border-slate-800 bg-stone-50/95 dark:bg-slate-900/95 backdrop-blur-xs">
-                  {/* Cellule d'en-tête de la colonne sticky gauche ultra-compacte */}
+                  {/* Cellule d'en-tête supérieure gauche avec bouton mini-règles (?) */}
                   <th
                     scope="col"
-                    className="sticky left-0 z-20 bg-stone-50 dark:bg-slate-900 px-0.5 py-1.5 w-11 sm:w-13 min-w-[42px] sm:min-w-[48px] border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
-                    title="Combinaisons"
+                    className="sticky left-0 z-20 bg-stone-50 dark:bg-slate-900 p-1 w-11 sm:w-13 min-w-[42px] sm:min-w-[48px] border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
                   >
-                    <div className="flex items-center justify-center">
-                      <Dices size={16} className="text-[#c83b3b]" />
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowRulesMemo(true)}
+                      className="w-full h-8 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b]/50 text-stone-500 hover:text-[#c83b3b] dark:text-slate-400 dark:hover:text-red-400 flex items-center justify-center transition-all cursor-pointer shadow-2xs active:scale-95"
+                      title="Mini-règles & Aide aux combinaisons"
+                      aria-label="Mini-règles et aide aux combinaisons"
+                    >
+                      <HelpCircle size={15} />
+                    </button>
                   </th>
                   {/* Colonnes des joueurs */}
                   {game.players.map((p) => {
