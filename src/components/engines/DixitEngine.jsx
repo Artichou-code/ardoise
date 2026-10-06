@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Trophy, VenetianMask, Check, ChevronLeft, ChevronRight, HelpCircle, Sparkles, Users } from 'lucide-react'
+import { Trophy, VenetianMask, Check, ChevronLeft, ChevronRight, HelpCircle, Users } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -200,9 +200,6 @@ export function DixitEngine({ game, onFinish }) {
               >
                 <div className="relative shrink-0">
                   <Avatar player={p} size="xs" />
-                  {isStoryteller && (
-                    <span className="absolute -top-1 -right-1 text-[9px] leading-none text-white drop-shadow-xs">★</span>
-                  )}
                 </div>
                 <span className={`text-[11px] font-semibold truncate w-full text-center leading-tight ${isStoryteller ? 'text-white' : ''}`}>
                   {p.name}
@@ -211,45 +208,41 @@ export function DixitEngine({ game, onFinish }) {
             )
           })}
         </div>
+      </div>
 
-        {/* Raccourcis officiels rapides */}
-        <div className="flex items-center gap-2 pt-1">
-          <button
-            type="button"
-            onClick={applyBalancedClueBase}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer border active:scale-[0.98] select-none whitespace-nowrap shadow-2xs ${
-              isConteurApplied
-                ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-xs'
-                : 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 hover:bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 border border-[#c83b3b]/35'
-            }`}
-            title="Donne 3 points au conteur (indice réussi)"
-          >
-            {isConteurApplied ? (
-              <Check size={13} className="shrink-0 stroke-[3]" />
-            ) : (
-              <Sparkles size={13} className="shrink-0 text-[#c83b3b] dark:text-red-300" />
-            )}
-            <span>Conteur +3 pts</span>
-          </button>
+      {/* Raccourcis officiels rapides (sortis du conteneur pour maximiser la largeur et aérer l'interface) */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={applyBalancedClueBase}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer border active:scale-[0.98] select-none whitespace-nowrap shadow-2xs ${
+            isConteurApplied
+              ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-xs'
+              : 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 hover:bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 border border-[#c83b3b]/35'
+          }`}
+          title="Donne 3 points au conteur (indice réussi)"
+        >
+          {isConteurApplied && <Check size={14} className="shrink-0 stroke-[3]" />}
+          <span>Conteur +3 pts</span>
+        </button>
 
-          <button
-            type="button"
-            onClick={applyAllOrNoneFound}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer border active:scale-[0.98] select-none whitespace-nowrap shadow-2xs ${
-              isAllOrNoneApplied
-                ? 'bg-stone-800 dark:bg-slate-200 text-white dark:text-slate-900 border-stone-800 dark:border-slate-200 shadow-xs'
-                : 'bg-stone-100 dark:bg-slate-800 hover:bg-stone-200/80 dark:hover:bg-slate-700/80 text-stone-700 dark:text-slate-200 border border-stone-300 dark:border-slate-600'
-            }`}
-            title="Le conteur n'a trouvé personne ou a fait l'unanimité : Conteur 0 pt, Autres 2 pts"
-          >
-            {isAllOrNoneApplied ? (
-              <Check size={13} className="shrink-0 stroke-[3]" />
-            ) : (
-              <Users size={13} className="shrink-0 text-stone-500 dark:text-slate-400" />
-            )}
-            <span>Tous ou aucun (2 pts)</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={applyAllOrNoneFound}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer border active:scale-[0.98] select-none whitespace-nowrap shadow-2xs ${
+            isAllOrNoneApplied
+              ? 'bg-stone-800 dark:bg-slate-200 text-white dark:text-slate-900 border-stone-800 dark:border-slate-200 shadow-xs'
+              : 'bg-white dark:bg-slate-800/80 hover:bg-stone-50 dark:hover:bg-slate-700 text-stone-700 dark:text-slate-200 border border-stone-200 dark:border-slate-700'
+          }`}
+          title="Le conteur n'a trouvé personne ou a fait l'unanimité : Conteur 0 pt, Autres 2 pts"
+        >
+          {isAllOrNoneApplied ? (
+            <Check size={14} className="shrink-0 stroke-[3]" />
+          ) : (
+            <Users size={14} className="shrink-0 text-stone-500 dark:text-slate-400" />
+          )}
+          <span>Tous ou aucun (2 pts)</span>
+        </button>
       </div>
 
       {/* Cartes de saisie des joueurs */}
