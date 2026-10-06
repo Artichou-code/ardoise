@@ -578,8 +578,8 @@ export function DixitEngine({ game, onFinish }) {
   return (
     <div className="space-y-3 pb-8">
       {/* Sélection du Conteur de la manche avec centrage magnétique & réorganisation de l'ordre */}
-      <div className="p-3 rounded-2xl school-card border border-stone-200/80 dark:border-slate-800 space-y-2">
-        <div className="flex items-center justify-between gap-2">
+      <div className="pt-3 pb-2.5 rounded-2xl school-card border border-stone-200/80 dark:border-slate-800 space-y-2 overflow-hidden">
+        <div className="px-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-slate-300 min-w-0">
             <VenetianMask size={14} className="text-[#c83b3b] shrink-0" />
             <span className="shrink-0">Conteur :</span>
@@ -609,10 +609,10 @@ export function DixitEngine({ game, onFinish }) {
           </div>
         </div>
 
-        {/* Carousel horizontal propre sans espaces vides aux extrémités */}
+        {/* Carousel horizontal bord à bord sans padding conteneur qui coupe les avatars */}
         <div
           ref={carouselRef}
-          className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1.5 px-1 scroll-smooth select-none relative"
+          className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1.5 px-3 scroll-smooth select-none relative"
         >
           {game.players.map((p, idx) => {
             const isStoryteller = p.id === storytellerId
@@ -623,7 +623,7 @@ export function DixitEngine({ game, onFinish }) {
                 key={p.id}
                 ref={el => { itemRefs.current[p.id] = el }}
                 onClick={() => handlePlayerCardClick(p)}
-                className={`relative flex flex-col items-center justify-center gap-1 py-1.5 px-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer border select-none shrink-0 min-w-[66px] max-w-[78px] ${
+                className={`relative flex flex-col items-center justify-center gap-1 py-1.5 px-1.5 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer border select-none shrink-0 min-w-[60px] max-w-[70px] ${
                   isStoryteller
                     ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs z-10'
                     : 'border-stone-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 text-stone-700 dark:text-slate-300 hover:border-stone-300 opacity-90 hover:opacity-100'
