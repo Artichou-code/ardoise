@@ -630,8 +630,8 @@ export function DixitEngine({ game, onFinish }) {
                 }`}
                 title={`Tour ${idx + 1} : ${p.name}${isStoryteller ? ' (Conteur de cette manche)' : ''} · Cliquer pour voir sa saisie`}
               >
-                {/* Pastille discrète d'ordre du tour décalée vers l'intérieur pour éviter la coupure au bord */}
-                <span className={`absolute -top-1.5 left-1 px-1.5 py-0.2 rounded-full text-[8px] font-black leading-tight shadow-2xs z-20 ${
+                {/* Pastille d'ordre du tour parfaitement centrée au-dessus de la carte */}
+                <span className={`absolute -top-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.2 rounded-full text-[8px] font-black leading-tight shadow-2xs z-20 whitespace-nowrap ${
                   isFirst
                     ? isStoryteller ? 'bg-white text-[#c83b3b]' : 'bg-[#c83b3b] text-white'
                     : isStoryteller ? 'bg-white text-[#c83b3b]' : 'bg-stone-200/90 dark:bg-slate-700 text-stone-600 dark:text-slate-300'
