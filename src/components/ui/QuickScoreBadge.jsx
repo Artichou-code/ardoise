@@ -39,6 +39,8 @@ export function QuickScoreBadge({
   const isDraggingRef = useRef(false)
   const isGestureDecidedRef = useRef(false)
   const isHorizontalScrollRef = useRef(false)
+  const wasDraggingOrMovedRef = useRef(false)
+  const openPadTimeoutRef = useRef(null)
 
   // Maintient la référence synchronisée avec la prop value
   useEffect(() => {
@@ -72,6 +74,7 @@ export function QuickScoreBadge({
     isGestureDecidedRef.current = false
     isHorizontalScrollRef.current = false
     isDraggingRef.current = false
+    wasDraggingOrMovedRef.current = false
   }
 
   const handlePointerMove = (e) => {
@@ -104,6 +107,7 @@ export function QuickScoreBadge({
       isDraggingRef.current = true
       setIsDragging(true)
       hasMovedRef.current = true
+      wasDraggingOrMovedRef.current = true
       try {
         navigator.vibrate?.(10)
       } catch {}
@@ -180,13 +184,21 @@ export function QuickScoreBadge({
     } catch {}
 
     if (wasDragging && hasMoved) {
+      wasDraggingOrMovedRef.current = true
+      setTimeout(() => {
+        wasDraggingOrMovedRef.current = false
+      }, 180)
       try {
         navigator.vibrate?.(15)
       } catch {}
     } else if (!wasHorizontal && !hasMoved) {
-      // Simple tap sans glissement : ouvrir la modale complète si non désactivé
+      // Tap simple sans glisser : prépare l'ouverture ou s'exécute si pas de clic synthétique
       if (!disabled) {
-        onOpenPad?.()
+        if (openPadTimeoutRef.current) clearTimeout(openPadTimeoutRef.current)
+        openPadTimeoutRef.current = setTimeout(() => {
+          onOpenPad?.()
+          openPadTimeoutRef.current = null
+        }, 220)
       }
     }
   }
@@ -199,6 +211,19 @@ export function QuickScoreBadge({
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
     } catch {}
+  }
+
+  const handleClick = (e) => {
+    if (disabled) return
+    if (wasDraggingOrMovedRef.current) {
+      wasDraggingOrMovedRef.current = false
+      return
+    }
+    if (openPadTimeoutRef.current) {
+      clearTimeout(openPadTimeoutRef.current)
+      openPadTimeoutRef.current = null
+    }
+    onOpenPad?.()
   }
 
   const cur = isDragging ? currentValueRef.current : value
@@ -223,11 +248,12 @@ export function QuickScoreBadge({
               : 'Une seule case autorisée par manche'
             : 'Glisser vers le haut ou le bas pour ajuster rapidement, ou cliquer pour ouvrir le pavé'
         }
+        onClick={handleClick}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
-        style={{ touchAction: disabled ? 'auto' : 'pan-x' }}
+        style={{ touchAction: disabled ? 'auto' : 'manipulation' }}
         className={`group relative border transition-all select-none ${
           tall
             ? 'flex flex-col items-center justify-between min-w-[4.8rem] w-20 sm:w-24 h-full self-stretch py-2 px-1.5 rounded-2xl'
@@ -242,10 +268,10 @@ export function QuickScoreBadge({
             : isDragging
             ? `${tall ? 'scale-103' : 'scale-105'} border-[#c83b3b] bg-[#c83b3b]/15 text-[#c83b3b] ring-2 ring-[#c83b3b]/40 shadow-md z-30 cursor-ns-resize`
             : isCurrentChoice
-            ? 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border-[#c83b3b] text-[#c83b3b] dark:text-red-300 ring-2 ring-[#c83b3b]/60 shadow-xs cursor-ns-resize'
+            ? 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border-[#c83b3b] text-[#c83b3b] dark:text-red-300 ring-2 ring-[#c83b3b]/60 shadow-xs cursor-pointer'
             : isFilled
-            ? 'bg-[#c83b3b]/8 dark:bg-[#c83b3b]/15 border-[#c83b3b]/35 text-[#c83b3b] dark:text-red-300 hover:border-[#c83b3b] shadow-2xs cursor-ns-resize'
-            : 'bg-white/80 dark:bg-slate-900/80 border-stone-200 dark:border-slate-800 text-stone-400 dark:text-slate-500 hover:border-[#c83b3b]/60 hover:text-[#c83b3b] shadow-2xs cursor-ns-resize'
+            ? 'bg-[#c83b3b]/8 dark:bg-[#c83b3b]/15 border-[#c83b3b]/35 text-[#c83b3b] dark:text-red-300 hover:border-[#c83b3b] shadow-2xs cursor-pointer'
+            : 'bg-white/80 dark:bg-slate-900/80 border-stone-200 dark:border-slate-800 text-stone-400 dark:text-slate-500 hover:border-[#c83b3b]/60 hover:text-[#c83b3b] shadow-2xs cursor-pointer'
         } ${className}`}
       >
         {tall ? (

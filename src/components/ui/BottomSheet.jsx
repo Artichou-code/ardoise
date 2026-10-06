@@ -20,6 +20,19 @@ export function BottomSheet({
   const sheetRef = useRef(null)
   const headerRef = useRef(null)
   const startY = useRef(null)
+  const openTimeRef = useRef(0)
+
+  useEffect(() => {
+    if (open) {
+      openTimeRef.current = Date.now()
+    }
+  }, [open])
+
+  const handleBackdropClick = (e) => {
+    // Ignore les ghost-clicks générés par le geste/tap qui a ouvert la modale (délai de 350ms)
+    if (Date.now() - openTimeRef.current < 350) return
+    onClose?.()
+  }
 
   useEffect(() => {
     if (!open || position === 'top') return
@@ -80,7 +93,7 @@ export function BottomSheet({
           style={{
             paddingTop: 'max(calc(env(safe-area-inset-top, 0px) + 1.5rem), 2.5rem)',
           }}
-          onClick={(e) => e.target === e.currentTarget && onClose()}
+          onClick={(e) => e.target === e.currentTarget && handleBackdropClick(e)}
         >
           <div
             ref={sheetRef}
@@ -131,9 +144,9 @@ export function BottomSheet({
     return (
       <div
         className="fixed inset-0 z-50 flex items-end justify-center"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+        onClick={(e) => e.target === e.currentTarget && handleBackdropClick(e)}
       >
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleBackdropClick} />
         <div
           ref={sheetRef}
           className={`relative w-full max-w-lg school-surface rounded-t-2xl shadow-2xl border-t border-stone-200 dark:border-slate-800 transition-transform duration-200 max-h-[88dvh] flex flex-col ${className}`}

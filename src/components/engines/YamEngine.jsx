@@ -96,8 +96,22 @@ function FixedScoreBadge({
   const isDraggingRef = useRef(false)
   const isGestureDecidedRef = useRef(false)
   const isHorizontalScrollRef = useRef(false)
+  const wasDraggingOrMovedRef = useRef(false)
+  const cycleTimeoutRef = useRef(null)
 
   const states = [0, null, fixedScore]
+
+  const cycleScore = () => {
+    if (disabled) return
+    try { navigator.vibrate?.(12) } catch {}
+    if (value == null) {
+      onChange(fixedScore)
+    } else if (value === fixedScore) {
+      onChange(0)
+    } else {
+      onChange(null)
+    }
+  }
 
   const handlePointerDown = (e) => {
     if (disabled) return
@@ -109,6 +123,7 @@ function FixedScoreBadge({
     isGestureDecidedRef.current = false
     isHorizontalScrollRef.current = false
     isDraggingRef.current = false
+    wasDraggingOrMovedRef.current = false
   }
 
   const handlePointerMove = (e) => {
@@ -140,6 +155,7 @@ function FixedScoreBadge({
       isDraggingRef.current = true
       setIsDragging(true)
       hasMovedRef.current = true
+      wasDraggingOrMovedRef.current = true
       try { navigator.vibrate?.(10) } catch {}
     }
 
@@ -178,16 +194,17 @@ function FixedScoreBadge({
     } catch {}
 
     if (wasDragging && hasMoved) {
+      wasDraggingOrMovedRef.current = true
+      setTimeout(() => { wasDraggingOrMovedRef.current = false }, 180)
       try { navigator.vibrate?.(15) } catch {}
     } else if (!wasHorizontal && !hasMoved) {
-      // Tap sans glisser : cycle direct null ➔ fixedScore ➔ 0 ➔ null
-      try { navigator.vibrate?.(12) } catch {}
-      if (value == null) {
-        onChange(fixedScore)
-      } else if (value === fixedScore) {
-        onChange(0)
-      } else {
-        onChange(null)
+      // Tap sans glisser : prépare le cycle direct null ➔ fixedScore ➔ 0 ➔ null
+      if (!disabled) {
+        if (cycleTimeoutRef.current) clearTimeout(cycleTimeoutRef.current)
+        cycleTimeoutRef.current = setTimeout(() => {
+          cycleScore()
+          cycleTimeoutRef.current = null
+        }, 220)
       }
     }
   }
@@ -202,6 +219,19 @@ function FixedScoreBadge({
     } catch {}
   }
 
+  const handleClick = (e) => {
+    if (disabled) return
+    if (wasDraggingOrMovedRef.current) {
+      wasDraggingOrMovedRef.current = false
+      return
+    }
+    if (cycleTimeoutRef.current) {
+      clearTimeout(cycleTimeoutRef.current)
+      cycleTimeoutRef.current = null
+    }
+    cycleScore()
+  }
+
   const cur = isDragging ? currentValueRef.current : value
   const isValidated = cur === fixedScore
   const isZero = cur === 0
@@ -211,11 +241,12 @@ function FixedScoreBadge({
     <div
       role="button"
       tabIndex={disabled ? -1 : 0}
+      onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
-      style={{ touchAction: disabled ? 'auto' : 'pan-x' }}
+      style={{ touchAction: disabled ? 'auto' : 'manipulation' }}
       title={
         disabled
           ? isPast
@@ -431,12 +462,12 @@ export function YamEngine({ game, onFinish }) {
     const isPast = previousGrid[playerId]?.[catId] != null
     const chosenCatId = currentRoundCatByPlayer[playerId]
     const isCurrentChoice = chosenCatId === catId
-    const isBlocked = !isPast && !isCurrentChoice && chosenCatId != null
+    const isOtherChoice = !isPast && !isCurrentChoice && chosenCatId != null
     return {
       isPast,
       isCurrentChoice,
-      isBlocked,
-      disabled: isPast || isBlocked,
+      isOtherChoice,
+      disabled: isPast,
     }
   }
 
@@ -495,6 +526,16 @@ export function YamEngine({ game, onFinish }) {
       if (value === null || value === undefined) {
         delete current[catId]
       } else {
+        const prevPGrid = previousGrid[playerId] || {}
+        // Règle 1 case par manche : si on renseigne une nouvelle case dans cette manche,
+        // effacer toute autre case renseignée dans cette manche pour ce joueur
+        if (prevPGrid[catId] == null) {
+          for (const c of YAM_CATEGORIES) {
+            if (c.id !== catId && prevPGrid[c.id] == null && current[c.id] != null) {
+              delete current[c.id]
+            }
+          }
+        }
         current[catId] = Math.max(0, Number(value) || 0)
       }
       return { ...prev, [playerId]: current }
@@ -619,8 +660,14 @@ export function YamEngine({ game, onFinish }) {
                 {upperCategories.map((cat, idx) => (
                   <tr key={cat.id} className="hover:bg-stone-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td
-                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
-                      title={`${cat.name} · ${cat.desc}`}
+                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-100/60 dark:hover:bg-slate-800/60 transition-colors"
+                      title={`${cat.name} · ${cat.desc} (Cliquer pour ouvrir le pavé)`}
+                      onClick={() => {
+                        const targetPlayer = game.players.find(p => previousGrid[p.id]?.[cat.id] == null) || game.players[0]
+                        if (targetPlayer) {
+                          setPadTarget({ playerId: targetPlayer.id, catId: cat.id })
+                        }
+                      }}
                     >
                       <div className="flex items-center justify-center">
                         <DiceFace value={idx + 1} size={24} />
@@ -632,7 +679,12 @@ export function YamEngine({ game, onFinish }) {
                       return (
                         <td
                           key={p.id}
-                          className="p-0.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
+                          onClick={() => {
+                            if (!status.disabled) {
+                              setPadTarget({ playerId: p.id, catId: cat.id })
+                            }
+                          }}
+                          className="p-0.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60 cursor-pointer"
                         >
                           <QuickScoreBadge
                             value={val}
@@ -726,8 +778,14 @@ export function YamEngine({ game, onFinish }) {
                 {lowerCategories.map((cat) => (
                   <tr key={cat.id} className="hover:bg-stone-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td
-                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
-                      title={`${cat.name} · ${cat.desc}`}
+                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-100/60 dark:hover:bg-slate-800/60 transition-colors"
+                      title={`${cat.name} · ${cat.desc} (Cliquer pour ouvrir le pavé)`}
+                      onClick={() => {
+                        const targetPlayer = game.players.find(p => previousGrid[p.id]?.[cat.id] == null) || game.players[0]
+                        if (targetPlayer) {
+                          setPadTarget({ playerId: targetPlayer.id, catId: cat.id })
+                        }
+                      }}
                     >
                       <div className="flex flex-col items-center justify-center gap-0.5 py-0.5">
                         <span className="font-bold text-stone-800 dark:text-slate-200 text-[9px] sm:text-[9.5px] truncate max-w-[42px] sm:max-w-[48px] tracking-tight leading-none">
@@ -750,7 +808,12 @@ export function YamEngine({ game, onFinish }) {
                       return (
                         <td
                           key={p.id}
-                          className="p-0.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
+                          onClick={() => {
+                            if (!status.disabled && !cat.fixed) {
+                              setPadTarget({ playerId: p.id, catId: cat.id })
+                            }
+                          }}
+                          className={`p-0.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60 ${cat.fixed ? '' : 'cursor-pointer'}`}
                         >
                           {cat.fixed ? (
                             <FixedScoreBadge
@@ -1076,6 +1139,8 @@ export function YamEngine({ game, onFinish }) {
                   }}
                   onConfirm={() => setPadTarget(null)}
                   confirmLabel="Valider la case"
+                  disabled={activeCategory && activePlayer ? previousGrid[activePlayer.id]?.[activeCategory.id] != null : false}
+                  disabledMessage="Score validé lors d'une manche précédente"
                   label={
                     activeCategory?.diceValue ? (
                       <div className="flex items-center gap-2">
