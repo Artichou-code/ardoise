@@ -97,7 +97,7 @@ function FixedScoreBadge({
   const isGestureDecidedRef = useRef(false)
   const isHorizontalScrollRef = useRef(false)
 
-  const states = [null, 0, fixedScore]
+  const states = [0, null, fixedScore]
 
   const handlePointerDown = (e) => {
     if (disabled) return
@@ -146,9 +146,12 @@ function FixedScoreBadge({
     if (!isDraggingRef.current) return
     hasMovedRef.current = true
 
-    // Calcul de l'état cible dans [null, 0, fixedScore]
+    // Calcul de l'état cible dans [0, null, fixedScore] :
+    // Vers le haut (totalDeltaY > 0) -> score validé (fixedScore)
+    // Au centre (totalDeltaY ≈ 0) -> sans score (null / "—")
+    // Vers le bas (totalDeltaY < 0) -> zéro (0 barré)
     const startIndex = states.indexOf(dragStartValueRef.current)
-    const safeIndex = startIndex !== -1 ? startIndex : 0
+    const safeIndex = startIndex !== -1 ? startIndex : 1
     const indexSteps = Math.round(totalDeltaY / 24)
     const targetIndex = Math.max(0, Math.min(states.length - 1, safeIndex + indexSteps))
     const nextVal = states[targetIndex]
@@ -221,10 +224,10 @@ function FixedScoreBadge({
               : 'Case barrée (0 pt)'
             : 'Une seule case autorisée par manche'
           : isUnset
-          ? `Cliquer ou glisser vers le haut pour valider (${fixedScore} pts)`
+          ? `Cliquer ou glisser vers le haut (${fixedScore} pts) ou vers le bas (0 pt)`
           : isValidated
-          ? `Validé (${fixedScore} pts). Cliquer ou glisser vers le bas pour barrer`
-          : 'Barré (0 pt). Cliquer ou glisser pour modifier'
+          ? `Validé (${fixedScore} pts). Glisser vers le bas pour — ou 0`
+          : 'Barré (0 pt). Glisser vers le haut pour — ou valider'
       }
       className={`group relative border transition-all select-none w-full min-w-0 h-7.5 sm:h-8 px-1 sm:px-1.5 py-0.5 rounded-lg flex items-center justify-center gap-1 ${
         disabled
@@ -234,7 +237,11 @@ function FixedScoreBadge({
               : 'bg-stone-100/70 dark:bg-slate-800/60 border-stone-200/60 text-stone-400 dark:text-slate-500 font-bold cursor-default opacity-85'
             : 'bg-stone-50/50 dark:bg-slate-900/40 border-stone-200/40 text-stone-300 dark:text-slate-600 opacity-35 cursor-not-allowed'
           : isDragging
-          ? 'scale-105 border-emerald-500 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/40 shadow-md z-30 cursor-ns-resize'
+          ? isValidated
+            ? 'scale-105 border-emerald-500 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/50 shadow-md z-30 cursor-ns-resize'
+            : isZero
+            ? 'scale-105 border-stone-400 bg-stone-200/70 dark:bg-slate-800 text-stone-600 dark:text-slate-300 ring-2 ring-[#c83b3b]/50 shadow-md z-30 cursor-ns-resize'
+            : 'scale-105 border-stone-300 bg-stone-100/70 dark:bg-slate-800/60 text-stone-400 ring-2 ring-stone-300/50 shadow-md z-30 cursor-ns-resize'
           : isCurrentChoice
           ? isValidated
             ? 'bg-emerald-500/15 dark:bg-emerald-500/25 border-emerald-500 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/60 shadow-xs cursor-pointer'
