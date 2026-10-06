@@ -186,7 +186,7 @@ export function QuickScoreBadge({
           tall
             ? 'flex flex-col items-center justify-between min-w-[4.8rem] w-20 sm:w-24 h-full self-stretch py-2 px-1.5 rounded-2xl'
             : compact
-            ? 'flex items-center justify-between gap-1 w-full min-w-0 h-8 sm:h-9 px-1.5 sm:px-2 py-0.5 rounded-lg'
+            ? 'flex items-center justify-between gap-0.5 w-full min-w-0 h-7.5 sm:h-8 px-1 sm:px-1.5 py-0.5 rounded-lg'
             : 'flex items-center justify-between gap-1.5 min-w-[4.2rem] h-10 px-2.5 py-1 rounded-xl'
         } ${
           isDragging
@@ -221,7 +221,7 @@ export function QuickScoreBadge({
         ) : (
           <>
             <div className="flex items-baseline justify-center gap-1 flex-1 text-center truncate">
-              <span className={`${compact ? 'text-sm font-extrabold' : 'text-base sm:text-lg font-black'} tabular-nums leading-none tracking-tight`}>
+              <span className={`${compact ? 'text-xs sm:text-sm font-extrabold' : 'text-base sm:text-lg font-black'} tabular-nums leading-none tracking-tight`}>
                 {displayedValue}
               </span>
               {subText && (
@@ -230,8 +230,8 @@ export function QuickScoreBadge({
                 </span>
               )}
             </div>
-            <div className="flex flex-col items-center justify-center -mr-0.5 opacity-40 group-hover:opacity-100 transition-opacity">
-              <ArrowUpDown size={compact ? 10 : 11} strokeWidth={2.5} />
+            <div className="flex flex-col items-center justify-center -mr-0.5 opacity-40 group-hover:opacity-100 transition-opacity shrink-0">
+              <ArrowUpDown size={compact ? 8.5 : 11} strokeWidth={2.5} />
             </div>
           </>
         )}

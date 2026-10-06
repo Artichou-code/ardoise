@@ -395,11 +395,11 @@ export function YamEngine({ game, onFinish }) {
                   {/* Cellule d'en-tête de la colonne sticky gauche ultra-compacte */}
                   <th
                     scope="col"
-                    className="sticky left-0 z-20 bg-stone-50 dark:bg-slate-900 px-1 py-2 w-14 sm:w-16 min-w-[56px] sm:min-w-[64px] border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
+                    className="sticky left-0 z-20 bg-stone-50 dark:bg-slate-900 px-0.5 py-1.5 w-11 sm:w-13 min-w-[42px] sm:min-w-[48px] border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
                     title="Combinaisons"
                   >
                     <div className="flex items-center justify-center">
-                      <Dices size={18} className="text-[#c83b3b]" />
+                      <Dices size={16} className="text-[#c83b3b]" />
                     </div>
                   </th>
                   {/* Colonnes des joueurs */}
@@ -409,14 +409,14 @@ export function YamEngine({ game, onFinish }) {
                       <th
                         key={p.id}
                         scope="col"
-                        className="px-1.5 py-2 text-center min-w-[76px] sm:min-w-[88px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
+                        className="px-0.5 sm:px-1 py-1.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
                       >
-                        <div className="flex flex-col items-center justify-center gap-1">
-                          <Avatar player={p} size="sm" />
-                          <span className="font-serif-title font-bold text-xs text-stone-900 dark:text-slate-100 truncate max-w-[70px] sm:max-w-[82px] block">
+                        <div className="flex flex-col items-center justify-center gap-0.5">
+                          <Avatar player={p} size={game.players.length >= 4 ? 'xs' : 'sm-compact'} />
+                          <span className="font-serif-title font-bold text-[10.5px] sm:text-xs text-stone-900 dark:text-slate-100 truncate max-w-[54px] sm:max-w-[68px] block leading-tight">
                             {p.name}
                           </span>
-                          <span className="text-[9px] font-semibold text-stone-400 dark:text-slate-500 tabular-nums">
+                          <span className="text-[8px] sm:text-[8.5px] font-semibold text-stone-400 dark:text-slate-500 tabular-nums">
                             {stats.filledTotal}/13
                           </span>
                         </div>
@@ -431,11 +431,11 @@ export function YamEngine({ game, onFinish }) {
                 {upperCategories.map((cat, idx) => (
                   <tr key={cat.id} className="hover:bg-stone-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td
-                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-1 py-1.5 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
+                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
                       title={`${cat.name} · ${cat.desc}`}
                     >
                       <div className="flex items-center justify-center">
-                        <DiceFace value={idx + 1} size={28} />
+                        <DiceFace value={idx + 1} size={24} />
                       </div>
                     </td>
                     {game.players.map((p) => {
@@ -443,7 +443,7 @@ export function YamEngine({ game, onFinish }) {
                       return (
                         <td
                           key={p.id}
-                          className="p-1 text-center min-w-[76px] sm:min-w-[88px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
+                          className="p-0.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
                         >
                           <QuickScoreBadge
                             value={val}
@@ -466,17 +466,17 @@ export function YamEngine({ game, onFinish }) {
 
                 {/* 2. Ligne SOUS-TOTAL Supérieur */}
                 <tr className="bg-stone-100/75 dark:bg-slate-800/60 font-semibold border-t-2 border-stone-200 dark:border-slate-700">
-                  <td className="sticky left-0 z-10 bg-stone-100 dark:bg-slate-800 px-1 py-1.5 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
-                    <div className="flex flex-col items-center justify-center leading-tight">
-                      <span className="text-[10px] font-black text-stone-700 dark:text-slate-300">TOTAL</span>
-                      <span className="text-[8.5px] font-semibold text-stone-400 dark:text-slate-500">/63</span>
+                  <td className="sticky left-0 z-10 bg-stone-100 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
+                    <div className="flex flex-col items-center justify-center leading-none py-0.5">
+                      <span className="text-[8.5px] font-black text-stone-700 dark:text-slate-300">TOT.</span>
+                      <span className="text-[7.5px] font-semibold text-stone-400 dark:text-slate-500">/63</span>
                     </div>
                   </td>
                   {game.players.map((p) => {
                     const stats = getPlayerGridScores(p.id)
                     return (
-                      <td key={p.id} className="p-2 text-center border-r last:border-r-0 border-stone-200/50 dark:border-slate-700/50">
-                        <span className="font-extrabold text-xs text-stone-800 dark:text-slate-200 tabular-nums">
+                      <td key={p.id} className="p-1 sm:p-1.5 text-center border-r last:border-r-0 border-stone-200/50 dark:border-slate-700/50">
+                        <span className="font-extrabold text-[11px] sm:text-xs text-stone-800 dark:text-slate-200 tabular-nums">
                           {stats.upperSubtotal}
                         </span>
                       </td>
@@ -486,22 +486,22 @@ export function YamEngine({ game, onFinish }) {
 
                 {/* 3. Ligne BONUS (+35 si >= 63) */}
                 <tr className="bg-stone-50/60 dark:bg-slate-800/40">
-                  <td className="sticky left-0 z-10 bg-stone-50 dark:bg-slate-800 px-1 py-1.5 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
-                    <div className="flex flex-col items-center justify-center leading-tight">
-                      <span className="text-[9.5px] font-black text-stone-600 dark:text-slate-400">BONUS</span>
-                      <span className="text-[8.5px] font-bold text-emerald-600 dark:text-emerald-400">+35</span>
+                  <td className="sticky left-0 z-10 bg-stone-50 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
+                    <div className="flex flex-col items-center justify-center leading-none py-0.5">
+                      <span className="text-[8px] font-black text-stone-600 dark:text-slate-400">BONUS</span>
+                      <span className="text-[7.5px] font-bold text-emerald-600 dark:text-emerald-400">+35</span>
                     </div>
                   </td>
                   {game.players.map((p) => {
                     const stats = getPlayerGridScores(p.id)
                     return (
-                      <td key={p.id} className="p-2 text-center border-r last:border-r-0 border-stone-100 dark:border-slate-800/60">
+                      <td key={p.id} className="p-1 sm:p-1.5 text-center border-r last:border-r-0 border-stone-100 dark:border-slate-800/60">
                         {stats.hasBonus ? (
-                          <span className="inline-block px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black text-xs tabular-nums">
+                          <span className="inline-block px-1 py-0.2 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black text-[10.5px] sm:text-xs tabular-nums">
                             +35
                           </span>
                         ) : (
-                          <span className="text-stone-400 dark:text-slate-500 text-xs font-semibold tabular-nums">
+                          <span className="text-stone-400 dark:text-slate-500 text-[11px] sm:text-xs font-semibold tabular-nums">
                             0
                           </span>
                         )}
@@ -512,16 +512,16 @@ export function YamEngine({ game, onFinish }) {
 
                 {/* 4. Ligne TOTAL 1 */}
                 <tr className="bg-stone-200/60 dark:bg-slate-800/80 font-bold border-b border-stone-200 dark:border-slate-700">
-                  <td className="sticky left-0 z-10 bg-stone-200/90 dark:bg-slate-800 px-1 py-2 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
-                    <span className="text-[10px] font-black text-stone-900 dark:text-slate-100 uppercase tracking-tight">
-                      TOT. 1
+                  <td className="sticky left-0 z-10 bg-stone-200/90 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
+                    <span className="text-[8.5px] font-black text-stone-900 dark:text-slate-100 uppercase tracking-tight">
+                      T.1
                     </span>
                   </td>
                   {game.players.map((p) => {
                     const stats = getPlayerGridScores(p.id)
                     return (
-                      <td key={p.id} className="p-2 text-center border-r last:border-r-0 border-stone-200/50 dark:border-slate-700/50">
-                        <span className="font-black text-xs text-stone-900 dark:text-slate-100 tabular-nums">
+                      <td key={p.id} className="p-1 sm:p-1.5 text-center border-r last:border-r-0 border-stone-200/50 dark:border-slate-700/50">
+                        <span className="font-black text-[11px] sm:text-xs text-stone-900 dark:text-slate-100 tabular-nums">
                           {stats.total1}
                         </span>
                       </td>
@@ -533,19 +533,19 @@ export function YamEngine({ game, onFinish }) {
                 {lowerCategories.map((cat) => (
                   <tr key={cat.id} className="hover:bg-stone-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td
-                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-1 py-1.5 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
+                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center"
                       title={`${cat.name} · ${cat.desc}`}
                     >
-                      <div className="flex flex-col items-center justify-center leading-tight">
-                        <span className="font-bold text-stone-800 dark:text-slate-200 text-[10px] sm:text-[10.5px] truncate max-w-[58px]">
+                      <div className="flex flex-col items-center justify-center leading-none py-0.5">
+                        <span className="font-bold text-stone-800 dark:text-slate-200 text-[9px] sm:text-[9.5px] truncate max-w-[42px] sm:max-w-[48px] tracking-tight">
                           {cat.id === 'small_straight'
-                            ? 'P. Suite'
+                            ? 'P.Suite'
                             : cat.id === 'large_straight'
-                            ? 'G. Suite'
+                            ? 'G.Suite'
                             : cat.name}
                         </span>
                         {cat.fixed && (
-                          <span className="text-[9px] font-extrabold text-stone-400 dark:text-slate-500 tabular-nums">
+                          <span className="text-[7.5px] font-extrabold text-stone-400 dark:text-slate-500 tabular-nums mt-0.5">
                             {cat.fixed}
                           </span>
                         )}
@@ -556,7 +556,7 @@ export function YamEngine({ game, onFinish }) {
                       return (
                         <td
                           key={p.id}
-                          className="p-1 text-center min-w-[76px] sm:min-w-[88px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
+                          className="p-0.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
                         >
                           <QuickScoreBadge
                             value={val}
@@ -579,16 +579,16 @@ export function YamEngine({ game, onFinish }) {
 
                 {/* 6. Ligne TOTAL 2 */}
                 <tr className="bg-stone-200/60 dark:bg-slate-800/80 font-bold border-t-2 border-stone-200 dark:border-slate-700">
-                  <td className="sticky left-0 z-10 bg-stone-200/90 dark:bg-slate-800 px-1 py-2 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
-                    <span className="text-[10px] font-black text-stone-900 dark:text-slate-100 uppercase tracking-tight">
-                      TOT. 2
+                  <td className="sticky left-0 z-10 bg-stone-200/90 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
+                    <span className="text-[8.5px] font-black text-stone-900 dark:text-slate-100 uppercase tracking-tight">
+                      T.2
                     </span>
                   </td>
                   {game.players.map((p) => {
                     const stats = getPlayerGridScores(p.id)
                     return (
-                      <td key={p.id} className="p-2 text-center border-r last:border-r-0 border-stone-200/50 dark:border-slate-700/50">
-                        <span className="font-black text-xs text-stone-900 dark:text-slate-100 tabular-nums">
+                      <td key={p.id} className="p-1 sm:p-1.5 text-center border-r last:border-r-0 border-stone-200/50 dark:border-slate-700/50">
+                        <span className="font-black text-[11px] sm:text-xs text-stone-900 dark:text-slate-100 tabular-nums">
                           {stats.lowerSubtotal}
                         </span>
                       </td>
@@ -598,10 +598,10 @@ export function YamEngine({ game, onFinish }) {
 
                 {/* 7. Ligne SCORE FINAL */}
                 <tr className="bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 font-black border-t-2 border-[#c83b3b]/40">
-                  <td className="sticky left-0 z-10 bg-stone-100 dark:bg-slate-900 px-1 py-2 border-r border-[#c83b3b]/30 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
+                  <td className="sticky left-0 z-10 bg-stone-100 dark:bg-slate-900 px-0.5 py-1 border-r border-[#c83b3b]/30 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
                     <div className="flex flex-col items-center justify-center gap-0.5 text-[#c83b3b] dark:text-red-400">
-                      <Trophy size={14} className="shrink-0" />
-                      <span className="text-[9.5px] font-black uppercase tracking-tight">
+                      <Trophy size={12} className="shrink-0" />
+                      <span className="text-[8px] font-black uppercase tracking-tight">
                         SCORE
                       </span>
                     </div>
@@ -609,8 +609,8 @@ export function YamEngine({ game, onFinish }) {
                   {game.players.map((p) => {
                     const stats = getPlayerGridScores(p.id)
                     return (
-                      <td key={p.id} className="p-2 text-center border-r last:border-r-0 border-[#c83b3b]/20">
-                        <span className="font-black text-sm sm:text-base text-[#c83b3b] dark:text-red-400 tabular-nums">
+                      <td key={p.id} className="p-1 sm:p-1.5 text-center border-r last:border-r-0 border-[#c83b3b]/20">
+                        <span className="font-black text-xs sm:text-sm text-[#c83b3b] dark:text-red-400 tabular-nums">
                           {stats.grandTotal}
                         </span>
                       </td>
