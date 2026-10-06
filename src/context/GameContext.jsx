@@ -246,6 +246,24 @@ export function GameProvider({ children }) {
     return updated
   }, [activeGame, persistGame])
 
+  // Réorganiser l'ordre des joueurs d'une partie (ex: ordre du tour Dixit)
+  const reorderGamePlayers = useCallback((newPlayers) => {
+    const current = activeGameRef.current || activeGame
+    if (!current || !Array.isArray(newPlayers) || newPlayers.length === 0) return null
+    const updated = {
+      ...current,
+      players: newPlayers,
+      updatedAt: Date.now(),
+    }
+    persistGame(updated)
+
+    const liveSession = getActiveSession()
+    if (liveSession && liveSession.code) {
+      pushGameToLiveSession(liveSession.code, updated).catch(() => {})
+    }
+    return updated
+  }, [activeGame, persistGame])
+
   // Revenir sur la dernière manche pour modification (correction avec pré-remplissage)
   const undoLastRound = useCallback(() => {
     const current = activeGameRef.current || activeGame
@@ -533,6 +551,7 @@ export function GameProvider({ children }) {
       customPresets, savePreset, deletePreset,
       screen, setScreen,
       createGame, updateScores, undoLastRound, cancelCorrection, canUndo,
+      reorderGamePlayers,
       finishGame, rematch, exitGame, removeGame, resumeGame,
       reloadStorage,
       liveSessionNotice, setLiveSessionNotice,

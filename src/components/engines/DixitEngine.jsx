@@ -1,5 +1,16 @@
-import { useState, useMemo } from 'react'
-import { Trophy, VenetianMask, Check, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import {
+  Trophy,
+  VenetianMask,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  HelpCircle,
+  ArrowLeftRight,
+  GripVertical
+} from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -7,8 +18,307 @@ import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { Dialog } from '../ui/Dialog'
 
+/**
+ * Feuille de réglage tactile de l'ordre du tour pour Dixit :
+ * - Définit qui commence la partie (1er conteur) et l'ordre des conteurs suivants
+ * - Drag & drop fluide à 60fps avec translation continue au doigt et à la souris
+ * - Boutons flèches chevron pour monter/descendre en un clic
+ * - Retour haptique lors du changement de position
+ */
+function DixitOrderSheet({ open, onClose, players, onReorder, currentStorytellerId, roundNum }) {
+  const [localPlayers, setLocalPlayers] = useState(players)
+  const [draggingIndex, setDraggingIndex] = useState(null)
+  const [overIndex, setOverIndex] = useState(null)
+  const [dragOffsetY, setDragOffsetY] = useState(0)
+  const [isDropping, setIsDropping] = useState(false)
+
+  const cardRefs = useRef([])
+  const startYRef = useRef(0)
+  const lastOverIndexRef = useRef(null)
+  const itemHeightRef = useRef(62)
+  const isDraggingRef = useRef(false)
+  const dropTimeoutRef = useRef(null)
+
+  useEffect(() => {
+    setLocalPlayers(players)
+  }, [players, open])
+
+  useEffect(() => {
+    return () => {
+      isDraggingRef.current = false
+      if (dropTimeoutRef.current) clearTimeout(dropTimeoutRef.current)
+    }
+  }, [])
+
+  const measureItemHeight = () => {
+    if (cardRefs.current[0] && cardRefs.current[1]) {
+      const r0 = cardRefs.current[0].getBoundingClientRect()
+      const r1 = cardRefs.current[1].getBoundingClientRect()
+      const diff = r1.top - r0.top
+      if (diff > 20 && diff < 150) return diff
+    }
+    if (cardRefs.current[0]) {
+      const height = cardRefs.current[0].getBoundingClientRect().height
+      if (height > 20 && height < 150) return height + 6
+    }
+    return 62
+  }
+
+  const startDrag = (e, index) => {
+    if (isDropping) return
+    if (e.button !== 0 && e.pointerType === 'mouse') return
+    if (e.target.closest('button')) return
+
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId)
+    } catch {}
+
+    const h = measureItemHeight()
+    itemHeightRef.current = h
+    startYRef.current = e.clientY
+    lastOverIndexRef.current = index
+    isDraggingRef.current = true
+
+    setDraggingIndex(index)
+    setOverIndex(index)
+    setDragOffsetY(0)
+    setIsDropping(false)
+
+    try {
+      navigator.vibrate?.(10)
+    } catch {}
+  }
+
+  const onPointerMove = (e) => {
+    if (draggingIndex === null || isDropping || !isDraggingRef.current) return
+
+    const dy = e.clientY - startYRef.current
+    const h = itemHeightRef.current || 62
+    const totalCount = localPlayers.length
+
+    const minDy = -draggingIndex * h
+    const maxDy = (totalCount - 1 - draggingIndex) * h
+    const clampedDy = Math.max(minDy - 20, Math.min(maxDy + 20, dy))
+    setDragOffsetY(clampedDy)
+
+    const target = Math.max(0, Math.min(totalCount - 1, draggingIndex + Math.round(dy / h)))
+    if (target !== overIndex) {
+      setOverIndex(target)
+      if (lastOverIndexRef.current !== target) {
+        lastOverIndexRef.current = target
+        try {
+          navigator.vibrate?.(12)
+        } catch {}
+      }
+    }
+  }
+
+  const endDrag = (e) => {
+    if (draggingIndex === null || !isDraggingRef.current) return
+    isDraggingRef.current = false
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    } catch {}
+
+    const from = draggingIndex
+    const to = overIndex !== null ? overIndex : draggingIndex
+
+    if (from === to) {
+      setDraggingIndex(null)
+      setOverIndex(null)
+      setDragOffsetY(0)
+      setIsDropping(false)
+      return
+    }
+
+    setIsDropping(true)
+    const h = itemHeightRef.current || 62
+    setDragOffsetY((to - from) * h)
+
+    try {
+      navigator.vibrate?.(16)
+    } catch {}
+
+    dropTimeoutRef.current = setTimeout(() => {
+      const arr = [...localPlayers]
+      const [moved] = arr.splice(from, 1)
+      arr.splice(to, 0, moved)
+      setLocalPlayers(arr)
+      onReorder(arr)
+
+      setDraggingIndex(null)
+      setOverIndex(null)
+      setDragOffsetY(0)
+      setIsDropping(false)
+    }, 220)
+  }
+
+  const movePlayer = (index, dir) => {
+    const target = index + dir
+    if (target < 0 || target >= localPlayers.length) return
+    const arr = [...localPlayers]
+    const temp = arr[target]
+    arr[target] = arr[index]
+    arr[index] = temp
+    setLocalPlayers(arr)
+    onReorder(arr)
+    try {
+      navigator.vibrate?.(10)
+    } catch {}
+  }
+
+  return (
+    <BottomSheet open={open} onClose={onClose} title="Ordre du tour (qui commence)">
+      <div className="px-4 pt-1 pb-6 space-y-3">
+        <div className="p-2.5 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60 text-xs text-stone-600 dark:text-slate-300 space-y-1">
+          <p className="font-semibold text-stone-800 dark:text-slate-200">
+            Qui commence et rotation des conteurs :
+          </p>
+          <p className="text-[11px] leading-relaxed text-stone-500 dark:text-slate-400">
+            Le joueur <strong>1er</strong> commence la partie (Manche 1). Les suivants prendront la main dans l&apos;ordre de la liste.
+            Glissez-déposez ou utilisez les flèches pour réorganiser les positions.
+          </p>
+        </div>
+
+        <div className="space-y-1.5 relative select-none">
+          {localPlayers.map((p, index) => {
+            const isBeingDragged = draggingIndex === index
+            const isDragActive = draggingIndex !== null
+
+            let effectiveIndex = index
+            if (isDragActive && overIndex !== null) {
+              if (isBeingDragged) {
+                effectiveIndex = overIndex
+              } else if (draggingIndex < overIndex) {
+                if (index > draggingIndex && index <= overIndex) {
+                  effectiveIndex = index - 1
+                }
+              } else if (draggingIndex > overIndex) {
+                if (index >= overIndex && index < draggingIndex) {
+                  effectiveIndex = index + 1
+                }
+              }
+            }
+
+            const isFirst = effectiveIndex === 0
+            const isCurrentStoryteller = p.id === currentStorytellerId
+
+            let transform = 'translateY(0px)'
+            let zIndex = 1
+            let transition = 'transform 200ms ease, box-shadow 200ms ease'
+
+            if (isBeingDragged) {
+              transform = `translateY(${dragOffsetY}px) scale(1.02)`
+              zIndex = 50
+              transition = isDropping ? 'transform 200ms cubic-bezier(0.2, 0, 0, 1)' : 'none'
+            } else if (isDragActive && overIndex !== null) {
+              const h = itemHeightRef.current || 62
+              if (draggingIndex < overIndex && index > draggingIndex && index <= overIndex) {
+                transform = `translateY(${-h}px)`
+              } else if (draggingIndex > overIndex && index >= overIndex && index < draggingIndex) {
+                transform = `translateY(${h}px)`
+              }
+            }
+
+            return (
+              <div
+                key={p.id}
+                ref={el => { cardRefs.current[index] = el }}
+                onPointerDown={e => startDrag(e, index)}
+                onPointerMove={onPointerMove}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+                style={{ transform, zIndex, transition, touchAction: 'none' }}
+                className={`relative flex items-center justify-between gap-2.5 p-2.5 rounded-xl border transition-colors cursor-grab active:cursor-grabbing select-none ${
+                  isBeingDragged
+                    ? 'border-[#c83b3b] bg-white dark:bg-slate-800 shadow-lg ring-2 ring-[#c83b3b]/30'
+                    : isCurrentStoryteller
+                    ? 'border-[#c83b3b]/60 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
+                    : 'border-stone-200/90 dark:border-slate-800 bg-white/90 dark:bg-slate-800/80 hover:border-stone-300'
+                }`}
+              >
+                {/* Gauche : Rang + Avatar + Nom */}
+                <div className="flex items-center gap-2.5 min-w-0 pointer-events-none">
+                  <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 ${
+                    isFirst
+                      ? 'bg-[#c83b3b] text-white shadow-2xs'
+                      : 'bg-stone-200/90 dark:bg-slate-700 text-stone-700 dark:text-slate-300'
+                  }`}>
+                    {effectiveIndex + 1}
+                  </span>
+
+                  <Avatar player={p} size="xs" />
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 leading-tight">
+                      <span className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
+                        {p.name}
+                      </span>
+                      {isFirst && (
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white shrink-0">
+                          Commence
+                        </span>
+                      )}
+                      {isCurrentStoryteller && !isFirst && (
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-stone-700 dark:bg-slate-600 text-white shrink-0">
+                          Conteur M.{roundNum}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-stone-400 dark:text-slate-500 block truncate">
+                      {isFirst ? 'Manche 1' : `Manche ${effectiveIndex + 1}`} · tour {effectiveIndex + 1}/{localPlayers.length}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Droite : Flèches haut/bas + poignée */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => movePlayer(index, -1)}
+                    disabled={index === 0}
+                    className="p-1 rounded-md border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:pointer-events-none cursor-pointer"
+                    title="Monter d'une position"
+                  >
+                    <ChevronUp size={13} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => movePlayer(index, 1)}
+                    disabled={index === localPlayers.length - 1}
+                    className="p-1 rounded-md border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 disabled:opacity-20 disabled:pointer-events-none cursor-pointer"
+                    title="Descendre d'une position"
+                  >
+                    <ChevronDown size={13} />
+                  </button>
+                  <div
+                    className="p-1 text-stone-400 dark:text-slate-500 hover:text-stone-700 dark:hover:text-slate-300 cursor-grab active:cursor-grabbing"
+                    title="Glisser-déposer pour réorganiser"
+                  >
+                    <GripVertical size={15} />
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-2.5 rounded-xl font-bold text-xs bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 cursor-pointer shadow-sm hover:opacity-95 transition-opacity"
+          >
+            Terminé
+          </button>
+        </div>
+      </div>
+    </BottomSheet>
+  )
+}
+
 export function DixitEngine({ game, onFinish }) {
-  const { updateScores } = useGame()
+  const { updateScores, reorderGamePlayers } = useGame()
   const roundNum = (game.rounds?.length || 0) + 1
   const WIN_SCORE = game.config?.limit || 30
 
@@ -36,6 +346,91 @@ export function DixitEngine({ game, onFinish }) {
 
   const [editingPlayer, setEditingPlayer] = useState(null)
   const [showRulesMemo, setShowRulesMemo] = useState(false)
+  const [showOrderSheet, setShowOrderSheet] = useState(false)
+
+  // Drag & drop desktop dans le carousel horizontal
+  const [draggedPlayerIdx, setDraggedPlayerIdx] = useState(null)
+  const [dragOverPlayerIdx, setDragOverPlayerIdx] = useState(null)
+
+  // Refs pour le centrage magnétique du carousel
+  const carouselRef = useRef(null)
+  const itemRefs = useRef({})
+
+  // Fonction de centrage magnétique fluide
+  const scrollToPlayer = (id, smooth = true) => {
+    const el = itemRefs.current[id]
+    const container = carouselRef.current
+    if (!el || !container) return
+    const containerRect = container.getBoundingClientRect()
+    const elRect = el.getBoundingClientRect()
+    const elCenter = elRect.left + (elRect.width / 2)
+    const containerCenter = containerRect.left + (containerRect.width / 2)
+    const diff = elCenter - containerCenter
+    if (Math.abs(diff) < 2) return
+
+    container.scrollTo({
+      left: container.scrollLeft + diff,
+      behavior: smooth ? 'smooth' : 'auto',
+    })
+  }
+
+  // Centrage magnétique automatique à chaque changement de conteur ou au chargement
+  useEffect(() => {
+    const t1 = setTimeout(() => scrollToPlayer(storytellerId, true), 60)
+    const t2 = setTimeout(() => scrollToPlayer(storytellerId, true), 220)
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
+  }, [storytellerId])
+
+  // Détection du changement de manche pour rotation automatique et centrage
+  const prevRoundsLenRef = useRef(game.rounds?.length || 0)
+  useEffect(() => {
+    if (game.rounds?.length !== prevRoundsLenRef.current) {
+      prevRoundsLenRef.current = game.rounds?.length || 0
+      const nextIdx = (game.rounds?.length || 0) % game.players.length
+      const nextId = game.players[nextIdx]?.id || game.players[0]?.id
+      if (nextId) {
+        setStorytellerId(nextId)
+        setRoundPoints(Object.fromEntries(game.players.map(p => [p.id, 0])))
+      }
+    }
+  }, [game.rounds?.length, game.players])
+
+  // Sélection manuelle au clic avec magnétisme immédiat
+  const handleSelectStoryteller = (pId) => {
+    setStorytellerId(pId)
+    scrollToPlayer(pId, true)
+    try {
+      navigator.vibrate?.(8)
+    } catch {}
+  }
+
+  // Réordonner les joueurs (ordre qui commence et les suivants)
+  const handleReorder = (newPlayers) => {
+    reorderGamePlayers?.(newPlayers)
+    const defaultIdx = (game.rounds?.length || 0) % newPlayers.length
+    const nextStoryteller = newPlayers[defaultIdx]?.id
+    if (nextStoryteller) {
+      setStorytellerId(nextStoryteller)
+      setTimeout(() => scrollToPlayer(nextStoryteller, true), 60)
+    }
+  }
+
+  const handleCarouselDrop = (targetIdx) => {
+    if (draggedPlayerIdx === null || draggedPlayerIdx === targetIdx) {
+      setDraggedPlayerIdx(null)
+      setDragOverPlayerIdx(null)
+      return
+    }
+    const newPlayers = [...game.players]
+    const [moved] = newPlayers.splice(draggedPlayerIdx, 1)
+    newPlayers.splice(targetIdx, 0, moved)
+    handleReorder(newPlayers)
+    setDraggedPlayerIdx(null)
+    setDragOverPlayerIdx(null)
+  }
 
   // Calcul du score maximum théorique par manche selon les règles officielles Dixit :
   // - Conteur : 0 pt ou 3 pts (max 3)
@@ -149,21 +544,25 @@ export function DixitEngine({ game, onFinish }) {
     }
   }
 
-  const activeStoryteller = game.players.find(p => p.id === storytellerId)
-
   return (
     <div className="space-y-3 pb-8">
-      {/* Sélection du Conteur de la manche */}
+      {/* Sélection du Conteur de la manche avec centrage magnétique & réorganisation de l'ordre */}
       <div className="p-3 rounded-2xl school-card border border-stone-200/80 dark:border-slate-800 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-slate-300">
-            <VenetianMask size={14} className="text-[#c83b3b]" />
-            <span>Conteur de la manche :</span>
+        <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-stone-700 dark:text-slate-300 min-w-0">
+            <VenetianMask size={14} className="text-[#c83b3b] shrink-0" />
+            <span className="truncate">Conteur de la manche :</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
-              (Tap pour changer)
-            </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowOrderSheet(true)}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-600 dark:text-slate-300 text-[10px] font-bold transition-colors cursor-pointer"
+              title="Modifier qui commence et l'ordre des conteurs suivants"
+            >
+              <ArrowLeftRight size={11} className="text-[#c83b3b]" />
+              <span>Ordre du tour</span>
+            </button>
             <button
               type="button"
               onClick={() => setShowRulesMemo(true)}
@@ -175,35 +574,80 @@ export function DixitEngine({ game, onFinish }) {
           </div>
         </div>
 
+        {/* Carousel horizontal magnétique défilant avec snap et drag & drop */}
         <div
-          className={`py-1 ${
-            game.players.length <= 5
-              ? 'grid gap-1.5'
-              : 'flex items-center gap-1.5 overflow-x-auto scrollbar-hide'
-          }`}
-          style={game.players.length <= 5 ? { gridTemplateColumns: `repeat(${game.players.length}, minmax(0, 1fr))` } : {}}
+          ref={carouselRef}
+          className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 scroll-smooth select-none relative"
+          style={{
+            paddingLeft: 'calc(50% - 38px)',
+            paddingRight: 'calc(50% - 38px)',
+            scrollSnapType: draggedPlayerIdx !== null ? 'none' : 'x proximity',
+          }}
         >
-          {game.players.map((p) => {
+          {game.players.map((p, idx) => {
             const isStoryteller = p.id === storytellerId
+            const isFirst = idx === 0
+            const isDragging = draggedPlayerIdx === idx
+            const isDragOver = dragOverPlayerIdx === idx
+
             return (
               <button
                 key={p.id}
+                ref={el => { itemRefs.current[p.id] = el }}
                 type="button"
-                onClick={() => setStorytellerId(p.id)}
-                className={`flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer border active:scale-[0.98] ${
-                  game.players.length > 5 ? 'shrink-0 min-w-[58px] max-w-[76px]' : 'min-w-0 w-full'
+                onClick={() => handleSelectStoryteller(p.id)}
+                draggable={true}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('text/plain', String(idx))
+                  setDraggedPlayerIdx(idx)
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  e.dataTransfer.dropEffect = 'move'
+                  if (dragOverPlayerIdx !== idx) setDragOverPlayerIdx(idx)
+                }}
+                onDragLeave={() => {
+                  if (dragOverPlayerIdx === idx) setDragOverPlayerIdx(null)
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  handleCarouselDrop(idx)
+                }}
+                onDragEnd={() => {
+                  setDraggedPlayerIdx(null)
+                  setDragOverPlayerIdx(null)
+                }}
+                className={`relative flex flex-col items-center justify-center gap-1 py-1.5 px-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer border select-none shrink-0 min-w-[70px] max-w-[82px] snap-center active:scale-95 ${
+                  isDragging ? 'opacity-30 scale-90 border-dashed border-[#c83b3b]' : ''
+                } ${
+                  isDragOver ? 'ring-2 ring-[#c83b3b] ring-offset-2 scale-105' : ''
                 } ${
                   isStoryteller
-                    ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
-                    : 'border-stone-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 text-stone-700 dark:text-slate-300 hover:border-stone-300'
+                    ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-md scale-105 z-10'
+                    : 'border-stone-200/80 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 text-stone-700 dark:text-slate-300 hover:border-stone-300 opacity-90 hover:opacity-100'
                 }`}
+                title={`Tour ${idx + 1} : ${p.name}${isFirst ? ' (Commence la partie)' : ''}`}
               >
+                {/* Pastille discrète d'ordre du tour */}
+                <span className={`absolute -top-1.5 -left-1 px-1.5 py-0.2 rounded-full text-[8px] font-black leading-tight shadow-2xs z-20 ${
+                  isFirst
+                    ? isStoryteller ? 'bg-white text-[#c83b3b]' : 'bg-[#c83b3b] text-white'
+                    : isStoryteller ? 'bg-white/90 text-stone-800' : 'bg-stone-200/90 dark:bg-slate-700 text-stone-600 dark:text-slate-300'
+                }`}>
+                  {isFirst ? '1er' : `${idx + 1}e`}
+                </span>
+
                 <div className="relative shrink-0">
                   <Avatar player={p} size="xs" />
                 </div>
                 <span className={`text-[11px] font-semibold truncate w-full text-center leading-tight ${isStoryteller ? 'text-white' : ''}`}>
                   {p.name}
                 </span>
+                {isStoryteller && (
+                  <span className="text-[8px] font-extrabold uppercase tracking-wide px-1 rounded bg-white/20 text-white leading-tight">
+                    Conteur
+                  </span>
+                )}
               </button>
             )
           })}
@@ -347,6 +791,16 @@ export function DixitEngine({ game, onFinish }) {
           </div>
         </div>
       </Dialog>
+
+      {/* BottomSheet de réorganisation de l'ordre du tour */}
+      <DixitOrderSheet
+        open={showOrderSheet}
+        onClose={() => setShowOrderSheet(false)}
+        players={game.players}
+        onReorder={handleReorder}
+        currentStorytellerId={storytellerId}
+        roundNum={roundNum}
+      />
 
       {/* BottomSheet avec ScorePad pour saisie tactile au pavé numérique */}
       <BottomSheet open={!!editingPlayer} onClose={() => setEditingPlayer(null)}>
