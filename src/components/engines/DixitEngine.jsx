@@ -192,9 +192,14 @@ function DixitOrderSheet({
   return (
     <BottomSheet open={open} onClose={onClose} title="Ordre du tour">
       <div className="px-4 pt-1 pb-6 space-y-3">
-        <p className="text-xs text-center text-stone-400 dark:text-slate-500 font-medium">
-          Glissez pour modifier l&apos;ordre
-        </p>
+        <div className="p-2.5 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60 text-xs">
+          <p className="font-semibold text-stone-800 dark:text-slate-200 text-xs">
+            Le 1<sup>er</sup> joueur commence (Manche 1)
+          </p>
+          <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-snug mt-0.5">
+            Le rôle de conteur tourne ensuite dans cet ordre à chaque manche. Glissez pour réorganiser.
+          </p>
+        </div>
 
         <div className="space-y-1.5 relative select-none">
           {localPlayers.map((p, index) => {
