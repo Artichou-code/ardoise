@@ -10,12 +10,12 @@ import { Dialog } from '../ui/Dialog'
 // Définition des 13 catégories officielles de la feuille de marque du Yam's
 export const YAM_CATEGORIES = [
   // Section Supérieure
-  { id: 'ones', name: 'As (1)', section: 'upper', desc: 'Somme des dés 1', max: 5, presets: [0, 1, 2, 3, 4, 5] },
-  { id: 'twos', name: 'Deux (2)', section: 'upper', desc: 'Somme des dés 2', max: 10, presets: [0, 2, 4, 6, 8, 10] },
-  { id: 'threes', name: 'Trois (3)', section: 'upper', desc: 'Somme des dés 3', max: 15, presets: [0, 3, 6, 9, 12, 15] },
-  { id: 'fours', name: 'Quatre (4)', section: 'upper', desc: 'Somme des dés 4', max: 20, presets: [0, 4, 8, 12, 16, 20] },
-  { id: 'fives', name: 'Cinq (5)', section: 'upper', desc: 'Somme des dés 5', max: 25, presets: [0, 5, 10, 15, 20, 25] },
-  { id: 'sixes', name: 'Six (6)', section: 'upper', desc: 'Somme des dés 6', max: 30, presets: [0, 6, 12, 18, 24, 30] },
+  { id: 'ones', name: 'As (1)', section: 'upper', desc: 'Somme des dés 1', max: 5, presets: [0, 1, 2, 3, 4, 5], dice: '⚀' },
+  { id: 'twos', name: 'Deux (2)', section: 'upper', desc: 'Somme des dés 2', max: 10, presets: [0, 2, 4, 6, 8, 10], dice: '⚁' },
+  { id: 'threes', name: 'Trois (3)', section: 'upper', desc: 'Somme des dés 3', max: 15, presets: [0, 3, 6, 9, 12, 15], dice: '⚂' },
+  { id: 'fours', name: 'Quatre (4)', section: 'upper', desc: 'Somme des dés 4', max: 20, presets: [0, 4, 8, 12, 16, 20], dice: '⚃' },
+  { id: 'fives', name: 'Cinq (5)', section: 'upper', desc: 'Somme des dés 5', max: 25, presets: [0, 5, 10, 15, 20, 25], dice: '⚄' },
+  { id: 'sixes', name: 'Six (6)', section: 'upper', desc: 'Somme des dés 6', max: 30, presets: [0, 6, 12, 18, 24, 30], dice: '⚅' },
 
   // Section Inférieure
   { id: 'three_kind', name: 'Brelan', section: 'lower', desc: '3 dés identiques (Somme des 5 dés)', max: 30, presets: [0, 15, 18, 20, 24, 28] },
@@ -30,7 +30,7 @@ export const YAM_CATEGORIES = [
 export function YamEngine({ game, onFinish }) {
   const { updateScores } = useGame()
 
-  // Mode de saisie : 'grid' (grille officielle des 13 cases) ou 'direct' (score direct par manche)
+  // Mode de saisie : 'grid' (grille croisée officielle) ou 'direct' (score direct par manche)
   const [inputMode, setInputMode] = useState('grid')
 
   // État de la grille pour chaque joueur : { [playerId]: { [catId]: number | null } }
@@ -94,13 +94,15 @@ export function YamEngine({ game, onFinish }) {
       }
     }
 
-    const grandTotal = upperSubtotal + bonusPoints + lowerSubtotal
+    const total1 = upperSubtotal + bonusPoints
+    const grandTotal = total1 + lowerSubtotal
     const filledTotal = upperFilledCount + lowerFilledCount
 
     return {
       upperSubtotal,
       hasBonus,
       bonusPoints,
+      total1,
       lowerSubtotal,
       grandTotal,
       filledTotal,
@@ -249,6 +251,10 @@ export function YamEngine({ game, onFinish }) {
   }
 
   const activeCategory = padTarget?.catId ? YAM_CATEGORIES.find(c => c.id === padTarget.catId) : null
+  const currentCategoryValue = activePlayer && activeCategory ? gridByPlayer[activePlayer.id]?.[activeCategory.id] : null
+
+  const upperCategories = YAM_CATEGORIES.filter(c => c.section === 'upper')
+  const lowerCategories = YAM_CATEGORIES.filter(c => c.section === 'lower')
 
   return (
     <div className="space-y-3 pb-8">
@@ -263,7 +269,7 @@ export function YamEngine({ game, onFinish }) {
               Yam's
             </h3>
             <p className="text-[10px] text-stone-500 dark:text-slate-400 leading-snug">
-              Grille de 13 cases · Bonus de 35 pts si section sup &ge; 63
+              Feuille officielle 13 cases · Bonus de 35 pts si sup &ge; 63
             </p>
           </div>
         </div>
@@ -272,13 +278,13 @@ export function YamEngine({ game, onFinish }) {
           <button
             type="button"
             onClick={() => setShowRulesMemo(true)}
-            className="p-1.5 rounded-xl border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 transition-colors"
+            className="p-1.5 rounded-xl border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 transition-colors cursor-pointer"
             title="Aide aux combinaisons"
           >
             <HelpCircle size={15} />
           </button>
 
-          {/* Commutateur Grille 13 cases vs Total direct */}
+          {/* Commutateur Grille croisée vs Total direct */}
           <div className="flex items-center p-0.5 bg-stone-100 dark:bg-slate-800 rounded-xl border border-stone-200/80 dark:border-slate-700/80">
             <button
               type="button"
@@ -288,7 +294,7 @@ export function YamEngine({ game, onFinish }) {
                   ? 'bg-white dark:bg-slate-700 text-[#c83b3b] shadow-2xs'
                   : 'text-stone-500 hover:text-stone-800 dark:text-slate-400'
               }`}
-              title="Grille officielle des 13 cases"
+              title="Grille officielle des 13 cases (feuille de marque)"
             >
               <LayoutGrid size={12} />
               <span className="hidden sm:inline">Grille</span>
@@ -310,172 +316,273 @@ export function YamEngine({ game, onFinish }) {
         </div>
       </div>
 
-      {/* Cartes de saisie des joueurs */}
-      <div className="space-y-3">
-        {game.players.map((p) => {
-          const stats = getPlayerGridScores(p.id)
-          const pGrid = gridByPlayer[p.id] || {}
+      {/* Mode Grille : Grille Croisée classique façon feuille de score papier */}
+      {inputMode === 'grid' && (
+        <div className="rounded-2xl border border-stone-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+          <div className="overflow-x-auto overscroll-x-contain touch-pan-x">
+            <table className="w-full border-collapse text-left text-xs min-w-full">
+              <thead>
+                <tr className="border-b border-stone-200 dark:border-slate-800 bg-stone-50/95 dark:bg-slate-900/95 backdrop-blur-xs">
+                  {/* Cellule d'en-tête de la colonne sticky gauche */}
+                  <th
+                    scope="col"
+                    className="sticky left-0 z-20 bg-stone-50 dark:bg-slate-900 px-3 py-2.5 w-32 sm:w-40 min-w-[124px] sm:min-w-[148px] border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] font-black text-[10px] sm:text-[11px] uppercase tracking-wider text-stone-500 dark:text-slate-400"
+                  >
+                    Combinaison
+                  </th>
+                  {/* Colonnes des joueurs */}
+                  {game.players.map((p) => {
+                    const stats = getPlayerGridScores(p.id)
+                    return (
+                      <th
+                        key={p.id}
+                        scope="col"
+                        className="px-2 py-2 text-center min-w-[80px] sm:min-w-[96px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
+                      >
+                        <div className="flex flex-col items-center justify-center gap-1">
+                          <Avatar player={p} size="sm" />
+                          <span className="font-serif-title font-bold text-xs text-stone-900 dark:text-slate-100 truncate max-w-[72px] sm:max-w-[86px] block">
+                            {p.name}
+                          </span>
+                          <span className="text-[9px] font-semibold text-stone-400 dark:text-slate-500 tabular-nums">
+                            {stats.filledTotal}/13
+                          </span>
+                        </div>
+                      </th>
+                    )
+                  })}
+                </tr>
+              </thead>
 
-          return (
-            <div
-              key={p.id}
-              className="p-3 sm:p-3.5 rounded-2xl school-card border border-stone-200/90 dark:border-slate-800 space-y-2.5"
-            >
-              {/* Entête du joueur : Avatar, Nom, Total général et statut Bonus */}
-              <div className="flex items-center justify-between gap-2 pb-2 border-b border-stone-100 dark:border-slate-800/80">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Avatar player={p} size="sm" />
-                  <div className="min-w-0">
-                    <span className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate block">
-                      {p.name}
-                    </span>
-                    <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                      {inputMode === 'grid'
-                        ? `${stats.filledTotal}/13 cases remplies`
-                        : `Score actuel : ${game.scores?.[p.id] || 0} pts`}
-                    </span>
-                  </div>
-                </div>
+              <tbody className="divide-y divide-stone-100 dark:divide-slate-800/60">
+                {/* 1. Section Supérieure (As à Six) */}
+                {upperCategories.map((cat) => (
+                  <tr key={cat.id} className="hover:bg-stone-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-3 py-1.5 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)]">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-sm font-normal text-stone-600 dark:text-slate-300 shrink-0 select-none">
+                          {cat.dice || '⚀'}
+                        </span>
+                        <span className="font-semibold text-stone-800 dark:text-slate-200 truncate text-[11px] sm:text-xs">
+                          {cat.name}
+                        </span>
+                      </div>
+                    </td>
+                    {game.players.map((p) => {
+                      const val = gridByPlayer[p.id]?.[cat.id]
+                      const isSet = val != null
+                      return (
+                        <td
+                          key={p.id}
+                          className="p-1 text-center border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => setPadTarget({ playerId: p.id, catId: cat.id })}
+                            className={`w-full h-8.5 rounded-lg font-bold text-xs transition-all flex items-center justify-center cursor-pointer select-none active:scale-95 ${
+                              isSet
+                                ? val === 0
+                                  ? 'bg-[#c83b3b]/10 text-stone-400 dark:text-slate-500 line-through decoration-red-500 font-bold'
+                                  : 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] dark:text-red-300 font-black tabular-nums border border-[#c83b3b]/30'
+                                : 'hover:bg-stone-100 dark:hover:bg-slate-800/70 text-stone-300 dark:text-slate-600 border border-dashed border-stone-200 dark:border-slate-700/80'
+                            }`}
+                            title={`${p.name} - ${cat.name}`}
+                          >
+                            {isSet ? val : '—'}
+                          </button>
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
 
-                {/* Score total calculé et badge bonus */}
-                <div className="flex items-center gap-2 shrink-0">
-                  {inputMode === 'grid' && (
-                    <div className="flex flex-col items-end">
-                      <span className="text-xs font-black text-[#c83b3b] tabular-nums">
-                        {stats.grandTotal} pts
-                      </span>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
-                        stats.hasBonus
-                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                          : 'bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400'
-                      }`}>
-                        {stats.hasBonus ? '+35 Bonus' : `${stats.upperSubtotal}/63`}
+                {/* 2. Ligne SOUS-TOTAL Supérieur */}
+                <tr className="bg-stone-100/75 dark:bg-slate-800/60 font-semibold border-t-2 border-stone-200 dark:border-slate-700">
+                  <td className="sticky left-0 z-10 bg-stone-100 dark:bg-slate-800 px-3 py-2 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)]">
+                    <div className="flex items-center justify-between gap-1 text-[11px] font-bold text-stone-700 dark:text-slate-300">
+                      <span>TOTAL</span>
+                      <span className="text-[10px] text-stone-400 dark:text-slate-500 font-normal">/63</span>
+                    </div>
+                  </td>
+                  {game.players.map((p) => {
+                    const stats = getPlayerGridScores(p.id)
+                    return (
+                      <td key={p.id} className="p-2 text-center border-r last:border-r-0 border-stone-200/50 dark:border-slate-700/50">
+                        <span className="font-extrabold text-xs text-stone-800 dark:text-slate-200 tabular-nums">
+                          {stats.upperSubtotal}
+                        </span>
+                      </td>
+                    )
+                  })}
+                </tr>
+
+                {/* 3. Ligne BONUS (+35 si >= 63) */}
+                <tr className="bg-stone-50/60 dark:bg-slate-800/40">
+                  <td className="sticky left-0 z-10 bg-stone-50 dark:bg-slate-800 px-3 py-2 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)]">
+                    <div className="flex items-center justify-between gap-1 text-[11px] font-bold text-stone-600 dark:text-slate-400">
+                      <span>BONUS</span>
+                      <span className="text-[9.5px] font-semibold text-emerald-600 dark:text-emerald-400">+35</span>
+                    </div>
+                  </td>
+                  {game.players.map((p) => {
+                    const stats = getPlayerGridScores(p.id)
+                    return (
+                      <td key={p.id} className="p-2 text-center border-r last:border-r-0 border-stone-100 dark:border-slate-800/60">
+                        {stats.hasBonus ? (
+                          <span className="inline-block px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black text-xs tabular-nums">
+                            +35
+                          </span>
+                        ) : (
+                          <span className="text-stone-400 dark:text-slate-500 text-xs font-semibold tabular-nums">
+                            0
+                          </span>
+                        )}
+                      </td>
+                    )
+                  })}
+                </tr>
+
+                {/* 4. Ligne TOTAL 1 */}
+                <tr className="bg-stone-200/60 dark:bg-slate-800/80 font-bold border-b border-stone-200 dark:border-slate-700">
+                  <td className="sticky left-0 z-10 bg-stone-200/90 dark:bg-slate-800 px-3 py-2 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)]">
+                    <span className="text-[11px] font-black text-stone-900 dark:text-slate-100 uppercase tracking-tight">
+                      TOTAL 1
+                    </span>
+                  </td>
+                  {game.players.map((p) => {
+                    const stats = getPlayerGridScores(p.id)
+                    return (
+                      <td key={p.id} className="p-2 text-center border-r last:border-r-0 border-stone-200/50 dark:border-slate-700/50">
+                        <span className="font-black text-xs text-stone-900 dark:text-slate-100 tabular-nums">
+                          {stats.total1}
+                        </span>
+                      </td>
+                    )
+                  })}
+                </tr>
+
+                {/* 5. Section Inférieure (Brelan à Chance) */}
+                {lowerCategories.map((cat) => (
+                  <tr key={cat.id} className="hover:bg-stone-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-3 py-1.5 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)]">
+                      <div className="flex items-center justify-between gap-1 min-w-0">
+                        <span className="font-semibold text-stone-800 dark:text-slate-200 truncate text-[11px] sm:text-xs">
+                          {cat.name}
+                        </span>
+                        {cat.fixed && (
+                          <span className="text-[9px] font-bold text-stone-400 dark:text-slate-500 shrink-0">
+                            {cat.fixed}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    {game.players.map((p) => {
+                      const val = gridByPlayer[p.id]?.[cat.id]
+                      const isSet = val != null
+                      return (
+                        <td
+                          key={p.id}
+                          className="p-1 text-center border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => setPadTarget({ playerId: p.id, catId: cat.id })}
+                            className={`w-full h-8.5 rounded-lg font-bold text-xs transition-all flex items-center justify-center cursor-pointer select-none active:scale-95 ${
+                              isSet
+                                ? val === 0
+                                  ? 'bg-[#c83b3b]/10 text-stone-400 dark:text-slate-500 line-through decoration-red-500 font-bold'
+                                  : 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] dark:text-red-300 font-black tabular-nums border border-[#c83b3b]/30'
+                                : 'hover:bg-stone-100 dark:hover:bg-slate-800/70 text-stone-300 dark:text-slate-600 border border-dashed border-stone-200 dark:border-slate-700/80'
+                            }`}
+                            title={`${p.name} - ${cat.name}`}
+                          >
+                            {isSet ? val : '—'}
+                          </button>
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+
+                {/* 6. Ligne TOTAL 2 */}
+                <tr className="bg-stone-200/60 dark:bg-slate-800/80 font-bold border-t-2 border-stone-200 dark:border-slate-700">
+                  <td className="sticky left-0 z-10 bg-stone-200/90 dark:bg-slate-800 px-3 py-2 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)]">
+                    <span className="text-[11px] font-black text-stone-900 dark:text-slate-100 uppercase tracking-tight">
+                      TOTAL 2
+                    </span>
+                  </td>
+                  {game.players.map((p) => {
+                    const stats = getPlayerGridScores(p.id)
+                    return (
+                      <td key={p.id} className="p-2 text-center border-r last:border-r-0 border-stone-200/50 dark:border-slate-700/50">
+                        <span className="font-black text-xs text-stone-900 dark:text-slate-100 tabular-nums">
+                          {stats.lowerSubtotal}
+                        </span>
+                      </td>
+                    )
+                  })}
+                </tr>
+
+                {/* 7. Ligne SCORE FINAL */}
+                <tr className="bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 font-black border-t-2 border-[#c83b3b]/40">
+                  <td className="sticky left-0 z-10 bg-stone-100 dark:bg-slate-900 px-3 py-2.5 border-r border-[#c83b3b]/30 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)]">
+                    <div className="flex items-center gap-1.5 text-[#c83b3b] dark:text-red-400">
+                      <Trophy size={13} className="shrink-0" />
+                      <span className="text-xs font-black uppercase tracking-tight">
+                        SCORE
                       </span>
                     </div>
-                  )}
+                  </td>
+                  {game.players.map((p) => {
+                    const stats = getPlayerGridScores(p.id)
+                    return (
+                      <td key={p.id} className="p-2 text-center border-r last:border-r-0 border-[#c83b3b]/20">
+                        <span className="font-black text-sm sm:text-base text-[#c83b3b] dark:text-red-400 tabular-nums">
+                          {stats.grandTotal}
+                        </span>
+                      </td>
+                    )
+                  })}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-                  {inputMode === 'direct' && (
-                    <QuickScoreBadge
-                      value={directDelta[p.id] || 0}
-                      onChange={(v) => setDirectDelta(prev => ({ ...prev, [p.id]: Math.max(0, Number(v) || 0) }))}
-                      onOpenPad={() => setPadTarget({ playerId: p.id, catId: null })}
-                      min={0}
-                      max={50}
-                      step={1}
-                      showPlus={true}
-                    />
-                  )}
+      {/* Mode Direct : Saisie simplifiée des totaux par manche */}
+      {inputMode === 'direct' && (
+        <div className="space-y-3">
+          {game.players.map((p) => (
+            <div
+              key={p.id}
+              className="p-3 sm:p-3.5 rounded-2xl school-card border border-stone-200/90 dark:border-slate-800 flex items-center justify-between gap-3"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Avatar player={p} size="sm" />
+                <div className="min-w-0">
+                  <span className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate block">
+                    {p.name}
+                  </span>
+                  <span className="text-[10px] text-stone-400 dark:text-slate-500">
+                    Score actuel : {game.scores?.[p.id] || 0} pts
+                  </span>
                 </div>
               </div>
 
-              {/* Mode Grille : Affichage des 13 cases organisées en 2 sections */}
-              {inputMode === 'grid' && (
-                <div className="space-y-3 pt-1">
-                  {/* Section Supérieure */}
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
-                      <span>Section Supérieure (1 à 6)</span>
-                      <span>{stats.upperSubtotal}/63 pts</span>
-                    </div>
-                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2">
-                      {YAM_CATEGORIES.filter(c => c.section === 'upper').map((cat) => {
-                        const val = pGrid[cat.id]
-                        const isSet = val != null
-
-                        return (
-                          <div
-                            key={cat.id}
-                            className={`p-1.5 sm:p-2 rounded-xl border flex flex-col justify-between gap-1 sm:gap-1.5 transition-all ${
-                              isSet
-                                ? 'border-[#c83b3b]/35 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
-                                : 'border-stone-200/80 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between w-full px-0.5">
-                              <span className="text-[10px] sm:text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate">
-                                {cat.name}
-                              </span>
-                              {isSet && (
-                                <span className="text-[8px] font-black text-[#c83b3b]">
-                                  ●
-                                </span>
-                              )}
-                            </div>
-
-                            <QuickScoreBadge
-                              value={val}
-                              onChange={(v) => handleCategoryValueChange(p.id, cat.id, v)}
-                              onOpenPad={() => setPadTarget({ playerId: p.id, catId: cat.id })}
-                              values={cat.presets}
-                              min={0}
-                              max={cat.max}
-                              step={1}
-                              compact={true}
-                              formatDisplay={(v) => (v != null ? `${v}` : '—')}
-                              showPlus={false}
-                              className="w-full"
-                            />
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Section Inférieure */}
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
-                      <span>Section Inférieure (Combinaisons)</span>
-                      <span>{stats.lowerSubtotal} pts</span>
-                    </div>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1.5 sm:gap-2">
-                      {YAM_CATEGORIES.filter(c => c.section === 'lower').map((cat) => {
-                        const val = pGrid[cat.id]
-                        const isSet = val != null
-
-                        return (
-                          <div
-                            key={cat.id}
-                            className={`p-1.5 sm:p-2 rounded-xl border flex flex-col justify-between gap-1 sm:gap-1.5 transition-all ${
-                              isSet
-                                ? 'border-[#c83b3b]/35 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
-                                : 'border-stone-200/80 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/30'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between w-full px-0.5">
-                              <span className="text-[10px] sm:text-[11px] font-bold text-stone-700 dark:text-slate-300 truncate">
-                                {cat.name}
-                              </span>
-                              {isSet && (
-                                <span className="text-[8px] font-black text-[#c83b3b]">
-                                  ●
-                                </span>
-                              )}
-                            </div>
-
-                            <QuickScoreBadge
-                              value={val}
-                              onChange={(v) => handleCategoryValueChange(p.id, cat.id, v)}
-                              onOpenPad={() => setPadTarget({ playerId: p.id, catId: cat.id })}
-                              values={cat.fixed ? cat.presets : undefined}
-                              min={0}
-                              max={cat.max}
-                              step={1}
-                              compact={true}
-                              formatDisplay={(v) => (v != null ? `${v}` : '—')}
-                              showPlus={false}
-                              className="w-full"
-                            />
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
+              <QuickScoreBadge
+                value={directDelta[p.id] || 0}
+                onChange={(v) => setDirectDelta(prev => ({ ...prev, [p.id]: Math.max(0, Number(v) || 0) }))}
+                onOpenPad={() => setPadTarget({ playerId: p.id, catId: null })}
+                min={0}
+                max={50}
+                step={1}
+                showPlus={true}
+              />
             </div>
-          )
-        })}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Bouton de validation principale */}
       <div className="pt-2">
@@ -532,10 +639,11 @@ export function YamEngine({ game, onFinish }) {
         </div>
       </Dialog>
 
-      {/* BottomSheet avec ScorePad pour saisie tactile au pavé numérique */}
+      {/* BottomSheet tactile pour saisie ergonomique sur mobile */}
       <BottomSheet open={!!padTarget} onClose={() => setPadTarget(null)}>
         {activePlayer && (
           <div className="px-4 pt-1 pb-6 space-y-3">
+            {/* En-tête du BottomSheet avec informations du joueur et de la combinaison */}
             <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
               <div className="flex items-center gap-2.5 min-w-0">
                 <Avatar player={activePlayer} size="sm" />
@@ -583,32 +691,96 @@ export function YamEngine({ game, onFinish }) {
               </div>
             </div>
 
-            <ScorePad
-              value={
-                activeCategory
-                  ? (gridByPlayer[activePlayer.id]?.[activeCategory.id] ?? 0)
-                  : (directDelta[activePlayer.id] || 0)
-              }
-              onChange={(val) => {
-                if (activeCategory) {
-                  handleCategoryValueChange(activePlayer.id, activeCategory.id, val)
-                } else {
-                  setDirectDelta(prev => ({ ...prev, [activePlayer.id]: Math.max(0, Number(val) || 0) }))
+            {/* Interface de saisie tactile adaptée à la combinaison */}
+            {activeCategory?.fixed ? (
+              <div className="space-y-4 pt-1">
+                <div className="p-3 rounded-2xl bg-stone-50 dark:bg-slate-800/40 border border-stone-200/60 dark:border-slate-700/60 text-center">
+                  <span className="text-xs uppercase tracking-wider font-bold text-stone-400 dark:text-slate-500 block mb-1">
+                    Valeur choisie
+                  </span>
+                  <span className="text-3xl font-black text-stone-900 dark:text-slate-100 tabular-nums">
+                    {currentCategoryValue != null
+                      ? currentCategoryValue === 0
+                        ? '0 (Barré)'
+                        : `${currentCategoryValue} points`
+                      : '— (À choisir)'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleCategoryValueChange(activePlayer.id, activeCategory.id, activeCategory.fixed)
+                      try { navigator.vibrate?.(12) } catch {}
+                    }}
+                    className={`p-4 rounded-2xl border-2 font-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-95 ${
+                      currentCategoryValue === activeCategory.fixed
+                        ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-md'
+                        : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-800 dark:text-slate-200 hover:border-[#c83b3b]/60'
+                    }`}
+                  >
+                    <span className="text-2xl sm:text-3xl">{activeCategory.fixed} pts</span>
+                    <span className="text-[10.5px] font-bold uppercase tracking-wider opacity-90">
+                      {activeCategory.name} réussi
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleCategoryValueChange(activePlayer.id, activeCategory.id, 0)
+                      try { navigator.vibrate?.(12) } catch {}
+                    }}
+                    className={`p-4 rounded-2xl border-2 font-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-95 ${
+                      currentCategoryValue === 0
+                        ? 'bg-stone-800 dark:bg-stone-700 text-white border-stone-800 dark:border-stone-600 shadow-md'
+                        : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400 hover:border-red-400'
+                    }`}
+                  >
+                    <span className="text-2xl sm:text-3xl line-through decoration-red-500 decoration-2">0 pt</span>
+                    <span className="text-[10.5px] font-bold uppercase tracking-wider opacity-90">
+                      Barrer la case
+                    </span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setPadTarget(null)}
+                  className="w-full py-3.5 px-3 rounded-xl font-bold text-base btn-margin-red shadow-sm active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center text-center mt-2"
+                >
+                  Valider la case
+                </button>
+              </div>
+            ) : (
+              <ScorePad
+                value={
+                  activeCategory
+                    ? (gridByPlayer[activePlayer.id]?.[activeCategory.id] ?? 0)
+                    : (directDelta[activePlayer.id] || 0)
                 }
-              }}
-              onConfirm={handlePadNext}
-              confirmLabel="Valider la case"
-              label={activeCategory ? activeCategory.name : 'Score de la manche'}
-              subLabel={activeCategory ? activeCategory.desc : 'Total des points'}
-              min={0}
-              max={activeCategory ? activeCategory.max : 50}
-              step={1}
-              presets={activeCategory ? activeCategory.presets : [0, 5, 10, 15, 20, 25, 30, 35, 40, 50]}
-              customButtons={[]}
-              baseScore={0}
-              formatTotal={(val) => `${val} point${val > 1 ? 's' : ''}`}
-              showPlus={false}
-            />
+                onChange={(val) => {
+                  if (activeCategory) {
+                    handleCategoryValueChange(activePlayer.id, activeCategory.id, val)
+                  } else {
+                    setDirectDelta(prev => ({ ...prev, [activePlayer.id]: Math.max(0, Number(val) || 0) }))
+                  }
+                }}
+                onConfirm={() => setPadTarget(null)}
+                confirmLabel="Valider la case"
+                label={activeCategory ? activeCategory.name : 'Score de la manche'}
+                subLabel={activeCategory ? activeCategory.desc : 'Total des points'}
+                min={0}
+                max={activeCategory ? activeCategory.max : 50}
+                step={1}
+                presets={activeCategory ? activeCategory.presets : [0, 5, 10, 15, 20, 25, 30, 35, 40, 50]}
+                customButtons={[]}
+                baseScore={0}
+                formatTotal={(val) => `${val} point${val > 1 ? 's' : ''}`}
+                showPlus={false}
+              />
+            )}
           </div>
         )}
       </BottomSheet>
