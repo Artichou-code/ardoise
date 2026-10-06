@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Trophy, Eye, VenetianMask, Check, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
+import { Trophy, VenetianMask, Check, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
@@ -132,32 +132,6 @@ export function DixitEngine({ game, onFinish }) {
 
   return (
     <div className="space-y-3 pb-8">
-      {/* Barre d'en-tête du jeu */}
-      <div className="flex items-center justify-between gap-2 p-2.5 rounded-2xl school-card border border-stone-200/80 dark:border-slate-800">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="p-1.5 rounded-xl bg-[#c83b3b]/10 text-[#c83b3b] shrink-0">
-            <Eye size={16} />
-          </span>
-          <div className="min-w-0">
-            <h3 className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
-              Dixit — Manche {roundNum}
-            </h3>
-            <p className="text-[10px] text-stone-500 dark:text-slate-400 leading-snug">
-              Fin de partie à {WIN_SCORE} points · Vote & bluff
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowRulesMemo(true)}
-          className="p-1.5 rounded-xl border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 transition-colors shrink-0"
-          title="Rappel du barème officiel"
-        >
-          <HelpCircle size={15} />
-        </button>
-      </div>
-
       {/* Sélection du Conteur de la manche */}
       <div className="p-3 rounded-2xl school-card border border-stone-200/80 dark:border-slate-800 space-y-2">
         <div className="flex items-center justify-between">
@@ -165,12 +139,29 @@ export function DixitEngine({ game, onFinish }) {
             <VenetianMask size={14} className="text-[#c83b3b]" />
             <span>Conteur de la manche :</span>
           </div>
-          <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
-            (Tap pour changer)
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-stone-400 dark:text-slate-500 font-medium">
+              (Tap pour changer)
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowRulesMemo(true)}
+              className="p-1 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 transition-colors shrink-0 cursor-pointer"
+              title="Rappel du barème officiel"
+            >
+              <HelpCircle size={13} />
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
+        <div
+          className={`py-1 ${
+            game.players.length <= 5
+              ? 'grid gap-1.5'
+              : 'flex items-center gap-1.5 overflow-x-auto scrollbar-hide'
+          }`}
+          style={game.players.length <= 5 ? { gridTemplateColumns: `repeat(${game.players.length}, minmax(0, 1fr))` } : {}}
+        >
           {game.players.map((p) => {
             const isStoryteller = p.id === storytellerId
             return (
@@ -178,15 +169,23 @@ export function DixitEngine({ game, onFinish }) {
                 key={p.id}
                 type="button"
                 onClick={() => setStorytellerId(p.id)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer border ${
+                className={`flex flex-col items-center justify-center gap-1 py-1.5 px-1 rounded-xl text-xs font-bold transition-all cursor-pointer border active:scale-[0.98] ${
+                  game.players.length > 5 ? 'shrink-0 min-w-[58px] max-w-[76px]' : 'min-w-0 w-full'
+                } ${
                   isStoryteller
                     ? 'border-[#c83b3b] bg-[#c83b3b] text-white shadow-2xs'
                     : 'border-stone-200/80 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 text-stone-700 dark:text-slate-300 hover:border-stone-300'
                 }`}
               >
-                <Avatar player={p} size="xs" />
-                <span>{p.name}</span>
-                {isStoryteller && <span className="text-[10px] opacity-90">★</span>}
+                <div className="relative shrink-0">
+                  <Avatar player={p} size="xs" />
+                  {isStoryteller && (
+                    <span className="absolute -top-1 -right-1 text-[9px] leading-none text-white drop-shadow-xs">★</span>
+                  )}
+                </div>
+                <span className={`text-[11px] font-semibold truncate w-full text-center leading-tight ${isStoryteller ? 'text-white' : ''}`}>
+                  {p.name}
+                </span>
               </button>
             )
           })}
@@ -237,18 +236,18 @@ export function DixitEngine({ game, onFinish }) {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <Avatar player={p} size="sm" />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate">
+                  <div className="min-w-0 flex flex-col justify-center">
+                    <div className="flex items-center gap-1.5 leading-tight">
+                      <span className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate leading-tight">
                         {p.name}
                       </span>
                       {isStoryteller && (
-                        <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded-md bg-[#c83b3b] text-white">
+                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white leading-none shrink-0">
                           Conteur
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] text-stone-400 dark:text-slate-500">
+                    <span className="text-[10px] text-stone-400 dark:text-slate-500 leading-tight mt-0.5 truncate block">
                       Total cumulé : {projected} / {WIN_SCORE} pts
                     </span>
                   </div>
@@ -327,18 +326,18 @@ export function DixitEngine({ game, onFinish }) {
             <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
               <div className="flex items-center gap-2.5 min-w-0">
                 <Avatar player={editingPlayer} size="sm" />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate">
+                <div className="min-w-0 flex flex-col justify-center">
+                  <div className="flex items-center gap-1.5 leading-tight">
+                    <span className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate leading-tight">
                       {editingPlayer.name}
                     </span>
                     {editingPlayer.id === storytellerId && (
-                      <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded-md bg-[#c83b3b] text-white">
+                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white leading-none shrink-0">
                         Conteur
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate">
+                  <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate leading-tight mt-0.5">
                     Score cumulé actuel : {game.scores?.[editingPlayer.id] || 0} pts
                   </span>
                 </div>
