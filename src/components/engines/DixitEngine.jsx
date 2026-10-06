@@ -197,7 +197,7 @@ function DixitOrderSheet({
             Le 1<sup>er</sup> joueur commence (Manche 1)
           </p>
           <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-snug mt-0.5">
-            Le rôle de conteur tourne ensuite dans cet ordre à chaque manche. Glissez pour réorganiser.
+            Le rôle de conteur tourne en boucle à chaque manche (partie jusqu&apos;à 30 pts). Glissez pour réorganiser.
           </p>
         </div>
 
@@ -293,7 +293,7 @@ function DixitOrderSheet({
                       ) : null}
                     </div>
                     <span className="text-[10px] text-stone-400 dark:text-slate-500 block truncate leading-tight mt-0.5">
-                      {isFirst ? 'Manche 1 (Départ)' : `Manche ${effectiveIndex + 1}`} · tour {effectiveIndex + 1}/{localPlayers.length}
+                      {isFirst ? 'Manche 1 (Départ)' : `Manche ${effectiveIndex + 1}`} · ordre ${effectiveIndex + 1}/${localPlayers.length}
                     </span>
                   </div>
                 </div>
