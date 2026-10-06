@@ -27,11 +27,14 @@ export function QuickScoreBadge({
   className = '',
 }) {
   const [isDragging, setIsDragging] = useState(false)
+  const dragStartXRef = useRef(0)
   const dragStartYRef = useRef(0)
   const dragStartValueRef = useRef(value ?? 0)
   const currentValueRef = useRef(value ?? 0)
   const hasMovedRef = useRef(false)
   const isDraggingRef = useRef(false)
+  const isGestureDecidedRef = useRef(false)
+  const isHorizontalScrollRef = useRef(false)
 
   // Maintient la référence synchronisée avec la prop value
   useEffect(() => {
@@ -53,32 +56,54 @@ export function QuickScoreBadge({
   }
 
   const handlePointerDown = (e) => {
-    e.stopPropagation()
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId)
-    } catch {}
-
-    const initVal = value == null ? (values && values.length > 0 ? values[0] : (min !== undefined ? min : 0)) : value
+    dragStartXRef.current = e.clientX
     dragStartYRef.current = e.clientY
+    const initVal = value == null ? (values && values.length > 0 ? values[0] : (min !== undefined ? min : 0)) : value
     dragStartValueRef.current = initVal
     currentValueRef.current = initVal
     hasMovedRef.current = false
-    isDraggingRef.current = true
-    setIsDragging(true)
-
-    try {
-      navigator.vibrate?.(10)
-    } catch {}
+    isGestureDecidedRef.current = false
+    isHorizontalScrollRef.current = false
+    isDraggingRef.current = false
   }
 
   const handlePointerMove = (e) => {
-    if (!isDraggingRef.current) return
-    e.stopPropagation()
+    if (isHorizontalScrollRef.current) return
 
+    const deltaX = e.clientX - dragStartXRef.current
     const totalDeltaY = dragStartYRef.current - e.clientY // Vers le haut = augmentation
-    if (Math.abs(totalDeltaY) > 5) {
+
+    // Décision de direction : tant que le mouvement est minime (< 6px), on attend
+    if (!isGestureDecidedRef.current) {
+      const absX = Math.abs(deltaX)
+      const absY = Math.abs(totalDeltaY)
+
+      if (absX < 6 && absY < 6) return
+
+      isGestureDecidedRef.current = true
+
+      // Si le geste part à l'horizontale : priorité absolue au scroll du conteneur (tableau) !
+      if (absX > absY) {
+        isHorizontalScrollRef.current = true
+        isDraggingRef.current = false
+        setIsDragging(false)
+        return
+      }
+
+      // Si le geste est vertical : prise en charge tactile du score
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId)
+      } catch {}
+      isDraggingRef.current = true
+      setIsDragging(true)
       hasMovedRef.current = true
+      try {
+        navigator.vibrate?.(10)
+      } catch {}
     }
+
+    if (!isDraggingRef.current) return
+    hasMovedRef.current = true
 
     let nextVal
     if (values && values.length > 0) {
@@ -103,30 +128,34 @@ export function QuickScoreBadge({
   }
 
   const handlePointerUp = (e) => {
-    if (!isDraggingRef.current) return
-    e.stopPropagation()
+    const wasDragging = isDraggingRef.current
+    const wasHorizontal = isHorizontalScrollRef.current
+    const hasMoved = hasMovedRef.current
+
     isDraggingRef.current = false
     setIsDragging(false)
+    isGestureDecidedRef.current = false
+    isHorizontalScrollRef.current = false
 
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
     } catch {}
 
-    if (hasMovedRef.current) {
+    if (wasDragging && hasMoved) {
       try {
         navigator.vibrate?.(15)
       } catch {}
-    } else {
+    } else if (!wasHorizontal && !hasMoved) {
       // Simple tap sans glissement : ouvrir la modale complète
       onOpenPad?.()
     }
   }
 
   const handlePointerCancel = (e) => {
-    if (!isDraggingRef.current) return
-    e.stopPropagation()
     isDraggingRef.current = false
     setIsDragging(false)
+    isGestureDecidedRef.current = false
+    isHorizontalScrollRef.current = false
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
     } catch {}
@@ -152,7 +181,7 @@ export function QuickScoreBadge({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
-        style={{ touchAction: 'none' }}
+        style={{ touchAction: 'pan-x' }}
         className={`group relative border transition-all cursor-ns-resize select-none ${
           tall
             ? 'flex flex-col items-center justify-between min-w-[4.8rem] w-20 sm:w-24 h-full self-stretch py-2 px-1.5 rounded-2xl'
