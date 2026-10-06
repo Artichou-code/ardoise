@@ -196,15 +196,15 @@ export function DixitEngine({ game, onFinish }) {
           <button
             type="button"
             onClick={applyAllOrNoneFound}
-            className="flex-1 py-1 px-2 rounded-lg text-[10px] font-semibold bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 text-stone-600 dark:text-slate-400 transition-colors cursor-pointer text-center"
+            className="flex-1 py-1.5 px-2 rounded-lg text-[10px] font-semibold bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 text-stone-600 dark:text-slate-400 transition-colors cursor-pointer text-center whitespace-nowrap truncate"
             title="Le conteur n'a trouvé personne ou a fait l'unanimité : Conteur 0 pt, Autres 2 pts"
           >
-            Tous ou Aucun trouvent (Conteur 0, Autres 2)
+            Tous ou aucun (2 pts)
           </button>
           <button
             type="button"
             onClick={applyBalancedClueBase}
-            className="py-1 px-2 rounded-lg text-[10px] font-semibold bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 text-stone-600 dark:text-slate-400 transition-colors cursor-pointer text-center"
+            className="py-1.5 px-2.5 rounded-lg text-[10px] font-semibold bg-stone-100 dark:bg-slate-800 hover:bg-stone-200 text-stone-600 dark:text-slate-400 transition-colors cursor-pointer text-center whitespace-nowrap shrink-0"
             title="Donne 3 points au conteur"
           >
             Conteur +3 pts
