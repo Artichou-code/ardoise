@@ -78,6 +78,10 @@ export function QuickScoreBadge({
     isGestureDecidedRef.current = false
     isHorizontalScrollRef.current = false
     isDraggingRef.current = false
+
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId)
+    } catch {}
   }
 
   const handlePointerMove = (e) => {
@@ -100,13 +104,13 @@ export function QuickScoreBadge({
         isHorizontalScrollRef.current = true
         isDraggingRef.current = false
         setIsDragging(false)
+        try {
+          e.currentTarget.releasePointerCapture(e.pointerId)
+        } catch {}
         return
       }
 
       // Si le geste est vertical : prise en charge tactile de la roulette
-      try {
-        e.currentTarget.setPointerCapture(e.pointerId)
-      } catch {}
       isDraggingRef.current = true
       setIsDragging(true)
       hasMovedRef.current = true
@@ -285,7 +289,7 @@ export function QuickScoreBadge({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
-        style={{ touchAction: disabled ? 'auto' : (compact ? 'pan-x pan-y' : 'manipulation') }}
+        style={{ touchAction: disabled ? 'auto' : 'pan-x' }}
         className={`group relative border transition-all select-none ${
           tall
             ? 'flex flex-col items-center justify-between min-w-[4.8rem] w-20 sm:w-24 h-full self-stretch py-2 px-1.5 rounded-2xl'

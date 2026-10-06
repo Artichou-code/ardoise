@@ -126,6 +126,9 @@ function FixedScoreBadge({
     isHorizontalScrollRef.current = false
     isDraggingRef.current = false
     wasDraggingOrMovedRef.current = false
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId)
+    } catch {}
   }
 
   const handlePointerMove = (e) => {
@@ -147,13 +150,13 @@ function FixedScoreBadge({
         isHorizontalScrollRef.current = true
         isDraggingRef.current = false
         setIsDragging(false)
+        try {
+          e.currentTarget.releasePointerCapture(e.pointerId)
+        } catch {}
         return
       }
 
       // Prise en charge tactile verticale
-      try {
-        e.currentTarget.setPointerCapture(e.pointerId)
-      } catch {}
       isDraggingRef.current = true
       setIsDragging(true)
       hasMovedRef.current = true
@@ -270,7 +273,7 @@ function FixedScoreBadge({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
-      style={{ touchAction: disabled ? 'auto' : 'pan-x pan-y' }}
+      style={{ touchAction: disabled ? 'auto' : 'pan-x' }}
       title={
         disabled
           ? isPast
