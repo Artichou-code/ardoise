@@ -48,8 +48,10 @@ function DixitOrderSheet({
   const dropTimeoutRef = useRef(null)
 
   useEffect(() => {
-    setLocalPlayers(players)
-  }, [players, open])
+    if (open) {
+      setLocalPlayers(players)
+    }
+  }, [open])
 
   useEffect(() => {
     return () => {
@@ -69,7 +71,7 @@ function DixitOrderSheet({
       const height = cardRefs.current[0].getBoundingClientRect().height
       if (height > 20 && height < 150) return height + 6
     }
-    return 62
+    return 56
   }
 
   const startDrag = (e, index) => {
@@ -132,6 +134,16 @@ function DixitOrderSheet({
     const to = overIndex !== null ? overIndex : draggingIndex
 
     if (from === to) {
+      if (Math.abs(dragOffsetY) > 2) {
+        setIsDropping(true)
+        setDragOffsetY(0)
+        dropTimeoutRef.current = setTimeout(() => {
+          setDraggingIndex(null)
+          setOverIndex(null)
+          setIsDropping(false)
+        }, 180)
+        return
+      }
       setDraggingIndex(null)
       setOverIndex(null)
       setDragOffsetY(0)
@@ -139,8 +151,9 @@ function DixitOrderSheet({
       return
     }
 
+    // Animation de placement douce : glisse précisément vers le slot cible
     setIsDropping(true)
-    const h = itemHeightRef.current || 62
+    const h = itemHeightRef.current || 56
     setDragOffsetY((to - from) * h)
 
     try {
@@ -154,11 +167,12 @@ function DixitOrderSheet({
       setLocalPlayers(arr)
       onReorder(arr)
 
+      // Réinitialisation avec transition: none pour éviter tout saut brutal de repositionnement
       setDraggingIndex(null)
       setOverIndex(null)
       setDragOffsetY(0)
       setIsDropping(false)
-    }, 220)
+    }, 230)
   }
 
   const movePlayer = (index, dir) => {
@@ -211,35 +225,42 @@ function DixitOrderSheet({
             const isFirst = effectiveIndex === 0
             const isCurrentStoryteller = p.id === currentStorytellerId
 
-            let transform = 'translateY(0px)'
-            let zIndex = 1
-            let transition = 'transform 200ms ease, box-shadow 200ms ease'
+            // Déplacement CSS (transform translateY) exactement comme DominoReorderList
+            const h = itemHeightRef.current || 56
+            let translateY = 0
+            let transition = 'background-color 200ms ease, border-color 200ms ease'
 
             if (isBeingDragged) {
-              transform = `translateY(${dragOffsetY}px) scale(1.02)`
-              zIndex = 50
-              transition = isDropping ? 'transform 200ms cubic-bezier(0.2, 0, 0, 1)' : 'none'
+              translateY = dragOffsetY
+              transition = isDropping
+                ? 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease, background-color 200ms ease, border-color 200ms ease'
+                : 'box-shadow 150ms ease, background-color 200ms ease, border-color 200ms ease'
             } else if (isDragActive && overIndex !== null) {
-              const h = itemHeightRef.current || 62
+              transition = 'transform 200ms cubic-bezier(0.2, 0, 0, 1), background-color 200ms ease, border-color 200ms ease'
               if (draggingIndex < overIndex && index > draggingIndex && index <= overIndex) {
-                transform = `translateY(${-h}px)`
+                translateY = -h
               } else if (draggingIndex > overIndex && index >= overIndex && index < draggingIndex) {
-                transform = `translateY(${h}px)`
+                translateY = h
               }
             }
 
             return (
               <div
                 key={p.id}
-                ref={el => { cardRefs.current[index] = el }}
+                ref={el => { if (el) cardRefs.current[index] = el }}
                 onPointerDown={e => startDrag(e, index)}
                 onPointerMove={onPointerMove}
                 onPointerUp={endDrag}
                 onPointerCancel={endDrag}
-                style={{ transform, zIndex, transition, touchAction: 'none' }}
-                className={`relative flex items-center justify-between gap-2.5 p-2.5 rounded-xl border transition-colors cursor-grab active:cursor-grabbing select-none ${
+                style={{
+                  transform: `translateY(${translateY}px) ${isBeingDragged && !isDropping ? 'scale(1.025)' : 'scale(1)'}`,
+                  transition,
+                  zIndex: isBeingDragged ? 40 : 1,
+                  touchAction: 'none',
+                }}
+                className={`relative flex items-center justify-between gap-2.5 p-2.5 rounded-xl border select-none cursor-grab active:cursor-grabbing ${
                   isBeingDragged
-                    ? 'border-[#c83b3b] bg-white dark:bg-slate-800 shadow-lg ring-2 ring-[#c83b3b]/30'
+                    ? 'border-[#c83b3b] bg-white dark:bg-slate-800 shadow-xl ring-2 ring-[#c83b3b]/30'
                     : isCurrentStoryteller
                     ? 'border-[#c83b3b]/60 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
                     : 'border-stone-200/90 dark:border-slate-800 bg-white/90 dark:bg-slate-800/80 hover:border-stone-300'
@@ -419,8 +440,12 @@ export function DixitEngine({ game, onFinish }) {
     const nextStoryteller = newPlayers[defaultIdx]?.id
     if (nextStoryteller) {
       setStorytellerId(nextStoryteller)
-      setTimeout(() => scrollToPlayer(nextStoryteller, true), 60)
     }
+  }
+
+  const handleCloseOrderSheet = () => {
+    setShowOrderSheet(false)
+    setTimeout(() => scrollToPlayer(storytellerId, true), 60)
   }
 
 
@@ -756,7 +781,7 @@ export function DixitEngine({ game, onFinish }) {
       {/* BottomSheet de réorganisation de l'ordre du tour */}
       <DixitOrderSheet
         open={showOrderSheet}
-        onClose={() => setShowOrderSheet(false)}
+        onClose={handleCloseOrderSheet}
         players={game.players}
         onReorder={handleReorder}
         currentStorytellerId={storytellerId}
