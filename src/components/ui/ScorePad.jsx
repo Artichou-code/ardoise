@@ -197,14 +197,14 @@ export function ScorePad({
   return (
     <div className="flex flex-col gap-3 pt-2">
       {(label || subLabel) && (
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-baseline justify-between gap-2 min-w-0">
           {label && (
-            <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate">
+            <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-slate-400 shrink-0">
               {label}
             </p>
           )}
           {subLabel && (
-            <span className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 shrink-0">
+            <span className="text-[11px] font-semibold text-stone-500 dark:text-slate-400 text-right leading-tight min-w-0">
               {subLabel}
             </span>
           )}

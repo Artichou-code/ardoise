@@ -372,11 +372,12 @@ export function DixitEngine({ game, onFinish }) {
               onConfirm={handleNextInPad}
               confirmLabel={hasNextPlayer && nextPlayer ? `Valider & Suivant (${nextPlayer.name})` : 'Valider'}
               label="Points de la manche"
-              subLabel="Conteur (+3), Devins (+3), Autres (+2 si tous/aucun), +1 par vote de bluff"
+              subLabel="Trouvé (+3) · Bluff (+1)"
               min={0}
               max={15}
               step={1}
               presets={[0, 1, 2, 3, 4, 5, 6]}
+              customButtons={[]}
               baseScore={game.scores?.[editingPlayer.id] || 0}
               formatTotal={(val) => {
                 const cur = game.scores?.[editingPlayer.id] || 0
