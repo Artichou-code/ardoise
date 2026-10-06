@@ -96,6 +96,7 @@ function FixedScoreBadge({
   const isDraggingRef = useRef(false)
   const isGestureDecidedRef = useRef(false)
   const isHorizontalScrollRef = useRef(false)
+  const lastClientYRef = useRef(0)
   const wasDraggingOrMovedRef = useRef(false)
   const cycleTimeoutRef = useRef(null)
 
@@ -117,6 +118,7 @@ function FixedScoreBadge({
     if (disabled) return
     dragStartXRef.current = e.clientX
     dragStartYRef.current = e.clientY
+    lastClientYRef.current = e.clientY
     dragStartValueRef.current = value
     currentValueRef.current = value
     hasMovedRef.current = false
@@ -161,6 +163,18 @@ function FixedScoreBadge({
 
     if (!isDraggingRef.current) return
     hasMovedRef.current = true
+
+    const deltaYFromLast = lastClientYRef.current - e.clientY
+    lastClientYRef.current = e.clientY
+
+    // Si le mouvement dépasse l'amplitude normale de swipe du badge (> 26px),
+    // l'utilisateur fait défiler la feuille : on accompagne le scroll parent
+    if (Math.abs(totalDeltaY) > 26) {
+      const scrollParent = e.currentTarget.closest('.overflow-y-auto')
+      if (scrollParent) {
+        scrollParent.scrollTop += deltaYFromLast
+      }
+    }
 
     // Calcul de l'état cible dans [0, null, fixedScore] :
     // Vers le haut (totalDeltaY > 0) -> score validé (fixedScore)
@@ -214,6 +228,7 @@ function FixedScoreBadge({
     setIsDragging(false)
     isGestureDecidedRef.current = false
     isHorizontalScrollRef.current = false
+    wasDraggingOrMovedRef.current = true
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
     } catch {}
@@ -246,7 +261,7 @@ function FixedScoreBadge({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
-      style={{ touchAction: disabled ? 'auto' : 'manipulation' }}
+      style={{ touchAction: disabled ? 'auto' : 'pan-x pan-y' }}
       title={
         disabled
           ? isPast
@@ -609,7 +624,7 @@ export function YamEngine({ game, onFinish }) {
       {inputMode === 'grid' && (
         <div className="space-y-1.5">
           <div className="rounded-2xl border border-stone-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
-          <div className="overflow-x-auto overscroll-x-contain touch-pan-x">
+          <div className="overflow-x-auto overscroll-x-contain" style={{ touchAction: 'pan-x pan-y', WebkitOverflowScrolling: 'touch' }}>
             <table className="w-full border-collapse text-left text-xs min-w-full">
               <thead>
                 <tr className="border-b border-stone-200 dark:border-slate-800 bg-stone-50/95 dark:bg-slate-900/95 backdrop-blur-xs">

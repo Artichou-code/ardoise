@@ -65,20 +65,36 @@ export function QuickScoreBadge({
     if (disabled) return
     dragStartXRef.current = e.clientX
     dragStartYRef.current = e.clientY
+    hasMovedRef.current = false
+    wasDraggingOrMovedRef.current = false
+
+    // En mode grille compacte (Yam's), on ne capture pas le défilement tactile :
+    // le scroll vertical natif de la page et horizontal du tableau restent 100% fluides.
+    if (compact) return
+
     const initVal = value == null
       ? (allowClear ? null : (values && values.length > 0 ? values[0] : (min !== undefined ? min : 0)))
       : value
     dragStartValueRef.current = initVal
     currentValueRef.current = initVal
-    hasMovedRef.current = false
     isGestureDecidedRef.current = false
     isHorizontalScrollRef.current = false
     isDraggingRef.current = false
-    wasDraggingOrMovedRef.current = false
   }
 
   const handlePointerMove = (e) => {
     if (disabled || isHorizontalScrollRef.current) return
+
+    // Sur badge compact, on détecte juste si l'utilisateur scroll pour éviter d'ouvrir le pad au lâcher
+    if (compact) {
+      const deltaX = Math.abs(e.clientX - dragStartXRef.current)
+      const deltaY = Math.abs(e.clientY - dragStartYRef.current)
+      if (deltaX > 8 || deltaY > 8) {
+        hasMovedRef.current = true
+        wasDraggingOrMovedRef.current = true
+      }
+      return
+    }
 
     const deltaX = e.clientX - dragStartXRef.current
     const totalDeltaY = dragStartYRef.current - e.clientY // Vers le haut = augmentation
@@ -170,6 +186,16 @@ export function QuickScoreBadge({
   }
 
   const handlePointerUp = (e) => {
+    if (compact) {
+      if (hasMovedRef.current) {
+        wasDraggingOrMovedRef.current = true
+        setTimeout(() => {
+          wasDraggingOrMovedRef.current = false
+        }, 180)
+      }
+      return
+    }
+
     const wasDragging = isDraggingRef.current
     const wasHorizontal = isHorizontalScrollRef.current
     const hasMoved = hasMovedRef.current
@@ -208,6 +234,12 @@ export function QuickScoreBadge({
     setIsDragging(false)
     isGestureDecidedRef.current = false
     isHorizontalScrollRef.current = false
+    if (compact && hasMovedRef.current) {
+      wasDraggingOrMovedRef.current = true
+      setTimeout(() => {
+        wasDraggingOrMovedRef.current = false
+      }, 180)
+    }
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
     } catch {}
@@ -253,7 +285,7 @@ export function QuickScoreBadge({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
-        style={{ touchAction: disabled ? 'auto' : 'manipulation' }}
+        style={{ touchAction: disabled ? 'auto' : (compact ? 'pan-x pan-y' : 'manipulation') }}
         className={`group relative border transition-all select-none ${
           tall
             ? 'flex flex-col items-center justify-between min-w-[4.8rem] w-20 sm:w-24 h-full self-stretch py-2 px-1.5 rounded-2xl'

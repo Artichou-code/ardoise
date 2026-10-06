@@ -597,7 +597,11 @@ export function GameScreen() {
       </div>
 
       {/* Moteur de saisie de manche */}
-      <div ref={engineScrollRef} className="flex-1 overflow-y-auto scrollbar-hide scroll-smooth">
+      <div
+        ref={engineScrollRef}
+        className="flex-1 overflow-y-auto scrollbar-hide"
+        style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
+      >
         <div className="px-4 pt-1 pb-8 pb-safe">
           <div
             key={`${activeGame.id}-r-${activeGame.rounds.length}-${activeGame.isCorrection ? 'corr' : 'norm'}`}
