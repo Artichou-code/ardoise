@@ -189,114 +189,127 @@ function DixitOrderSheet({
     } catch {}
   }
 
+  const activeIdx = localPlayers.findIndex(p => p.id === currentStorytellerId)
+  const storytellerIndex = activeIdx >= 0 ? activeIdx : ((roundNum - 1) % (localPlayers.length || 1))
+
   return (
     <BottomSheet open={open} onClose={onClose} title="Ordre du tour">
       <div className="px-4 pt-1 pb-6 space-y-3">
         <div className="p-2.5 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60 text-xs">
           <p className="font-semibold text-stone-800 dark:text-slate-200 text-xs">
-            Le 1<sup>er</sup> joueur commence (Manche 1)
+            {roundNum === 1
+              ? 'Ordre de passage des conteurs'
+              : `Ordre des conteurs · Manche ${roundNum} en cours`}
           </p>
           <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-snug mt-0.5">
-            Le rôle de conteur tourne en boucle à chaque manche (partie jusqu&apos;à 30 pts). Glissez pour réorganiser.
+            Le rôle de conteur tourne au joueur suivant à chaque manche. Glissez pour modifier l&apos;ordre.
           </p>
         </div>
 
         <div className="space-y-1.5 relative select-none">
           {localPlayers.map((p, index) => {
-            const isBeingDragged = draggingIndex === index
-            const isDragActive = draggingIndex !== null
+              const isBeingDragged = draggingIndex === index
+              const isDragActive = draggingIndex !== null
 
-            let effectiveIndex = index
-            if (isDragActive && overIndex !== null) {
+              let effectiveIndex = index
+              if (isDragActive && overIndex !== null) {
+                if (isBeingDragged) {
+                  effectiveIndex = overIndex
+                } else if (draggingIndex < overIndex) {
+                  if (index > draggingIndex && index <= overIndex) {
+                    effectiveIndex = index - 1
+                  }
+                } else if (draggingIndex > overIndex) {
+                  if (index >= overIndex && index < draggingIndex) {
+                    effectiveIndex = index + 1
+                  }
+                }
+              }
+
+              const turnsUntilStoryteller = (effectiveIndex - storytellerIndex + localPlayers.length) % localPlayers.length
+              const playerRound = roundNum + turnsUntilStoryteller
+              const isCurrentStoryteller = turnsUntilStoryteller === 0
+              const isNextStoryteller = turnsUntilStoryteller === 1
+
+              // Déplacement CSS (transform translateY) exactement comme DominoReorderList
+              const h = itemHeightRef.current || 56
+              let translateY = 0
+              let transition = 'background-color 200ms ease, border-color 200ms ease'
+
               if (isBeingDragged) {
-                effectiveIndex = overIndex
-              } else if (draggingIndex < overIndex) {
-                if (index > draggingIndex && index <= overIndex) {
-                  effectiveIndex = index - 1
-                }
-              } else if (draggingIndex > overIndex) {
-                if (index >= overIndex && index < draggingIndex) {
-                  effectiveIndex = index + 1
+                translateY = dragOffsetY
+                transition = isDropping
+                  ? 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease, background-color 200ms ease, border-color 200ms ease'
+                  : 'box-shadow 150ms ease, background-color 200ms ease, border-color 200ms ease'
+              } else if (isDragActive && overIndex !== null) {
+                transition = 'transform 200ms cubic-bezier(0.2, 0, 0, 1), background-color 200ms ease, border-color 200ms ease'
+                if (draggingIndex < overIndex && index > draggingIndex && index <= overIndex) {
+                  translateY = -h
+                } else if (draggingIndex > overIndex && index >= overIndex && index < draggingIndex) {
+                  translateY = h
                 }
               }
-            }
 
-            const isFirst = effectiveIndex === 0
-            const isCurrentStoryteller = p.id === currentStorytellerId
-
-            // Déplacement CSS (transform translateY) exactement comme DominoReorderList
-            const h = itemHeightRef.current || 56
-            let translateY = 0
-            let transition = 'background-color 200ms ease, border-color 200ms ease'
-
-            if (isBeingDragged) {
-              translateY = dragOffsetY
-              transition = isDropping
-                ? 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease, background-color 200ms ease, border-color 200ms ease'
-                : 'box-shadow 150ms ease, background-color 200ms ease, border-color 200ms ease'
-            } else if (isDragActive && overIndex !== null) {
-              transition = 'transform 200ms cubic-bezier(0.2, 0, 0, 1), background-color 200ms ease, border-color 200ms ease'
-              if (draggingIndex < overIndex && index > draggingIndex && index <= overIndex) {
-                translateY = -h
-              } else if (draggingIndex > overIndex && index >= overIndex && index < draggingIndex) {
-                translateY = h
-              }
-            }
-
-            return (
-              <div
-                key={p.id}
-                ref={el => { if (el) cardRefs.current[index] = el }}
-                onPointerDown={e => startDrag(e, index)}
-                onPointerMove={onPointerMove}
-                onPointerUp={endDrag}
-                onPointerCancel={endDrag}
-                style={{
-                  transform: `translateY(${translateY}px) ${isBeingDragged && !isDropping ? 'scale(1.025)' : 'scale(1)'}`,
-                  transition,
-                  zIndex: isBeingDragged ? 40 : 1,
-                  touchAction: 'none',
-                }}
-                className={`relative flex items-center justify-between gap-2.5 p-2.5 rounded-xl border select-none cursor-grab active:cursor-grabbing ${
-                  isBeingDragged
-                    ? 'border-[#c83b3b] bg-white dark:bg-slate-800 shadow-xl ring-2 ring-[#c83b3b]/30'
-                    : isCurrentStoryteller
-                    ? 'border-[#c83b3b]/60 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
-                    : 'border-stone-200/90 dark:border-slate-800 bg-white/90 dark:bg-slate-800/80 hover:border-stone-300'
-                }`}
-              >
-                {/* Gauche : Rang + Avatar + Nom */}
-                <div className="flex items-center gap-2 min-w-0 flex-1 pointer-events-none">
-                  <span className={`w-5.5 h-5.5 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 ${
-                    isFirst
-                      ? 'bg-[#c83b3b] text-white shadow-2xs'
-                      : 'bg-stone-200/90 dark:bg-slate-700 text-stone-700 dark:text-slate-300'
-                  }`}>
-                    {effectiveIndex + 1}
-                  </span>
-
-                  <Avatar player={p} size="xs" />
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 leading-tight">
-                      <span className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
-                        {p.name}
-                      </span>
-                      {isFirst ? (
-                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white shrink-0">
-                          1er
-                        </span>
-                      ) : isCurrentStoryteller ? (
-                        <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-stone-700 dark:bg-slate-600 text-white shrink-0">
-                          Conteur
-                        </span>
-                      ) : null}
-                    </div>
-                    <span className="text-[10px] text-stone-400 dark:text-slate-500 block truncate leading-tight mt-0.5">
-                      {isFirst ? 'Tour 1 (Départ)' : `Tour ${effectiveIndex + 1}`}
+              return (
+                <div
+                  key={p.id}
+                  ref={el => { if (el) cardRefs.current[index] = el }}
+                  onPointerDown={e => startDrag(e, index)}
+                  onPointerMove={onPointerMove}
+                  onPointerUp={endDrag}
+                  onPointerCancel={endDrag}
+                  style={{
+                    transform: `translateY(${translateY}px) ${isBeingDragged && !isDropping ? 'scale(1.025)' : 'scale(1)'}`,
+                    transition,
+                    zIndex: isBeingDragged ? 40 : 1,
+                    touchAction: 'none',
+                  }}
+                  className={`relative flex items-center justify-between gap-2.5 p-2.5 rounded-xl border select-none cursor-grab active:cursor-grabbing ${
+                    isBeingDragged
+                      ? 'border-[#c83b3b] bg-white dark:bg-slate-800 shadow-xl ring-2 ring-[#c83b3b]/30'
+                      : isCurrentStoryteller
+                      ? 'border-[#c83b3b]/60 bg-[#c83b3b]/5 dark:bg-[#c83b3b]/10'
+                      : 'border-stone-200/90 dark:border-slate-800 bg-white/90 dark:bg-slate-800/80 hover:border-stone-300'
+                  }`}
+                >
+                  {/* Gauche : Rang + Avatar + Nom */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1 pointer-events-none">
+                    <span className={`w-5.5 h-5.5 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 ${
+                      isCurrentStoryteller
+                        ? 'bg-[#c83b3b] text-white shadow-2xs'
+                        : 'bg-stone-200/90 dark:bg-slate-700 text-stone-700 dark:text-slate-300'
+                    }`}>
+                      {effectiveIndex + 1}
                     </span>
+
+                    <Avatar player={p} size="xs" />
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 leading-tight">
+                        <span className="font-serif-title font-bold text-xs sm:text-sm text-stone-900 dark:text-slate-100 truncate">
+                          {p.name}
+                        </span>
+                        {isCurrentStoryteller && (
+                          <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-[#c83b3b] text-white shrink-0">
+                            Conteur
+                          </span>
+                        )}
+                      </div>
+                      <span className={`text-[10px] block truncate leading-tight mt-0.5 ${
+                        isCurrentStoryteller
+                          ? 'font-bold text-[#c83b3b]'
+                          : isNextStoryteller
+                          ? 'text-stone-600 dark:text-slate-300 font-medium'
+                          : 'text-stone-400 dark:text-slate-500'
+                      }`}>
+                        {isCurrentStoryteller
+                          ? `Manche ${roundNum} (En cours)`
+                          : isNextStoryteller
+                          ? `Manche ${playerRound} (Suivant)`
+                          : `Manche ${playerRound}`}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
                 {/* Droite : Flèches haut/bas + poignée */}
                 <div className="flex items-center gap-1 shrink-0">
