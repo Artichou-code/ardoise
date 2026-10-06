@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { Trophy, Dices, Check, ChevronLeft, ChevronRight, HelpCircle, RotateCcw } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
@@ -77,7 +77,7 @@ function DiceFace({ value, size = 28, className = '' }) {
 }
 
 // Composant tactile direct pour combinaisons à score fixe (Full, Suites, Yam's)
-// Permet un toggle direct à 3 états sans flèches ni roulette : Non joué (—) ➔ Validé (score fixe ✓) ➔ Barré (0) ➔ Non joué (—)
+// Supporte à la fois le clic direct (cycle rapide) ET le swipe vertical (glissement haut/bas)
 function FixedScoreBadge({
   value,
   fixedScore,
@@ -87,33 +87,132 @@ function FixedScoreBadge({
   isCurrentChoice = false,
   className = '',
 }) {
-  const handleClick = (e) => {
-    e.stopPropagation()
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStartXRef = useRef(0)
+  const dragStartYRef = useRef(0)
+  const dragStartValueRef = useRef(value)
+  const currentValueRef = useRef(value)
+  const hasMovedRef = useRef(false)
+  const isDraggingRef = useRef(false)
+  const isGestureDecidedRef = useRef(false)
+  const isHorizontalScrollRef = useRef(false)
+
+  const states = [null, 0, fixedScore]
+
+  const handlePointerDown = (e) => {
     if (disabled) return
+    dragStartXRef.current = e.clientX
+    dragStartYRef.current = e.clientY
+    dragStartValueRef.current = value
+    currentValueRef.current = value
+    hasMovedRef.current = false
+    isGestureDecidedRef.current = false
+    isHorizontalScrollRef.current = false
+    isDraggingRef.current = false
+  }
 
-    try { navigator.vibrate?.(12) } catch {}
+  const handlePointerMove = (e) => {
+    if (disabled || isHorizontalScrollRef.current) return
 
-    if (value == null) {
-      // 1er tap : Valider les points fixes
-      onChange(fixedScore)
-    } else if (value === fixedScore) {
-      // 2ème tap : Barrer la case à 0
-      onChange(0)
-    } else {
-      // 3ème tap : Remettre la barre à vide (null)
-      onChange(null)
+    const deltaX = e.clientX - dragStartXRef.current
+    const totalDeltaY = dragStartYRef.current - e.clientY // Vers le haut = augmentation
+
+    if (!isGestureDecidedRef.current) {
+      const absX = Math.abs(deltaX)
+      const absY = Math.abs(totalDeltaY)
+
+      if (absX < 6 && absY < 6) return
+
+      isGestureDecidedRef.current = true
+
+      // Si le geste part plus horizontalement, laisser le tableau défiler
+      if (absX > absY) {
+        isHorizontalScrollRef.current = true
+        isDraggingRef.current = false
+        setIsDragging(false)
+        return
+      }
+
+      // Prise en charge tactile verticale
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId)
+      } catch {}
+      isDraggingRef.current = true
+      setIsDragging(true)
+      hasMovedRef.current = true
+      try { navigator.vibrate?.(10) } catch {}
+    }
+
+    if (!isDraggingRef.current) return
+    hasMovedRef.current = true
+
+    // Calcul de l'état cible dans [null, 0, fixedScore]
+    const startIndex = states.indexOf(dragStartValueRef.current)
+    const safeIndex = startIndex !== -1 ? startIndex : 0
+    const indexSteps = Math.round(totalDeltaY / 24)
+    const targetIndex = Math.max(0, Math.min(states.length - 1, safeIndex + indexSteps))
+    const nextVal = states[targetIndex]
+
+    if (nextVal !== currentValueRef.current) {
+      currentValueRef.current = nextVal
+      onChange(nextVal)
+      try { navigator.vibrate?.(10) } catch {}
     }
   }
 
-  const isValidated = value === fixedScore
-  const isZero = value === 0
-  const isUnset = value == null
+  const handlePointerUp = (e) => {
+    const wasDragging = isDraggingRef.current
+    const wasHorizontal = isHorizontalScrollRef.current
+    const hasMoved = hasMovedRef.current
+
+    isDraggingRef.current = false
+    setIsDragging(false)
+    isGestureDecidedRef.current = false
+    isHorizontalScrollRef.current = false
+
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    } catch {}
+
+    if (wasDragging && hasMoved) {
+      try { navigator.vibrate?.(15) } catch {}
+    } else if (!wasHorizontal && !hasMoved) {
+      // Tap sans glisser : cycle direct null ➔ fixedScore ➔ 0 ➔ null
+      try { navigator.vibrate?.(12) } catch {}
+      if (value == null) {
+        onChange(fixedScore)
+      } else if (value === fixedScore) {
+        onChange(0)
+      } else {
+        onChange(null)
+      }
+    }
+  }
+
+  const handlePointerCancel = (e) => {
+    isDraggingRef.current = false
+    setIsDragging(false)
+    isGestureDecidedRef.current = false
+    isHorizontalScrollRef.current = false
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    } catch {}
+  }
+
+  const cur = isDragging ? currentValueRef.current : value
+  const isValidated = cur === fixedScore
+  const isZero = cur === 0
+  const isUnset = cur == null
 
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={handleClick}
+    <div
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      style={{ touchAction: disabled ? 'auto' : 'pan-x' }}
       title={
         disabled
           ? isPast
@@ -122,18 +221,20 @@ function FixedScoreBadge({
               : 'Case barrée (0 pt)'
             : 'Une seule case autorisée par manche'
           : isUnset
-          ? `Cliquer pour valider (${fixedScore} pts)`
+          ? `Cliquer ou glisser vers le haut pour valider (${fixedScore} pts)`
           : isValidated
-          ? `Validé (${fixedScore} pts). Cliquer pour barrer à 0`
-          : 'Barré (0 pt). Cliquer pour remettre à vide'
+          ? `Validé (${fixedScore} pts). Cliquer ou glisser vers le bas pour barrer`
+          : 'Barré (0 pt). Cliquer ou glisser pour modifier'
       }
-      className={`group relative border transition-all select-none w-full min-w-0 h-7.5 sm:h-8 px-1 sm:px-1.5 py-0.5 rounded-lg flex items-center justify-center gap-1 active:scale-95 ${
+      className={`group relative border transition-all select-none w-full min-w-0 h-7.5 sm:h-8 px-1 sm:px-1.5 py-0.5 rounded-lg flex items-center justify-center gap-1 ${
         disabled
           ? isPast
             ? isValidated
               ? 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-extrabold cursor-default opacity-90'
               : 'bg-stone-100/70 dark:bg-slate-800/60 border-stone-200/60 text-stone-400 dark:text-slate-500 font-bold cursor-default opacity-85'
             : 'bg-stone-50/50 dark:bg-slate-900/40 border-stone-200/40 text-stone-300 dark:text-slate-600 opacity-35 cursor-not-allowed'
+          : isDragging
+          ? 'scale-105 border-emerald-500 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/40 shadow-md z-30 cursor-ns-resize'
           : isCurrentChoice
           ? isValidated
             ? 'bg-emerald-500/15 dark:bg-emerald-500/25 border-emerald-500 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/60 shadow-xs cursor-pointer'
@@ -167,7 +268,7 @@ function FixedScoreBadge({
           —
         </span>
       )}
-    </button>
+    </div>
   )
 }
 
