@@ -604,6 +604,7 @@ export function YamEngine({ game, onFinish }) {
               max={activeCategory ? activeCategory.max : 50}
               step={1}
               presets={activeCategory ? activeCategory.presets : [0, 5, 10, 15, 20, 25, 30, 35, 40, 50]}
+              customButtons={[]}
               baseScore={0}
               formatTotal={(val) => `${val} point${val > 1 ? 's' : ''}`}
               showPlus={false}
