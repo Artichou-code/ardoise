@@ -700,7 +700,7 @@ export function YamEngine({ game, onFinish }) {
       <Dialog
         open={showRulesMemo}
         onClose={() => setShowRulesMemo(false)}
-        title="Combinaisons du Yam's (Hasbro / Classique)"
+        title="Combinaisons"
       >
         <div className="space-y-2 text-xs text-stone-600 dark:text-slate-300">
           <p className="leading-relaxed font-semibold">
