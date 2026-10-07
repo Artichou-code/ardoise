@@ -1,11 +1,10 @@
-import { useState, useMemo, useRef } from 'react'
-import { Trophy, Dices, Check, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Trophy, Dices, Check, HelpCircle } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
-import { BottomSheet } from '../ui/BottomSheet'
-import { ScorePad } from '../ui/ScorePad'
 import { Dialog } from '../ui/Dialog'
+import { YamCellPopover } from './YamCellPopover'
 
 // Composant SVG d'une face de dé net, moderne et parfaitement lisible
 function DiceFace({ value, size = 28, className = '' }) {
@@ -76,267 +75,62 @@ function DiceFace({ value, size = 28, className = '' }) {
   )
 }
 
-// Composant tactile direct pour combinaisons à score fixe (Full, Suites, Yam's)
-// Supporte à la fois le clic direct (cycle rapide) ET le swipe vertical (glissement haut/bas)
-function FixedScoreBadge({
+// Composant de case de grille Yam's épuré, tactile et réactif (tap direct)
+function YamCellBadge({
   value,
-  fixedScore,
-  onChange,
+  isFixed = false,
+  isActive = false,
   disabled = false,
   isPast = false,
   isCurrentChoice = false,
-  className = '',
+  onClick,
 }) {
-  const [isDragging, setIsDragging] = useState(false)
-  const dragStartXRef = useRef(0)
-  const dragStartYRef = useRef(0)
-  const dragStartValueRef = useRef(value)
-  const currentValueRef = useRef(value)
-  const hasMovedRef = useRef(false)
-  const isDraggingRef = useRef(false)
-  const isGestureDecidedRef = useRef(false)
-  const isHorizontalScrollRef = useRef(false)
-  const lastClientYRef = useRef(0)
-  const wasDraggingOrMovedRef = useRef(false)
-  const cycleTimeoutRef = useRef(null)
-
-  const states = [0, null, fixedScore]
-
-  const cycleScore = () => {
-    if (disabled) return
-    try { navigator.vibrate?.(12) } catch {}
-    if (value == null) {
-      onChange(fixedScore)
-    } else if (value === fixedScore) {
-      onChange(0)
-    } else {
-      onChange(null)
-    }
-  }
-
-  const handlePointerDown = (e) => {
-    if (disabled) return
-    dragStartXRef.current = e.clientX
-    dragStartYRef.current = e.clientY
-    lastClientYRef.current = e.clientY
-    dragStartValueRef.current = value
-    currentValueRef.current = value
-    hasMovedRef.current = false
-    isGestureDecidedRef.current = false
-    isHorizontalScrollRef.current = false
-    isDraggingRef.current = false
-    wasDraggingOrMovedRef.current = false
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId)
-    } catch {}
-  }
-
-  const handlePointerMove = (e) => {
-    if (disabled || isHorizontalScrollRef.current) return
-
-    const deltaX = e.clientX - dragStartXRef.current
-    const totalDeltaY = dragStartYRef.current - e.clientY // Vers le haut = augmentation
-
-    if (!isGestureDecidedRef.current) {
-      const absX = Math.abs(deltaX)
-      const absY = Math.abs(totalDeltaY)
-
-      if (absX < 6 && absY < 6) return
-
-      isGestureDecidedRef.current = true
-
-      // Si le geste part plus horizontalement, laisser le tableau défiler
-      if (absX > absY) {
-        isHorizontalScrollRef.current = true
-        isDraggingRef.current = false
-        setIsDragging(false)
-        try {
-          e.currentTarget.releasePointerCapture(e.pointerId)
-        } catch {}
-        return
-      }
-
-      // Prise en charge tactile verticale
-      isDraggingRef.current = true
-      setIsDragging(true)
-      hasMovedRef.current = true
-      wasDraggingOrMovedRef.current = true
-      try { navigator.vibrate?.(10) } catch {}
-    }
-
-    if (!isDraggingRef.current) return
-    hasMovedRef.current = true
-
-    const deltaYFromLast = lastClientYRef.current - e.clientY
-    lastClientYRef.current = e.clientY
-
-    // Si le mouvement dépasse l'amplitude normale de swipe du badge (> 26px),
-    // l'utilisateur fait défiler la feuille : on accompagne le scroll parent
-    if (Math.abs(totalDeltaY) > 26) {
-      const scrollParent = e.currentTarget.closest('.overflow-y-auto')
-      if (scrollParent) {
-        scrollParent.scrollTop += deltaYFromLast
-      }
-    }
-
-    // Calcul de l'état cible dans [0, null, fixedScore] :
-    // Vers le haut (totalDeltaY > 0) -> score validé (fixedScore)
-    // Au centre (totalDeltaY ≈ 0) -> sans score (null / "—")
-    // Vers le bas (totalDeltaY < 0) -> zéro (0 barré)
-    const startIndex = states.indexOf(dragStartValueRef.current)
-    const safeIndex = startIndex !== -1 ? startIndex : 1
-    const indexSteps = Math.round(totalDeltaY / 24)
-    const targetIndex = Math.max(0, Math.min(states.length - 1, safeIndex + indexSteps))
-    const nextVal = states[targetIndex]
-
-    if (nextVal !== currentValueRef.current) {
-      currentValueRef.current = nextVal
-      onChange(nextVal)
-      try { navigator.vibrate?.(10) } catch {}
-    }
-  }
-
-  const handlePointerUp = (e) => {
-    const wasDragging = isDraggingRef.current
-    const wasHorizontal = isHorizontalScrollRef.current
-    const hasMoved = hasMovedRef.current
-
-    isDraggingRef.current = false
-    setIsDragging(false)
-    isGestureDecidedRef.current = false
-    isHorizontalScrollRef.current = false
-
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId)
-    } catch {}
-
-    if (wasDragging && hasMoved) {
-      wasDraggingOrMovedRef.current = true
-      setTimeout(() => { wasDraggingOrMovedRef.current = false }, 350)
-      try { navigator.vibrate?.(15) } catch {}
-    } else if (!wasHorizontal && !hasMoved) {
-      // Tap sans glisser : prépare le cycle direct null ➔ fixedScore ➔ 0 ➔ null
-      if (!disabled) {
-        if (cycleTimeoutRef.current) clearTimeout(cycleTimeoutRef.current)
-        cycleTimeoutRef.current = setTimeout(() => {
-          cycleScore()
-          cycleTimeoutRef.current = null
-        }, 220)
-      }
-    }
-  }
-
-  const handlePointerCancel = (e) => {
-    isDraggingRef.current = false
-    setIsDragging(false)
-    isGestureDecidedRef.current = false
-    isHorizontalScrollRef.current = false
-    if (hasMovedRef.current) {
-      wasDraggingOrMovedRef.current = true
-      setTimeout(() => { wasDraggingOrMovedRef.current = false }, 350)
-    }
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId)
-    } catch {}
-  }
-
-  const handleClick = (e) => {
-    if (disabled) {
-      e.stopPropagation()
-      return
-    }
-    if (wasDraggingOrMovedRef.current) {
-      e.preventDefault()
-      e.stopPropagation()
-      setTimeout(() => { wasDraggingOrMovedRef.current = false }, 60)
-      return
-    }
-    if (cycleTimeoutRef.current) {
-      clearTimeout(cycleTimeoutRef.current)
-      cycleTimeoutRef.current = null
-    }
-    e.stopPropagation()
-    cycleScore()
-  }
-
-  const cur = isDragging ? currentValueRef.current : value
-  const isValidated = cur === fixedScore
-  const isZero = cur === 0
-  const isUnset = cur == null
+  const isZero = value === 0
+  const isUnset = value == null
+  const isFilled = !isUnset && !isZero
 
   return (
-    <div
-      role="button"
-      tabIndex={disabled ? -1 : 0}
-      onClick={handleClick}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerCancel}
-      style={{ touchAction: disabled ? 'auto' : 'pan-x' }}
-      title={
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`w-full min-w-0 h-7.5 sm:h-8 px-1 sm:px-1.5 py-0.5 rounded-lg border transition-all flex items-center justify-center gap-1 select-none text-xs sm:text-sm font-black tabular-nums cursor-pointer ${
         disabled
           ? isPast
-            ? isValidated
-              ? `${fixedScore} pts validés`
-              : 'Case barrée (0 pt)'
-            : 'Une seule case autorisée par manche'
-          : isUnset
-          ? `Cliquer ou glisser vers le haut (${fixedScore} pts) ou vers le bas (0 pt)`
-          : isValidated
-          ? `Validé (${fixedScore} pts). Glisser vers le bas pour — ou 0`
-          : 'Barré (0 pt). Glisser vers le haut pour — ou valider'
-      }
-      className={`group relative border transition-all select-none w-full min-w-0 h-7.5 sm:h-8 px-1 sm:px-1.5 py-0.5 rounded-lg flex items-center justify-center gap-1 ${
-        disabled
-          ? isPast
-            ? isValidated
-              ? 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-extrabold cursor-default opacity-90'
+            ? isFilled
+              ? isFixed
+                ? 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-extrabold cursor-default opacity-90'
+                : 'bg-stone-100/80 dark:bg-slate-800/70 border-stone-200/80 dark:border-slate-800 text-stone-800 dark:text-slate-200 font-extrabold cursor-default opacity-90'
               : 'bg-stone-100/70 dark:bg-slate-800/60 border-stone-200/60 text-stone-400 dark:text-slate-500 font-bold cursor-default opacity-85'
             : 'bg-stone-50/50 dark:bg-slate-900/40 border-stone-200/40 text-stone-300 dark:text-slate-600 opacity-35 cursor-not-allowed'
-          : isDragging
-          ? isValidated
-            ? 'scale-105 border-emerald-500 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/50 shadow-md z-30 cursor-ns-resize'
-            : isZero
-            ? 'scale-105 border-stone-400 bg-stone-200/70 dark:bg-slate-800 text-stone-600 dark:text-slate-300 ring-2 ring-[#c83b3b]/50 shadow-md z-30 cursor-ns-resize'
-            : 'scale-105 border-stone-300 bg-stone-100/70 dark:bg-slate-800/60 text-stone-400 ring-2 ring-stone-300/50 shadow-md z-30 cursor-ns-resize'
+          : isActive
+          ? 'bg-[#c83b3b]/15 dark:bg-[#c83b3b]/25 border-[#c83b3b] text-[#c83b3b] dark:text-red-300 ring-2 ring-[#c83b3b] shadow-sm scale-102 z-10'
           : isCurrentChoice
-          ? isValidated
-            ? 'bg-emerald-500/15 dark:bg-emerald-500/25 border-emerald-500 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/60 shadow-xs cursor-pointer'
-            : isZero
-            ? 'bg-stone-200/60 dark:bg-slate-800 border-stone-400 text-stone-600 dark:text-slate-300 ring-2 ring-[#c83b3b]/60 shadow-xs cursor-pointer'
-            : 'bg-white dark:bg-slate-900 border-stone-200 ring-2 ring-[#c83b3b]/60 shadow-xs cursor-pointer'
-          : isValidated
-          ? 'bg-emerald-500/12 dark:bg-emerald-500/20 border-emerald-500/50 text-emerald-700 dark:text-emerald-300 hover:border-emerald-500 shadow-2xs cursor-pointer'
+          ? 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border-[#c83b3b] text-[#c83b3b] dark:text-red-300 ring-2 ring-[#c83b3b]/60 shadow-2xs'
+          : isFilled
+          ? isFixed
+            ? 'bg-emerald-500/12 dark:bg-emerald-500/20 border-emerald-500/50 text-emerald-700 dark:text-emerald-300 hover:border-emerald-500 shadow-2xs'
+            : 'bg-[#c83b3b]/8 dark:bg-[#c83b3b]/15 border-[#c83b3b]/35 text-[#c83b3b] dark:text-red-300 hover:border-[#c83b3b] shadow-2xs'
           : isZero
-          ? 'bg-stone-100 dark:bg-slate-800/80 border-stone-300 dark:border-slate-700 text-stone-500 dark:text-slate-400 hover:border-stone-400 shadow-2xs cursor-pointer'
-          : 'bg-white/80 dark:bg-slate-900/80 border-stone-200 dark:border-slate-800 text-stone-400 dark:text-slate-500 hover:border-emerald-500/60 hover:text-emerald-600 shadow-2xs cursor-pointer'
-      } ${className}`}
+          ? 'bg-stone-100 dark:bg-slate-800/80 border-stone-300 dark:border-slate-700 text-stone-500 dark:text-slate-400 hover:border-stone-400 shadow-2xs'
+          : 'bg-white/80 dark:bg-slate-900/80 border-stone-200 dark:border-slate-800 text-stone-400 dark:text-slate-500 hover:border-[#c83b3b]/60 hover:text-[#c83b3b] shadow-2xs'
+      }`}
     >
-      {isValidated && (
-        <>
-          <Check size={11} strokeWidth={3} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span className="text-xs sm:text-sm font-black text-emerald-700 dark:text-emerald-300 tabular-nums leading-none">
-            {fixedScore}
-          </span>
-        </>
+      {isFilled && isFixed && (
+        <Check size={11} strokeWidth={3} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
       )}
-
-      {isZero && (
-        <span className="text-xs sm:text-sm font-bold line-through decoration-red-500 decoration-2 text-stone-400 dark:text-slate-500 tabular-nums leading-none">
+      {isFilled ? (
+        <span>{value}</span>
+      ) : isZero ? (
+        <span className="line-through decoration-red-500 decoration-2 text-stone-400 dark:text-slate-500">
           0
         </span>
+      ) : (
+        <span className="text-stone-300 dark:text-slate-600 font-bold">—</span>
       )}
-
-      {isUnset && (
-        <span className="text-xs sm:text-sm font-bold text-stone-300 dark:text-slate-600 tabular-nums leading-none">
-          —
-        </span>
-      )}
-    </div>
+    </button>
   )
 }
-
 // Définition des 13 catégories officielles de la feuille de marque du Yam's
 export const YAM_CATEGORIES = [
   // Section Supérieure
@@ -393,8 +187,21 @@ export function YamEngine({ game, onFinish }) {
     return init
   })
 
-  // Cible d'édition dans le BottomSheet ScorePad : { playerId, catId }
-  const [padTarget, setPadTarget] = useState(null)
+  // Popover rectangulaire direct pour la case cliquée : { playerId, catId, anchorRect }
+  const [activePopover, setActivePopover] = useState(null)
+
+  const handleCellClick = (playerId, catId, e) => {
+    const status = getCellStatus(playerId, catId)
+    if (status.disabled) return
+
+    if (activePopover?.playerId === playerId && activePopover?.catId === catId) {
+      setActivePopover(null)
+      return
+    }
+
+    const rect = e?.currentTarget?.getBoundingClientRect?.() || null
+    setActivePopover({ playerId, catId, anchorRect: rect })
+  }
   const [showRulesMemo, setShowRulesMemo] = useState(false)
 
   // Calcul des scores de la grille d'un joueur
@@ -508,44 +315,7 @@ export function YamEngine({ game, onFinish }) {
     return game.players.some(p => (directDelta[p.id] || 0) > 0)
   }, [inputMode, newlyFilledCount, directDelta, game.players])
 
-  // Navigation dans le ScorePad
-  const activePlayer = padTarget ? game.players.find(p => p.id === padTarget.playerId) : null
-  const activePlayerIndex = activePlayer ? game.players.findIndex(p => p.id === activePlayer.id) : -1
-  const activeCatIndex = padTarget?.catId ? YAM_CATEGORIES.findIndex(c => c.id === padTarget.catId) : -1
-
-  const handlePadNext = () => {
-    if (!padTarget) return
-    if (inputMode === 'grid') {
-      if (activeCatIndex < YAM_CATEGORIES.length - 1) {
-        setPadTarget({ playerId: padTarget.playerId, catId: YAM_CATEGORIES[activeCatIndex + 1].id })
-      } else if (activePlayerIndex < game.players.length - 1) {
-        setPadTarget({ playerId: game.players[activePlayerIndex + 1].id, catId: YAM_CATEGORIES[0].id })
-      } else {
-        setPadTarget(null)
-      }
-    } else {
-      if (activePlayerIndex < game.players.length - 1) {
-        setPadTarget({ playerId: game.players[activePlayerIndex + 1].id, catId: null })
-      } else {
-        setPadTarget(null)
-      }
-    }
-  }
-
-  const handlePadPrev = () => {
-    if (!padTarget) return
-    if (inputMode === 'grid') {
-      if (activeCatIndex > 0) {
-        setPadTarget({ playerId: padTarget.playerId, catId: YAM_CATEGORIES[activeCatIndex - 1].id })
-      } else if (activePlayerIndex > 0) {
-        const prevP = game.players[activePlayerIndex - 1]
-        setPadTarget({ playerId: prevP.id, catId: YAM_CATEGORIES[YAM_CATEGORIES.length - 1].id })
-      }
-    } else if (activePlayerIndex > 0) {
-      const prevP = game.players[activePlayerIndex - 1]
-      setPadTarget({ playerId: prevP.id, catId: null })
-    }
-  }
+  
 
   const handleCategoryValueChange = (playerId, catId, value) => {
     setGridByPlayer(prev => {
@@ -624,9 +394,7 @@ export function YamEngine({ game, onFinish }) {
     }
   }
 
-  const activeCategory = padTarget?.catId ? YAM_CATEGORIES.find(c => c.id === padTarget.catId) : null
-  const currentCategoryValue = activePlayer && activeCategory ? gridByPlayer[activePlayer.id]?.[activeCategory.id] : null
-
+  
   const upperCategories = YAM_CATEGORIES.filter(c => c.section === 'upper')
   const lowerCategories = YAM_CATEGORIES.filter(c => c.section === 'lower')
 
@@ -636,7 +404,7 @@ export function YamEngine({ game, onFinish }) {
       {inputMode === 'grid' && (
         <div className="space-y-1.5">
           <div className="rounded-2xl border border-stone-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
-          <div className="overflow-x-auto overscroll-x-contain" style={{ touchAction: 'pan-x pan-y', WebkitOverflowScrolling: 'touch' }}>
+          <div className="overflow-x-auto overscroll-x-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
             <table className="w-full border-collapse text-left text-xs min-w-full">
               <thead>
                 <tr className="border-b border-stone-200 dark:border-slate-800 bg-stone-50/95 dark:bg-slate-900/95 backdrop-blur-xs">
@@ -688,11 +456,14 @@ export function YamEngine({ game, onFinish }) {
                   <tr key={cat.id} className="hover:bg-stone-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td
                       className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-100/60 dark:hover:bg-slate-800/60 transition-colors"
-                      title={`${cat.name} · ${cat.desc} (Cliquer pour ouvrir le pavé)`}
-                      onClick={() => {
+                      title={`${cat.name} · ${cat.desc} (Cliquer pour ouvrir le choix)`}
+                      onClick={(e) => {
                         const targetPlayer = game.players.find(p => previousGrid[p.id]?.[cat.id] == null) || game.players[0]
                         if (targetPlayer) {
-                          setPadTarget({ playerId: targetPlayer.id, catId: cat.id })
+                          const row = e.currentTarget.closest('tr')
+                          const playerIdx = game.players.findIndex(p => p.id === targetPlayer.id)
+                          const playerCell = row?.querySelectorAll('td')?.[playerIdx + 1]?.querySelector('button') || e.currentTarget
+                          handleCellClick(targetPlayer.id, cat.id, { currentTarget: playerCell })
                         }
                       }}
                     >
@@ -703,33 +474,19 @@ export function YamEngine({ game, onFinish }) {
                     {game.players.map((p) => {
                       const val = gridByPlayer[p.id]?.[cat.id]
                       const status = getCellStatus(p.id, cat.id)
+                      const isCellActive = activePopover?.playerId === p.id && activePopover?.catId === cat.id
                       return (
                         <td
                           key={p.id}
-                          onClick={(e) => {
-                            if (e.defaultPrevented) return
-                            if (!status.disabled) {
-                              setPadTarget({ playerId: p.id, catId: cat.id })
-                            }
-                          }}
-                          className="p-0.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60 cursor-pointer"
+                          className="p-0.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
                         >
-                          <QuickScoreBadge
+                          <YamCellBadge
                             value={val}
-                            onChange={(v) => handleCategoryValueChange(p.id, cat.id, v)}
-                            onOpenPad={() => setPadTarget({ playerId: p.id, catId: cat.id })}
-                            values={cat.presets}
-                            min={0}
-                            max={cat.max}
-                            step={1}
-                            compact={true}
-                            allowClear={true}
+                            isActive={isCellActive}
                             disabled={status.disabled}
                             isPast={status.isPast}
                             isCurrentChoice={status.isCurrentChoice}
-                            formatDisplay={(v) => (v != null ? `${v}` : '—')}
-                            showPlus={false}
-                            className="w-full"
+                            onClick={(e) => handleCellClick(p.id, cat.id, e)}
                           />
                         </td>
                       )
@@ -807,11 +564,14 @@ export function YamEngine({ game, onFinish }) {
                   <tr key={cat.id} className="hover:bg-stone-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td
                       className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-100/60 dark:hover:bg-slate-800/60 transition-colors"
-                      title={`${cat.name} · ${cat.desc} (Cliquer pour ouvrir le pavé)`}
-                      onClick={() => {
+                      title={`${cat.name} · ${cat.desc} (Cliquer pour ouvrir le choix)`}
+                      onClick={(e) => {
                         const targetPlayer = game.players.find(p => previousGrid[p.id]?.[cat.id] == null) || game.players[0]
                         if (targetPlayer) {
-                          setPadTarget({ playerId: targetPlayer.id, catId: cat.id })
+                          const row = e.currentTarget.closest('tr')
+                          const playerIdx = game.players.findIndex(p => p.id === targetPlayer.id)
+                          const playerCell = row?.querySelectorAll('td')?.[playerIdx + 1]?.querySelector('button') || e.currentTarget
+                          handleCellClick(targetPlayer.id, cat.id, { currentTarget: playerCell })
                         }
                       }}
                     >
@@ -833,44 +593,21 @@ export function YamEngine({ game, onFinish }) {
                     {game.players.map((p) => {
                       const val = gridByPlayer[p.id]?.[cat.id]
                       const status = getCellStatus(p.id, cat.id)
+                      const isCellActive = activePopover?.playerId === p.id && activePopover?.catId === cat.id
                       return (
                         <td
                           key={p.id}
-                          onClick={(e) => {
-                            if (e.defaultPrevented) return
-                            if (!status.disabled && !cat.fixed) {
-                              setPadTarget({ playerId: p.id, catId: cat.id })
-                            }
-                          }}
-                          className={`p-0.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60 ${cat.fixed ? '' : 'cursor-pointer'}`}
+                          className="p-0.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
                         >
-                          {cat.fixed ? (
-                            <FixedScoreBadge
-                              value={val}
-                              fixedScore={cat.fixed}
-                              onChange={(v) => handleCategoryValueChange(p.id, cat.id, v)}
-                              disabled={status.disabled}
-                              isPast={status.isPast}
-                              isCurrentChoice={status.isCurrentChoice}
-                            />
-                          ) : (
-                            <QuickScoreBadge
-                              value={val}
-                              onChange={(v) => handleCategoryValueChange(p.id, cat.id, v)}
-                              onOpenPad={() => setPadTarget({ playerId: p.id, catId: cat.id })}
-                              min={0}
-                              max={cat.max}
-                              step={1}
-                              compact={true}
-                              allowClear={true}
-                              disabled={status.disabled}
-                              isPast={status.isPast}
-                              isCurrentChoice={status.isCurrentChoice}
-                              formatDisplay={(v) => (v != null ? `${v}` : '—')}
-                              showPlus={false}
-                              className="w-full"
-                            />
-                          )}
+                          <YamCellBadge
+                            value={val}
+                            isFixed={!!cat.fixed}
+                            isActive={isCellActive}
+                            disabled={status.disabled}
+                            isPast={status.isPast}
+                            isCurrentChoice={status.isCurrentChoice}
+                            onClick={(e) => handleCellClick(p.id, cat.id, e)}
+                          />
                         </td>
                       )
                     })}
@@ -1032,176 +769,23 @@ export function YamEngine({ game, onFinish }) {
         </div>
       </Dialog>
 
-      {/* BottomSheet tactile pour saisie ergonomique sur mobile */}
-      <BottomSheet open={!!padTarget} onClose={() => setPadTarget(null)}>
-        {activePlayer && (
-          <div className="px-4 pt-1 pb-6 space-y-3">
-            {/* En-tête du BottomSheet avec informations du joueur et de la combinaison */}
-            <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Avatar player={activePlayer} size="sm" />
-                <div className="min-w-0">
-                  <span className="font-serif-title font-bold text-sm text-stone-900 dark:text-slate-100 truncate block">
-                    {activePlayer.name}
-                  </span>
-                  <span className="text-[10px] text-stone-500 dark:text-slate-400 block truncate">
-                    {activeCategory ? `${activeCategory.name} · ${activeCategory.desc}` : 'Saisie du score de manche'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Navigation des joueurs / catégories */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={handlePadPrev}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 cursor-pointer text-stone-600 dark:text-slate-300"
-                  title="Précédent"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePadNext}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700 cursor-pointer text-stone-600 dark:text-slate-300"
-                  title="Suivant"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
-            </div>
-
-            {/* Interface de saisie tactile adaptée à la combinaison */}
-            {activeCategory?.fixed ? (
-              <div className="space-y-4 pt-1">
-                <div className="p-3 rounded-2xl bg-stone-50 dark:bg-slate-800/40 border border-stone-200/60 dark:border-slate-700/60 text-center">
-                  <span className="text-xs uppercase tracking-wider font-bold text-stone-400 dark:text-slate-500 block mb-1">
-                    Valeur choisie
-                  </span>
-                  <span className="text-3xl font-black text-stone-900 dark:text-slate-100 tabular-nums">
-                    {currentCategoryValue != null
-                      ? currentCategoryValue === 0
-                        ? '0 (Barré)'
-                        : `${currentCategoryValue} points`
-                      : '— (À choisir)'}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleCategoryValueChange(activePlayer.id, activeCategory.id, activeCategory.fixed)
-                      try { navigator.vibrate?.(12) } catch {}
-                    }}
-                    className={`p-3 rounded-2xl border-2 font-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-95 ${
-                      currentCategoryValue === activeCategory.fixed
-                        ? 'bg-[#c83b3b] text-white border-[#c83b3b] shadow-md'
-                        : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-800 dark:text-slate-200 hover:border-[#c83b3b]/60'
-                    }`}
-                  >
-                    <span className="text-xl sm:text-2xl">{activeCategory.fixed} pts</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">
-                      Réussi
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleCategoryValueChange(activePlayer.id, activeCategory.id, 0)
-                      try { navigator.vibrate?.(12) } catch {}
-                    }}
-                    className={`p-3 rounded-2xl border-2 font-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-95 ${
-                      currentCategoryValue === 0
-                        ? 'bg-stone-800 dark:bg-stone-700 text-white border-stone-800 dark:border-stone-600 shadow-md'
-                        : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-500 dark:text-slate-400 hover:border-red-400'
-                    }`}
-                  >
-                    <span className="text-xl sm:text-2xl line-through decoration-red-500 decoration-2">0 pt</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">
-                      Barrer
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleClearCategory(activePlayer.id, activeCategory.id)
-                      try { navigator.vibrate?.(12) } catch {}
-                    }}
-                    className={`p-3 rounded-2xl border-2 font-black transition-all cursor-pointer flex flex-col items-center justify-center gap-1 active:scale-95 ${
-                      currentCategoryValue == null
-                        ? 'bg-stone-800 dark:bg-stone-700 text-white border-stone-800 dark:border-stone-600 shadow-md'
-                        : 'bg-white dark:bg-slate-900 border-stone-200 dark:border-slate-700 text-stone-400 dark:text-slate-500 hover:border-stone-400'
-                    }`}
-                  >
-                    <span className="text-xl sm:text-2xl">—</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">
-                      Sans score
-                    </span>
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setPadTarget(null)}
-                  className="w-full py-3.5 px-3 rounded-xl font-bold text-base btn-margin-red shadow-sm active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center text-center mt-2"
-                >
-                  Valider la case
-                </button>
-              </div>
-            ) : (
-              <div>
-                <ScorePad
-                  value={
-                    activeCategory
-                      ? (gridByPlayer[activePlayer.id]?.[activeCategory.id] ?? null)
-                      : (directDelta[activePlayer.id] || 0)
-                  }
-                  onChange={(val) => {
-                    if (activeCategory) {
-                      handleCategoryValueChange(activePlayer.id, activeCategory.id, val)
-                    } else {
-                      setDirectDelta(prev => ({ ...prev, [activePlayer.id]: Math.max(0, Number(val) || 0) }))
-                    }
-                  }}
-                  onConfirm={() => setPadTarget(null)}
-                  confirmLabel="Valider la case"
-                  disabled={activeCategory && activePlayer ? previousGrid[activePlayer.id]?.[activeCategory.id] != null : false}
-                  disabledMessage="Score validé lors d'une manche précédente"
-                  label={
-                    activeCategory?.diceValue ? (
-                      <div className="flex items-center gap-2">
-                        <DiceFace value={activeCategory.diceValue} size={24} />
-                        <span className="font-extrabold text-sm text-stone-800 dark:text-slate-200">
-                          {activeCategory.name}
-                        </span>
-                      </div>
-                    ) : activeCategory ? (
-                      activeCategory.name
-                    ) : (
-                      'Score de la manche'
-                    )
-                  }
-                  subLabel={activeCategory ? activeCategory.desc : 'Total des points'}
-                  min={0}
-                  max={activeCategory ? activeCategory.max : 50}
-                  step={1}
-                  presets={activeCategory ? activeCategory.presets : [0, 5, 10, 15, 20, 25, 30, 35, 40, 50]}
-                  customButtons={[]}
-                  baseScore={0}
-                  formatTotal={(val) => (val == null ? 'Sans score' : `${val} point${val > 1 ? 's' : ''}`)}
-                  showPlus={false}
-                  allowNull={true}
-                  nullLabel="—"
-                  nullText="Sans score"
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </BottomSheet>
+      {/* Popover rectangulaire direct pour la case sélectionnée */}
+      {activePopover && (() => {
+        const p = game.players.find(pl => pl.id === activePopover.playerId)
+        const cat = YAM_CATEGORIES.find(c => c.id === activePopover.catId)
+        const val = p && cat ? gridByPlayer[p.id]?.[cat.id] : null
+        return (
+          <YamCellPopover
+            anchorRect={activePopover.anchorRect}
+            player={p}
+            category={cat}
+            currentValue={val}
+            onSelect={(v) => handleCategoryValueChange(p.id, cat.id, v)}
+            onClear={() => handleClearCategory(p.id, cat.id)}
+            onClose={() => setActivePopover(null)}
+          />
+        )
+      })()}
     </div>
   )
 }
