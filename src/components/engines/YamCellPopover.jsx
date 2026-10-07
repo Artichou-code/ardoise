@@ -1,4 +1,5 @@
 import { useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Check, Trash2 } from 'lucide-react'
 import { Avatar } from '../ui/Avatar'
 
@@ -75,8 +76,9 @@ export function getYamCategoryChoices(cat) {
 }
 
 /**
- * Popover rectangulaire compact centré au milieu de l'écran.
- * Évite toute coupure en bord d'écran, sous les barres de navigation Android ou en cas de scroll.
+ * Popover rectangulaire compact monté directement sur document.body via Portal.
+ * Positionné sur la 3ème partie de l'écran (62.5% de hauteur, zone naturelle du pouce).
+ * Ne bouge absolument pas avec le scroll et ne peut jamais être coupé.
  */
 export function YamCellPopover({
   player,
@@ -97,15 +99,28 @@ export function YamCellPopover({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [onClose])
 
-  if (!player || !category) return null
+  if (!player || !category || typeof document === 'undefined') return null
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/40 dark:bg-black/60 backdrop-blur-[1.5px] animate-in fade-in duration-150 select-none"
-      onClick={onClose}
+      className="fixed inset-0 z-[100] select-none"
+      style={{ touchAction: 'none' }}
     >
+      {/* Fond sombre semi-transparent qui capture le clic pour fermer */}
       <div
-        className="w-full max-w-[360px] bg-white dark:bg-slate-900 border border-stone-200/90 dark:border-slate-700/80 rounded-2xl shadow-2xl p-3.5 animate-in fade-in zoom-in-95 duration-150 flex flex-col gap-3"
+        data-backdrop="true"
+        className="fixed inset-0 bg-black/35 dark:bg-black/55 backdrop-blur-[1.5px] animate-in fade-in duration-150"
+        onClick={onClose}
+        onTouchMove={(e) => e.preventDefault()}
+      />
+
+      {/* Carte compacte positionnée sur la 3ème partie (sur 4) de l'écran du téléphone */}
+      <div
+        style={{
+          top: '62.5%',
+          transform: 'translate(-50%, -50%)',
+        }}
+        className="fixed left-1/2 w-[92vw] max-w-[360px] bg-white dark:bg-slate-900 border border-stone-200/90 dark:border-slate-700/80 rounded-2xl shadow-2xl p-3.5 animate-in fade-in zoom-in-95 duration-150 flex flex-col gap-2.5 z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* En-tête : Joueur · Catégorie + Description */}
@@ -199,6 +214,7 @@ export function YamCellPopover({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
