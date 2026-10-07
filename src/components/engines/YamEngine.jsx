@@ -760,16 +760,9 @@ export function YamEngine({ game, onFinish }) {
               : 'Valider les scores'}
           </span>
         </button>
-        {!canValidate && (
+        {!canValidate && inputMode === 'direct' && (
           <p className="text-[11px] text-stone-400 dark:text-slate-500 text-center mt-1.5 font-medium">
-            {inputMode === 'grid'
-              ? 'Chaque joueur doit choisir 1 case par tour pour valider la manche (points ou 0 barré).'
-              : 'Saisissez au moins un score pour valider la manche'}
-          </p>
-        )}
-        {canValidate && inputMode === 'grid' && (
-          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 text-center mt-1.5 font-medium">
-            Tous les joueurs sont prêts pour valider le tour {currentRoundNumber} !
+            Saisissez au moins un score pour valider la manche
           </p>
         )}
       </div>
