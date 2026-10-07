@@ -83,6 +83,7 @@ function YamCellBadge({
   disabled = false,
   isPast = false,
   isCurrentChoice = false,
+  isOtherChoice = false,
   onClick,
 }) {
   const isZero = value === 0
@@ -106,7 +107,13 @@ function YamCellBadge({
           : isActive
           ? 'bg-[#c83b3b]/15 dark:bg-[#c83b3b]/25 border-[#c83b3b] text-[#c83b3b] dark:text-red-300 ring-2 ring-[#c83b3b] shadow-sm scale-102 z-10'
           : isCurrentChoice
-          ? 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border-[#c83b3b] text-[#c83b3b] dark:text-red-300 ring-2 ring-[#c83b3b]/60 shadow-2xs'
+          ? isFixed
+            ? 'bg-emerald-500/15 dark:bg-emerald-500/25 border-emerald-500 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/50 shadow-2xs'
+            : isZero
+            ? 'bg-stone-100 dark:bg-slate-800 border-stone-400 text-stone-600 dark:text-slate-300 ring-2 ring-stone-400/50 shadow-2xs'
+            : 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border-[#c83b3b] text-[#c83b3b] dark:text-red-300 ring-2 ring-[#c83b3b]/60 shadow-2xs'
+          : isOtherChoice
+          ? 'bg-stone-100/70 dark:bg-slate-900/60 border-stone-200/50 dark:border-slate-800/50 text-stone-300 dark:text-slate-600 opacity-40 hover:opacity-100 hover:border-stone-400 dark:hover:border-slate-600 hover:bg-white dark:hover:bg-slate-800 hover:text-stone-600 transition-all cursor-pointer'
           : isFilled
           ? isFixed
             ? 'bg-emerald-500/12 dark:bg-emerald-500/20 border-emerald-500/50 text-emerald-700 dark:text-emerald-300 hover:border-emerald-500 shadow-2xs'
@@ -482,7 +489,8 @@ export function YamEngine({ game, onFinish }) {
                             disabled={status.disabled}
                             isPast={status.isPast}
                             isCurrentChoice={status.isCurrentChoice}
-                            onClick={(e) => handleCellClick(p.id, cat.id, e)}
+                            isOtherChoice={status.isOtherChoice}
+                            onClick={() => handleCellClick(p.id, cat.id)}
                           />
                         </td>
                       )
@@ -599,7 +607,8 @@ export function YamEngine({ game, onFinish }) {
                             disabled={status.disabled}
                             isPast={status.isPast}
                             isCurrentChoice={status.isCurrentChoice}
-                            onClick={(e) => handleCellClick(p.id, cat.id, e)}
+                            isOtherChoice={status.isOtherChoice}
+                            onClick={() => handleCellClick(p.id, cat.id)}
                           />
                         </td>
                       )
