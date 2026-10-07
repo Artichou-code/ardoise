@@ -187,10 +187,10 @@ export function YamEngine({ game, onFinish }) {
     return init
   })
 
-  // Popover rectangulaire direct pour la case cliquée : { playerId, catId, anchorRect }
+  // Popover rectangulaire centré au milieu de l'écran : { playerId, catId }
   const [activePopover, setActivePopover] = useState(null)
 
-  const handleCellClick = (playerId, catId, e) => {
+  const handleCellClick = (playerId, catId) => {
     const status = getCellStatus(playerId, catId)
     if (status.disabled) return
 
@@ -199,8 +199,7 @@ export function YamEngine({ game, onFinish }) {
       return
     }
 
-    const rect = e?.currentTarget?.getBoundingClientRect?.() || null
-    setActivePopover({ playerId, catId, anchorRect: rect })
+    setActivePopover({ playerId, catId })
   }
   const [showRulesMemo, setShowRulesMemo] = useState(false)
 
@@ -457,13 +456,10 @@ export function YamEngine({ game, onFinish }) {
                     <td
                       className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-100/60 dark:hover:bg-slate-800/60 transition-colors"
                       title={`${cat.name} · ${cat.desc} (Cliquer pour ouvrir le choix)`}
-                      onClick={(e) => {
+                      onClick={() => {
                         const targetPlayer = game.players.find(p => previousGrid[p.id]?.[cat.id] == null) || game.players[0]
                         if (targetPlayer) {
-                          const row = e.currentTarget.closest('tr')
-                          const playerIdx = game.players.findIndex(p => p.id === targetPlayer.id)
-                          const playerCell = row?.querySelectorAll('td')?.[playerIdx + 1]?.querySelector('button') || e.currentTarget
-                          handleCellClick(targetPlayer.id, cat.id, { currentTarget: playerCell })
+                          handleCellClick(targetPlayer.id, cat.id)
                         }
                       }}
                     >
@@ -565,13 +561,10 @@ export function YamEngine({ game, onFinish }) {
                     <td
                       className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-100/60 dark:hover:bg-slate-800/60 transition-colors"
                       title={`${cat.name} · ${cat.desc} (Cliquer pour ouvrir le choix)`}
-                      onClick={(e) => {
+                      onClick={() => {
                         const targetPlayer = game.players.find(p => previousGrid[p.id]?.[cat.id] == null) || game.players[0]
                         if (targetPlayer) {
-                          const row = e.currentTarget.closest('tr')
-                          const playerIdx = game.players.findIndex(p => p.id === targetPlayer.id)
-                          const playerCell = row?.querySelectorAll('td')?.[playerIdx + 1]?.querySelector('button') || e.currentTarget
-                          handleCellClick(targetPlayer.id, cat.id, { currentTarget: playerCell })
+                          handleCellClick(targetPlayer.id, cat.id)
                         }
                       }}
                     >
@@ -769,14 +762,13 @@ export function YamEngine({ game, onFinish }) {
         </div>
       </Dialog>
 
-      {/* Popover rectangulaire direct pour la case sélectionnée */}
+      {/* Popover rectangulaire centré au milieu de l'écran pour la case sélectionnée */}
       {activePopover && (() => {
         const p = game.players.find(pl => pl.id === activePopover.playerId)
         const cat = YAM_CATEGORIES.find(c => c.id === activePopover.catId)
         const val = p && cat ? gridByPlayer[p.id]?.[cat.id] : null
         return (
           <YamCellPopover
-            anchorRect={activePopover.anchorRect}
             player={p}
             category={cat}
             currentValue={val}
