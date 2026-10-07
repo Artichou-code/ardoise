@@ -311,15 +311,27 @@ export function YamEngine({ game, onFinish }) {
     }
   }
 
+  // Numéro du tour actuel (1 à 13)
   const currentRoundNumber = Math.min(13, (game.rounds?.length || 0) + 1)
 
-  // Condition de validation : au moins une nouvelle case saisie/barrée en mode grille, ou au moins un score > 0 en mode direct
+  // Nombre de joueurs prêts dans cette manche (ayant choisi leur case ou ayant déjà rempli leurs 13 cases)
+  const readyPlayersCount = useMemo(() => {
+    return game.players.filter(p => {
+      const pGrid = gridByPlayer[p.id] || {}
+      const filledTotal = YAM_CATEGORIES.filter(c => pGrid[c.id] != null).length
+      return currentRoundCatByPlayer[p.id] != null || filledTotal >= 13
+    }).length
+  }, [game.players, currentRoundCatByPlayer, gridByPlayer])
+
+  const allPlayersReady = readyPlayersCount === game.players.length && game.players.length > 0
+
+  // Condition de validation : TOUS les joueurs doivent avoir choisi leur case du tour pour valider la manche
   const canValidate = useMemo(() => {
     if (inputMode === 'grid') {
-      return newlyFilledCount > 0
+      return allPlayersReady
     }
     return game.players.some(p => (directDelta[p.id] || 0) > 0)
-  }, [inputMode, newlyFilledCount, directDelta, game.players])
+  }, [inputMode, allPlayersReady, directDelta, game.players])
 
   
 
@@ -435,15 +447,32 @@ export function YamEngine({ game, onFinish }) {
                   {/* Colonnes des joueurs */}
                   {game.players.map((p) => {
                     const stats = getPlayerGridScores(p.id)
+                    const isReady = currentRoundCatByPlayer[p.id] != null || stats.filledTotal >= 13
                     return (
                       <th
                         key={p.id}
                         scope="col"
-                        className="px-0.5 sm:px-1 py-1.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60"
+                        className={`px-0.5 sm:px-1 py-1.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60 transition-colors ${
+                          isReady ? 'bg-emerald-50/50 dark:bg-emerald-950/20' : ''
+                        }`}
                       >
                         <div className="flex flex-col items-center justify-center gap-0.5">
-                          <Avatar player={p} size={game.players.length >= 4 ? 'xs' : 'sm-compact'} />
-                          <span className="font-serif-title font-bold text-[10.5px] sm:text-xs text-stone-900 dark:text-slate-100 truncate max-w-[54px] sm:max-w-[68px] block leading-tight">
+                          <div className="relative inline-block">
+                            <Avatar player={p} size={game.players.length >= 4 ? 'xs' : 'sm-compact'} />
+                            {isReady && (
+                              <span
+                                className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 text-white flex items-center justify-center text-[8px] font-black shadow-2xs"
+                                title="Case choisie pour ce tour"
+                              >
+                                ✓
+                              </span>
+                            )}
+                          </div>
+                          <span
+                            className={`font-serif-title font-bold text-[10.5px] sm:text-xs truncate max-w-[54px] sm:max-w-[68px] block leading-tight ${
+                              isReady ? 'text-emerald-700 dark:text-emerald-300' : 'text-stone-900 dark:text-slate-100'
+                            }`}
+                          >
                             {p.name}
                           </span>
                           <span className="text-[8px] sm:text-[8.5px] font-semibold text-stone-400 dark:text-slate-500 tabular-nums">
@@ -669,8 +698,8 @@ export function YamEngine({ game, onFinish }) {
             </span>
             <span>· 1 case par joueur</span>
           </span>
-          <span className="font-bold text-[#c83b3b] dark:text-red-400 tabular-nums">
-            {newlyFilledCount}/{game.players.length} joueur{game.players.length > 1 ? 's' : ''} prêt{newlyFilledCount > 1 ? 's' : ''}
+          <span className={`font-bold tabular-nums ${allPlayersReady ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#c83b3b] dark:text-red-400'}`}>
+            {readyPlayersCount}/{game.players.length} joueur{game.players.length > 1 ? 's' : ''} prêt{readyPlayersCount > 1 ? 's' : ''}
           </span>
         </div>
       </div>
@@ -725,17 +754,22 @@ export function YamEngine({ game, onFinish }) {
           <Trophy size={16} />
           <span>
             {inputMode === 'grid'
-              ? newlyFilledCount >= game.players.length
-                ? `Valider le tour ${currentRoundNumber} (${newlyFilledCount}/${game.players.length})`
-                : `Valider la manche (${newlyFilledCount}/${game.players.length} prêt${newlyFilledCount > 1 ? 's' : ''})`
+              ? allPlayersReady
+                ? `Valider le tour ${currentRoundNumber} (${readyPlayersCount}/${game.players.length})`
+                : `En attente des joueurs (${readyPlayersCount}/${game.players.length} prêt${readyPlayersCount > 1 ? 's' : ''})`
               : 'Valider les scores'}
           </span>
         </button>
         {!canValidate && (
           <p className="text-[11px] text-stone-400 dark:text-slate-500 text-center mt-1.5 font-medium">
             {inputMode === 'grid'
-              ? 'Chaque joueur choisit 1 case par manche (points ou barrer avec 0)'
+              ? 'Chaque joueur doit choisir 1 case par tour pour valider la manche (points ou 0 barré).'
               : 'Saisissez au moins un score pour valider la manche'}
+          </p>
+        )}
+        {canValidate && inputMode === 'grid' && (
+          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 text-center mt-1.5 font-medium">
+            Tous les joueurs sont prêts pour valider le tour {currentRoundNumber} !
           </p>
         )}
       </div>
