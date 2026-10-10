@@ -10,7 +10,6 @@ import {
   Award,
   ChevronRight,
   TrendingUp,
-  Cloud,
   Search,
   X,
 } from 'lucide-react'
@@ -256,12 +255,15 @@ export function StatsScreen() {
             </div>
             <button
               type="button"
-              onClick={() => setShowSyncModal(true)}
+              onClick={() => {
+                setIsSearchOpen(true)
+                setTimeout(() => searchInputRef.current?.focus(), 50)
+              }}
               className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              title="Sauvegarde & Synchronisation"
-              aria-label="Sauvegarde & Synchronisation"
+              title="Rechercher un jeu ou joueur"
+              aria-label="Rechercher un jeu ou joueur"
             >
-              <Cloud size={18} className="text-stone-700 dark:text-slate-300" />
+              <Search size={18} className="text-stone-700 dark:text-slate-300" />
             </button>
             <button
               type="button"
@@ -283,22 +285,6 @@ export function StatsScreen() {
         activeId={selectedGameType}
         onChange={setSelectedGameType}
         innerClassName="py-2.5"
-        prepend={
-          !isSearchOpen && (
-            <button
-              type="button"
-              onClick={() => {
-                setIsSearchOpen(true)
-                setTimeout(() => searchInputRef.current?.focus(), 50)
-              }}
-              className="flex items-center justify-center w-7 h-7 rounded-full bg-white/80 dark:bg-slate-900/80 border border-stone-200 dark:border-slate-800 hover:border-[#c83b3b] text-[#c83b3b] transition-colors flex-shrink-0 cursor-pointer shadow-2xs mr-0.5"
-              title="Rechercher un jeu ou joueur"
-              aria-label="Rechercher"
-            >
-              <Search size={13} />
-            </button>
-          )
-        }
       />
 
       {/* Contenu principal défilant */}
