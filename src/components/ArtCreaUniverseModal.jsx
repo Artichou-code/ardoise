@@ -55,28 +55,27 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
     setActiveCardIndex(targetIdx)
   }
 
+  // Réinitialisation du carrousel uniquement à l'ouverture de la modale
+  useEffect(() => {
+    if (isOpen) {
+      setActiveCardIndex(0)
+      if (cardsContainerRef.current) {
+        cardsContainerRef.current.scrollLeft = 0
+      }
+    }
+  }, [isOpen])
+
+  // Fermeture par touche Échap
   useEffect(() => {
     if (!isOpen) return
-    setActiveCardIndex(0)
-    if (cardsContainerRef.current) {
-      cardsContainerRef.current.scrollLeft = 0
-    }
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowRight') {
-        e.preventDefault()
-        scrollToCard(activeCardIndex + 1)
-      }
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault()
-        scrollToCard(activeCardIndex - 1)
-      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose, activeCardIndex])
+  }, [isOpen, onClose])
 
-  // Gestion du glisser à la souris sur PC (sans perturber le tactile natif du mobile)
+  // Défilement à la souris sur PC (sans toucher au swipe tactile natif mobile)
   useEffect(() => {
     const el = cardsContainerRef.current
     if (!el || !isOpen) return
@@ -90,24 +89,25 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
       if (e.button !== 0) return
       isDown = true
       hasMoved = false
-      startX = e.pageX - el.offsetLeft
+      startX = e.clientX
       scrollStart = el.scrollLeft
+      el.style.scrollSnapType = 'none'
     }
 
     const onMouseMove = (e) => {
       if (!isDown) return
-      const x = e.pageX - el.offsetLeft
-      const walk = (x - startX) * 1.5
-      if (Math.abs(walk) > 5) {
+      const diff = e.clientX - startX
+      if (Math.abs(diff) > 5) {
         hasMoved = true
         e.preventDefault()
       }
-      el.scrollLeft = scrollStart - walk
+      el.scrollLeft = scrollStart - diff
     }
 
     const onMouseUp = () => {
       if (!isDown) return
       isDown = false
+      el.style.scrollSnapType = ''
       if (hasMoved) {
         const firstCard = el.querySelector('a')
         const cardWidth = firstCard ? firstCard.offsetWidth + 14 : 320
@@ -121,7 +121,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
       e.preventDefault()
     }
 
-    // Empêche l'ouverture accidentelle du lien si l'utilisateur a glissé à la souris
+    // Empêche l'ouverture du lien si on a fait un drag souris
     const onClickCapture = (e) => {
       if (hasMoved) {
         e.preventDefault()
@@ -130,7 +130,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
       }
     }
 
-    // Défilement fluide à la molette sur PC
+    // Molette souris horizontale
     const onWheel = (e) => {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && Math.abs(e.deltaY) > 8) {
         el.scrollBy({ left: e.deltaY * 0.9, behavior: 'auto' })
