@@ -110,9 +110,9 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
     }
   }
 
-  // Glisser-déposer tactile & souris avec Pointer Capture (Swipe fluide PC et mobile)
+  // Glisser-déposer à la souris uniquement sur PC (sur mobile/tactile, le défilement tactile natif s'exécute à 100%)
   const handlePointerDown = (e) => {
-    if (e.button !== 0 && e.pointerType === 'mouse') return
+    if (e.pointerType !== 'mouse' || e.button !== 0) return
     const el = cardsContainerRef.current
     if (!el) return
     setIsDragging(true)
@@ -125,18 +125,18 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
   }
 
   const handlePointerMove = (e) => {
-    if (!isDragging) return
+    if (e.pointerType !== 'mouse' || !isDragging) return
     const el = cardsContainerRef.current
     if (!el) return
     const diff = e.clientX - dragStartXRef.current
-    if (Math.abs(diff) > 4) {
+    if (Math.abs(diff) > 5) {
       hasDraggedRef.current = true
     }
     el.scrollLeft = dragStartScrollLeftRef.current - diff
   }
 
   const handlePointerUp = (e) => {
-    if (!isDragging) return
+    if (e.pointerType !== 'mouse' || !isDragging) return
     setIsDragging(false)
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
@@ -152,7 +152,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
   }
 
   const handlePointerCancel = (e) => {
-    if (!isDragging) return
+    if (e.pointerType !== 'mouse') return
     setIsDragging(false)
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
@@ -307,7 +307,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
               onPointerCancel={handlePointerCancel}
               draggable={false}
               onDragStart={(e) => e.preventDefault()}
-              className={`flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 overscroll-x-contain select-none touch-pan-y ${
+              className={`flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 overscroll-x-contain select-none ${
                 isDragging ? 'snap-none cursor-grabbing' : 'snap-x snap-mandatory cursor-grab'
               }`}
               style={{ WebkitUserDrag: 'none', userSelect: 'none' }}
