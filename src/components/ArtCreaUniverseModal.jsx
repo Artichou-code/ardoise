@@ -84,20 +84,44 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
     let startX = 0
     let scrollStart = 0
     let hasMoved = false
+    let startTime = 0
+    let lastX = 0
+    let lastTime = 0
+    let velocity = 0
+
+    const getCardStep = () => {
+      const cards = el.querySelectorAll('a')
+      if (cards.length >= 2) {
+        return cards[1].offsetLeft - cards[0].offsetLeft
+      }
+      return cards[0] ? cards[0].offsetWidth + 14 : 320
+    }
 
     const onMouseDown = (e) => {
       if (e.button !== 0) return
       isDown = true
       hasMoved = false
       startX = e.clientX
+      lastX = e.clientX
+      startTime = performance.now()
+      lastTime = startTime
+      velocity = 0
       scrollStart = el.scrollLeft
       el.style.scrollSnapType = 'none'
+      el.style.scrollBehavior = 'auto'
     }
 
     const onMouseMove = (e) => {
       if (!isDown) return
+      const now = performance.now()
+      const dt = now - lastTime
+      if (dt > 0) {
+        velocity = (e.clientX - lastX) / dt
+        lastX = e.clientX
+        lastTime = now
+      }
       const diff = e.clientX - startX
-      if (Math.abs(diff) > 5) {
+      if (Math.abs(diff) > 4) {
         hasMoved = true
         e.preventDefault()
       }
@@ -108,10 +132,33 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
       if (!isDown) return
       isDown = false
       el.style.scrollSnapType = ''
+      el.style.scrollBehavior = 'smooth'
+
       if (hasMoved) {
-        const firstCard = el.querySelector('a')
-        const cardWidth = firstCard ? firstCard.offsetWidth + 14 : 320
-        const targetIndex = Math.round(el.scrollLeft / cardWidth)
+        const step = getCardStep()
+        const totalDist = lastX - startX
+        const totalTime = performance.now() - startTime
+        const initialIndex = Math.max(0, Math.min(Math.round(scrollStart / step), UNIVERS_CARDS.length - 1))
+
+        let targetIndex = initialIndex
+
+        // Détection de geste rapide (flick) : seuil à 30px ou vitesse > 0.22px/ms
+        if ((velocity < -0.22 || (totalDist < -30 && totalTime < 350)) && initialIndex < UNIVERS_CARDS.length - 1) {
+          targetIndex = initialIndex + 1
+        } else if ((velocity > 0.22 || (totalDist > 30 && totalTime < 350)) && initialIndex > 0) {
+          targetIndex = initialIndex - 1
+        } else {
+          // Détection de glisser lent : seuil à 30% au lieu de 50%
+          const draggedRatio = -totalDist / step
+          if (draggedRatio > 0.3 && initialIndex < UNIVERS_CARDS.length - 1) {
+            targetIndex = initialIndex + 1
+          } else if (draggedRatio < -0.3 && initialIndex > 0) {
+            targetIndex = initialIndex - 1
+          } else {
+            targetIndex = Math.max(0, Math.min(Math.round(el.scrollLeft / step), UNIVERS_CARDS.length - 1))
+          }
+        }
+
         scrollToCard(targetIndex)
       }
     }
