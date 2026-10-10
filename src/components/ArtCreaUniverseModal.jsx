@@ -42,9 +42,9 @@ const UNIVERS_CARDS = [
 export function ArtCreaUniverseModal({ isOpen, onClose }) {
   const cardsContainerRef = useRef(null)
   const [activeCardIndex, setActiveCardIndex] = useState(0)
-  const [isMouseDown, setIsMouseDown] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const dragStartXRef = useRef(0)
-  const dragScrollLeftRef = useRef(0)
+  const dragStartScrollLeftRef = useRef(0)
   const hasDraggedRef = useRef(false)
 
   useScrollLock(isOpen)
@@ -110,38 +110,53 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
     }
   }
 
-  // Glisser-déposer souris (Swipe sur PC)
-  const handleMouseDown = (e) => {
-    if (e.button !== 0) return
+  // Glisser-déposer tactile & souris avec Pointer Capture (Swipe fluide PC et mobile)
+  const handlePointerDown = (e) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return
     const el = cardsContainerRef.current
     if (!el) return
-    setIsMouseDown(true)
+    setIsDragging(true)
     hasDraggedRef.current = false
-    dragStartXRef.current = e.pageX - el.offsetLeft
-    dragScrollLeftRef.current = el.scrollLeft
+    dragStartXRef.current = e.clientX
+    dragStartScrollLeftRef.current = el.scrollLeft
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId)
+    } catch (_) {}
   }
 
-  const handleMouseMove = (e) => {
-    if (!isMouseDown) return
+  const handlePointerMove = (e) => {
+    if (!isDragging) return
     const el = cardsContainerRef.current
     if (!el) return
-    const x = e.pageX - el.offsetLeft
-    const walk = (x - dragStartXRef.current) * 1.3
-    if (Math.abs(walk) > 5) {
+    const diff = e.clientX - dragStartXRef.current
+    if (Math.abs(diff) > 4) {
       hasDraggedRef.current = true
     }
-    el.scrollLeft = dragScrollLeftRef.current - walk
+    el.scrollLeft = dragStartScrollLeftRef.current - diff
   }
 
-  const handleMouseUpOrLeave = () => {
-    if (!isMouseDown) return
-    setIsMouseDown(false)
+  const handlePointerUp = (e) => {
+    if (!isDragging) return
+    setIsDragging(false)
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    } catch (_) {}
     const el = cardsContainerRef.current
     if (!el) return
-    const firstCard = el.querySelector('a')
-    const cardWidth = firstCard ? firstCard.offsetWidth + 14 : 320
-    const targetIndex = Math.round(el.scrollLeft / cardWidth)
-    scrollToCard(targetIndex)
+    if (hasDraggedRef.current) {
+      const firstCard = el.querySelector('a')
+      const cardWidth = firstCard ? firstCard.offsetWidth + 14 : 320
+      const targetIndex = Math.round(el.scrollLeft / cardWidth)
+      scrollToCard(targetIndex)
+    }
+  }
+
+  const handlePointerCancel = (e) => {
+    if (!isDragging) return
+    setIsDragging(false)
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    } catch (_) {}
   }
 
   if (!isOpen || typeof document === 'undefined') return null
@@ -286,13 +301,16 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
               ref={cardsContainerRef}
               onScroll={handleCardsScroll}
               onWheel={handleWheel}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUpOrLeave}
-              onMouseLeave={handleMouseUpOrLeave}
-              className={`flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 overscroll-x-contain ${
-                isMouseDown ? 'cursor-grabbing select-none' : 'cursor-grab'
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerCancel}
+              draggable={false}
+              onDragStart={(e) => e.preventDefault()}
+              className={`flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 overscroll-x-contain select-none touch-pan-y ${
+                isDragging ? 'snap-none cursor-grabbing' : 'snap-x snap-mandatory cursor-grab'
               }`}
+              style={{ WebkitUserDrag: 'none', userSelect: 'none' }}
             >
             {UNIVERS_CARDS.map((card) => (
               <a
@@ -300,6 +318,11 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                 href={card.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                draggable={false}
+                onDragStart={(e) => {
+                  e.preventDefault()
+                  return false
+                }}
                 onClick={(e) => {
                   if (hasDraggedRef.current) {
                     e.preventDefault()
@@ -307,6 +330,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                   }
                 }}
                 className="w-[82vw] max-w-[310px] sm:w-[320px] md:w-full md:max-w-none flex-shrink-0 snap-center flex flex-col justify-between p-4 rounded-2xl school-card bg-white dark:bg-slate-900/90 border border-stone-200/80 dark:border-slate-800 hover:border-[#c83b3b]/70 dark:hover:border-amber-400/70 shadow-2xs hover:shadow-md transition-all duration-200 group relative overflow-hidden select-none cursor-pointer"
+                style={{ WebkitUserDrag: 'none', userSelect: 'none' }}
               >
                 <div className="relative z-10">
                   {/* Entête de carte avec vignette et badge */}
@@ -321,8 +345,9 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                           height={26}
                           loading="lazy"
                           decoding="async"
-                          className="h-6.5 w-auto max-w-full object-contain object-left select-none"
+                          className="h-6.5 w-auto max-w-full object-contain object-left select-none pointer-events-none"
                           draggable={false}
+                          onDragStart={(e) => e.preventDefault()}
                         />
                       </div>
                     )}
@@ -336,8 +361,9 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                           height={40}
                           loading="lazy"
                           decoding="async"
-                          className="w-full h-full rounded-xl object-cover shadow-2xs"
+                          className="w-full h-full rounded-xl object-cover shadow-2xs pointer-events-none"
                           draggable={false}
+                          onDragStart={(e) => e.preventDefault()}
                         />
                       </div>
                     )}
