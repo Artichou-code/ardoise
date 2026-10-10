@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X, ExternalLink, ArrowRight } from 'lucide-react'
-import { useScrollLock } from '../hooks/useScrollLock'
 
-const UNIVERS_CARDS = [
+export const DEFAULT_ARTCREA_CARDS = [
   {
     id: 'arena-photo',
     badge: "EXPÉRIENCE INTERACTIVE",
@@ -21,6 +20,7 @@ const UNIVERS_CARDS = [
     desc: "Création de sites internet sur-mesure. Un modèle artisanal sans industrialisation : projets sélectionnés au coup de cœur sur liste d'attente.",
     url: "https://art-crea.fr/",
     logoType: 'artcrea',
+    logoSrc: "/ART-crea.svg",
     ctaText: "Découvrir l'offre ART-créa",
   },
   {
@@ -37,20 +37,41 @@ const UNIVERS_CARDS = [
 
 /**
  * Modale de présentation de l'Univers ART-créa
- * Adaptée à la charte graphique d'Ardoise (papier chaud écru & ardoise sombre)
+ * Composant autonome et réutilisable dans tous les projets de l'écosystème ART-créa.
+ * - Swipe tactile 100% natif fluide sur mobile
+ * - Glisser-déposer ultra-réactif à la souris sur PC (détection de vélocité & flick)
+ * - Support thème clair / sombre (Tailwind)
+ * - Aucun hook externe requis (verrouillage scroll & portail React intégrés)
  */
-export function ArtCreaUniverseModal({ isOpen, onClose }) {
+export function ArtCreaUniverseModal({
+  isOpen,
+  onClose,
+  cards = DEFAULT_ARTCREA_CARDS,
+  brandTitle = "L'Univers",
+  brandHighlight = "ART-créa",
+  subtitle = "Webdesign & Photographie • Toulouse"
+}) {
   const cardsContainerRef = useRef(null)
   const [activeCardIndex, setActiveCardIndex] = useState(0)
+  const cardsRef = useRef(cards)
+  cardsRef.current = cards
 
-  useScrollLock(isOpen)
+  // Verrouillage du scroll en arrière-plan (autonome sans hook externe)
+  useEffect(() => {
+    if (!isOpen || typeof document === 'undefined') return
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
+  }, [isOpen])
 
   const scrollToCard = (index) => {
     const el = cardsContainerRef.current
     if (!el) return
     const firstCard = el.querySelector('a')
     const cardWidth = firstCard ? firstCard.offsetWidth + 14 : 320
-    const targetIdx = Math.max(0, Math.min(index, UNIVERS_CARDS.length - 1))
+    const targetIdx = Math.max(0, Math.min(index, cards.length - 1))
     el.scrollTo({ left: targetIdx * cardWidth, behavior: 'smooth' })
     setActiveCardIndex(targetIdx)
   }
@@ -75,7 +96,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
-  // Défilement à la souris sur PC (sans toucher au swipe tactile natif mobile)
+  // Défilement fluide à la souris sur PC (sans perturber le swipe tactile natif mobile)
   useEffect(() => {
     const el = cardsContainerRef.current
     if (!el || !isOpen) return
@@ -90,11 +111,11 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
     let velocity = 0
 
     const getCardStep = () => {
-      const cards = el.querySelectorAll('a')
-      if (cards.length >= 2) {
-        return cards[1].offsetLeft - cards[0].offsetLeft
+      const cardElements = el.querySelectorAll('a')
+      if (cardElements.length >= 2) {
+        return cardElements[1].offsetLeft - cardElements[0].offsetLeft
       }
-      return cards[0] ? cards[0].offsetWidth + 14 : 320
+      return cardElements[0] ? cardElements[0].offsetWidth + 14 : 320
     }
 
     const onMouseDown = (e) => {
@@ -135,27 +156,28 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
       el.style.scrollBehavior = 'smooth'
 
       if (hasMoved) {
+        const totalCards = cardsRef.current.length
         const step = getCardStep()
         const totalDist = lastX - startX
         const totalTime = performance.now() - startTime
-        const initialIndex = Math.max(0, Math.min(Math.round(scrollStart / step), UNIVERS_CARDS.length - 1))
+        const initialIndex = Math.max(0, Math.min(Math.round(scrollStart / step), totalCards - 1))
 
         let targetIndex = initialIndex
 
         // Détection de geste rapide (flick) : seuil à 30px ou vitesse > 0.22px/ms
-        if ((velocity < -0.22 || (totalDist < -30 && totalTime < 350)) && initialIndex < UNIVERS_CARDS.length - 1) {
+        if ((velocity < -0.22 || (totalDist < -30 && totalTime < 350)) && initialIndex < totalCards - 1) {
           targetIndex = initialIndex + 1
         } else if ((velocity > 0.22 || (totalDist > 30 && totalTime < 350)) && initialIndex > 0) {
           targetIndex = initialIndex - 1
         } else {
           // Détection de glisser lent : seuil à 30% au lieu de 50%
           const draggedRatio = -totalDist / step
-          if (draggedRatio > 0.3 && initialIndex < UNIVERS_CARDS.length - 1) {
+          if (draggedRatio > 0.3 && initialIndex < totalCards - 1) {
             targetIndex = initialIndex + 1
           } else if (draggedRatio < -0.3 && initialIndex > 0) {
             targetIndex = initialIndex - 1
           } else {
-            targetIndex = Math.max(0, Math.min(Math.round(el.scrollLeft / step), UNIVERS_CARDS.length - 1))
+            targetIndex = Math.max(0, Math.min(Math.round(el.scrollLeft / step), totalCards - 1))
           }
         }
 
@@ -207,7 +229,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
     const firstCard = el.querySelector('a')
     const cardWidth = firstCard ? firstCard.offsetWidth + 14 : 320
     const newIndex = Math.round(el.scrollLeft / cardWidth)
-    if (newIndex !== activeCardIndex && newIndex >= 0 && newIndex < UNIVERS_CARDS.length) {
+    if (newIndex !== activeCardIndex && newIndex >= 0 && newIndex < cards.length) {
       setActiveCardIndex(newIndex)
     }
   }
@@ -243,11 +265,13 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
               id="artcrea-universe-title"
               className="text-lg sm:text-xl font-bold tracking-tight leading-tight font-serif-title text-stone-900 dark:text-slate-100"
             >
-              L'Univers <span className="text-[#c83b3b]">ART-créa</span>
+              {brandTitle} <span className="text-[#c83b3b]">{brandHighlight}</span>
             </h2>
-            <p className="text-xs text-stone-500 dark:text-slate-400 font-medium mt-0.5">
-              Webdesign & Photographie • Toulouse
-            </p>
+            {subtitle && (
+              <p className="text-xs text-stone-500 dark:text-slate-400 font-medium mt-0.5">
+                {subtitle}
+              </p>
+            )}
           </div>
 
           <button
@@ -271,9 +295,9 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
             </span>
 
             <div className="flex items-center gap-1.5" role="tablist" aria-label="Pagination projets">
-              {UNIVERS_CARDS.map((card, i) => (
+              {cards.map((card, i) => (
                 <button
-                  key={card.id}
+                  key={card.id || i}
                   type="button"
                   onClick={() => scrollToCard(i)}
                   aria-label={`Projet ${card.title}`}
@@ -293,7 +317,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
             onScroll={handleCardsScroll}
             className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 overscroll-x-contain cursor-grab active:cursor-grabbing select-none"
           >
-            {UNIVERS_CARDS.map((card) => (
+            {cards.map((card) => (
               <a
                 key={card.id}
                 href={card.url}
@@ -309,7 +333,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                     {card.logoType === 'artcrea' && (
                       <div className="w-12 h-10 flex-shrink-0 flex items-center justify-start select-none pt-0.5">
                         <img
-                          src="/ART-crea.svg"
+                          src={card.logoSrc || "/ART-crea.svg"}
                           alt="Logo ART-créa"
                           width={48}
                           height={26}
