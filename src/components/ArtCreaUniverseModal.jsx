@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X, ExternalLink, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { X, ExternalLink, ArrowRight } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 
 const UNIVERS_CARDS = [
@@ -42,31 +42,17 @@ const UNIVERS_CARDS = [
 export function ArtCreaUniverseModal({ isOpen, onClose }) {
   const cardsContainerRef = useRef(null)
   const [activeCardIndex, setActiveCardIndex] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const dragStartXRef = useRef(0)
-  const dragStartScrollLeftRef = useRef(0)
-  const hasDraggedRef = useRef(false)
 
   useScrollLock(isOpen)
 
   const scrollToCard = (index) => {
     const el = cardsContainerRef.current
     if (!el) return
-    const targetIdx = Math.max(0, Math.min(index, UNIVERS_CARDS.length - 1))
     const firstCard = el.querySelector('a')
     const cardWidth = firstCard ? firstCard.offsetWidth + 14 : 320
+    const targetIdx = Math.max(0, Math.min(index, UNIVERS_CARDS.length - 1))
     el.scrollTo({ left: targetIdx * cardWidth, behavior: 'smooth' })
     setActiveCardIndex(targetIdx)
-  }
-
-  const handlePrev = (e) => {
-    e?.stopPropagation()
-    scrollToCard(activeCardIndex - 1)
-  }
-
-  const handleNext = (e) => {
-    e?.stopPropagation()
-    scrollToCard(activeCardIndex + 1)
   }
 
   useEffect(() => {
@@ -90,6 +76,84 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose, activeCardIndex])
 
+  // Gestion du glisser à la souris sur PC (sans perturber le tactile natif du mobile)
+  useEffect(() => {
+    const el = cardsContainerRef.current
+    if (!el || !isOpen) return
+
+    let isDown = false
+    let startX = 0
+    let scrollStart = 0
+    let hasMoved = false
+
+    const onMouseDown = (e) => {
+      if (e.button !== 0) return
+      isDown = true
+      hasMoved = false
+      startX = e.pageX - el.offsetLeft
+      scrollStart = el.scrollLeft
+    }
+
+    const onMouseMove = (e) => {
+      if (!isDown) return
+      const x = e.pageX - el.offsetLeft
+      const walk = (x - startX) * 1.5
+      if (Math.abs(walk) > 5) {
+        hasMoved = true
+        e.preventDefault()
+      }
+      el.scrollLeft = scrollStart - walk
+    }
+
+    const onMouseUp = () => {
+      if (!isDown) return
+      isDown = false
+      if (hasMoved) {
+        const firstCard = el.querySelector('a')
+        const cardWidth = firstCard ? firstCard.offsetWidth + 14 : 320
+        const targetIndex = Math.round(el.scrollLeft / cardWidth)
+        scrollToCard(targetIndex)
+      }
+    }
+
+    // Empêche le drag natif HTML5 des liens sur PC
+    const onDragStart = (e) => {
+      e.preventDefault()
+    }
+
+    // Empêche l'ouverture accidentelle du lien si l'utilisateur a glissé à la souris
+    const onClickCapture = (e) => {
+      if (hasMoved) {
+        e.preventDefault()
+        e.stopPropagation()
+        hasMoved = false
+      }
+    }
+
+    // Défilement fluide à la molette sur PC
+    const onWheel = (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && Math.abs(e.deltaY) > 8) {
+        el.scrollBy({ left: e.deltaY * 0.9, behavior: 'auto' })
+      }
+    }
+
+    el.addEventListener('mousedown', onMouseDown)
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    el.addEventListener('dragstart', onDragStart)
+    el.addEventListener('click', onClickCapture, true)
+    el.addEventListener('wheel', onWheel, { passive: true })
+
+    return () => {
+      el.removeEventListener('mousedown', onMouseDown)
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+      el.removeEventListener('dragstart', onDragStart)
+      el.removeEventListener('click', onClickCapture, true)
+      el.removeEventListener('wheel', onWheel)
+    }
+  }, [isOpen])
+
   const handleCardsScroll = () => {
     const el = cardsContainerRef.current
     if (!el) return
@@ -99,64 +163,6 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
     if (newIndex !== activeCardIndex && newIndex >= 0 && newIndex < UNIVERS_CARDS.length) {
       setActiveCardIndex(newIndex)
     }
-  }
-
-  // Support molette de la souris (scroll vertical converti en horizontal)
-  const handleWheel = (e) => {
-    const el = cardsContainerRef.current
-    if (!el) return
-    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && Math.abs(e.deltaY) > 8) {
-      el.scrollBy({ left: e.deltaY * 1.1, behavior: 'auto' })
-    }
-  }
-
-  // Glisser-déposer à la souris uniquement sur PC (sur mobile/tactile, le défilement tactile natif s'exécute à 100%)
-  const handlePointerDown = (e) => {
-    if (e.pointerType !== 'mouse' || e.button !== 0) return
-    const el = cardsContainerRef.current
-    if (!el) return
-    setIsDragging(true)
-    hasDraggedRef.current = false
-    dragStartXRef.current = e.clientX
-    dragStartScrollLeftRef.current = el.scrollLeft
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId)
-    } catch (_) {}
-  }
-
-  const handlePointerMove = (e) => {
-    if (e.pointerType !== 'mouse' || !isDragging) return
-    const el = cardsContainerRef.current
-    if (!el) return
-    const diff = e.clientX - dragStartXRef.current
-    if (Math.abs(diff) > 5) {
-      hasDraggedRef.current = true
-    }
-    el.scrollLeft = dragStartScrollLeftRef.current - diff
-  }
-
-  const handlePointerUp = (e) => {
-    if (e.pointerType !== 'mouse' || !isDragging) return
-    setIsDragging(false)
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId)
-    } catch (_) {}
-    const el = cardsContainerRef.current
-    if (!el) return
-    if (hasDraggedRef.current) {
-      const firstCard = el.querySelector('a')
-      const cardWidth = firstCard ? firstCard.offsetWidth + 14 : 320
-      const targetIndex = Math.round(el.scrollLeft / cardWidth)
-      scrollToCard(targetIndex)
-    }
-  }
-
-  const handlePointerCancel = (e) => {
-    if (e.pointerType !== 'mouse') return
-    setIsDragging(false)
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId)
-    } catch (_) {}
   }
 
   if (!isOpen || typeof document === 'undefined') return null
@@ -183,7 +189,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
         {/* Halo d'ambiance en arrière-plan */}
         <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Header de la modale sans fuite de coins carrés */}
+        {/* Header de la modale */}
         <div className="relative z-10 p-4 sm:p-5 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5] dark:bg-[#151719] rounded-t-2xl sm:rounded-t-3xl flex items-start justify-between gap-4">
           <div>
             <h2
@@ -208,110 +214,38 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Corps de modale : carrousel swipe tactile + drag souris + flèches PC */}
+        {/* Corps de modale : carrousel swipe */}
         <div className="relative z-10 p-4 sm:p-5 pt-3 pb-4 sm:pb-5 overflow-y-auto scrollbar-hide">
-          {/* Barre supérieure : titre de section et contrôles de pagination avec flèches */}
+          {/* Indicateur et tirets de pagination d'origine (clean et minimaliste) */}
           <div className="flex items-center justify-between px-1 mb-2.5 select-none">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs font-medium text-stone-600 dark:text-slate-400 truncate">
-                Les autres sites d'<strong className="font-bold text-stone-900 dark:text-slate-100">ART-créa</strong>
-              </span>
-              <span className="text-[10px] font-semibold text-stone-500 dark:text-slate-400 bg-stone-200/70 dark:bg-slate-800 px-1.5 py-0.5 rounded-full shrink-0">
-                {activeCardIndex + 1}/{UNIVERS_CARDS.length}
-              </span>
-            </div>
+            <span className="text-xs font-medium text-stone-600 dark:text-slate-400 flex items-center">
+              <span>Les autres sites d'</span>
+              <span className="font-bold text-stone-900 dark:text-slate-100 ml-0.5">ART-créa</span>
+            </span>
 
-            {/* Contrôles de navigation compacts et accessibles sur PC */}
-            <div className="flex items-center gap-0.5 shrink-0" role="tablist" aria-label="Pagination projets">
-              <button
-                type="button"
-                onClick={handlePrev}
-                disabled={activeCardIndex === 0}
-                aria-label="Projet précédent"
-                className="p-1 rounded-lg text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 hover:bg-stone-200/60 dark:hover:bg-slate-800 disabled:opacity-25 disabled:pointer-events-none transition-colors cursor-pointer"
-                title="Projet précédent (Flèche gauche)"
-              >
-                <ChevronLeft size={16} />
-              </button>
-
-              <div className="flex items-center gap-1 px-1">
-                {UNIVERS_CARDS.map((card, i) => (
-                  <button
-                    key={card.id}
-                    type="button"
-                    onClick={() => scrollToCard(i)}
-                    aria-label={`Projet ${i + 1} : ${card.title}`}
-                    className="h-6 flex items-center justify-center p-0.5 cursor-pointer focus:outline-none"
-                    title={card.title}
-                  >
-                    <span
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        activeCardIndex === i
-                          ? 'w-5 bg-[#c83b3b]'
-                          : 'w-2 bg-stone-300 dark:bg-slate-700 hover:bg-stone-400 dark:hover:bg-slate-600'
-                      }`}
-                    />
-                  </button>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={activeCardIndex === UNIVERS_CARDS.length - 1}
-                aria-label="Projet suivant"
-                className="p-1 rounded-lg text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 hover:bg-stone-200/60 dark:hover:bg-slate-800 disabled:opacity-25 disabled:pointer-events-none transition-colors cursor-pointer"
-                title="Projet suivant (Flèche droite)"
-              >
-                <ChevronRight size={16} />
-              </button>
+            <div className="flex items-center gap-1.5" role="tablist" aria-label="Pagination projets">
+              {UNIVERS_CARDS.map((card, i) => (
+                <button
+                  key={card.id}
+                  type="button"
+                  onClick={() => scrollToCard(i)}
+                  aria-label={`Projet ${card.title}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    activeCardIndex === i
+                      ? 'w-6 bg-[#c83b3b]'
+                      : 'w-1.5 bg-stone-300 dark:bg-slate-700 hover:bg-stone-400'
+                  }`}
+                />
+              ))}
             </div>
           </div>
 
-          {/* Wrapper avec flèches flottantes latérales pour PC & mobile */}
-          <div className="relative group">
-            {/* Flèche flottante précédente */}
-            {activeCardIndex > 0 && (
-              <button
-                type="button"
-                onClick={handlePrev}
-                aria-label="Projet précédent"
-                className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/95 dark:bg-slate-800/95 shadow-md border border-stone-200/90 dark:border-slate-700/90 flex items-center justify-center text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] dark:hover:text-amber-400 hover:scale-105 active:scale-95 transition-all cursor-pointer select-none"
-                title="Précédent"
-              >
-                <ChevronLeft size={18} />
-              </button>
-            )}
-
-            {/* Flèche flottante suivante */}
-            {activeCardIndex < UNIVERS_CARDS.length - 1 && (
-              <button
-                type="button"
-                onClick={handleNext}
-                aria-label="Projet suivant"
-                className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/95 dark:bg-slate-800/95 shadow-md border border-stone-200/90 dark:border-slate-700/90 flex items-center justify-center text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] dark:hover:text-amber-400 hover:scale-105 active:scale-95 transition-all cursor-pointer select-none"
-                title="Suivant"
-              >
-                <ChevronRight size={18} />
-              </button>
-            )}
-
-            {/* Conteneur des cartes : swipeable au touch et glissable à la souris */}
-            <div
-              ref={cardsContainerRef}
-              onScroll={handleCardsScroll}
-              onWheel={handleWheel}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerCancel}
-              draggable={false}
-              onDragStart={(e) => e.preventDefault()}
-              className={`flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 overscroll-x-contain select-none ${
-                isDragging ? 'snap-none cursor-grabbing' : 'snap-x snap-mandatory cursor-grab'
-              }`}
-              style={{ WebkitUserDrag: 'none', userSelect: 'none' }}
-            >
+          {/* Cartes en swipe 100% natif mobile et glissable souris sur PC */}
+          <div
+            ref={cardsContainerRef}
+            onScroll={handleCardsScroll}
+            className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 overscroll-x-contain cursor-grab active:cursor-grabbing select-none"
+          >
             {UNIVERS_CARDS.map((card) => (
               <a
                 key={card.id}
@@ -319,18 +253,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 draggable={false}
-                onDragStart={(e) => {
-                  e.preventDefault()
-                  return false
-                }}
-                onClick={(e) => {
-                  if (hasDraggedRef.current) {
-                    e.preventDefault()
-                    e.stopPropagation()
-                  }
-                }}
                 className="w-[82vw] max-w-[310px] sm:w-[320px] md:w-full md:max-w-none flex-shrink-0 snap-center flex flex-col justify-between p-4 rounded-2xl school-card bg-white dark:bg-slate-900/90 border border-stone-200/80 dark:border-slate-800 hover:border-[#c83b3b]/70 dark:hover:border-amber-400/70 shadow-2xs hover:shadow-md transition-all duration-200 group relative overflow-hidden select-none cursor-pointer"
-                style={{ WebkitUserDrag: 'none', userSelect: 'none' }}
               >
                 <div className="relative z-10">
                   {/* Entête de carte avec vignette et badge */}
@@ -347,7 +270,6 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                           decoding="async"
                           className="h-6.5 w-auto max-w-full object-contain object-left select-none pointer-events-none"
                           draggable={false}
-                          onDragStart={(e) => e.preventDefault()}
                         />
                       </div>
                     )}
@@ -363,7 +285,6 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                           decoding="async"
                           className="w-full h-full rounded-xl object-cover shadow-2xs pointer-events-none"
                           draggable={false}
-                          onDragStart={(e) => e.preventDefault()}
                         />
                       </div>
                     )}
@@ -395,7 +316,6 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                 </div>
               </a>
             ))}
-            </div>
           </div>
         </div>
       </div>
