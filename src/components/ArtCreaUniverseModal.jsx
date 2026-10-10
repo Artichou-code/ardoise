@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X, ExternalLink, ArrowRight } from 'lucide-react'
+import { X, ExternalLink, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 
 const UNIVERS_CARDS = [
@@ -42,8 +42,32 @@ const UNIVERS_CARDS = [
 export function ArtCreaUniverseModal({ isOpen, onClose }) {
   const cardsContainerRef = useRef(null)
   const [activeCardIndex, setActiveCardIndex] = useState(0)
+  const [isMouseDown, setIsMouseDown] = useState(false)
+  const dragStartXRef = useRef(0)
+  const dragScrollLeftRef = useRef(0)
+  const hasDraggedRef = useRef(false)
 
   useScrollLock(isOpen)
+
+  const scrollToCard = (index) => {
+    const el = cardsContainerRef.current
+    if (!el) return
+    const targetIdx = Math.max(0, Math.min(index, UNIVERS_CARDS.length - 1))
+    const firstCard = el.querySelector('a')
+    const cardWidth = firstCard ? firstCard.offsetWidth + 14 : 320
+    el.scrollTo({ left: targetIdx * cardWidth, behavior: 'smooth' })
+    setActiveCardIndex(targetIdx)
+  }
+
+  const handlePrev = (e) => {
+    e?.stopPropagation()
+    scrollToCard(activeCardIndex - 1)
+  }
+
+  const handleNext = (e) => {
+    e?.stopPropagation()
+    scrollToCard(activeCardIndex + 1)
+  }
 
   useEffect(() => {
     if (!isOpen) return
@@ -53,10 +77,18 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
     }
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose()
+      if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        scrollToCard(activeCardIndex + 1)
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        scrollToCard(activeCardIndex - 1)
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, activeCardIndex])
 
   const handleCardsScroll = () => {
     const el = cardsContainerRef.current
@@ -69,13 +101,47 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
     }
   }
 
-  const scrollToCard = (index) => {
+  // Support molette de la souris (scroll vertical converti en horizontal)
+  const handleWheel = (e) => {
+    const el = cardsContainerRef.current
+    if (!el) return
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && Math.abs(e.deltaY) > 8) {
+      el.scrollBy({ left: e.deltaY * 1.1, behavior: 'auto' })
+    }
+  }
+
+  // Glisser-déposer souris (Swipe sur PC)
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return
+    const el = cardsContainerRef.current
+    if (!el) return
+    setIsMouseDown(true)
+    hasDraggedRef.current = false
+    dragStartXRef.current = e.pageX - el.offsetLeft
+    dragScrollLeftRef.current = el.scrollLeft
+  }
+
+  const handleMouseMove = (e) => {
+    if (!isMouseDown) return
+    const el = cardsContainerRef.current
+    if (!el) return
+    const x = e.pageX - el.offsetLeft
+    const walk = (x - dragStartXRef.current) * 1.3
+    if (Math.abs(walk) > 5) {
+      hasDraggedRef.current = true
+    }
+    el.scrollLeft = dragScrollLeftRef.current - walk
+  }
+
+  const handleMouseUpOrLeave = () => {
+    if (!isMouseDown) return
+    setIsMouseDown(false)
     const el = cardsContainerRef.current
     if (!el) return
     const firstCard = el.querySelector('a')
     const cardWidth = firstCard ? firstCard.offsetWidth + 14 : 320
-    el.scrollTo({ left: index * cardWidth, behavior: 'smooth' })
-    setActiveCardIndex(index)
+    const targetIndex = Math.round(el.scrollLeft / cardWidth)
+    scrollToCard(targetIndex)
   }
 
   if (!isOpen || typeof document === 'undefined') return null
@@ -94,16 +160,16 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
         aria-hidden="true"
       />
 
-      {/* Conteneur principal adapté à la DA Ardoise (cahier d'écolier avec petits carreaux) */}
-      <div className="relative w-full max-w-sm sm:max-w-md md:max-w-4xl school-surface text-stone-900 dark:text-slate-100 border border-stone-200/90 dark:border-slate-800/90 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
-        {/* Liseré supérieur rouge signature Ardoise */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent z-10" />
+      {/* Conteneur principal avec isolation et coins arrondis parfaits */}
+      <div className="relative w-full max-w-sm sm:max-w-md md:max-w-4xl school-surface text-stone-900 dark:text-slate-100 border border-stone-200/90 dark:border-slate-800/90 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden isolate flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
+        {/* Liseré supérieur rouge signature Ardoise avec coins arrondis */}
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent z-20 rounded-t-2xl sm:rounded-t-3xl" />
 
         {/* Halo d'ambiance en arrière-plan */}
         <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-40 bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Header de la modale */}
-        <div className="relative z-10 p-4 sm:p-5 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-start justify-between gap-4">
+        {/* Header de la modale sans fuite de coins carrés */}
+        <div className="relative z-10 p-4 sm:p-5 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5] dark:bg-[#151719] rounded-t-2xl sm:rounded-t-3xl flex items-start justify-between gap-4">
           <div>
             <h2
               id="artcrea-universe-title"
@@ -127,44 +193,119 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Corps de modale : carrousel swipe sur mobile & grille sur PC */}
+        {/* Corps de modale : carrousel swipe tactile + drag souris + flèches PC */}
         <div className="relative z-10 p-4 sm:p-5 pt-3 pb-4 sm:pb-5 overflow-y-auto scrollbar-hide">
-          {/* Indicateur et tirets de pagination (visible sur mobile uniquement) */}
-          <div className="flex md:hidden items-center justify-between px-1 mb-2.5">
-            <span className="text-xs font-medium text-stone-600 dark:text-slate-400 flex items-center">
-              <span>Les autres sites d'</span>
-              <span className="font-bold text-stone-900 dark:text-slate-100 ml-0.5">ART-créa</span>
-            </span>
+          {/* Barre supérieure : titre de section et contrôles de pagination avec flèches */}
+          <div className="flex items-center justify-between px-1 mb-2.5 select-none">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-medium text-stone-600 dark:text-slate-400 truncate">
+                Les autres sites d'<strong className="font-bold text-stone-900 dark:text-slate-100">ART-créa</strong>
+              </span>
+              <span className="text-[10px] font-semibold text-stone-500 dark:text-slate-400 bg-stone-200/70 dark:bg-slate-800 px-1.5 py-0.5 rounded-full shrink-0">
+                {activeCardIndex + 1}/{UNIVERS_CARDS.length}
+              </span>
+            </div>
 
-            <div className="flex items-center gap-1.5" role="tablist" aria-label="Pagination projets">
-              {UNIVERS_CARDS.map((card, i) => (
-                <button
-                  key={card.id}
-                  type="button"
-                  onClick={() => scrollToCard(i)}
-                  aria-label={`Projet ${card.title}`}
-                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    activeCardIndex === i
-                      ? 'w-6 bg-[#c83b3b]'
-                      : 'w-1.5 bg-stone-300 dark:bg-slate-700 hover:bg-stone-400'
-                  }`}
-                />
-              ))}
+            {/* Contrôles de navigation compacts et accessibles sur PC */}
+            <div className="flex items-center gap-0.5 shrink-0" role="tablist" aria-label="Pagination projets">
+              <button
+                type="button"
+                onClick={handlePrev}
+                disabled={activeCardIndex === 0}
+                aria-label="Projet précédent"
+                className="p-1 rounded-lg text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 hover:bg-stone-200/60 dark:hover:bg-slate-800 disabled:opacity-25 disabled:pointer-events-none transition-colors cursor-pointer"
+                title="Projet précédent (Flèche gauche)"
+              >
+                <ChevronLeft size={16} />
+              </button>
+
+              <div className="flex items-center gap-1 px-1">
+                {UNIVERS_CARDS.map((card, i) => (
+                  <button
+                    key={card.id}
+                    type="button"
+                    onClick={() => scrollToCard(i)}
+                    aria-label={`Projet ${i + 1} : ${card.title}`}
+                    className="h-6 flex items-center justify-center p-0.5 cursor-pointer focus:outline-none"
+                    title={card.title}
+                  >
+                    <span
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        activeCardIndex === i
+                          ? 'w-5 bg-[#c83b3b]'
+                          : 'w-2 bg-stone-300 dark:bg-slate-700 hover:bg-stone-400 dark:hover:bg-slate-600'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={activeCardIndex === UNIVERS_CARDS.length - 1}
+                aria-label="Projet suivant"
+                className="p-1 rounded-lg text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-100 hover:bg-stone-200/60 dark:hover:bg-slate-800 disabled:opacity-25 disabled:pointer-events-none transition-colors cursor-pointer"
+                title="Projet suivant (Flèche droite)"
+              >
+                <ChevronRight size={16} />
+              </button>
             </div>
           </div>
 
-          {/* Cartes en swipe sur mobile et en grille 3 colonnes sur PC */}
-          <div
-            ref={cardsContainerRef}
-            onScroll={handleCardsScroll}
-            className="flex md:grid md:grid-cols-3 gap-3 sm:gap-4 md:gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 md:mx-0 md:px-0 overscroll-x-contain"
-          >
+          {/* Wrapper avec flèches flottantes latérales pour PC & mobile */}
+          <div className="relative group">
+            {/* Flèche flottante précédente */}
+            {activeCardIndex > 0 && (
+              <button
+                type="button"
+                onClick={handlePrev}
+                aria-label="Projet précédent"
+                className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/95 dark:bg-slate-800/95 shadow-md border border-stone-200/90 dark:border-slate-700/90 flex items-center justify-center text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] dark:hover:text-amber-400 hover:scale-105 active:scale-95 transition-all cursor-pointer select-none"
+                title="Précédent"
+              >
+                <ChevronLeft size={18} />
+              </button>
+            )}
+
+            {/* Flèche flottante suivante */}
+            {activeCardIndex < UNIVERS_CARDS.length - 1 && (
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="Projet suivant"
+                className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/95 dark:bg-slate-800/95 shadow-md border border-stone-200/90 dark:border-slate-700/90 flex items-center justify-center text-stone-700 dark:text-slate-200 hover:text-[#c83b3b] dark:hover:text-amber-400 hover:scale-105 active:scale-95 transition-all cursor-pointer select-none"
+                title="Suivant"
+              >
+                <ChevronRight size={18} />
+              </button>
+            )}
+
+            {/* Conteneur des cartes : swipeable au touch et glissable à la souris */}
+            <div
+              ref={cardsContainerRef}
+              onScroll={handleCardsScroll}
+              onWheel={handleWheel}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUpOrLeave}
+              onMouseLeave={handleMouseUpOrLeave}
+              className={`flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 overscroll-x-contain ${
+                isMouseDown ? 'cursor-grabbing select-none' : 'cursor-grab'
+              }`}
+            >
             {UNIVERS_CARDS.map((card) => (
               <a
                 key={card.id}
                 href={card.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => {
+                  if (hasDraggedRef.current) {
+                    e.preventDefault()
+                    e.stopPropagation()
+                  }
+                }}
                 className="w-[82vw] max-w-[310px] sm:w-[320px] md:w-full md:max-w-none flex-shrink-0 snap-center flex flex-col justify-between p-4 rounded-2xl school-card bg-white dark:bg-slate-900/90 border border-stone-200/80 dark:border-slate-800 hover:border-[#c83b3b]/70 dark:hover:border-amber-400/70 shadow-2xs hover:shadow-md transition-all duration-200 group relative overflow-hidden select-none cursor-pointer"
               >
                 <div className="relative z-10">
@@ -228,6 +369,7 @@ export function ArtCreaUniverseModal({ isOpen, onClose }) {
                 </div>
               </a>
             ))}
+            </div>
           </div>
         </div>
       </div>

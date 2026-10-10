@@ -122,6 +122,13 @@ html.dark input, html.dark button, html.dark select, html.dark textarea {
   background-size: 20px 20px;
 }
 
+/* Protection anti-artefact de coins carrés sur les modales */
+div[role="dialog"] .school-surface {
+  isolation: isolate;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+}
+
 .school-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);

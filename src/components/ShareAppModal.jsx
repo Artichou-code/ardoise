@@ -82,12 +82,12 @@ export function ShareAppModal({ isOpen, onClose }) {
       />
 
       {/* Conteneur principal */}
-      <div className="relative w-full max-w-sm school-surface text-stone-900 dark:text-slate-100 border border-stone-200/90 dark:border-slate-800/90 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-sm school-surface text-stone-900 dark:text-slate-100 border border-stone-200/90 dark:border-slate-800/90 shadow-2xl rounded-2xl sm:rounded-3xl overflow-hidden isolate flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
         {/* Liseré supérieur signature */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent z-10" />
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent z-20 rounded-t-2xl sm:rounded-t-3xl" />
 
         {/* En-tête */}
-        <div className="relative z-10 p-3.5 sm:p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3">
+        <div className="relative z-10 p-3.5 sm:p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5] dark:bg-[#151719] rounded-t-2xl sm:rounded-t-3xl flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <AppLogo className="w-8 h-8 rounded-xl shadow-2xs shrink-0" />
             <div className="min-w-0 flex-1">
