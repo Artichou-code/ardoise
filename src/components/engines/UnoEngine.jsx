@@ -378,25 +378,25 @@ export function UnoEngine({ game, onFinish }) {
             })}
           </div>
         </div>
+      </div>
 
-        {/* Bouton de validation de la manche */}
-        <div className="mt-4 pt-3 border-t border-stone-200/80 dark:border-slate-800">
-          <button
-            type="button"
-            onClick={handleValidate}
-            className="w-full py-2.5 sm:py-3 px-4 rounded-xl font-bold text-sm text-white bg-[#c83b3b] hover:bg-[#b03030] active:bg-[#9a2828] transition-colors shadow-2xs cursor-pointer flex items-center justify-center gap-2 select-none"
-          >
-            <Check size={16} className="shrink-0" />
-            <span className="inline-flex items-baseline justify-center gap-1.5 flex-wrap text-center">
-              <span>Valider la manche</span>
-              {!isHouseMode && (
-                <span className="text-[11px] font-normal text-white/85">
-                  (+{totalOpponentPts} pts pour {winnerPlayer?.name || 'le gagnant'})
-                </span>
-              )}
-            </span>
-          </button>
-        </div>
+      {/* Bouton de validation de la manche toujours visible (sticky bas d'écran) */}
+      <div className="sticky bottom-0 z-10 pt-2 pb-1 bg-gradient-to-t from-[var(--bg-page)] via-[var(--bg-page)]/95 to-transparent backdrop-blur-[2px]">
+        <button
+          type="button"
+          onClick={handleValidate}
+          className="w-full py-3.5 px-4 rounded-xl font-bold text-base text-white btn-margin-red active:scale-[0.99] transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 select-none"
+        >
+          <Check size={18} className="shrink-0" />
+          <span className="inline-flex items-baseline justify-center gap-1.5 flex-wrap text-center">
+            <span>Valider la manche</span>
+            {!isHouseMode && (
+              <span className="text-xs font-normal text-white/85">
+                (+{totalOpponentPts} pts pour {winnerPlayer?.name || 'le gagnant'})
+              </span>
+            )}
+          </span>
+        </button>
       </div>
 
       {/* Feuille de saisie ScorePad dédiée */}

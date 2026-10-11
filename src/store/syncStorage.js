@@ -27,7 +27,13 @@ const API_BASE = '/api'
  * Extrait un code (ex: ARD-R4RT) à partir d'une saisie brute qui peut être
  * un code seul, une URL complète (https://.../?share=ARD-R4RT) ou un texte partagé.
  */
-export function extractCodeFromInput(rawInput) {
+/**
+ * Extrait un code (ex: SYNC-R4RT, TAB-5RQK, ARD-R4RT) à partir d'une saisie brute qui peut être
+ * un code seul, une URL complète ou un texte partagé.
+ * @param {string} rawInput
+ * @param {'SYNC' | 'TAB' | ''} defaultPrefix
+ */
+export function extractCodeFromInput(rawInput, defaultPrefix = '') {
   let str = (rawInput || '').trim()
   if (!str) return ''
 
@@ -48,28 +54,50 @@ export function extractCodeFromInput(rawInput) {
 
   const upper = str.toUpperCase().trim()
 
-  // 2. Motif explicite avec ou sans tiret : ARD-XXXX, ARD_XXXX, ARD XXXX ou ARDXXXX
+  // 2. Préfixes explicites reconnus : SYNC-, TAB-, TABLE-, ARD-
+  const syncMatch = upper.match(/\bSYNC[-_\s]?([A-Z0-9]{3,12})\b/i) || upper.match(/^SYNC[-_\s]?([A-Z0-9]{3,12})$/i)
+  if (syncMatch && syncMatch[1]) {
+    return `SYNC-${syncMatch[1]}`
+  }
+
+  const tabMatch = upper.match(/\b(?:TAB|TABLE)[-_\s]?([A-Z0-9]{3,12})\b/i) || upper.match(/^(?:TAB|TABLE)[-_\s]?([A-Z0-9]{3,12})$/i)
+  if (tabMatch && tabMatch[1]) {
+    return `TAB-${tabMatch[1]}`
+  }
+
   const ardMatch = upper.match(/\bARD[-_\s]?([A-Z0-9]{3,12})\b/i) || upper.match(/^ARD[-_\s]?([A-Z0-9]{3,12})$/i)
   if (ardMatch && ardMatch[1]) {
     return `ARD-${ardMatch[1]}`
   }
 
-  // 3. Si l'utilisateur a tapé uniquement les 4 caractères sans "ARD" (ex: "44D7" ou "R4RT")
+  // 3. Si l'utilisateur a tapé uniquement les 4 caractères sans préfixe (ex: "44D7" ou "R4RT")
   const compact = upper.replace(/[^A-Z0-9]/g, '')
   if (/^[A-Z0-9]{4}$/.test(compact)) {
-    return `ARD-${compact}`
-  }
-
-  // 4. Si commence par ARD sans séparateur (ex: "ARD44D7")
-  if (/^ARD[A-Z0-9]{3,12}$/.test(compact)) {
-    return `ARD-${compact.slice(3)}`
+    const pfx = (defaultPrefix || 'SYNC').toUpperCase()
+    return `${pfx}-${compact}`
   }
 
   return upper
 }
 
 /**
- * Génère un identifiant de synchronisation mémorisable (ex: ARD-7B92)
+ * Valide si le format correspond à un code de carnet autorisé (SYNC-XXXX ou ARD-XXXX)
+ */
+export function isValidSyncKeyFormat(key) {
+  if (!key || typeof key !== 'string') return false
+  return /^(SYNC|ARD)-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$/i.test(key.trim())
+}
+
+/**
+ * Valide si le format correspond à un code de Table en direct autorisé (TAB-XXXX, TABLE-XXXX ou ARD-XXXX)
+ */
+export function isValidLiveSessionCodeFormat(code) {
+  if (!code || typeof code !== 'string') return false
+  return /^(TAB|TABLE|ARD)-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$/i.test(code.trim())
+}
+
+/**
+ * Génère un identifiant de synchronisation mémorisable (ex: SYNC-7B92)
  */
 export function generateMemorableSyncKey() {
   const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ' // Sans 0, 1, I, O pour éviter les confusions
@@ -77,13 +105,13 @@ export function generateMemorableSyncKey() {
   for (let i = 0; i < 4; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length))
   }
-  return `ARD-${code}`
+  return `SYNC-${code}`
 }
 
 export function getSyncKey() {
   const raw = localStorage.getItem(SYNC_KEYS.SYNC_KEY) || ''
   if (!raw) return ''
-  const clean = extractCodeFromInput(raw)
+  const clean = extractCodeFromInput(raw, 'SYNC')
   if (clean && clean !== raw) {
     localStorage.setItem(SYNC_KEYS.SYNC_KEY, clean)
   }
@@ -91,7 +119,7 @@ export function getSyncKey() {
 }
 
 export function setSyncKey(key) {
-  const clean = extractCodeFromInput(key)
+  const clean = extractCodeFromInput(key, 'SYNC')
   if (clean) {
     localStorage.setItem(SYNC_KEYS.SYNC_KEY, clean)
   } else {

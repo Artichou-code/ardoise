@@ -385,35 +385,35 @@ export function AscenseurEngine({ game, onFinish }) {
             )
           })}
         </div>
+      </div>
 
-        {/* Validation de la manche ou passage de phase */}
-        <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
-          {phase === 'bids' ? (
-            <button
-              type="button"
-              onClick={() => setPhase('tricks')}
-              className="w-full py-2.5 rounded-xl bg-stone-900 dark:bg-slate-100 hover:bg-stone-800 dark:hover:bg-white text-white dark:text-stone-900 font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer flex items-center justify-center gap-1.5"
-            >
-              <span>Passer aux plis réalisés (Phase 2)</span>
-              <ChevronRight size={16} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleValidate}
-              className={`w-full py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer ${
-                isTricksExact
-                  ? 'bg-[#c83b3b] hover:bg-[#b03030] text-white'
-                  : 'bg-stone-200 dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:bg-stone-300 dark:hover:bg-slate-700'
-              }`}
-            >
-              <span className="inline-flex items-baseline justify-center gap-1.5">
-                <span>Valider la manche {roundNum}</span>
-                <span className="text-xs font-normal opacity-85">({totalTricks}/{cardsCount} plis)</span>
-              </span>
-            </button>
-          )}
-        </div>
+      {/* Validation de la manche ou passage de phase toujours visible (sticky bas d'écran) */}
+      <div className="sticky bottom-0 z-10 pt-2 pb-1 bg-gradient-to-t from-[var(--bg-page)] via-[var(--bg-page)]/95 to-transparent backdrop-blur-[2px]">
+        {phase === 'bids' ? (
+          <button
+            type="button"
+            onClick={() => setPhase('tricks')}
+            className="w-full py-3.5 rounded-xl bg-stone-900 dark:bg-slate-100 hover:bg-stone-800 dark:hover:bg-white text-white dark:text-stone-900 font-bold text-base shadow-md transition-all active:scale-[0.99] cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <span>Passer aux plis réalisés (Phase 2)</span>
+            <ChevronRight size={18} />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleValidate}
+            className={`w-full py-3.5 rounded-xl font-bold text-base shadow-md transition-all active:scale-[0.99] cursor-pointer ${
+              isTricksExact
+                ? 'btn-margin-red'
+                : 'bg-stone-200 dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:bg-stone-300 dark:hover:bg-slate-700'
+            }`}
+          >
+            <span className="inline-flex items-baseline justify-center gap-1.5">
+              <span>Valider la manche {roundNum}</span>
+              <span className="text-xs font-normal opacity-85">({totalTricks}/{cardsCount} plis)</span>
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Dialog d'erreur si le nombre total de plis ne correspond pas aux cartes en jeu */}

@@ -390,31 +390,31 @@ export function DameDePiqueEngine({ game, onFinish }) {
             )
           })}
         </div>
+      </div>
 
-        {/* Bouton Valider la manche */}
-        <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
-          <button
-            type="button"
-            onClick={handleValidate}
-            className={`w-full py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer ${
-              (isChelem && chelemWinnerId) || isNormalRoundComplete
-                ? 'bg-[#c83b3b] hover:bg-[#b03030] text-white'
-                : 'bg-stone-200 dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:bg-stone-300 dark:hover:bg-slate-700'
-            }`}
-          >
-            {(isChelem && chelemWinnerId) || isNormalRoundComplete ? (
-              <span className="inline-flex items-baseline justify-center gap-1.5">
-                <span>Valider la manche</span>
-                <span className="text-xs font-normal opacity-85">(26/26 pts)</span>
-              </span>
-            ) : (
-              <span className="inline-flex items-baseline justify-center gap-1.5">
-                <span>Valider la manche</span>
-                <span className="text-xs font-normal opacity-85">({totalAllocated}/26 pts)</span>
-              </span>
-            )}
-          </button>
-        </div>
+      {/* Bouton Valider la manche toujours visible (sticky bas d'écran) */}
+      <div className="sticky bottom-0 z-10 pt-2 pb-1 bg-gradient-to-t from-[var(--bg-page)] via-[var(--bg-page)]/95 to-transparent backdrop-blur-[2px]">
+        <button
+          type="button"
+          onClick={handleValidate}
+          className={`w-full py-3.5 rounded-xl font-bold text-base shadow-md transition-all active:scale-[0.99] cursor-pointer ${
+            (isChelem && chelemWinnerId) || isNormalRoundComplete
+              ? 'btn-margin-red'
+              : 'bg-stone-200 dark:bg-slate-800 text-stone-600 dark:text-slate-300 hover:bg-stone-300 dark:hover:bg-slate-700'
+          }`}
+        >
+          {(isChelem && chelemWinnerId) || isNormalRoundComplete ? (
+            <span className="inline-flex items-baseline justify-center gap-1.5">
+              <span>Valider la manche</span>
+              <span className="text-xs font-normal opacity-85">(26/26 pts)</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-baseline justify-center gap-1.5">
+              <span>Valider la manche</span>
+              <span className="text-xs font-normal opacity-85">({totalAllocated}/26 pts)</span>
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Dialog d'avertissement score incomplet / impossible */}

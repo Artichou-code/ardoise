@@ -30,7 +30,7 @@ export async function onRequest(context) {
       for (let i = 0; i < 4; i++) {
         rand += chars.charAt(Math.floor(Math.random() * chars.length));
       }
-      const sessionCode = `ARD-${rand}`;
+      const sessionCode = `TAB-${rand}`;
 
       const initialGames = Array.isArray(body.games)
         ? body.games

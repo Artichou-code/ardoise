@@ -20,6 +20,7 @@ import {
   setSyncKey,
   extractCodeFromInput,
   generateMemorableSyncKey,
+  isValidSyncKeyFormat,
   getLastSyncedAt,
   isAutoSyncEnabled,
   setAutoSyncEnabled,
@@ -28,6 +29,7 @@ import {
   applyNotebook,
   synchronizeNotebook,
   exportNotebookPayload,
+  pushNotebookToCloud,
 } from '../store/syncStorage'
 
 export function SyncModal({ isOpen, onClose, onDataUpdated }) {
@@ -51,7 +53,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
       key = generateMemorableSyncKey()
       setSyncKey(key)
     } else {
-      const normalized = extractCodeFromInput(key)
+      const normalized = extractCodeFromInput(key, 'SYNC')
       if (normalized && normalized !== key) {
         key = normalized
         setSyncKey(normalized)
@@ -63,12 +65,25 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
     setStatusMessage(null)
     setImportPreview(null)
     setCopied(false)
+
+    // Initialiser silencieusement le carnet sur Cloudflare D1 dès l'ouverture s'il n'a jamais été synchronisé
+    if (key && !getLastSyncedAt()) {
+      pushNotebookToCloud(key)
+        .then(() => setLastSynced(getLastSyncedAt()))
+        .catch(() => {})
+    }
   }, [isOpen])
 
   const handleCopyKey = () => {
     navigator.clipboard.writeText(currentSyncKey)
     setCopied(true)
     setTimeout(() => setCopied(false), 2500)
+    // S'assurer que le carnet existe immédiatement sur Cloudflare D1 dès la copie
+    if (currentSyncKey) {
+      pushNotebookToCloud(currentSyncKey)
+        .then(() => setLastSynced(getLastSyncedAt()))
+        .catch(() => {})
+    }
   }
 
   const handleSyncNow = async () => {
@@ -76,7 +91,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
     setIsLoading(true)
     setStatusMessage(null)
     try {
-      const cleanKey = extractCodeFromInput(currentSyncKey || getSyncKey())
+      const cleanKey = extractCodeFromInput(currentSyncKey || getSyncKey(), 'SYNC')
       const result = await synchronizeNotebook(cleanKey)
       setCurrentSyncKey(cleanKey)
       setLastSynced(getLastSyncedAt())
@@ -91,8 +106,26 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
 
   const handleLinkExistingKey = async (e) => {
     e.preventDefault()
-    const cleanKey = extractCodeFromInput(inputKey)
-    if (!cleanKey) return
+    const raw = (inputKey || '').trim().toUpperCase()
+    if (!raw) return
+
+    // Détection croisée protectrice : alerte immédiate si code de Table en direct
+    if (raw.startsWith('TAB-') || raw.startsWith('TABLE-') || /^TAB[A-Z0-9]/i.test(raw)) {
+      setStatusMessage({
+        type: 'error',
+        text: 'Ce code commence par TAB- : c’est un code de Table en direct (multijoueur). Pour rejoindre une table, fermez cette modale et cliquez sur l’icône ((o)) Table en direct en haut de l’écran.',
+      })
+      return
+    }
+
+    const cleanKey = extractCodeFromInput(raw, 'SYNC')
+    if (!isValidSyncKeyFormat(cleanKey)) {
+      setStatusMessage({
+        type: 'error',
+        text: 'Format invalide. Le code doit être composé de SYNC- suivi de 4 caractères (ex : SYNC-7B92) ou ARD-XXXX.',
+      })
+      return
+    }
 
     setIsLoading(true)
     setStatusMessage(null)
@@ -101,13 +134,25 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
       setCurrentSyncKey(cleanKey)
       setInputKey('')
       setLastSynced(getLastSyncedAt())
+
+      const addedGames = result.stats?.gamesAdded || 0
+      const addedPlayers = result.stats?.playersAdded || 0
+      const totalGames = result.stats?.totalGames || 0
+
+      let successMsg = ''
+      if (addedGames > 0 || addedPlayers > 0) {
+        successMsg = `Carnet synchronisé : +${addedGames} ${addedGames > 1 ? 'parties' : 'partie'} et +${addedPlayers} ${addedPlayers > 1 ? 'joueurs' : 'joueur'} récupérés depuis votre autre appareil !`
+      } else {
+        successMsg = `Carnet synchronisé et déjà à jour (${totalGames} parties au total). Aucune nouvelle partie à importer.`
+      }
+
       setStatusMessage({
         type: 'success',
-        text: `Carnet lié et synchronisé ! (${result.stats.totalGames || 0} parties au total)`,
+        text: successMsg,
       })
       if (onDataUpdated) onDataUpdated()
     } catch (err) {
-      setStatusMessage({ type: 'error', text: err.message || 'Impossible de lier ce carnet' })
+      setStatusMessage({ type: 'error', text: err.message || 'Impossible de lier ce carnet. Vérifiez le code sur votre autre appareil.' })
     } finally {
       setIsLoading(false)
     }
@@ -262,7 +307,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
               <div className="p-3.5 rounded-xl school-card border border-stone-200 dark:border-slate-800 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-stone-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
-                    Votre code Ardoise
+                    Votre code de carnet (cet appareil)
                   </span>
                   <span className="text-[10px] text-stone-400 dark:text-slate-500 flex items-center gap-1">
                     <ShieldCheck size={12} className="text-emerald-500" />
@@ -286,7 +331,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                 </div>
 
                 <p className="text-[11px] text-stone-500 dark:text-slate-400">
-                  Entrez ce code sur vos autres appareils pour synchroniser vos parties.
+                  Notez ou copiez ce code pour retrouver vos parties et joueurs sur vos autres appareils.
                 </p>
 
                 <div className="pt-1 flex items-center justify-between border-t border-stone-100 dark:border-slate-800/80">
@@ -307,13 +352,13 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                 </div>
               </div>
 
-              {/* Lier un autre carnet */}
+              {/* Récupérer un autre carnet */}
               <div className="p-3.5 rounded-xl border border-stone-200/80 dark:border-slate-800/80 bg-stone-50/70 dark:bg-slate-900/40 space-y-2">
                 <span className="font-bold text-stone-700 dark:text-slate-300 block text-[11px] uppercase tracking-wider">
-                  Rejoindre un autre appareil
+                  Récupérer les données d'un autre appareil
                 </span>
                 <p className="text-[11px] text-stone-500 dark:text-slate-400">
-                  Vous avez déjà un code sur un autre appareil&nbsp;? Entrez-le pour regrouper vos scores&nbsp;:
+                  Vous utilisez Ardoise sur un autre téléphone ou PC&nbsp;? Entrez son code pour importer et regrouper vos scores ici&nbsp;:
                 </p>
                 <form onSubmit={handleLinkExistingKey} className="flex gap-2">
                   <input
@@ -321,12 +366,14 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                     value={inputKey}
                     onChange={(e) => {
                       let val = e.target.value.toUpperCase().replace(/\s+/g, '')
-                      if (/^ARD[A-Z0-9]/i.test(val) && !val.startsWith('ARD-')) {
+                      if (/^SYNC[A-Z0-9]/i.test(val) && !val.startsWith('SYNC-')) {
+                        val = 'SYNC-' + val.slice(4)
+                      } else if (/^ARD[A-Z0-9]/i.test(val) && !val.startsWith('ARD-')) {
                         val = 'ARD-' + val.slice(3)
                       }
                       setInputKey(val)
                     }}
-                    placeholder="Ex&nbsp;: ARD-7B92"
+                    placeholder="Ex : SYNC-7B92"
                     maxLength={12}
                     className="flex-1 font-mono uppercase px-3 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-stone-800 dark:text-slate-200 focus:outline-none focus:border-[#c83b3b]"
                   />
@@ -335,7 +382,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                     disabled={isLoading || !inputKey.trim()}
                     className="px-3.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-semibold text-xs text-stone-800 dark:text-slate-200 disabled:opacity-40 cursor-pointer flex items-center gap-1 shrink-0"
                   >
-                    <span>Lier</span>
+                    <span>Importer</span>
                     <ArrowRight size={13} />
                   </button>
                 </form>

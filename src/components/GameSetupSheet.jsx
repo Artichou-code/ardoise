@@ -1401,7 +1401,8 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                 {meta.description}
               </p>
             ) : (
-              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 py-0.5">
+              <div className="flex flex-wrap items-start gap-x-2.5 gap-y-2 py-0.5 w-full">
+                {/* Liste des joueurs choisis */}
                 {selectedPlayers.map(p => (
                   <div key={p.id} className="shrink-0 flex flex-col items-center gap-0.5">
                     <div className="relative p-0.5">
@@ -1421,6 +1422,28 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                     </span>
                   </div>
                 ))}
+
+                {/* Bouton avatar mystère placé directement après le dernier avatar : '+ Ajouter' si < 5, petit label '+1' si >= 5 */}
+                {selectedPlayers.length < (meta.maxPlayers || 8) && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCreator(true)}
+                    className="shrink-0 flex items-center gap-1.5 pl-1 pr-2 py-0.5 mt-0.5 rounded-full border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 hover:border-[#c83b3b] hover:bg-[#c83b3b]/5 transition-all cursor-pointer group active:scale-95 shadow-2xs"
+                    title="Ajouter un nouveau joueur"
+                    aria-label="Créer un nouveau joueur"
+                  >
+                    <div className="w-7 h-7 rounded-full overflow-hidden border border-stone-300 dark:border-slate-600 group-hover:border-[#c83b3b] shadow-2xs transition-colors shrink-0">
+                      <img
+                        src="/avatar/avatar_mystere_v1.png"
+                        alt="Nouveau joueur"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span className="font-bold text-xs text-[#c83b3b] group-hover:scale-105 transition-transform whitespace-nowrap">
+                      {selectedPlayers.length < 5 ? '+ Ajouter' : '+1'}
+                    </span>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -1457,11 +1480,20 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
                   <button
                     type="button"
                     onClick={() => setShowCreator(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-800 dark:bg-slate-200 text-white dark:text-stone-900 font-bold text-xs hover:bg-[#c83b3b] dark:hover:bg-[#c83b3b] dark:hover:text-white transition-colors cursor-pointer shadow-2xs"
+                    className="inline-flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-2xl bg-stone-900 hover:bg-[#c83b3b] dark:bg-slate-100 dark:hover:bg-[#c83b3b] text-white dark:text-stone-900 dark:hover:text-white font-bold text-xs transition-all cursor-pointer shadow-sm active:scale-95 group"
                   >
-                    <Plus size={14} /> Créer un joueur
+                    <div className="w-7 h-7 rounded-full overflow-hidden border border-white/30 dark:border-stone-900/20 group-hover:border-white shadow-2xs shrink-0">
+                      <img
+                        src="/avatar/avatar_mystere_v1.png"
+                        alt="Créer un joueur"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span className="flex items-center gap-1">
+                      <Plus size={13} strokeWidth={2.5} />
+                      <span>Créer un joueur</span>
+                    </span>
                   </button>
-
                 </div>
               </div>
             ) : (
@@ -2429,19 +2461,12 @@ export function GameSetupSheet({ gameType, initialPreset, onClose, onOpenRules }
             </div>
           )}
 
-          <div className="flex gap-2.5 pt-1">
-            <button
-              type="button"
-              onClick={() => setShowCreator(true)}
-              className="flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl border border-stone-300 dark:border-slate-700 text-xs sm:text-sm font-semibold text-stone-700 dark:text-slate-300 hover:border-[#c83b3b] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-            >
-              <Plus size={15} /> Ajouter
-            </button>
+          <div className="pt-1">
             <button
               type="button"
               onClick={handleStart}
               disabled={!canStart}
-              className="flex-1 py-3 px-2 rounded-xl font-bold disabled:opacity-40 btn-margin-red flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[46px]"
+              className="w-full py-3 px-2 rounded-xl font-bold disabled:opacity-40 btn-margin-red flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[46px]"
             >
               {launchAsLiveTable && (
                 <Radio size={15} className="animate-pulse shrink-0" />

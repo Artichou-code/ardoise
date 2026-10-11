@@ -796,21 +796,21 @@ export function MolkkyEngine({ game, onFinish }) {
         </div>
       )}
 
-      {/* Bouton de validation principale */}
-      <div className="pt-2">
+      {/* Bouton de validation principale toujours visible (sticky bas d'écran) */}
+      <div className="sticky bottom-0 z-10 pt-2 pb-1 bg-gradient-to-t from-[var(--bg-page)] via-[var(--bg-page)]/95 to-transparent backdrop-blur-[2px]">
         <button
           type="button"
           disabled={!canValidate}
           onClick={handleValidate}
-          className={`w-full py-3 rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 select-none ${
+          className={`w-full py-3.5 rounded-xl font-bold text-base shadow-md transition-all flex items-center justify-center gap-2 select-none ${
             hasWinner
               ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white cursor-pointer shadow-md'
               : canValidate
-              ? 'bg-[#c83b3b] hover:bg-[#b03030] active:scale-[0.99] text-white cursor-pointer'
+              ? 'btn-margin-red cursor-pointer'
               : 'bg-stone-200 dark:bg-slate-800 text-stone-400 dark:text-slate-500 cursor-not-allowed'
           }`}
         >
-          <Trophy size={16} />
+          <Trophy size={18} />
           <span>
             {hasWinner
               ? isTeamMode

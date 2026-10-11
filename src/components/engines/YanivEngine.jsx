@@ -514,16 +514,17 @@ export function YanivEngine({ game, onFinish }) {
             })}
           </div>
         </div>
+      </div>
 
-        <div className="mt-2.5 pt-2 border-t border-stone-200/80 dark:border-slate-800">
-          <button
-            type="button"
-            onClick={handleValidate}
-            className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] cursor-pointer"
-          >
-            Valider la manche
-          </button>
-        </div>
+      {/* Bouton de validation toujours visible (sticky bas d'écran) */}
+      <div className="sticky bottom-0 z-10 pt-2 pb-1 bg-gradient-to-t from-[var(--bg-page)] via-[var(--bg-page)]/95 to-transparent backdrop-blur-[2px]">
+        <button
+          type="button"
+          onClick={handleValidate}
+          className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red cursor-pointer shadow-md active:scale-[0.99] transition-all"
+        >
+          Valider la manche
+        </button>
       </div>
 
       {/* Dialogue de confirmation bienveillant si aucun adversaire n'a de points de main */}

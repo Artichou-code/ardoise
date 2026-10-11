@@ -125,6 +125,42 @@ export function GameScreen() {
       localStorage.setItem('ardoise_scoreboard_collapsed', String(isScoresCollapsed))
     } catch {}
   }, [isScoresCollapsed])
+
+  // Empêcher la mise en veille du téléphone pendant la partie (Screen Wake Lock)
+  useEffect(() => {
+    let wakeLock = null
+    const requestWakeLock = async () => {
+      if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
+        try {
+          wakeLock = await navigator.wakeLock.request('screen')
+        } catch (_) {}
+      }
+    }
+
+    const releaseWakeLock = () => {
+      if (wakeLock) {
+        wakeLock.release().catch(() => {})
+        wakeLock = null
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        requestWakeLock()
+      } else {
+        releaseWakeLock()
+      }
+    }
+
+    requestWakeLock()
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      releaseWakeLock()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
+
   const engineScrollRef = useRef(null)
   const prevGameIdRef = useRef(activeGame?.id)
   const prevRoundsLengthRef = useRef(activeGame?.rounds?.length ?? 0)

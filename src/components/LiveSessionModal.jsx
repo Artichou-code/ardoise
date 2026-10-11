@@ -24,6 +24,7 @@ import {
   importSessionGames,
   syncSessionGamesToLocal,
 } from '../store/liveSession'
+import { isValidLiveSessionCodeFormat, extractCodeFromInput } from '../store/syncStorage'
 import { formatDate } from '../utils/gameUtils'
 import { getGameDisplayName } from '../constants/games'
 
@@ -185,12 +186,26 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
 
   const handleJoin = async (e) => {
     e.preventDefault()
-    if (!joinCode.trim()) return
+    const raw = (joinCode || '').trim().toUpperCase()
+    if (!raw) return
+
+    // Détection croisée protectrice : alerte immédiate si code de Sauvegarde carnet
+    if (raw.startsWith('SYNC-') || /^SYNC[A-Z0-9]/i.test(raw)) {
+      setError('Ce code commence par SYNC- : c’est un code de Carnet de Sauvegarde, pas de Table en direct. Pour restaurer vos données, ouvrez le Menu ☰ > Sauvegarde & Sync.')
+      return
+    }
+
+    const cleanCode = extractCodeFromInput(raw, 'TAB')
+    if (!isValidLiveSessionCodeFormat(cleanCode)) {
+      setError('Format invalide. Le code doit être composé de TAB- suivi de 4 caractères (ex : TAB-7B92) ou ARD-XXXX.')
+      return
+    }
+
     setIsLoading(true)
     setError(null)
     setStatusBanner(null)
     try {
-      const data = await joinLiveSession(joinCode, '')
+      const data = await joinLiveSession(cleanCode, '')
       reloadStorage()
 
       if (data.closed) {
@@ -663,8 +678,16 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                     <input
                       type="text"
                       value={joinCode}
-                      onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                      placeholder="Ex : ARD-7B92"
+                      onChange={(e) => {
+                        let val = e.target.value.toUpperCase().replace(/\s+/g, '')
+                        if (/^TAB[A-Z0-9]/i.test(val) && !val.startsWith('TAB-')) {
+                          val = 'TAB-' + val.slice(3)
+                        } else if (/^ARD[A-Z0-9]/i.test(val) && !val.startsWith('ARD-')) {
+                          val = 'ARD-' + val.slice(3)
+                        }
+                        setJoinCode(val)
+                      }}
+                      placeholder="Ex : TAB-7B92"
                       required
                       className="w-full font-mono uppercase px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none focus:border-[#c83b3b]"
                     />

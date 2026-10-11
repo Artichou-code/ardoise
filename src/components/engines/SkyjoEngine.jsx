@@ -186,21 +186,24 @@ export function SkyjoEngine({ game, onFinish }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={handleValidate}
-        disabled={!canSubmit}
-        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40 cursor-pointer active:scale-[0.99] transition-all"
-      >
-        {closerDoubled ? (
-          <span className="inline-flex items-baseline justify-center gap-1.5">
+      {/* Bouton de validation toujours visible (sticky bas d'écran) */}
+      <div className="sticky bottom-0 z-10 pt-2 pb-1 bg-gradient-to-t from-[var(--bg-page)] via-[var(--bg-page)]/95 to-transparent backdrop-blur-[2px]">
+        <button
+          type="button"
+          onClick={handleValidate}
+          disabled={!canSubmit}
+          className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40 cursor-pointer shadow-md active:scale-[0.99] transition-all"
+        >
+          {closerDoubled ? (
+            <span className="inline-flex items-baseline justify-center gap-1.5">
+              <span>Valider la manche</span>
+              <span className="text-xs font-semibold opacity-90">(Malus ×2 clôtureur)</span>
+            </span>
+          ) : (
             <span>Valider la manche</span>
-            <span className="text-xs font-semibold opacity-90">(Malus ×2 clôtureur)</span>
-          </span>
-        ) : (
-          <span>Valider la manche</span>
-        )}
-      </button>
+          )}
+        </button>
+      </div>
 
       {/* Dialog d'avertissement scores à 0 */}
       <Dialog

@@ -226,13 +226,16 @@ export function CaracoleEngine({ game, onFinish }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={handleValidate}
-        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red cursor-pointer active:scale-[0.99] transition-all"
-      >
-        Valider la manche
-      </button>
+      {/* Bouton de validation toujours visible (sticky bas d'écran) */}
+      <div className="sticky bottom-0 z-10 pt-2 pb-1 bg-gradient-to-t from-[var(--bg-page)] via-[var(--bg-page)]/95 to-transparent backdrop-blur-[2px]">
+        <button
+          type="button"
+          onClick={handleValidate}
+          className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red cursor-pointer shadow-md active:scale-[0.99] transition-all"
+        >
+          Valider la manche
+        </button>
+      </div>
 
       {/* Dialog d'avertissement 0 pénalité saisie */}
       <Dialog
