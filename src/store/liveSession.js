@@ -158,10 +158,11 @@ export async function joinLiveSession(code, playerName = '') {
   saveActiveSession(localSession)
 
   // Tracking silencieux — compte chaque join de table live
+  const isPwa = typeof window !== 'undefined' && (window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator?.standalone === true) ? 1 : 0
   fetch('/api/stats/track', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ event_type: 'session_join', session_code: cleanCode }),
+    body: JSON.stringify({ event_type: 'session_join', session_code: cleanCode, is_pwa: isPwa }),
   }).catch(() => {})
 
   return {

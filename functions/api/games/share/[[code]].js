@@ -61,15 +61,25 @@ export async function onRequest(context) {
       }
 
       const payloadJson = JSON.stringify(payloadObj);
+      const cf = request.cf || {};
+      const country = cf.country || null;
+      const city = cf.city || null;
+      const firstGame = payloadObj.games[0];
+      const gameType = firstGame?.type || firstGame?.name || 'Inconnu';
+      const playersCount = (payloadObj.players && payloadObj.players.length) || (firstGame?.players && firstGame.players.length) || 0;
 
       await env.DB.prepare(
-        `INSERT INTO shared_games (game_id, game_code, payload_json, created_at)
-         VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        `INSERT INTO shared_games (game_id, game_code, payload_json, created_at, country, city, game_type, players_count)
+         VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?)
          ON CONFLICT(game_id) DO UPDATE SET
            game_code = excluded.game_code,
-           payload_json = excluded.payload_json`
+           payload_json = excluded.payload_json,
+           country = excluded.country,
+           city = excluded.city,
+           game_type = excluded.game_type,
+           players_count = excluded.players_count`
       )
-        .bind(recordId, gameCode, payloadJson)
+        .bind(recordId, gameCode, payloadJson, country, city, gameType, playersCount)
         .run();
 
       const row = await env.DB.prepare(
@@ -110,6 +120,23 @@ export async function onRequest(context) {
       if (!row) {
         return Response.json({ error: 'Partage introuvable ou expiré' }, { status: 404, headers: corsHeaders });
       }
+
+      // Log silencieux de consultation de partage
+      try {
+        const cf = request.cf || {};
+        const ua = request.headers.get('User-Agent') || '';
+        let device_os = 'Autre';
+        if (/iphone|ipad|ipod/i.test(ua)) device_os = 'iOS';
+        else if (/android/i.test(ua)) device_os = 'Android';
+        else if (/macintosh|mac os x/i.test(ua)) device_os = 'macOS';
+        else if (/windows/i.test(ua)) device_os = 'Windows';
+        else if (/linux/i.test(ua)) device_os = 'Linux';
+
+        await env.DB.prepare(
+          `INSERT INTO scan_events (event_type, session_code, user_agent, country, city, device_os, is_pwa)
+           VALUES (?, ?, ?, ?, ?, ?, 0)`
+        ).bind('share_game_view', cleanUpper, ua.slice(0, 300), cf.country || null, cf.city || null, device_os).run();
+      } catch (_) {}
 
       const parsed = JSON.parse(row.payload_json);
       const gamesList = Array.isArray(parsed.games)

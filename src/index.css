@@ -353,6 +353,9 @@ div[role="dialog"] .school-surface {
       0 0 70px rgba(0, 0, 0, 0.4);
     background-color: var(--bg-page);
     border: 1px solid rgba(255, 255, 255, 0.08);
+    isolation: isolate;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    mask-image: radial-gradient(white, black);
   }
 
   /* Barre Home iOS / Android simulée en bas */
@@ -389,6 +392,9 @@ div[role="dialog"] .school-surface {
     border-radius: 46px !important;
     overflow: hidden !important;
     pointer-events: none;
+    isolation: isolate;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    mask-image: radial-gradient(white, black);
   }
 
   body > div[role="dialog"] *,
@@ -397,10 +403,17 @@ div[role="dialog"] .school-surface {
     pointer-events: auto;
   }
 
-  /* Ajustement des backdrop pour s'adapter au châssis */
+  /* Ajustement des backdrops : étendre au-delà des bords sans border-radius propre pour éliminer tout jour subpixel */
   body > div[role="dialog"] > div[aria-hidden="true"],
   body > div.drawer-overlay > .drawer-backdrop {
-    border-radius: 46px !important;
+    border-radius: 0 !important;
+    inset: -6px !important;
+  }
+
+  /* Fond sombre de sécurité sous le châssis lors de l'ouverture d'une modale pour éliminer les fuites de couleur papier */
+  body:has(div[role="dialog"]) #root,
+  body:has(.drawer-overlay-open) #root {
+    background-color: #121316 !important;
   }
 
   /* Espacement naturel et aéré pour l'en-tête (sans encoche) */
