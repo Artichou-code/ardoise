@@ -90,6 +90,34 @@ export default function App() {
     }
   }, [])
 
+  // Gestion dynamique du rechargement de page (pull-down) :
+  // Autorisé nativement sur l'accueil ('home') pour rafraîchir le carnet,
+  // mais strictement bloqué pendant les parties ou autres écrans pour éviter les recharges accidentelles.
+  useEffect(() => {
+    const isHome = screen === 'home' || !screen
+    document.body.dataset.screen = isHome ? 'home' : screen
+
+    if (isHome) {
+      document.documentElement.classList.remove('prevent-overscroll')
+      document.body.classList.remove('prevent-overscroll')
+      document.documentElement.style.overscrollBehaviorY = 'auto'
+      document.body.style.overscrollBehaviorY = 'auto'
+      const root = document.getElementById('root')
+      if (root) root.style.overscrollBehaviorY = 'auto'
+    } else {
+      document.documentElement.classList.add('prevent-overscroll')
+      document.body.classList.add('prevent-overscroll')
+      document.documentElement.style.overscrollBehaviorY = 'none'
+      document.body.style.overscrollBehaviorY = 'none'
+      const root = document.getElementById('root')
+      if (root) root.style.overscrollBehaviorY = 'none'
+    }
+  }, [screen])
+
+  const isStandalone = typeof window !== 'undefined' && Boolean(
+    window.matchMedia?.('(display-mode: standalone)')?.matches ||
+    window.navigator?.standalone
+  )
 
   const handleCloseSharedModal = () => {
     setSharedGames(null)
@@ -111,7 +139,7 @@ export default function App() {
 
   return (
     <>
-      <PullToRefreshIndicator disabled={screen === 'game' || screen === 'victory'} />
+      <PullToRefreshIndicator disabled={!isStandalone || (screen === 'game' || screen === 'victory')} />
       {screen === 'game' ? (
           <GameScreen />
         ) : screen === 'victory' ? (

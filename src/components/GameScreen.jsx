@@ -635,8 +635,8 @@ export function GameScreen() {
       {/* Moteur de saisie de manche */}
       <div
         ref={engineScrollRef}
-        className="flex-1 overflow-y-auto scrollbar-hide"
-        style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
+        className="flex-1 overflow-y-auto scrollbar-hide overscroll-none"
+        style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y', overscrollBehaviorY: 'none' }}
       >
         <div className="px-4 pt-1 pb-8 pb-safe">
           <div

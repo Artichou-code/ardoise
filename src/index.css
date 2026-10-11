@@ -56,7 +56,7 @@ html.dark input, html.dark button, html.dark select, html.dark textarea {
     width: 100%;
     margin: 0;
     padding: 0;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: auto;
   }
 
   body {
@@ -72,7 +72,19 @@ html.dark input, html.dark button, html.dark select, html.dark textarea {
     padding: 0;
     display: flex;
     flex-direction: column;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: auto;
+  }
+
+  /* Blocage du rechargement natif hors accueil (en cours de jeu, victoires, etc.) */
+  html.prevent-overscroll,
+  body.prevent-overscroll,
+  html.prevent-overscroll #root,
+  body.prevent-overscroll #root,
+  body[data-screen="game"],
+  body[data-screen="game"] #root,
+  body[data-screen="victory"],
+  body[data-screen="victory"] #root {
+    overscroll-behavior-y: none !important;
   }
 
   html {
