@@ -12,7 +12,7 @@ import {
   MapPin,
   Smartphone,
   Flame,
-  Award,
+  Trophy,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 
@@ -285,12 +285,9 @@ export function StatsModal({ isOpen, onClose }) {
                   <div className="flex items-center gap-1.5">
                     <Globe size={14} className="text-[#c83b3b]" />
                     <p className="text-[11px] font-bold uppercase tracking-wider text-stone-800 dark:text-slate-200">
-                      Géographie (Villes & Pays)
+                      Géographie
                     </p>
                   </div>
-                  <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800 text-stone-500 dark:text-slate-400">
-                    Cloudflare Geo
-                  </span>
                 </div>
 
                 {/* Top Pays */}
@@ -352,7 +349,7 @@ export function StatsModal({ isOpen, onClose }) {
                           >
                             <span className="text-xs">{ci.flag}</span>
                             <span>{ci.city}</span>
-                            <span className={`font-bold ml-0.5 ${isSelected ? 'text-[#c83b3b] dark:text-rose-400' : 'text-[#c83b3b]'}`}>
+                            <span className={`text-[9px] font-bold ml-0.5 ${isSelected ? 'text-[#c83b3b] dark:text-rose-400' : 'text-[#c83b3b]'}`}>
                               ({ci.count})
                             </span>
                           </button>
@@ -414,14 +411,11 @@ export function StatsModal({ isOpen, onClose }) {
               <div className="p-3 rounded-2xl school-card bg-white dark:bg-slate-900/70 border border-stone-200/90 dark:border-slate-800/90 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <Award size={14} className="text-amber-500" />
+                    <Trophy size={14} className="text-amber-500" />
                     <p className="text-[11px] font-bold uppercase tracking-wider text-stone-800 dark:text-slate-200">
                       Jeux les plus populaires
                     </p>
                   </div>
-                  <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                    Parties enregistrées
-                  </span>
                 </div>
 
                 {gamesPopularity.length > 0 ? (
