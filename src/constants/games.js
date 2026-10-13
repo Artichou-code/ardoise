@@ -198,7 +198,7 @@ export const GAME_META = {
   [GAMES.PRESIDENT]: {
     id: GAMES.PRESIDENT,
     deckType: 'classic',
-    name: 'Trou du cul',
+    name: 'Trou du cul (Président)',
     playersBadge: '3–8 j.',
     categoryBadge: '54 cartes',
     description:

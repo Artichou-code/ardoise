@@ -57,6 +57,23 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const [showGeneralHelp, setShowGeneralHelp] = useState(false)
 
   const lastSigRef = useRef('')
+  const generalHelpRef = useRef(null)
+  const cityHelpRef = useRef(null)
+
+  // Fermer les infobulles d'aide en cliquant n'importe où ailleurs
+  useEffect(() => {
+    if (!showGeneralHelp && !showCityHelp) return
+    const handlePointerDown = (e) => {
+      if (generalHelpRef.current && !generalHelpRef.current.contains(e.target)) {
+        setShowGeneralHelp(false)
+      }
+      if (cityHelpRef.current && !cityHelpRef.current.contains(e.target)) {
+        setShowCityHelp(false)
+      }
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [showGeneralHelp, showCityHelp])
 
   useScrollLock(isOpen)
 
@@ -569,7 +586,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   {closedSummary ? 'Table terminée' : 'Table en direct'}
                 </h2>
                 {!closedSummary && (
-                  <div className="relative inline-flex items-center">
+                  <div ref={generalHelpRef} className="relative inline-flex items-center">
                     <button
                       type="button"
                       onClick={() => setShowGeneralHelp((prev) => !prev)}
@@ -580,7 +597,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                       ?
                     </button>
                     {showGeneralHelp && (
-                      <div className="absolute top-6 left-0 w-64 sm:w-72 p-3 rounded-xl bg-stone-900/95 dark:bg-slate-800 text-stone-100 text-[11px] leading-relaxed shadow-xl border border-stone-700 z-50 animate-in fade-in zoom-in-95">
+                      <div className="absolute top-6 left-1/2 -translate-x-1/2 sm:-translate-x-1/4 w-64 sm:w-72 max-w-[calc(100vw-2.5rem)] p-3 rounded-xl bg-stone-900/95 dark:bg-slate-800 text-stone-100 text-[11px] leading-relaxed shadow-xl border border-stone-700 z-50 animate-in fade-in zoom-in-95">
                         <div className="flex items-start justify-between gap-1 mb-1.5">
                           <span className="font-bold text-amber-300 flex items-center gap-1.5">
                             <Info size={12} />
@@ -589,13 +606,13 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                           <button
                             type="button"
                             onClick={() => setShowGeneralHelp(false)}
-                            className="text-stone-400 hover:text-white p-0.5"
+                            className="text-stone-400 hover:text-white p-0.5 cursor-pointer"
                           >
                             <X size={12} />
                           </button>
                         </div>
                         <p>
-                          Une seule personne note les points. Les autres joueurs scannent le QR code : toutes les parties jouées pendant la séance s'enregistrent automatiquement dans leur propre application Ardoise.
+                          Une seule personne note les points. Les autres joueurs scannent le QR code : toutes les parties de la séance s'enregistrent automatiquement dans leur carnet.
                         </p>
                       </div>
                     )}
@@ -603,7 +620,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 )}
               </div>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                {closedSummary ? 'Récapitulatif de clôture' : 'Partage automatique des parties jouées'}
+                {closedSummary ? 'Récapitulatif de clôture' : 'Partage en direct des parties'}
               </p>
             </div>
           </div>
@@ -989,136 +1006,137 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                     </span>
                   </div>
 
-                  {/* QR Code d'invitation central */}
-                  <div className="flex flex-col items-center py-1 space-y-1.5">
-                    <div className="p-2.5 bg-white rounded-xl shadow-xs border border-stone-200 inline-block">
-                      <QRCodeSVG value={shareUrl} size={145} level="M" />
+                  {/* Layout compact 2 colonnes : QR Code à gauche + Actions et Ville à droite */}
+                  <div className="flex items-stretch gap-3">
+                    {/* Colonne gauche : QR Code compact */}
+                    <div className="shrink-0 p-1.5 bg-white rounded-xl shadow-2xs border border-stone-200/90 dark:border-slate-700 flex items-center justify-center">
+                      <QRCodeSVG value={shareUrl} size={104} level="M" />
                     </div>
-                    <p className="text-[11px] text-stone-500 dark:text-slate-400 text-center">
-                      Scannez pour rejoindre
-                    </p>
-                  </div>
 
-                  {/* Boutons de partage du lien */}
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={handleCopyLink}
-                      className="flex-1 py-2 px-3 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 font-bold text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                    >
-                      {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                      <span>{copied ? 'Lien copié\u00A0!' : 'Copier le lien'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleNativeShare}
-                      className="py-2 px-3.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-bold text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                    >
-                      <Share2 size={14} />
-                      <span>Inviter</span>
-                    </button>
-                  </div>
-
-                  {/* Géolocalisation indicative de la table */}
-                  <div className="pt-2.5 border-t border-stone-200/70 dark:border-slate-800/70 flex items-center justify-between text-[11px] text-stone-600 dark:text-slate-400">
-                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                      <MapPin size={12} className="text-[#c83b3b] shrink-0" />
-                      <span className="shrink-0 text-stone-400 dark:text-slate-500 font-medium">Ville&nbsp;:</span>
-                      {isEditingCity ? (
-                        <div className="flex items-center gap-1 flex-1 min-w-0">
-                          <input
-                            type="text"
-                            value={editingCityValue}
-                            onChange={(e) => setEditingCityValue(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveCity()
-                              if (e.key === 'Escape') setIsEditingCity(false)
-                            }}
-                            autoFocus
-                            placeholder="Ex : Toulouse"
-                            className="text-[11px] font-bold px-2 py-0.5 rounded border border-[#c83b3b] bg-white dark:bg-slate-900 text-stone-800 dark:text-slate-200 focus:outline-none flex-1 min-w-0"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleSaveCity}
-                            className="px-2 py-0.5 rounded bg-[#c83b3b] text-white text-[10px] font-bold shrink-0 cursor-pointer hover:bg-[#b03030]"
-                          >
-                            OK
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setIsEditingCity(false)}
-                            className="p-0.5 text-stone-400 hover:text-stone-600 dark:hover:text-slate-200 shrink-0"
-                            title="Annuler"
-                          >
-                            <X size={12} />
-                          </button>
-                        </div>
-                      ) : (
+                    {/* Colonne droite : Boutons copier / inviter + ligne Ville */}
+                    <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5">
+                      <div className="grid grid-cols-2 gap-1.5">
                         <button
                           type="button"
-                          onClick={() => {
-                            setEditingCityValue(currentCityDisplay || '')
-                            setIsEditingCity(true)
-                          }}
-                          className="font-semibold text-stone-800 dark:text-slate-200 hover:text-[#c83b3b] dark:hover:text-[#c83b3b] flex items-center gap-1 truncate cursor-pointer group text-left"
-                          title="Cliquer pour corriger la ville"
+                          onClick={handleCopyLink}
+                          className="py-2 px-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 font-bold text-[11px] text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                          title="Copier le lien"
                         >
-                          <span className="truncate">{currentCityDisplay || 'Détection en cours…'}</span>
-                          {isAutoCity && (
-                            <span className="text-[9px] font-normal text-stone-400 dark:text-slate-500 shrink-0">(auto)</span>
-                          )}
-                          <Pencil size={10} className="text-stone-400 group-hover:text-[#c83b3b] shrink-0 opacity-70 ml-0.5" />
+                          {copied ? <Check size={13} className="text-emerald-500 shrink-0" /> : <Copy size={13} className="shrink-0" />}
+                          <span className="truncate">{copied ? 'Copié\u00A0!' : 'Copier'}</span>
                         </button>
-                      )}
-                    </div>
+                        <button
+                          type="button"
+                          onClick={handleNativeShare}
+                          className="py-2 px-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-bold text-[11px] text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                          title="Inviter via application"
+                        >
+                          <Share2 size={13} className="shrink-0" />
+                          <span className="truncate">Inviter</span>
+                        </button>
+                      </div>
 
-                    {/* Infobulle explicative (?) */}
-                    <div className="relative shrink-0 ml-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowCityHelp((prev) => !prev)}
-                        className="w-4 h-4 rounded-full border border-stone-300 dark:border-slate-700 text-stone-400 hover:text-stone-600 dark:hover:text-slate-300 hover:border-stone-400 flex items-center justify-center text-[10px] font-bold cursor-pointer transition-colors"
-                        title="Informations sur la géolocalisation"
-                        aria-label="Informations sur la géolocalisation"
-                      >
-                        ?
-                      </button>
-                      {showCityHelp && (
-                        <div className="absolute bottom-6 right-0 w-64 p-3 rounded-xl bg-stone-900/95 dark:bg-slate-800 text-stone-100 text-[10px] leading-relaxed shadow-xl border border-stone-700 z-50 animate-in fade-in zoom-in-95">
-                          <div className="flex items-start justify-between gap-1 mb-1.5">
-                            <span className="font-bold text-amber-300 flex items-center gap-1">
-                              <MapPin size={11} />
-                              Statistiques globales
-                            </span>
+                      {/* Ligne Ville compacte */}
+                      <div className="pt-1.5 border-t border-stone-200/60 dark:border-slate-800/60 flex items-center justify-between text-[11px] text-stone-600 dark:text-slate-400">
+                        <div className="flex items-center gap-1 min-w-0 flex-1">
+                          <MapPin size={11} className="text-[#c83b3b] shrink-0" />
+                          {isEditingCity ? (
+                            <div className="flex items-center gap-1 flex-1 min-w-0">
+                              <input
+                                type="text"
+                                value={editingCityValue}
+                                onChange={(e) => setEditingCityValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleSaveCity()
+                                  if (e.key === 'Escape') setIsEditingCity(false)
+                                }}
+                                autoFocus
+                                placeholder="Ex : Toulouse"
+                                className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-[#c83b3b] bg-white dark:bg-slate-900 text-stone-800 dark:text-slate-200 focus:outline-none flex-1 min-w-0"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleSaveCity}
+                                className="px-1.5 py-0.5 rounded bg-[#c83b3b] text-white text-[9px] font-bold shrink-0 cursor-pointer hover:bg-[#b03030]"
+                              >
+                                OK
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setIsEditingCity(false)}
+                                className="p-0.5 text-stone-400 hover:text-stone-600 dark:hover:text-slate-200 shrink-0 cursor-pointer"
+                                title="Annuler"
+                              >
+                                <X size={11} />
+                              </button>
+                            </div>
+                          ) : (
                             <button
                               type="button"
-                              onClick={() => setShowCityHelp(false)}
-                              className="text-stone-400 hover:text-white p-0.5"
+                              onClick={() => {
+                                setEditingCityValue(currentCityDisplay || '')
+                                setIsEditingCity(true)
+                              }}
+                              className="font-medium text-stone-800 dark:text-slate-200 hover:text-[#c83b3b] dark:hover:text-[#c83b3b] flex items-center gap-1 truncate cursor-pointer group text-left min-w-0"
+                              title="Cliquer pour corriger la ville"
                             >
-                              <X size={11} />
+                              <span className="truncate">{currentCityDisplay || 'Détection…'}</span>
+                              {isAutoCity && (
+                                <span className="text-[9px] font-normal text-stone-400 dark:text-slate-500 shrink-0">(auto)</span>
+                              )}
+                              <Pencil size={9} className="text-stone-400 group-hover:text-[#c83b3b] shrink-0 opacity-70" />
                             </button>
-                          </div>
-                          <p>
-                            Ville purement indicative pour les statistiques générales d'Ardoise (Top Villes). Aucune coordonnée GPS n'est collectée. Information 100% facultative, modifiable ou effaçable à tout moment.
-                          </p>
+                          )}
                         </div>
-                      )}
+
+                        {/* Infobulle explicative (?) */}
+                        <div ref={cityHelpRef} className="relative shrink-0 ml-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setShowCityHelp((prev) => !prev)}
+                            className="w-3.5 h-3.5 rounded-full border border-stone-300 dark:border-slate-700 text-stone-400 hover:text-stone-600 dark:hover:text-slate-300 hover:border-stone-400 flex items-center justify-center text-[9px] font-bold cursor-pointer transition-colors"
+                            title="Informations sur la géolocalisation"
+                            aria-label="Informations sur la géolocalisation"
+                          >
+                            ?
+                          </button>
+                          {showCityHelp && (
+                            <div className="absolute bottom-5 right-0 w-60 max-w-[calc(100vw-3rem)] p-2.5 rounded-xl bg-stone-900/95 dark:bg-slate-800 text-stone-100 text-[10px] leading-relaxed shadow-xl border border-stone-700 z-50 animate-in fade-in zoom-in-95">
+                              <div className="flex items-start justify-between gap-1 mb-1">
+                                <span className="font-bold text-amber-300 flex items-center gap-1 text-[10px]">
+                                  <MapPin size={10} />
+                                  Statistiques générales
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowCityHelp(false)}
+                                  className="text-stone-400 hover:text-white p-0.5 cursor-pointer"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                              <p>
+                                Ville purement indicative pour le classement général. Aucune position GPS collectée. 100% facultatif.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Option pour inclure ou non les parties déjà jouées aujourd'hui (décoché de base) */}
+                {/* Option pour inclure ou non les parties déjà jouées aujourd'hui (compacte, décoché de base) */}
                 {todayGames.length > 0 && (
-                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200/80 dark:border-slate-800 bg-stone-50/70 dark:bg-slate-900/40 hover:bg-stone-100/70 dark:hover:bg-slate-800/60 cursor-pointer select-none transition-colors">
+                  <label className="flex items-center gap-2 p-2 rounded-xl border border-stone-200/80 dark:border-slate-800 bg-stone-50/70 dark:bg-slate-900/40 hover:bg-stone-100/70 dark:hover:bg-slate-800/60 cursor-pointer select-none transition-colors">
                     <input
                       type="checkbox"
                       checked={includeTodayGames}
                       onChange={handleToggleIncludeTodayGames}
-                      className="rounded border-stone-300 text-[#c83b3b] focus:ring-[#c83b3b] accent-[#c83b3b] w-4 h-4 cursor-pointer"
+                      className="rounded border-stone-300 text-[#c83b3b] focus:ring-[#c83b3b] accent-[#c83b3b] w-3.5 h-3.5 cursor-pointer shrink-0"
                     />
-                    <span className="text-xs text-stone-700 dark:text-slate-300 font-medium">
-                      Inclure les <strong>{todayGames.length} partie{todayGames.length > 1 ? 's' : ''}</strong> déjà jouée{todayGames.length > 1 ? 's' : ''} aujourd'hui
+                    <span className="text-[11px] text-stone-700 dark:text-slate-300 font-medium truncate">
+                      Inclure les <strong>{todayGames.length} partie{todayGames.length > 1 ? 's' : ''}</strong> jouée{todayGames.length > 1 ? 's' : ''} aujourd'hui
                     </span>
                   </label>
                 )}
