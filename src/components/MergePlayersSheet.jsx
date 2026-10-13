@@ -102,7 +102,18 @@ export function MergePlayersSheet({ open, onClose, initialPlayer = null, onMerge
         <div className="p-3.5 rounded-2xl school-card space-y-3">
           <div className="flex items-center justify-between gap-2">
             {/* Profil conservé */}
-            <div className="flex-1 min-w-0 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col items-center text-center">
+            <div className="flex-1 min-w-0 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col items-center text-center relative">
+              {targetPlayer && (
+                <button
+                  type="button"
+                  onClick={() => setTargetId(null)}
+                  className="absolute top-1.5 right-1.5 p-1 rounded-full text-emerald-700/60 hover:text-emerald-800 hover:bg-emerald-500/20 dark:text-emerald-400/60 dark:hover:text-emerald-300 dark:hover:bg-emerald-500/30 transition-colors cursor-pointer"
+                  title="Enlever ce profil pour en choisir un autre"
+                  aria-label="Enlever ce profil"
+                >
+                  <X size={13} />
+                </button>
+              )}
               <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-1.5">
                 Profil conservé
               </span>
@@ -141,7 +152,18 @@ export function MergePlayersSheet({ open, onClose, initialPlayer = null, onMerge
             )}
 
             {/* Profil absorbé */}
-            <div className="flex-1 min-w-0 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col items-center text-center">
+            <div className="flex-1 min-w-0 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col items-center text-center relative">
+              {sourcePlayer && (
+                <button
+                  type="button"
+                  onClick={() => setSourceId(null)}
+                  className="absolute top-1.5 right-1.5 p-1 rounded-full text-amber-700/60 hover:text-amber-800 hover:bg-amber-500/20 dark:text-amber-400/60 dark:hover:text-amber-300 dark:hover:bg-amber-500/30 transition-colors cursor-pointer"
+                  title="Enlever ce profil pour en choisir un autre"
+                  aria-label="Enlever ce profil"
+                >
+                  <X size={13} />
+                </button>
+              )}
               <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1.5">
                 Profil absorbé
               </span>
@@ -162,16 +184,6 @@ export function MergePlayersSheet({ open, onClose, initialPlayer = null, onMerge
               )}
             </div>
           </div>
-
-          {targetPlayer && sourcePlayer && (
-            <button
-              type="button"
-              onClick={handleSwap}
-              className="w-full py-1 text-center text-xs font-semibold text-stone-500 dark:text-slate-400 hover:text-stone-800 dark:hover:text-slate-200 underline decoration-dotted cursor-pointer"
-            >
-              Inverser : conserver « {sourcePlayer.name} » plutôt que « {targetPlayer.name} »
-            </button>
-          )}
         </div>
 
         {/* Étape 1 : Si aucun profil à conserver n'est sélectionné */}
@@ -328,18 +340,11 @@ export function MergePlayersSheet({ open, onClose, initialPlayer = null, onMerge
               </ul>
             </div>
 
-            <div className="flex items-center gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setSourceId(null)}
-                className="flex-1 py-2.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-stone-700 dark:text-slate-300 hover:bg-stone-50 cursor-pointer"
-              >
-                Changer de profil absorbé
-              </button>
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={handleConfirmMerge}
-                className="flex-2 py-2.5 rounded-xl font-bold text-xs text-white btn-margin-red cursor-pointer flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]"
+                className="w-full py-2.5 rounded-xl font-bold text-xs text-white btn-margin-red cursor-pointer flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]"
               >
                 <GitMerge size={14} />
                 <span>Confirmer la fusion</span>
