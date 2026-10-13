@@ -13,6 +13,7 @@ import {
   Smartphone,
   Flame,
   Trophy,
+  Info,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 
@@ -27,15 +28,32 @@ export function StatsModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [selectedCity, setSelectedCity] = useState(null)
+  const [activeHelp, setActiveHelp] = useState(null)
 
   useScrollLock(isOpen)
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) {
+      setActiveHelp(null)
+      return
+    }
     setError(null)
     setSelectedCity(null)
+    setActiveHelp(null)
     loadStats()
   }, [isOpen])
+
+  // Fermer l'infobulle d'aide au clic n'importe où ailleurs
+  useEffect(() => {
+    if (!activeHelp) return
+    const handlePointerDown = (e) => {
+      if (!e.target.closest('[data-stat-help]')) {
+        setActiveHelp(null)
+      }
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [activeHelp])
 
   async function loadStats() {
     setLoading(true)
@@ -136,28 +154,95 @@ export function StatsModal({ isOpen, onClose }) {
       .join(', ')
   }
 
-  const StatCard = ({ icon: Icon, color, label, value, sub }) => (
-    <div className={`p-2.5 sm:p-3 rounded-xl border ${color} flex flex-col justify-between min-h-[78px]`}>
-      <div className="flex items-center justify-between gap-1.5 mb-1">
-        <div className="p-1.5 rounded-lg bg-white/70 dark:bg-slate-800/70 shrink-0">
-          <Icon size={15} className="text-stone-700 dark:text-slate-200" />
+  const StatCard = ({
+    id,
+    icon: Icon,
+    color,
+    label,
+    value,
+    sub,
+    helpTitle,
+    helpText,
+    popPosition = 'bottom-left',
+  }) => {
+    const isHelpOpen = activeHelp === id
+    const popClasses =
+      popPosition === 'bottom-left'
+        ? 'top-full left-0 mt-1.5'
+        : popPosition === 'bottom-right'
+          ? 'top-full right-0 mt-1.5'
+          : popPosition === 'top-left'
+            ? 'bottom-full left-0 mb-1.5'
+            : 'bottom-full right-0 mb-1.5'
+
+    return (
+      <div className={`relative p-2.5 sm:p-3 rounded-xl border ${color} flex flex-col justify-between min-h-[78px] ${isHelpOpen ? 'z-30' : 'z-0'}`}>
+        <div className="flex items-center justify-between gap-1.5 mb-1">
+          <div className="p-1.5 rounded-lg bg-white/70 dark:bg-slate-800/70 shrink-0">
+            <Icon size={15} className="text-stone-700 dark:text-slate-200" />
+          </div>
+          <span className="text-xl sm:text-2xl font-bold font-serif-title text-stone-900 dark:text-slate-100 leading-none">
+            {value}
+          </span>
         </div>
-        <span className="text-xl sm:text-2xl font-bold font-serif-title text-stone-900 dark:text-slate-100 leading-none">
-          {value}
-        </span>
+        <div className="min-w-0">
+          <div className="flex items-center justify-between gap-1">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-stone-600 dark:text-slate-400 leading-tight truncate">
+              {label}
+            </p>
+            {helpText && (
+              <div data-stat-help className="relative inline-flex items-center shrink-0">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setActiveHelp(isHelpOpen ? null : id)
+                  }}
+                  className={`w-3.5 h-3.5 rounded-full border text-[9px] font-bold flex items-center justify-center cursor-pointer transition-colors ${
+                    isHelpOpen
+                      ? 'bg-stone-800 border-stone-800 text-white dark:bg-stone-200 dark:border-stone-200 dark:text-stone-900'
+                      : 'border-stone-300 dark:border-slate-700 text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 hover:border-stone-400'
+                  }`}
+                  title={`Explication ${label}`}
+                  aria-label={`Explication ${label}`}
+                >
+                  ?
+                </button>
+                {isHelpOpen && (
+                  <div
+                    className={`absolute ${popClasses} z-50 w-52 sm:w-60 p-2.5 rounded-xl bg-stone-900/95 dark:bg-slate-800 text-stone-100 text-[10px] leading-relaxed shadow-xl border border-stone-700 animate-in fade-in zoom-in-95`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-start justify-between gap-1 mb-1">
+                      <span className="font-bold text-amber-300 flex items-center gap-1 truncate">
+                        <Info size={11} className="shrink-0" />
+                        {helpTitle || label}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setActiveHelp(null)}
+                        className="text-stone-400 hover:text-white p-0.5 cursor-pointer shrink-0"
+                      >
+                        <X size={11} />
+                      </button>
+                    </div>
+                    <p className="text-stone-200 dark:text-slate-200">
+                      {helpText}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          {sub && (
+            <p className="text-[10px] text-stone-400 dark:text-slate-500 mt-0.5 truncate leading-tight w-full" title={sub}>
+              {sub}
+            </p>
+          )}
+        </div>
       </div>
-      <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-600 dark:text-slate-400 leading-tight">
-          {label}
-        </p>
-        {sub && (
-          <p className="text-[10px] text-stone-400 dark:text-slate-500 mt-0.5 truncate leading-tight w-full" title={sub}>
-            {sub}
-          </p>
-        )}
-      </div>
-    </div>
-  )
+    )
+  }
 
   return createPortal(
     <div
@@ -249,32 +334,48 @@ export function StatsModal({ isOpen, onClose }) {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <StatCard
+                    id="qr"
                     icon={QrCode}
                     color="bg-blue-50/80 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/40"
                     label="Scans QR"
                     value={qrScans}
                     sub="Installation / qr"
+                    helpTitle="Scans QR"
+                    helpText="Nombre de personnes ayant scanné le QR code d'Ardoise (sur un autre appareil ou imprimé) pour ouvrir l'application."
+                    popPosition="bottom-left"
                   />
                   <StatCard
+                    id="shares"
                     icon={Share2}
                     color="bg-indigo-50/80 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/40"
                     label="Partages"
                     value={sharedGames}
                     sub={`${shareViews} vus par lien`}
+                    helpTitle="Partages"
+                    helpText="Nombre de partages par lien (SMS, WhatsApp...) et consultations de l'application via ces liens."
+                    popPosition="bottom-right"
                   />
                   <StatCard
+                    id="tables"
                     icon={Gamepad2}
                     color="bg-emerald-50/80 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/40"
                     label="Tables Live"
                     value={sessionsTotal}
                     sub={`${sessionsClosed} closes`}
+                    helpTitle="Tables Live"
+                    helpText="Nombre total de tables multijoueurs créées en direct, et combien ont été clôturées avec succès."
+                    popPosition="top-left"
                   />
                   <StatCard
+                    id="players"
                     icon={Users}
                     color="bg-amber-50/80 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/40"
                     label="Joueurs Live"
                     value={sessionJoins || totalParticipants}
                     sub={maxParticipantsLive > 0 ? `Record : ${maxParticipantsLive} joueurs` : 'Rejoints'}
+                    helpTitle="Joueurs Live"
+                    helpText="Nombre de participants ayant rejoint une table en direct pour synchroniser automatiquement les scores."
+                    popPosition="top-right"
                   />
                 </div>
               </div>
