@@ -27,7 +27,6 @@ Tarif : 100 % Gratuit, sans publicité, sans abonnement, synchronisation cloud e
   - **1. Poser** : Poser sur la défausse une carte isolée ou une combinaison valide (Paire, Triple, Carré, ou Suite de 3+ cartes de même enseigne, l'As pouvant valoir 1 ou suivre le Roi).
   - **2. Piocher** : Prendre soit la première carte de la pioche face cachée, soit la dernière carte visible de la défausse (ou une des extrémités si combinaison posée).
 - **Valeur des cartes** :
-  - **Le 8 = 0 point** (carte clé du jeu).
   - **As = 1 point**.
   - **Cartes 2 à 10 = valeur faciale**.
   - **Valet = 11 points**, **Dame = 12 points**, **Roi = 13 points**.

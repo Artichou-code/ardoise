@@ -33,7 +33,7 @@
 - [Yam's / Yahtzee — Feuille de score & Règles officielles](https://ardoise.art-crea.fr/jeux/yams-yahtzee) : Grille officielle des 13 catégories, bonus 35 pts et combinaisons.
 - [Dixit — Compteur de points & Règles de vote](https://ardoise.art-crea.fr/jeux/dixit) : Rôle du conteur, vote secret, barème de déduction et fin de partie à 30 points.
 - [UNO — Compteur de points & Règles officielles](https://ardoise.art-crea.fr/jeux/uno) : Comptage officiel vers 500 points (actions 20 pts, jokers 50 pts) et variante maison.
-- [Caracole — Règles officielles & Compteur de points](https://ardoise.art-crea.fr/jeux/caracole) : Règles de la Caracole (52 cartes, poser/piocher, 8 = 0 pt, annonce Caracole ≤10 pts, pénalité 30 pts, sursis pile à 100 pts).
+- [Caracole — Règles officielles & Compteur de points](https://ardoise.art-crea.fr/jeux/caracole) : Règles de la Caracole (52 cartes, poser/piocher, annonce Caracole ≤10 pts, pénalité 30 pts, sursis pile à 100 pts).
 - [Dourak (L'Idiot) — Règles officielles & Compteur](https://ardoise.art-crea.fr/jeux/dourak) : Règles du Dourak à 36 cartes (Attaque, Défense, Kozyr, Otboy, transfert Perevodnoy, décompte classique défaites ou pénalité aux cartes).
 - [Skyjo — Règles officielles & Compteur de points](https://ardoise.art-crea.fr/jeux/skyjo) : Grille 4×3, colonnes identiques défaussées, règle du score doublé pour le clôtureur et seuil de 100 points.
 - [Belote & Coinche — Feuille de score & Règles](https://ardoise.art-crea.fr/jeux/belote) : Valeur des cartes à l'atout et hors atout, total de 162 points, dix de der, Belote-Rebelote, Capot (252 pts) et Générale (500 pts).

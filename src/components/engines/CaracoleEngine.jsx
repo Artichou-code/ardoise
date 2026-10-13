@@ -442,8 +442,7 @@ export function CaracoleEngine({ game, onFinish }) {
             <span className="font-bold text-[11px] uppercase tracking-wider text-stone-500 dark:text-slate-400 block mb-1">
               Valeur des cartes en main
             </span>
-            <div className="grid grid-cols-2 gap-y-1 gap-x-2 text-[11px] leading-tight">
-              <div><strong className="text-emerald-600 dark:text-emerald-400">Le 8 = 0 pt</strong> (carte clé)</div>
+            <div className="grid grid-cols-3 gap-y-1 gap-x-2 text-[11px] leading-tight">
               <div><strong>As = 1 pt</strong></div>
               <div><strong>2 à 10 :</strong> valeur faciale</div>
               <div><strong>V, D, R :</strong> 11, 12, 13 pts</div>

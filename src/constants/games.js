@@ -102,7 +102,7 @@ export const GAME_META = {
     playersBadge: '2 à 6 j.',
     categoryBadge: '52 cartes',
     description:
-      "Posez cartes ou combinaisons, piochez et annoncez « Caracole » (≤ 10 pts) pour marquer 0 pt. Le 8 vaut 0 pt, attention aux 30 pts de pénalité et au sursis pile à 100 pts !",
+      "Posez cartes ou combinaisons, piochez et annoncez « Caracole » (≤ 10 pts) pour marquer 0 pt. Attention aux 30 pts de pénalité et au sursis pile à 100 pts !",
     minPlayers: 2,
     maxPlayers: 6,
     scoreDir: 'low',
@@ -148,7 +148,6 @@ export const GAME_META = {
         {
           title: 'Valeur des cartes (décompte)',
           items: [
-            'Le 8 : 0 point (carte clé pour réduire son score !).',
             "As (1) : 1 point (peut aussi se placer après le Roi dans une suite).",
             'Cartes 2 à 10 : Valeur faciale (2 = 2 pts, 3 = 3 pts... 10 = 10 pts).',
             'Valet : 11 points.',
@@ -185,7 +184,6 @@ export const GAME_META = {
       summaryTable: [
         { item: 'Joueurs / Cartes', value: '2 à 6 j. · 52 cartes (sans Jokers)' },
         { item: 'Distribution', value: '7 cartes (2-4 j.) · 5 cartes (5-6 j.)' },
-        { item: 'Valeur du 8', value: '0 pt (clé du jeu)' },
         { item: 'As / Figures', value: 'As = 1 pt · V = 11 · D = 12 · R = 13' },
         { item: 'Annonce Caracole', value: '≤ 10 pts en main (passe son tour)' },
         { item: 'Caracole réussie', value: '0 pt (strictement le plus bas)' },

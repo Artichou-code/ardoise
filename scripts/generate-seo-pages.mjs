@@ -14,10 +14,10 @@ export const SEO_PAGES = [
   {
     slug: 'caracole',
     gameId: GAMES.CARACOLE,
-    title: 'Caracole : Règles Officielles du Jeu de Cartes (8=0 pt, Sursis 100 pts) & Compteur — Ardoise',
+    title: 'Caracole : Règles Officielles du Jeu de Cartes (Sursis 100 pts) & Compteur — Ardoise',
     description:
-      "Règles complètes du jeu de cartes Caracole (2 à 6 joueurs, 52 cartes) : poser combinaisons, piocher, valeur des cartes (le 8 vaut 0 pt), annonce Caracole (≤10 pts), pénalité de 30 pts et sursis pile à 100 pts.",
-    h1: 'Caracole — Règles Officielles (52 Cartes, 8 = 0 pt) & Compteur de Points',
+      "Règles complètes du jeu de cartes Caracole (2 à 6 joueurs, 52 cartes) : poser combinaisons, piocher, valeur des cartes, annonce Caracole (≤10 pts), pénalité de 30 pts et sursis pile à 100 pts.",
+    h1: 'Caracole — Règles Officielles (52 Cartes) & Compteur de Points',
   },
   {
     slug: 'dourak',
