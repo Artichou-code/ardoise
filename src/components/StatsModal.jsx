@@ -366,20 +366,21 @@ export function StatsModal({ isOpen, onClose }) {
                         </div>
 
                         {selectedCityEvents.length > 0 ? (
-                          <div className="space-y-1.5 max-h-40 overflow-y-auto pr-0.5 divide-y divide-stone-150 dark:divide-slate-700/50">
+                          <div className="space-y-2 max-h-48 overflow-y-auto pr-0.5 divide-y divide-stone-150 dark:divide-slate-700/50">
                             {selectedCityEvents.map((ev, i) => (
-                              <div key={`${ev.code || ev.type}-${i}`} className="pt-1.5 first:pt-0 flex items-center justify-between text-[11px] gap-2">
+                              <div key={`${ev.createdAt}-${i}`} className="pt-2 first:pt-0 flex items-center justify-between text-[11px] gap-2">
                                 <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-1.5 font-medium text-stone-800 dark:text-slate-200 truncate">
-                                    <span>{getEventLabel(ev)}</span>
-                                    {ev.code && (
-                                      <span className="font-mono text-[10px] px-1 py-0.2 rounded bg-stone-200/70 dark:bg-slate-700 font-bold text-stone-700 dark:text-slate-300 shrink-0">
-                                        {ev.code}
+                                  <div className="flex items-center gap-1.5 font-bold text-stone-900 dark:text-slate-100 truncate">
+                                    <span>{ev.gameName || 'Partie'}</span>
+                                  </div>
+                                  <div className="text-[10px] text-stone-500 dark:text-slate-400 truncate mt-0.5 flex items-center gap-1">
+                                    {ev.players && (
+                                      <span className="font-semibold text-stone-700 dark:text-slate-300 shrink-0">
+                                        {ev.players} ·
                                       </span>
                                     )}
-                                  </div>
-                                  <div className="text-[10px] text-stone-400 dark:text-slate-500">
-                                    {formatEventTime(ev.createdAt)} {ev.os ? `· ${ev.os}` : ''}
+                                    <span>{formatEventTime(ev.createdAt)}</span>
+                                    {ev.os && <span>· {ev.os}</span>}
                                   </div>
                                 </div>
                               </div>
@@ -406,7 +407,7 @@ export function StatsModal({ isOpen, onClose }) {
                     </p>
                   </div>
                   <span className="text-[10px] text-stone-400 dark:text-slate-500">
-                    Parties partagées
+                    Parties enregistrées
                   </span>
                 </div>
 

@@ -19,6 +19,7 @@ const COUNTRY_MAP = {
 const GAME_NAMES_MAP = {
   molkky: 'Mölkky',
   yams: "Yam's / Yahtzee",
+  yam: "Yam's / Yahtzee",
   dixit: 'Dixit',
   uno: 'UNO',
   symbiose: 'Symbiose',
@@ -37,6 +38,18 @@ const GAME_NAMES_MAP = {
   'sea-salt-paper': 'Sea Salt & Paper',
   ascenseur: 'Ascenseur',
   'compteur-universel': 'Compteur Libre',
+}
+
+function normalizeGameType(type) {
+  if (!type) return 'autre'
+  const t = type.toLowerCase().trim()
+  if (t === 'yam' || t === 'yams' || t.includes('yahtzee')) return 'yams'
+  if (t.includes('dourak')) return 'dourak'
+  if (t.includes('caracole')) return 'caracole'
+  if (t.includes('symbiose')) return 'symbiose'
+  if (t === 'uno') return 'uno'
+  if (t === '6-qui-prend' || t.includes('6 qui')) return '6-qui-prend'
+  return t
 }
 
 const DOW_NAMES = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
@@ -71,12 +84,43 @@ export async function onRequest(context) {
 
     // 3. Calculs avancés sur les sessions en direct (participants cumulés, record max et joueurs uniques)
     const sessionsRaw = await env.DB.prepare(
-      `SELECT state_json, host_name FROM live_sessions`
+      `SELECT session_code, state_json, host_name FROM live_sessions`
+    ).all()
+
+    const notebooksRaw = await env.DB.prepare(
+      `SELECT payload_json FROM sync_notebooks`
+    ).all()
+
+    const sharedGamesRaw = await env.DB.prepare(
+      `SELECT payload_json, game_type, country, city FROM shared_games`
     ).all()
 
     let totalParticipants = 0
     let maxParticipantsLive = 0
     const uniquePlayersSet = new Set()
+    const gamesTypeCount = {}
+    let totalGamesRecordedCount = 0
+    const seenGameIds = new Set()
+
+    function registerGame(g, fallbackType) {
+      if (!g && !fallbackType) return
+      const gId = g?.id || null
+      if (gId && seenGameIds.has(gId)) return
+      if (gId) seenGameIds.add(gId)
+
+      const rawType = normalizeGameType(g?.type || fallbackType || g?.name || 'Inconnu')
+      gamesTypeCount[rawType] = (gamesTypeCount[rawType] || 0) + 1
+      totalGamesRecordedCount++
+
+      if (g?.players && Array.isArray(g.players)) {
+        for (const p of g.players) {
+          if (p?.name) uniquePlayersSet.add(p.name.trim().toLowerCase())
+        }
+      }
+    }
+
+    // Map pour enrichir chaque session_code avec le nom du jeu et la liste des joueurs
+    const liveSessionsMap = new Map()
 
     for (const row of sessionsRaw.results || []) {
       try {
@@ -92,20 +136,55 @@ export async function onRequest(context) {
         for (const p of pList) {
           if (p.name) uniquePlayersSet.add(p.name.trim().toLowerCase())
         }
+
+        const games = Array.isArray(state.games) ? state.games : []
+        for (const g of games) {
+          registerGame(g)
+        }
+
+        // Mémoriser le jeu et les joueurs pour cityEvents
+        const primaryGame = games[0] || null
+        const rawType = primaryGame?.type ? normalizeGameType(primaryGame.type) : null
+        const gameName = (rawType && GAME_NAMES_MAP[rawType]) || primaryGame?.name || state.name || 'Table de jeu'
+
+        const playerNames = new Set()
+        if (row.host_name && row.host_name !== 'Hôte') playerNames.add(row.host_name)
+        for (const p of pList) {
+          if (p.name && p.name !== 'Hôte') playerNames.add(p.name)
+        }
+        if (primaryGame?.players) {
+          for (const p of primaryGame.players) {
+            if (p.name && p.name !== 'Hôte') playerNames.add(p.name)
+          }
+        }
+
+        liveSessionsMap.set(row.session_code, {
+          rawType,
+          gameName,
+          players: Array.from(playerNames).slice(0, 3).join(', '),
+        })
       } catch (_) {}
     }
 
-    // 4. Shared games & joueurs issus des partages
+    // 4. Carnets synchronisés : intégrer tous les jeux et joueurs enregistrés
+    for (const row of notebooksRaw.results || []) {
+      try {
+        const payload = JSON.parse(row.payload_json || '{}')
+        const games = Array.isArray(payload.games) ? payload.games : []
+        for (const g of games) {
+          registerGame(g)
+        }
+        const players = Array.isArray(payload.players) ? payload.players : []
+        for (const p of players) {
+          if (p?.name) uniquePlayersSet.add(p.name.trim().toLowerCase())
+        }
+      } catch (_) {}
+    }
+
+    // 5. Jeux issus des partages
     const sharedTotal = await env.DB.prepare(
       `SELECT COUNT(*) as count FROM shared_games`
     ).first()
-
-    const sharedGamesRaw = await env.DB.prepare(
-      `SELECT payload_json, game_type, country, city FROM shared_games`
-    ).all()
-
-    const gamesTypeCount = {}
-    let totalGamesSharedCount = 0
 
     for (const row of sharedGamesRaw.results || []) {
       try {
@@ -116,10 +195,12 @@ export async function onRequest(context) {
         }
 
         const games = Array.isArray(payload.games) ? payload.games : payload.game ? [payload.game] : []
-        for (const g of games) {
-          const rawType = (g.type || row.game_type || g.name || 'Inconnu').toLowerCase()
-          gamesTypeCount[rawType] = (gamesTypeCount[rawType] || 0) + 1
-          totalGamesSharedCount++
+        if (games.length > 0) {
+          for (const g of games) {
+            registerGame(g, row.game_type)
+          }
+        } else if (row.game_type) {
+          registerGame(null, row.game_type)
         }
       } catch (_) {}
     }
@@ -132,11 +213,11 @@ export async function onRequest(context) {
           id: typeKey,
           name: displayName,
           count,
-          pct: totalGamesSharedCount > 0 ? Math.round((count / totalGamesSharedCount) * 100) : 0,
+          pct: totalGamesRecordedCount > 0 ? Math.round((count / totalGamesRecordedCount) * 100) : 0,
         }
       })
       .sort((a, b) => b.count - a.count)
-      .slice(0, 6)
+      .slice(0, 8)
 
     // 5. Géolocalisation : Top Pays
     const countriesRaw = await env.DB.prepare(
@@ -186,7 +267,7 @@ export async function onRequest(context) {
     }))
 
     // 6b. Événements récents par ville (pour inspecter le détail en cliquant sur une ville)
-    const cityEventsRaw = await env.DB.prepare(
+    const scanEventsRaw = await env.DB.prepare(
       `SELECT 
          'scan' as source,
          event_type as type,
@@ -197,11 +278,16 @@ export async function onRequest(context) {
          created_at
        FROM scan_events
        WHERE city IS NOT NULL AND city != ''
-       UNION ALL
-       SELECT 
+       ORDER BY created_at DESC
+       LIMIT 40`
+    ).all()
+
+    const sharedEventsRaw = await env.DB.prepare(
+      `SELECT 
          'shared_game' as source,
          game_type as type,
          game_id as code,
+         payload_json,
          city,
          country,
          'Web' as os,
@@ -209,18 +295,53 @@ export async function onRequest(context) {
        FROM shared_games
        WHERE city IS NOT NULL AND city != ''
        ORDER BY created_at DESC
-       LIMIT 60`
+       LIMIT 20`
     ).all()
 
-    const cityEvents = (cityEventsRaw.results || []).map((r) => ({
-      source: r.source,
-      type: r.type,
-      code: r.code,
-      city: r.city,
-      country: r.country,
-      os: r.os,
-      createdAt: r.created_at ? r.created_at.replace(' ', 'T') + 'Z' : new Date().toISOString(),
-    }))
+    const cityEvents = []
+
+    for (const r of scanEventsRaw.results || []) {
+      const sessionInfo = r.code ? liveSessionsMap.get(r.code) : null
+      const gameName = sessionInfo?.gameName || (r.type === 'qr_share_scan' ? 'Scan QR appli' : 'Table en direct')
+      const players = sessionInfo?.players || null
+
+      cityEvents.push({
+        source: r.source,
+        type: r.type,
+        gameName,
+        players,
+        city: r.city,
+        country: r.country,
+        os: r.os,
+        createdAt: r.created_at ? r.created_at.replace(' ', 'T') + 'Z' : new Date().toISOString(),
+      })
+    }
+
+    for (const r of sharedEventsRaw.results || []) {
+      const norm = normalizeGameType(r.type)
+      let gameName = GAME_NAMES_MAP[norm] || r.type || 'Partie'
+      let players = null
+      try {
+        const payload = JSON.parse(r.payload_json || '{}')
+        if (payload.players && Array.isArray(payload.players)) {
+          players = payload.players.map(p => p.name).filter(Boolean).slice(0, 3).join(', ')
+        }
+        if (payload.game?.name) gameName = payload.game.name
+      } catch (_) {}
+
+      cityEvents.push({
+        source: r.source,
+        type: 'shared_game',
+        gameName: `Partage ${gameName}`,
+        players,
+        city: r.city,
+        country: r.country,
+        os: r.os,
+        createdAt: r.created_at ? r.created_at.replace(' ', 'T') + 'Z' : new Date().toISOString(),
+      })
+    }
+
+    cityEvents.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
     // 7. Matériel & OS
     const devicesRaw = await env.DB.prepare(
