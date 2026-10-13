@@ -325,12 +325,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
           },
         }))
       }
-      setStatusBanner({
-        type: 'success',
-        text: newCity
-          ? `Ville de la table mise à jour : ${newCity}`
-          : 'Ville réinitialisée sur la détection automatique.',
-      })
     } catch (err) {
       setError(err.message || 'Impossible de mettre à jour la ville')
     }
@@ -378,12 +372,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         ...prev,
         state: nextState,
       }))
-      setStatusBanner({
-        type: 'success',
-        text: nextVal
-          ? `${todayGames.length} partie${todayGames.length > 1 ? 's' : ''} ajoutée${todayGames.length > 1 ? 's' : ''} à la table en direct.`
-          : 'Parties du jour retirées de la table en direct.',
-      })
     } catch (err) {
       setError(err.message || 'Impossible de mettre à jour les parties de la table')
     }
