@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import {
@@ -13,7 +13,6 @@ import {
   CheckCircle2,
   PowerOff,
   Pencil,
-  Loader2,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useGame } from '../context/GameContext'
@@ -50,11 +49,11 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const [isEditingName, setIsEditingName] = useState(false)
   const [editingNameValue, setEditingNameValue] = useState('')
 
-  const hasAutoCreatedRef = useRef(false)
+  const lastSigRef = useRef('')
 
   useScrollLock(isOpen)
 
-  // Parties jouées aujourd'hui sur cet appareil (pour les inclure automatiquement à l'ouverture de la table)
+  // Parties jouées aujourd'hui sur cet appareil (proposées à l'ouverture de la table)
   const todayGames = useMemo(() => {
     const todayStr = new Date().toDateString()
     return (Array.isArray(games) ? games : []).filter((g) => {
@@ -64,105 +63,46 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     })
   }, [games])
 
-  // Création automatique immédiate de la table en direct (pour afficher le QR code de base dès l'ouverture)
-  const autoCreateLiveTable = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    setStatusBanner(null)
-    try {
-      const defaultTitle = `Table du ${new Intl.DateTimeFormat('fr-FR', {
-        day: 'numeric',
-        month: 'short',
-      }).format(new Date())}`
-      const initialGames = includeTodayGames && todayGames.length > 0 ? todayGames : []
-      const code = await createLiveSession(defaultTitle, 'Hôte', [], initialGames)
-      const current = getActiveSession()
-      setActiveSession(current)
-      const data = await fetchLiveSession(code)
-      setSessionDetails(data)
-      if (onSessionChanged) onSessionChanged(current)
-    } catch (err) {
-      console.error('Erreur création automatique table:', err)
-      setError(err.message || 'Impossible de créer la table en direct')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [includeTodayGames, todayGames, onSessionChanged])
-
-  // Reconnexion automatique pour un invité arrivant via scan QR code ou lien
-  const handleAutoJoin = useCallback(async (codeToJoin) => {
-    const raw = (codeToJoin || '').trim().toUpperCase()
-    if (!raw) return
-    const cleanCode = extractCodeFromInput(raw, 'TAB')
-    if (!isValidLiveSessionCodeFormat(cleanCode)) return
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await joinLiveSession(cleanCode, '')
-      reloadStorage()
-      if (data.closed) {
-        setStatusBanner({
-          type: 'success',
-          text: 'Cette table est déjà terminée.',
-        })
-        setActiveSession(null)
-        setSessionDetails(null)
-        return
-      }
-      const current = getActiveSession()
-      setActiveSession(current)
-      setSessionDetails(data)
-      setJustJoined(true)
-      setActiveTab('create')
-      if (onSessionChanged) onSessionChanged(current)
-    } catch (err) {
-      console.error('Erreur auto-join:', err)
-      setError(err.message || 'Impossible de rejoindre cette table')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [reloadStorage, onSessionChanged])
-
-  // Initialisation à l'ouverture de la modale
+  // Initialisation à l'ouverture de la modale (stable, sans boucle de rechargement)
   useEffect(() => {
     if (!isOpen) {
       setClosedSummary(null)
       setJustJoined(false)
       setIsEditingName(false)
-      hasAutoCreatedRef.current = false
+      setIsLoading(false)
       return
     }
+
     const current = getActiveSession()
     setActiveSession(current)
     setError(null)
     setStatusBanner(null)
     setCopied(false)
+    setIsLoading(false)
+    lastSigRef.current = ''
 
     if (initialJoinCode) {
       setActiveTab('join')
       setJoinCode(initialJoinCode.toUpperCase())
-      handleAutoJoin(initialJoinCode.toUpperCase())
       return
     }
 
     if (current && current.code) {
-      setIsLoading(true)
+      // Chargement silencieux en arrière-plan sans toucher à isLoading
       fetchLiveSession(current.code)
         .then((data) => {
-          setSessionDetails(data)
-          syncSessionGamesToLocal(data)
-          reloadStorage()
+          if (data) {
+            setSessionDetails(data)
+            syncSessionGamesToLocal(data)
+          }
         })
         .catch(() => {})
-        .finally(() => setIsLoading(false))
-    } else if (!current && !closedSummary && !hasAutoCreatedRef.current) {
-      // Aucune session active : on génère directement la table de base pour que le QR code et le bouton annuler soient immédiatement là
-      hasAutoCreatedRef.current = true
-      autoCreateLiveTable()
+    } else {
+      setActiveTab('create')
     }
-  }, [isOpen, initialJoinCode, closedSummary, autoCreateLiveTable, handleAutoJoin, reloadStorage])
+  }, [isOpen, initialJoinCode])
 
-  // Écouter les changements de session (ex: clôture détectée par GameContext)
+  // Écouter les changements externes de session
   useEffect(() => {
     const handleSessionChanged = (e) => {
       const nextSession = e.detail
@@ -176,20 +116,27 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     return () => window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
   }, [onSessionChanged])
 
-  // Polling rapide tant que la modale est ouverte et qu'une session est active
+  // Polling silencieux intelligent : ne déclenche un re-render QUE si les données ont réellement changé
   useEffect(() => {
     if (!isOpen || !activeSession?.code) return
+
     const interval = setInterval(() => {
       fetchLiveSession(activeSession.code)
         .then((data) => {
-          setSessionDetails(data)
-          const stats = syncSessionGamesToLocal(data)
-          reloadStorage()
+          if (!data) return
+          const sig = `${data.closed || false}-${(data.state?.games || []).length}-${(data.state?.participants || []).length}-${data.state?.name || ''}-${(data.state?.games || []).map(g => `${g.id}:${g.status}:${g.updatedAt || ''}`).join('|')}`
+
+          if (sig !== lastSigRef.current) {
+            lastSigRef.current = sig
+            setSessionDetails(data)
+            syncSessionGamesToLocal(data)
+            reloadStorage()
+          }
 
           if (data.closed || data.state?.closed) {
             const currentGames = data.state?.games || []
             const gameNames = [...new Set(currentGames.map((g) => getGameDisplayName(g)).filter(Boolean))]
-            const count = stats.syncedCount || currentGames.length || 0
+            const count = currentGames.length || 0
             const closedTableName = activeSession.name || 'Table en direct'
             importSessionGames(activeSession.code).then(() => {
               setActiveSession(null)
@@ -207,9 +154,10 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
           }
         })
         .catch(() => {})
-    }, 1500)
+    }, 2500)
+
     return () => clearInterval(interval)
-  }, [isOpen, activeSession, reloadStorage, onSessionChanged])
+  }, [isOpen, activeSession?.code, activeSession?.name, reloadStorage, onSessionChanged])
 
   const shareUrl = activeSession?.code
     ? `${window.location.origin}/?session=${encodeURIComponent(activeSession.code)}`
@@ -254,7 +202,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     } catch {}
   }
 
-  // Création manuelle d'une nouvelle table si besoin
+  // Création explicite d'une nouvelle table par l'hôte
   const handleCreate = async (e) => {
     if (e) e.preventDefault()
     setIsLoading(true)
@@ -288,7 +236,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     const raw = (joinCode || '').trim().toUpperCase()
     if (!raw) return
 
-    // Détection croisée protectrice : alerte immédiate si code de Sauvegarde carnet
+    // Détection croisée protectrice si code de Sauvegarde carnet
     if (raw.startsWith('SYNC-') || /^SYNC[A-Z0-9]/i.test(raw)) {
       setError('Ce code commence par SYNC- : c’est un code de Carnet de Sauvegarde, pas de Table en direct. Pour restaurer vos données, ouvrez le Menu ☰ > Sauvegarde & Sync.')
       return
@@ -471,7 +419,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
           </button>
         </div>
 
-        {/* Onglets Ma table / Rejoindre (visibles sauf en récapitulatif ou vue d'accueil immédiate invité) */}
+        {/* Onglets Ouvrir / Rejoindre (visibles sauf en récapitulatif ou vue d'accueil invité immédiate) */}
         {!closedSummary && (!justJoined || isHost) && (
           <div className="px-4 sm:px-5 pt-3 pb-0 flex border-b border-stone-200/60 dark:border-slate-800/60 bg-[#faf9f5]/50 dark:bg-[#151719]/50">
             <button
@@ -483,7 +431,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-slate-300'
               }`}
             >
-              {activeSession ? (isHost ? 'Ma table en direct' : 'Table active') : 'Table en direct'}
+              {activeSession ? (isHost ? 'Ma table en direct' : 'Table active') : 'Ouvrir une table'}
             </button>
             <button
               type="button"
@@ -587,11 +535,11 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   type="button"
                   onClick={() => {
                     setClosedSummary(null)
-                    autoCreateLiveTable()
+                    setActiveTab('create')
                   }}
                   className="text-[11px] text-stone-400 hover:text-stone-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors py-1 cursor-pointer"
                 >
-                  Ouvrir une nouvelle table en direct
+                  Ouvrir ou rejoindre une autre table
                 </button>
               </div>
             </div>
@@ -641,7 +589,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
             </form>
           ) : activeSession ? (
             justJoined && !isHost ? (
-              /* VUE ÉPURÉE D'ACCUEIL POUR LE PARTICIPANT QUI VIENT DE REJOINDRE (AUCUN QR CODE, AUCUN BOUTON ANNULER NI INVITER) */
+              /* VUE ÉPURÉE D'ACCUEIL POUR LE PARTICIPANT QUI VIENT DE REJOINDRE */
               <div className="py-3 px-1 text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
                 <div className="w-13 h-13 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-xs border border-emerald-200 dark:border-emerald-800/60">
                   <CheckCircle2 size={30} />
@@ -702,7 +650,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 </div>
               </div>
             ) : !isHost ? (
-              /* VUE PARTICIPANT QUI RÉOUVRE LA TABLE : SANS QR CODE, SANS BOUTON ANNULER NI INVITER */
+              /* VUE PARTICIPANT QUI RÉOUVRE LA TABLE : SANS QR CODE, SANS BOUTONS SUPERFLUS */
               <div className="space-y-4">
                 <div className="p-4 rounded-2xl school-card border border-stone-200 dark:border-slate-800 space-y-3">
                   <div className="flex items-center justify-between gap-2">
@@ -788,7 +736,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 </div>
               </div>
             ) : (
-              /* VUE HÔTE COMPLÈTE : QR CODE DE BASE TOUJOURS PRÉSENT + BOUTONS INVITER & ANNULER */
+              /* VUE HÔTE COMPLÈTE : QR CODE CENTRAL + BOUTONS INVITER & ANNULER */
               <div className="space-y-4">
                 <div className="p-4 rounded-2xl school-card border border-stone-200 dark:border-slate-800 space-y-3">
                   <div className="flex items-center justify-between gap-2">
@@ -918,20 +866,57 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
               </div>
             )
           ) : (
-            /* CHARGEMENT / INITIALISATION AUTOMATIQUE DE LA TABLE */
-            <div className="py-12 px-4 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-[#c83b3b]/10 text-[#c83b3b] flex items-center justify-center mx-auto animate-pulse">
-                <Loader2 size={24} className="animate-spin" />
+            /* VUE CRÉATION EXPLICITE : DEMANDE LE NOM ET SI ON INCLUT LES PARTIES DU JOUR */
+            <form onSubmit={handleCreate} className="space-y-3.5">
+              {/* Nom de la table */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1">
+                  Nom de la table <span className="font-normal lowercase opacity-75">(optionnel)</span>
+                </label>
+                <input
+                  type="text"
+                  value={sessionName}
+                  onChange={(e) => setSessionName(e.target.value)}
+                  placeholder="Ex : Soirée Belote & Dourak"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none focus:border-[#c83b3b]"
+                />
               </div>
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-stone-700 dark:text-slate-300">
-                  Ouverture de la table en direct…
+
+              {/* Option pour inclure ou non les parties déjà jouées aujourd'hui */}
+              {todayGames.length > 0 && (
+                <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200/80 dark:border-slate-800 bg-stone-50/70 dark:bg-slate-900/40 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={includeTodayGames}
+                    onChange={(e) => setIncludeTodayGames(e.target.checked)}
+                    className="rounded border-stone-300 text-[#c83b3b] focus:ring-[#c83b3b] accent-[#c83b3b] w-4 h-4 cursor-pointer"
+                  />
+                  <span className="text-xs text-stone-700 dark:text-slate-300 font-medium">
+                    Inclure les <strong>{todayGames.length} partie{todayGames.length > 1 ? 's' : ''}</strong> déjà jouée{todayGames.length > 1 ? 's' : ''} aujourd'hui
+                  </span>
+                </label>
+              )}
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
+              >
+                <span>{isLoading ? 'Création de la table…' : 'Générer le QR code de la table'}</span>
+                <ArrowRight size={14} />
+              </button>
+
+              {/* Micro-explication pédagogique */}
+              <div className="p-3 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-800 text-[11px] text-stone-600 dark:text-slate-400 space-y-1">
+                <p className="font-semibold text-stone-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <Info size={13} className="text-[#c83b3b] shrink-0" />
+                  <span>Évitez de saisir les scores en double&nbsp;!</span>
                 </p>
-                <p className="text-[11px] text-stone-400 dark:text-slate-500">
-                  Génération du QR code et du code de table en cours…
+                <p className="leading-relaxed">
+                  Une seule personne note les points. Les autres joueurs scannent le QR code&nbsp;: toutes les parties jouées pendant la séance s'enregistrent automatiquement dans leur propre application Ardoise.
                 </p>
               </div>
-            </div>
+            </form>
           )}
         </div>
 
