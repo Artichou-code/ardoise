@@ -39,7 +39,7 @@ export default {
           syncKey: row.sync_key,
           payload: JSON.parse(row.payload_json),
           version: row.version,
-          updatedAt: row.updated_at
+          updatedAt: row.updated_at ? row.updated_at.replace(' ', 'T') + 'Z' : new Date().toISOString()
         }, { headers: corsHeaders });
       }
 
@@ -69,7 +69,7 @@ export default {
           success: true,
           syncKey: key,
           version: updated?.version || 1,
-          updatedAt: updated?.updated_at
+          updatedAt: updated?.updated_at ? updated.updated_at.replace(' ', 'T') + 'Z' : new Date().toISOString()
         }, { headers: corsHeaders });
       }
 

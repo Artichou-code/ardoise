@@ -101,6 +101,12 @@ export const saveGame = (game) => {
   localStorage.setItem(STORAGE_KEYS.GAMES, JSON.stringify(games))
 }
 
+export const saveGames = (games) => {
+  try {
+    localStorage.setItem(STORAGE_KEYS.GAMES, JSON.stringify(Array.isArray(games) ? games : []))
+  } catch {}
+}
+
 export const loadGames = () => {
   try {
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEYS.GAMES))

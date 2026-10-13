@@ -13,6 +13,7 @@ export function createPlayer(name, color, avatar) {
     color: color || AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
     avatar: chosenAvatar, // null si mode Initiale choisi explicitement
     createdAt: Date.now(),
+    updatedAt: Date.now(),
   }
 }
 

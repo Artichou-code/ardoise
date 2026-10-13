@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import {
-  saveGame, loadGames, deleteGame, loadDeletedGameIds,
+  saveGame, saveGames, loadGames, deleteGame, loadDeletedGameIds,
   savePlayers, loadPlayers, deletePlayer, untombstonePlayer,
   saveActiveGameId, loadActiveGameId,
   saveCustomPreset, deleteCustomPreset, loadCustomPresets,
@@ -452,16 +452,23 @@ export function GameProvider({ children }) {
   const savePlayer = useCallback((player) => {
     if (!player) return
     untombstonePlayer(player.id)
+    const updatedPlayer = {
+      ...player,
+      updatedAt: Date.now(),
+    }
+
     setPlayers(prev => {
       const idx = prev.findIndex(p => p.id === player.id)
       let next
       if (idx >= 0) {
         next = [...prev]
-        next[idx] = player
+        next[idx] = updatedPlayer
       } else {
-        next = [...prev, player]
+        next = [...prev, updatedPlayer]
       }
-      return sortPlayersAlpha(next)
+      const sorted = sortPlayersAlpha(next)
+      savePlayers(sorted)
+      return sorted
     })
 
     // Mettre à jour immédiatement les parties actives et enregistrées avec le nouveau profil
@@ -472,11 +479,15 @@ export function GameProvider({ children }) {
         anyChanged = true
         return {
           ...g,
-          players: g.players.map(p => (p.id === player.id ? { ...p, ...player } : p)),
-          updatedAt: new Date().toISOString(),
+          players: g.players.map(p => (p.id === player.id ? { ...p, ...updatedPlayer } : p)),
+          updatedAt: Date.now(),
         }
       })
-      return anyChanged ? nextGames : prevGames
+      if (anyChanged) {
+        saveGames(nextGames)
+        return nextGames
+      }
+      return prevGames
     })
 
     if (isAutoSyncEnabled() && getSyncKey()) {
@@ -487,7 +498,7 @@ export function GameProvider({ children }) {
   const archivePlayer = useCallback((id) => {
     if (!id) return
     setPlayers(prev => {
-      const next = prev.map(p => (p.id === id ? { ...p, archived: true } : p))
+      const next = prev.map(p => (p.id === id ? { ...p, archived: true, updatedAt: Date.now() } : p))
       savePlayers(next)
       return next
     })
@@ -499,9 +510,10 @@ export function GameProvider({ children }) {
   const unarchivePlayer = useCallback((id) => {
     if (!id) return
     setPlayers(prev => {
-      const next = prev.map(p => (p.id === id ? { ...p, archived: false } : p))
-      savePlayers(next)
-      return sortPlayersAlpha(next)
+      const next = prev.map(p => (p.id === id ? { ...p, archived: false, updatedAt: Date.now() } : p))
+      const sorted = sortPlayersAlpha(next)
+      savePlayers(sorted)
+      return sorted
     })
     if (isAutoSyncEnabled() && getSyncKey()) {
       pushNotebookToCloud().catch(() => {})

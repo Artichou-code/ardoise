@@ -22,6 +22,7 @@ import {
   generateMemorableSyncKey,
   isValidSyncKeyFormat,
   getLastSyncedAt,
+  formatSyncTimestamp,
   isAutoSyncEnabled,
   setAutoSyncEnabled,
   downloadNotebookBackup,
@@ -337,7 +338,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                 <div className="pt-1 flex items-center justify-between border-t border-stone-100 dark:border-slate-800/80">
                   <span className="text-[11px] text-stone-400 dark:text-slate-500">
                     {lastSynced
-                      ? `Synchro\u00A0: ${new Date(lastSynced).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                      ? `Synchro\u00A0: ${formatSyncTimestamp(lastSynced)}`
                       : 'Pas encore synchronisé'}
                   </span>
                   <button

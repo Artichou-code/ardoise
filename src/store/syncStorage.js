@@ -140,6 +140,22 @@ export function setLastSyncedAt(isoString) {
   }
 }
 
+/**
+ * Formate un horodatage de synchronisation pour l'affichage utilisateur.
+ * Gère les chaînes ISO-8601 ("2026-10-13T14:58:00.000Z") et les horodatages SQLite UTC ("2026-10-13 14:58:00")
+ * en appliquant toujours le fuseau horaire local de l'utilisateur.
+ */
+export function formatSyncTimestamp(timestamp) {
+  if (!timestamp) return null
+  let str = String(timestamp).trim()
+  if (/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}/.test(str)) {
+    str = str.replace(' ', 'T') + 'Z'
+  }
+  const d = new Date(str)
+  if (isNaN(d.getTime())) return null
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
 export function isAutoSyncEnabled() {
   const val = localStorage.getItem(SYNC_KEYS.AUTO_SYNC)
   return val === null ? true : val === 'true'
@@ -243,8 +259,14 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
       const existing = gamesMap.get(g.id)
       const existingRounds = Array.isArray(existing.rounds) ? existing.rounds.length : 0
       const newRounds = Array.isArray(g.rounds) ? g.rounds.length : 0
-      const existingUpdated = Number(existing.updatedAt) || Number(existing.finishedAt) || 0
-      const newUpdated = Number(g.updatedAt) || Number(g.finishedAt) || 0
+      const toTimestamp = (v) => {
+        if (typeof v === 'number') return v
+        if (!v) return 0
+        const t = new Date(v).getTime()
+        return isNaN(t) ? 0 : t
+      }
+      const existingUpdated = Math.max(toTimestamp(existing.updatedAt), toTimestamp(existing.finishedAt), toTimestamp(existing.startedAt))
+      const newUpdated = Math.max(toTimestamp(g.updatedAt), toTimestamp(g.finishedAt), toTimestamp(g.startedAt))
 
       // Mettre à jour si la version entrante est plus récente, a plus de manches, est terminée ou a des scores modifiés
       const isNewer = newUpdated > existingUpdated
@@ -300,19 +322,32 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
         color: p.color || '#c83b3b',
         avatar: p.avatar !== undefined ? p.avatar : null,
         createdAt: p.createdAt || Date.now(),
+        updatedAt: p.updatedAt || p.createdAt || Date.now(),
       })
       playersAdded++
     } else {
-      // Le joueur existe déjà localement : préserver INTÉGRALEMENT les préférences de l'utilisateur
-      // (son avatar et sa couleur choisis localement dans son propre carnet)
       const existing = playersMap.get(key)
+      const toTime = (item) => {
+        if (!item) return 0
+        const t = Number(item.updatedAt) || Number(item.createdAt) || 0
+        if (t) return t
+        const isoT = new Date(item.updatedAt || item.createdAt).getTime()
+        return isNaN(isoT) ? 0 : isoT
+      }
+      const existingTime = toTime(existing)
+      const incomingTime = toTime(p)
+      const useIncoming = incomingTime > existingTime
+
       playersMap.set(key, {
-        ...p,
         ...existing,
+        ...p,
         id: existing.id,
         name: existing.name,
-        color: existing.color || p.color || '#c83b3b',
-        avatar: existing.avatar != null ? existing.avatar : (p.avatar != null ? p.avatar : null),
+        color: useIncoming ? (p.color || existing.color) : (existing.color || p.color),
+        avatar: useIncoming
+          ? (p.avatar !== undefined ? p.avatar : existing.avatar)
+          : (existing.avatar !== undefined ? existing.avatar : p.avatar),
+        updatedAt: Math.max(existingTime, incomingTime, Date.now()),
       })
     }
   }
@@ -646,8 +681,24 @@ export function applyNotebook(incoming, mode = 'merge') {
 
   // Mode fusion
   const { mergedNotebook, stats } = mergeNotebooks(local, incoming)
+  // Aligner les profils des joueurs à l'intérieur des parties avec les profils fusionnés
+  const playersLookup = new Map(mergedNotebook.players.map(p => [p.id, p]))
+  const updatedGames = mergedNotebook.games.map(g => {
+    if (!g || !Array.isArray(g.players)) return g
+    let changed = false
+    const alignedPlayers = g.players.map(p => {
+      const up = playersLookup.get(p.id)
+      if (up && (p.avatar !== up.avatar || p.color !== up.color || p.name !== up.name)) {
+        changed = true
+        return { ...p, name: up.name, color: up.color, avatar: up.avatar }
+      }
+      return p
+    })
+    return changed ? { ...g, players: alignedPlayers } : g
+  })
+
   savePlayers(mergedNotebook.players)
-  localStorage.setItem('ardoise_games', JSON.stringify(mergedNotebook.games))
+  localStorage.setItem('ardoise_games', JSON.stringify(updatedGames))
   saveCustomPresets(mergedNotebook.customPresets)
   if (mergedNotebook.theme) saveTheme(mergedNotebook.theme)
 
@@ -702,7 +753,7 @@ export async function pushNotebookToCloud(syncKey) {
   }
 
   const data = await res.json()
-  setLastSyncedAt(data.updatedAt || new Date().toISOString())
+  setLastSyncedAt(new Date().toISOString())
   return data
 }
 
