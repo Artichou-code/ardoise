@@ -158,10 +158,17 @@ export async function onRequest(context) {
           }
         }
 
+        const anonymizedPlayers = Array.from(playerNames)
+          .map(n => n.trim())
+          .filter(Boolean)
+          .map(n => `${n.charAt(0).toUpperCase()}.`)
+          .slice(0, 4)
+          .join(', ')
+
         liveSessionsMap.set(row.session_code, {
           rawType,
           gameName,
-          players: Array.from(playerNames).slice(0, 3).join(', '),
+          players: anonymizedPlayers,
         })
       } catch (_) {}
     }
@@ -324,7 +331,12 @@ export async function onRequest(context) {
       try {
         const payload = JSON.parse(r.payload_json || '{}')
         if (payload.players && Array.isArray(payload.players)) {
-          players = payload.players.map(p => p.name).filter(Boolean).slice(0, 3).join(', ')
+          players = payload.players
+            .map(p => (p.name || '').trim())
+            .filter(Boolean)
+            .map(n => `${n.charAt(0).toUpperCase()}.`)
+            .slice(0, 4)
+            .join(', ')
         }
         if (payload.game?.name) gameName = payload.game.name
       } catch (_) {}

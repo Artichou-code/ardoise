@@ -123,6 +123,19 @@ export function StatsModal({ isOpen, onClose }) {
     return ev.type || 'Activité'
   }
 
+  // Anonymisation légère des joueurs : n'affiche que la 1ère lettre (initiale) de chaque joueur (ex: Arti, Julie -> A., J.)
+  const formatAnonymizedPlayers = (raw) => {
+    if (!raw || typeof raw !== 'string') return ''
+    return raw
+      .split(',')
+      .map((p) => {
+        const clean = p.trim().replace(/\.+$/, '')
+        return clean ? `${clean.charAt(0).toUpperCase()}.` : ''
+      })
+      .filter(Boolean)
+      .join(', ')
+  }
+
   const StatCard = ({ icon: Icon, color, label, value, sub }) => (
     <div className={`p-2.5 sm:p-3 rounded-xl border ${color} flex flex-col justify-between min-h-[78px]`}>
       <div className="flex items-center justify-between gap-1.5 mb-1">
@@ -376,7 +389,7 @@ export function StatsModal({ isOpen, onClose }) {
                                   <div className="text-[10px] text-stone-500 dark:text-slate-400 truncate mt-0.5 flex items-center gap-1">
                                     {ev.players && (
                                       <span className="font-semibold text-stone-700 dark:text-slate-300 shrink-0">
-                                        {ev.players} ·
+                                        {formatAnonymizedPlayers(ev.players)} ·
                                       </span>
                                     )}
                                     <span>{formatEventTime(ev.createdAt)}</span>
