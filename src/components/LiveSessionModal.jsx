@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import {
@@ -12,6 +12,8 @@ import {
   Share2,
   CheckCircle2,
   PowerOff,
+  Pencil,
+  Loader2,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useGame } from '../context/GameContext'
@@ -23,6 +25,7 @@ import {
   closeLiveSession,
   importSessionGames,
   syncSessionGamesToLocal,
+  saveActiveSession,
 } from '../store/liveSession'
 import { isValidLiveSessionCodeFormat, extractCodeFromInput } from '../store/syncStorage'
 import { formatDate } from '../utils/gameUtils'
@@ -44,9 +47,14 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const [copied, setCopied] = useState(false)
   const [justJoined, setJustJoined] = useState(false)
 
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editingNameValue, setEditingNameValue] = useState('')
+
+  const hasAutoCreatedRef = useRef(false)
+
   useScrollLock(isOpen)
 
-  // Parties jouées aujourd'hui sur cet appareil (pour proposer de les inclure à l'ouverture de la table)
+  // Parties jouées aujourd'hui sur cet appareil (pour les inclure automatiquement à l'ouverture de la table)
   const todayGames = useMemo(() => {
     const todayStr = new Date().toDateString()
     return (Array.isArray(games) ? games : []).filter((g) => {
@@ -56,11 +64,72 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     })
   }, [games])
 
+  // Création automatique immédiate de la table en direct (pour afficher le QR code de base dès l'ouverture)
+  const autoCreateLiveTable = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    setStatusBanner(null)
+    try {
+      const defaultTitle = `Table du ${new Intl.DateTimeFormat('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+      }).format(new Date())}`
+      const initialGames = includeTodayGames && todayGames.length > 0 ? todayGames : []
+      const code = await createLiveSession(defaultTitle, 'Hôte', [], initialGames)
+      const current = getActiveSession()
+      setActiveSession(current)
+      const data = await fetchLiveSession(code)
+      setSessionDetails(data)
+      if (onSessionChanged) onSessionChanged(current)
+    } catch (err) {
+      console.error('Erreur création automatique table:', err)
+      setError(err.message || 'Impossible de créer la table en direct')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [includeTodayGames, todayGames, onSessionChanged])
+
+  // Reconnexion automatique pour un invité arrivant via scan QR code ou lien
+  const handleAutoJoin = useCallback(async (codeToJoin) => {
+    const raw = (codeToJoin || '').trim().toUpperCase()
+    if (!raw) return
+    const cleanCode = extractCodeFromInput(raw, 'TAB')
+    if (!isValidLiveSessionCodeFormat(cleanCode)) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      const data = await joinLiveSession(cleanCode, '')
+      reloadStorage()
+      if (data.closed) {
+        setStatusBanner({
+          type: 'success',
+          text: 'Cette table est déjà terminée.',
+        })
+        setActiveSession(null)
+        setSessionDetails(null)
+        return
+      }
+      const current = getActiveSession()
+      setActiveSession(current)
+      setSessionDetails(data)
+      setJustJoined(true)
+      setActiveTab('create')
+      if (onSessionChanged) onSessionChanged(current)
+    } catch (err) {
+      console.error('Erreur auto-join:', err)
+      setError(err.message || 'Impossible de rejoindre cette table')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [reloadStorage, onSessionChanged])
+
   // Initialisation à l'ouverture de la modale
   useEffect(() => {
     if (!isOpen) {
       setClosedSummary(null)
       setJustJoined(false)
+      setIsEditingName(false)
+      hasAutoCreatedRef.current = false
       return
     }
     const current = getActiveSession()
@@ -72,6 +141,8 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     if (initialJoinCode) {
       setActiveTab('join')
       setJoinCode(initialJoinCode.toUpperCase())
+      handleAutoJoin(initialJoinCode.toUpperCase())
+      return
     }
 
     if (current && current.code) {
@@ -84,8 +155,12 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         })
         .catch(() => {})
         .finally(() => setIsLoading(false))
+    } else if (!current && !closedSummary && !hasAutoCreatedRef.current) {
+      // Aucune session active : on génère directement la table de base pour que le QR code et le bouton annuler soient immédiatement là
+      hasAutoCreatedRef.current = true
+      autoCreateLiveTable()
     }
-  }, [isOpen, initialJoinCode])
+  }, [isOpen, initialJoinCode, closedSummary, autoCreateLiveTable, handleAutoJoin, reloadStorage])
 
   // Écouter les changements de session (ex: clôture détectée par GameContext)
   useEffect(() => {
@@ -160,8 +235,28 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     }
   }
 
+  // Renommer la table en direct
+  const handleSaveSessionName = async () => {
+    setIsEditingName(false)
+    const newName = (editingNameValue || '').trim()
+    if (!newName || !activeSession?.code || newName === activeSession.name) return
+    const updated = { ...activeSession, name: newName }
+    saveActiveSession(updated)
+    setActiveSession(updated)
+    if (onSessionChanged) onSessionChanged(updated)
+    try {
+      const nextState = { ...(sessionDetails?.state || {}), name: newName }
+      await fetch(`/api/sessions/${encodeURIComponent(activeSession.code)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: nextState }),
+      })
+    } catch {}
+  }
+
+  // Création manuelle d'une nouvelle table si besoin
   const handleCreate = async (e) => {
-    e.preventDefault()
+    if (e) e.preventDefault()
     setIsLoading(true)
     setError(null)
     setStatusBanner(null)
@@ -178,6 +273,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
       setActiveSession(current)
       const data = await fetchLiveSession(code)
       setSessionDetails(data)
+      setActiveTab('create')
       if (onSessionChanged) onSessionChanged(current)
     } catch (err) {
       setError(err.message || 'Impossible de créer la table en direct')
@@ -186,6 +282,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     }
   }
 
+  // Rejoindre une table avec un code
   const handleJoin = async (e) => {
     e.preventDefault()
     const raw = (joinCode || '').trim().toUpperCase()
@@ -229,6 +326,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
       setActiveSession(current)
       setSessionDetails(data)
       setJustJoined(true)
+      setActiveTab('create')
       if (onSessionChanged) onSessionChanged(current)
 
       const syncedCount = data.importStats?.syncedCount || 0
@@ -301,7 +399,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     }
   }
 
-  // Action : Annuler la table en direct (ferme la session et quitte la modale)
+  // Action Hôte : Annuler la table en direct (ferme la session et quitte la modale)
   const handleCancelLiveSession = async () => {
     if (!activeSession?.code || isLoading) return
     setIsLoading(true)
@@ -326,7 +424,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   if (!isOpen || typeof document === 'undefined') return null
 
   const sessionGames = sessionDetails?.state?.games || []
-  const isHost = Boolean(activeSession?.isHost)
+  const isHost = Boolean(activeSession?.isHost ?? true)
 
   return createPortal(
     <div
@@ -372,6 +470,34 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
             <X size={18} />
           </button>
         </div>
+
+        {/* Onglets Ma table / Rejoindre (visibles sauf en récapitulatif ou vue d'accueil immédiate invité) */}
+        {!closedSummary && (!justJoined || isHost) && (
+          <div className="px-4 sm:px-5 pt-3 pb-0 flex border-b border-stone-200/60 dark:border-slate-800/60 bg-[#faf9f5]/50 dark:bg-[#151719]/50">
+            <button
+              type="button"
+              onClick={() => setActiveTab('create')}
+              className={`flex-1 pb-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer focus:outline-none ${
+                activeTab === 'create'
+                  ? 'border-[#c83b3b] text-[#c83b3b]'
+                  : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-slate-300'
+              }`}
+            >
+              {activeSession ? (isHost ? 'Ma table en direct' : 'Table active') : 'Table en direct'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('join')}
+              className={`flex-1 pb-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer focus:outline-none ${
+                activeTab === 'join'
+                  ? 'border-[#c83b3b] text-[#c83b3b]'
+                  : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-slate-300'
+              }`}
+            >
+              Rejoindre avec un code
+            </button>
+          </div>
+        )}
 
         {/* Bannière d'erreur */}
         {error && !closedSummary && (
@@ -459,16 +585,63 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 </button>
                 <button
                   type="button"
-                  onClick={() => setClosedSummary(null)}
+                  onClick={() => {
+                    setClosedSummary(null)
+                    autoCreateLiveTable()
+                  }}
                   className="text-[11px] text-stone-400 hover:text-stone-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors py-1 cursor-pointer"
                 >
-                  Ouvrir ou rejoindre une autre table
+                  Ouvrir une nouvelle table en direct
                 </button>
               </div>
             </div>
+          ) : activeTab === 'join' ? (
+            /* VUE REJOINDRE AVEC UN CODE */
+            <form onSubmit={handleJoin} className="space-y-3.5">
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1">
+                  Code de la table
+                </label>
+                <input
+                  type="text"
+                  value={joinCode}
+                  onChange={(e) => {
+                    let val = e.target.value.toUpperCase().replace(/\s+/g, '')
+                    if (/^TAB[A-Z0-9]/i.test(val) && !val.startsWith('TAB-')) {
+                      val = 'TAB-' + val.slice(3)
+                    } else if (/^ARD[A-Z0-9]/i.test(val) && !val.startsWith('ARD-')) {
+                      val = 'ARD-' + val.slice(3)
+                    }
+                    setJoinCode(val)
+                  }}
+                  placeholder="Ex : TAB-7B92"
+                  required
+                  className="w-full font-mono uppercase px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none focus:border-[#c83b3b]"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading || !joinCode.trim()}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
+              >
+                <span>{isLoading ? 'Connexion à la table…' : 'Rejoindre et synchroniser les parties'}</span>
+                <ArrowRight size={14} />
+              </button>
+
+              <div className="p-3 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-800 text-[11px] text-stone-600 dark:text-slate-400 space-y-1">
+                <p className="font-semibold text-stone-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <Info size={13} className="text-[#c83b3b] shrink-0" />
+                  <span>Synchronisation automatique</span>
+                </p>
+                <p className="leading-relaxed">
+                  Dès que vous rejoignez la table, toutes les parties jouées (et leurs joueurs) sont automatiquement enregistrées dans votre carnet Ardoise jusqu'à la clôture de la table.
+                </p>
+              </div>
+            </form>
           ) : activeSession ? (
             justJoined && !isHost ? (
-              /* VUE ÉPURÉE D'ACCUEIL POUR LE PARTICIPANT QUI VIENT DE REJOINDRE */
+              /* VUE ÉPURÉE D'ACCUEIL POUR LE PARTICIPANT QUI VIENT DE REJOINDRE (AUCUN QR CODE, AUCUN BOUTON ANNULER NI INVITER) */
               <div className="py-3 px-1 text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
                 <div className="w-13 h-13 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-xs border border-emerald-200 dark:border-emerald-800/60">
                   <CheckCircle2 size={30} />
@@ -528,265 +701,244 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   </p>
                 </div>
               </div>
-            ) : (
-              /* VUE SESSION ACTIVE COMPLÈTE (HÔTE OU RÉOUVERTURE DE TABLE) */
+            ) : !isHost ? (
+              /* VUE PARTICIPANT QUI RÉOUVRE LA TABLE : SANS QR CODE, SANS BOUTON ANNULER NI INVITER */
               <div className="space-y-4">
-              <div className="p-4 rounded-2xl school-card border border-stone-200 dark:border-slate-800 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                    <span className="font-bold text-sm text-stone-900 dark:text-slate-100 truncate">
-                      {activeSession.name}
+                <div className="p-4 rounded-2xl school-card border border-stone-200 dark:border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                      <span className="font-bold text-sm text-stone-900 dark:text-slate-100 truncate">
+                        {activeSession.name}
+                      </span>
+                    </div>
+                    <span className="font-mono font-bold text-xs tracking-wider px-2.5 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shrink-0">
+                      {activeSession.code}
                     </span>
                   </div>
-                  <span className="font-mono font-bold text-xs tracking-wider px-2.5 py-0.5 rounded-lg bg-[#c83b3b]/10 text-[#c83b3b] shrink-0 select-all">
-                    {activeSession.code}
-                  </span>
-                </div>
 
-                {/* QR Code d'invitation */}
-                <div className="flex flex-col items-center py-1 space-y-1.5">
-                  <div className="p-2.5 bg-white rounded-xl shadow-xs border border-stone-200 inline-block">
-                    <QRCodeSVG value={shareUrl} size={145} level="M" />
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2.5 text-xs">
+                    <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="text-stone-700 dark:text-slate-200 text-[11px] leading-relaxed">
+                      <strong className="font-bold text-emerald-800 dark:text-emerald-300 block">
+                        Connecté à la table de l'hôte
+                      </strong>
+                      Toutes les parties jouées pendant cette séance s'enregistrent automatiquement dans votre carnet personnel.
+                    </div>
                   </div>
-                  <p className="text-[11px] text-stone-500 dark:text-slate-400 text-center">
-                    Scannez pour rejoindre
-                  </p>
                 </div>
 
-                {/* Boutons de partage du lien */}
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    className="flex-1 py-2 px-3 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 font-bold text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                  >
-                    {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                    <span>{copied ? 'Lien copié\u00A0!' : 'Copier le lien'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNativeShare}
-                    className="py-2 px-3.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-bold text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                  >
-                    <Share2 size={14} />
-                    <span>Inviter</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Parties de la session */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between px-1">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+                {/* Parties de la session */}
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 block px-1">
                     Parties synchronisées sur la table ({sessionGames.length})
                   </span>
+
+                  {sessionGames.length > 0 ? (
+                    <div className="rounded-xl school-card border border-stone-200 dark:border-slate-800 divide-y divide-stone-100 dark:divide-slate-800/80 overflow-hidden">
+                      {sessionGames.map((g, idx) => (
+                        <div key={g.id || idx} className="p-2.5 flex items-center justify-between gap-2 text-xs">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <p className="font-bold text-stone-800 dark:text-slate-200 truncate">{getGameDisplayName(g)}</p>
+                              <span
+                                className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${
+                                  g.status === 'finished'
+                                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                                    : 'bg-[#c83b3b]/15 text-[#c83b3b]'
+                                }`}
+                              >
+                                {g.status === 'finished' ? 'Terminée' : `Manche ${(g.rounds?.length || 0) + 1}`}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-stone-400 dark:text-slate-500 truncate mt-0.5">
+                              {(g.players || []).map((p) => p.name).join(' · ')} · {formatDate(g.finishedAt || g.updatedAt || g.startedAt)}
+                            </p>
+                          </div>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg shrink-0">
+                            <Check size={11} />
+                            <span>Enregistrée</span>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-xl border border-dashed border-stone-200 dark:border-slate-800 text-center">
+                      <p className="text-[11px] text-stone-400 dark:text-slate-500">
+                        En attente des parties enregistrées par l'hôte…
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                {sessionGames.length > 0 ? (
-                  <div className="rounded-xl school-card border border-stone-200 dark:border-slate-800 divide-y divide-stone-100 dark:divide-slate-800/80 overflow-hidden">
-                    {sessionGames.map((g, idx) => (
-                      <div key={g.id || idx} className="p-2.5 flex items-center justify-between gap-2 text-xs">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <p className="font-bold text-stone-800 dark:text-slate-200 truncate">{getGameDisplayName(g)}</p>
-                            <span
-                              className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${
-                                g.status === 'finished'
-                                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
-                                  : 'bg-[#c83b3b]/15 text-[#c83b3b]'
-                              }`}
-                            >
-                              {g.status === 'finished' ? 'Terminée' : `Manche ${(g.rounds?.length || 0) + 1}`}
-                            </span>
-                          </div>
-                          <p className="text-[10px] text-stone-400 dark:text-slate-500 truncate mt-0.5">
-                            {(g.players || []).map((p) => p.name).join(' · ')} · {formatDate(g.finishedAt || g.updatedAt || g.startedAt)}
-                          </p>
-                        </div>
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg shrink-0">
-                          <Check size={11} />
-                          <span>Enregistrée</span>
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-3.5 rounded-xl border border-dashed border-stone-200 dark:border-slate-800 text-center">
-                    <p className="text-[11px] text-stone-400 dark:text-slate-500">
-                      Lancez une partie normalement depuis l'accueil&nbsp;: elle apparaîtra et sera enregistrée ici automatiquement.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Bouton d'action de fin (Clôturer pour l'Hôte / Quitter en gardant les parties pour l'Invité) */}
-              <div className="pt-2 border-t border-stone-200/70 dark:border-slate-800/70 space-y-2">
-                {isHost ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleCloseTableByHost}
-                      disabled={isLoading}
-                      className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
-                    >
-                      <PowerOff size={14} />
-                      <span>Sauvegarder et quitter la table</span>
-                    </button>
-                    <p className="text-[10px] text-stone-500 dark:text-slate-400 text-center leading-tight">
-                      Ferme la table chez tous les participants. Toutes les parties jouées restent enregistrées dans le carnet de chacun.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleLeaveAndKeepGames}
-                      disabled={isLoading}
-                      className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
-                    >
-                      <LogOut size={14} />
-                      <span>Sauvegarder et quitter la table</span>
-                    </button>
-                    <p className="text-[10px] text-stone-500 dark:text-slate-400 text-center leading-tight">
-                      Les parties synchronisées restent définitivement enregistrées dans votre carnet et vos statistiques.
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-          )
-        ) : (
-            /* VUE CRÉATION / REJOINDRE */
-            <div className="space-y-4">
-              <div className="flex border-b border-stone-200/60 dark:border-slate-800/60">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('create')}
-                  className={`flex-1 pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer focus:outline-none ${
-                    activeTab === 'create'
-                      ? 'border-[#c83b3b] text-[#c83b3b]'
-                      : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-slate-300'
-                  }`}
-                >
-                  Ouvrir une table
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('join')}
-                  className={`flex-1 pb-2 text-xs font-bold border-b-2 transition-colors cursor-pointer focus:outline-none ${
-                    activeTab === 'join'
-                      ? 'border-[#c83b3b] text-[#c83b3b]'
-                      : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-slate-300'
-                  }`}
-                >
-                  Rejoindre avec un code
-                </button>
-              </div>
-
-              {activeTab === 'create' ? (
-                <form onSubmit={handleCreate} className="space-y-3.5">
-                  {/* Nom de la soirée (optionnel) */}
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1">
-                      Nom de la table <span className="font-normal lowercase opacity-75">(optionnel)</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={sessionName}
-                      onChange={(e) => setSessionName(e.target.value)}
-                      placeholder="Ex : Soirée Belote & Dourak"
-                      className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none focus:border-[#c83b3b]"
-                    />
-                  </div>
-
-                  {/* Option pour inclure les parties déjà jouées aujourd'hui */}
-                  {todayGames.length > 0 && (
-                    <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200/80 dark:border-slate-800 bg-stone-50/70 dark:bg-slate-900/40 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={includeTodayGames}
-                        onChange={(e) => setIncludeTodayGames(e.target.checked)}
-                        className="rounded border-stone-300 text-[#c83b3b] focus:ring-[#c83b3b] accent-[#c83b3b] w-4 h-4"
-                      />
-                      <span className="text-xs text-stone-700 dark:text-slate-300 font-medium">
-                        Inclure les <strong>{todayGames.length} partie{todayGames.length > 1 ? 's' : ''}</strong> déjà jouée{todayGames.length > 1 ? 's' : ''} aujourd'hui
-                      </span>
-                    </label>
-                  )}
-
+                {/* Quitter la table en conservant les parties */}
+                <div className="pt-2 border-t border-stone-200/70 dark:border-slate-800/70 space-y-2">
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={handleLeaveAndKeepGames}
                     disabled={isLoading}
-                    className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
+                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
                   >
-                    <span>{isLoading ? 'Création du QR code…' : 'Générer le QR code de la table'}</span>
-                    <ArrowRight size={14} />
+                    <LogOut size={14} />
+                    <span>Sauvegarder et quitter la table</span>
                   </button>
+                  <p className="text-[10px] text-stone-500 dark:text-slate-400 text-center leading-tight">
+                    Les parties synchronisées restent définitivement enregistrées dans votre carnet et vos statistiques.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              /* VUE HÔTE COMPLÈTE : QR CODE DE BASE TOUJOURS PRÉSENT + BOUTONS INVITER & ANNULER */
+              <div className="space-y-4">
+                <div className="p-4 rounded-2xl school-card border border-stone-200 dark:border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                      {isEditingName ? (
+                        <input
+                          type="text"
+                          value={editingNameValue}
+                          onChange={(e) => setEditingNameValue(e.target.value)}
+                          onBlur={handleSaveSessionName}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSaveSessionName()}
+                          autoFocus
+                          className="text-xs font-bold px-2 py-0.5 rounded border border-[#c83b3b] bg-white dark:bg-slate-900 focus:outline-none flex-1 min-w-0"
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingNameValue(activeSession.name)
+                            setIsEditingName(true)
+                          }}
+                          className="font-bold text-sm text-stone-900 dark:text-slate-100 truncate text-left hover:underline flex items-center gap-1.5 cursor-pointer min-w-0"
+                          title="Cliquer pour renommer la table"
+                        >
+                          <span className="truncate">{activeSession.name}</span>
+                          <Pencil size={11} className="text-stone-400 opacity-60 hover:opacity-100 shrink-0" />
+                        </button>
+                      )}
+                    </div>
+                    <span className="font-mono font-bold text-xs tracking-wider px-2.5 py-0.5 rounded-lg bg-[#c83b3b]/10 text-[#c83b3b] shrink-0 select-all">
+                      {activeSession.code}
+                    </span>
+                  </div>
 
-                  {/* Micro-explication pédagogique */}
-                  <div className="p-3 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-800 text-[11px] text-stone-600 dark:text-slate-400 space-y-1">
-                    <p className="font-semibold text-stone-800 dark:text-slate-200 flex items-center gap-1.5">
-                      <Info size={13} className="text-[#c83b3b] shrink-0" />
-                      <span>Évitez de saisir les scores en double&nbsp;!</span>
-                    </p>
-                    <p className="leading-relaxed">
-                      Une seule personne note les points. Les autres joueurs scannent le QR code&nbsp;: toutes les parties jouées pendant la séance s'enregistrent automatiquement dans leur propre application Ardoise.
+                  {/* QR Code d'invitation central */}
+                  <div className="flex flex-col items-center py-1 space-y-1.5">
+                    <div className="p-2.5 bg-white rounded-xl shadow-xs border border-stone-200 inline-block">
+                      <QRCodeSVG value={shareUrl} size={145} level="M" />
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-slate-400 text-center">
+                      Scannez pour rejoindre
                     </p>
                   </div>
-                </form>
-              ) : (
-                <form onSubmit={handleJoin} className="space-y-3.5">
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1">
-                      Code de la table
-                    </label>
-                    <input
-                      type="text"
-                      value={joinCode}
-                      onChange={(e) => {
-                        let val = e.target.value.toUpperCase().replace(/\s+/g, '')
-                        if (/^TAB[A-Z0-9]/i.test(val) && !val.startsWith('TAB-')) {
-                          val = 'TAB-' + val.slice(3)
-                        } else if (/^ARD[A-Z0-9]/i.test(val) && !val.startsWith('ARD-')) {
-                          val = 'ARD-' + val.slice(3)
-                        }
-                        setJoinCode(val)
-                      }}
-                      placeholder="Ex : TAB-7B92"
-                      required
-                      className="w-full font-mono uppercase px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none focus:border-[#c83b3b]"
-                    />
+
+                  {/* Boutons de partage du lien */}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCopyLink}
+                      className="flex-1 py-2 px-3 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 font-bold text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                      <span>{copied ? 'Lien copié\u00A0!' : 'Copier le lien'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNativeShare}
+                      className="py-2 px-3.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-bold text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      <Share2 size={14} />
+                      <span>Inviter</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Parties de la session */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
+                      Parties synchronisées sur la table ({sessionGames.length})
+                    </span>
                   </div>
 
+                  {sessionGames.length > 0 ? (
+                    <div className="rounded-xl school-card border border-stone-200 dark:border-slate-800 divide-y divide-stone-100 dark:divide-slate-800/80 overflow-hidden">
+                      {sessionGames.map((g, idx) => (
+                        <div key={g.id || idx} className="p-2.5 flex items-center justify-between gap-2 text-xs">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <p className="font-bold text-stone-800 dark:text-slate-200 truncate">{getGameDisplayName(g)}</p>
+                              <span
+                                className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${
+                                  g.status === 'finished'
+                                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                                    : 'bg-[#c83b3b]/15 text-[#c83b3b]'
+                                }`}
+                              >
+                                {g.status === 'finished' ? 'Terminée' : `Manche ${(g.rounds?.length || 0) + 1}`}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-stone-400 dark:text-slate-500 truncate mt-0.5">
+                              {(g.players || []).map((p) => p.name).join(' · ')} · {formatDate(g.finishedAt || g.updatedAt || g.startedAt)}
+                            </p>
+                          </div>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg shrink-0">
+                            <Check size={11} />
+                            <span>Enregistrée</span>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-xl border border-dashed border-stone-200 dark:border-slate-800 text-center">
+                      <p className="text-[11px] text-stone-400 dark:text-slate-500">
+                        Lancez une partie normalement depuis l'accueil&nbsp;: elle apparaîtra et sera enregistrée ici automatiquement.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Clôturer et sauvegarder les parties */}
+                <div className="pt-2 border-t border-stone-200/70 dark:border-slate-800/70 space-y-2">
                   <button
-                    type="submit"
-                    disabled={isLoading || !joinCode.trim()}
-                    className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
+                    type="button"
+                    onClick={handleCloseTableByHost}
+                    disabled={isLoading}
+                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
                   >
-                    <span>{isLoading ? 'Connexion à la table…' : 'Rejoindre et synchroniser les parties'}</span>
-                    <ArrowRight size={14} />
+                    <PowerOff size={14} />
+                    <span>Sauvegarder et quitter la table</span>
                   </button>
-
-                  <div className="p-3 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-800 text-[11px] text-stone-600 dark:text-slate-400 space-y-1">
-                    <p className="font-semibold text-stone-800 dark:text-slate-200 flex items-center gap-1.5">
-                      <Info size={13} className="text-[#c83b3b] shrink-0" />
-                      <span>Synchronisation automatique</span>
-                    </p>
-                    <p className="leading-relaxed">
-                      Dès que vous rejoignez la table, toutes les parties jouées (et leurs joueurs) sont automatiquement enregistrées dans votre carnet Ardoise jusqu'à la clôture de la table.
-                    </p>
-                  </div>
-                </form>
-              )}
+                  <p className="text-[10px] text-stone-500 dark:text-slate-400 text-center leading-tight">
+                    Ferme la table chez tous les participants. Toutes les parties jouées restent enregistrées dans le carnet de chacun.
+                  </p>
+                </div>
+              </div>
+            )
+          ) : (
+            /* CHARGEMENT / INITIALISATION AUTOMATIQUE DE LA TABLE */
+            <div className="py-12 px-4 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#c83b3b]/10 text-[#c83b3b] flex items-center justify-center mx-auto animate-pulse">
+                <Loader2 size={24} className="animate-spin" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-stone-700 dark:text-slate-300">
+                  Ouverture de la table en direct…
+                </p>
+                <p className="text-[11px] text-stone-400 dark:text-slate-500">
+                  Génération du QR code et du code de table en cours…
+                </p>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Pied */}
+        {/* Pied de la modale */}
         {!closedSummary && (!justJoined || isHost) && (
           <div className="p-3 sm:p-4 border-t border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 flex items-center justify-between">
-            {activeSession ? (
+            {activeSession && isHost && activeTab === 'create' ? (
               <button
                 type="button"
                 onClick={handleCancelLiveSession}
@@ -812,4 +964,3 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     document.body
   )
 }
-
