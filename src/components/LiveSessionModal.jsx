@@ -38,7 +38,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const [sessionDetails, setSessionDetails] = useState(null)
   const [activeTab, setActiveTab] = useState(initialJoinCode ? 'join' : 'create') // 'create' | 'join'
   const [sessionName, setSessionName] = useState('')
-  const [includeTodayGames, setIncludeTodayGames] = useState(true)
+  const [includeTodayGames, setIncludeTodayGames] = useState(false)
   const [joinCode, setJoinCode] = useState(initialJoinCode ? initialJoinCode.toUpperCase() : 'TAB-')
 
   const [isLoading, setIsLoading] = useState(false)
@@ -54,6 +54,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const [isEditingCity, setIsEditingCity] = useState(false)
   const [editingCityValue, setEditingCityValue] = useState('')
   const [showCityHelp, setShowCityHelp] = useState(false)
+  const [showGeneralHelp, setShowGeneralHelp] = useState(false)
 
   const lastSigRef = useRef('')
 
@@ -77,6 +78,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
       setIsEditingName(false)
       setIsEditingCity(false)
       setShowCityHelp(false)
+      setShowGeneralHelp(false)
       setIsLoading(false)
       return
     }
@@ -96,7 +98,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     }
 
     if (current && current.code) {
-      // Chargement silencieux en arrière-plan sans toucher à isLoading
+      setActiveTab('create')
       fetchLiveSession(current.code)
         .then((data) => {
           if (data) {
@@ -107,6 +109,28 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         .catch(() => {})
     } else {
       setActiveTab('create')
+      // Auto-création immédiate pour afficher directement le QR code de base dès l'ouverture
+      const defaultTitle = `Table du ${new Intl.DateTimeFormat('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+      }).format(new Date())}`
+      setIsLoading(true)
+      createLiveSession(defaultTitle, 'Hôte', [], [])
+        .then((code) => {
+          const newSession = getActiveSession()
+          setActiveSession(newSession)
+          if (onSessionChanged) onSessionChanged(newSession)
+          return fetchLiveSession(code)
+        })
+        .then((data) => {
+          if (data) setSessionDetails(data)
+        })
+        .catch((err) => {
+          setError(err.message || 'Impossible de créer la table en direct')
+        })
+        .finally(() => {
+          setIsLoading(false)
+        })
     }
   }, [isOpen, initialJoinCode])
 
@@ -257,6 +281,88 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
       })
     } catch (err) {
       setError(err.message || 'Impossible de mettre à jour la ville')
+    }
+  }
+
+  // Synchroniser la case à cocher avec la présence effective des parties du jour sur la table
+  useEffect(() => {
+    if (sessionDetails?.state?.games && todayGames.length > 0) {
+      const liveIds = new Set((sessionDetails.state.games || []).map((g) => g.id))
+      const allIncluded = todayGames.every((g) => liveIds.has(g.id))
+      setIncludeTodayGames(allIncluded)
+    } else {
+      setIncludeTodayGames(false)
+    }
+  }, [sessionDetails, todayGames])
+
+  // Coche / décocher pour inclure ou retirer les parties jouées aujourd'hui
+  const handleToggleIncludeTodayGames = async (e) => {
+    const nextVal = e.target.checked
+    setIncludeTodayGames(nextVal)
+    if (!activeSession?.code) return
+
+    try {
+      const currentDetails = sessionDetails || (await fetchLiveSession(activeSession.code))
+      const currentGames = Array.isArray(currentDetails.state?.games) ? [...currentDetails.state.games] : []
+
+      let nextGames = []
+      if (nextVal) {
+        const currentIds = new Set(currentGames.map((g) => g.id))
+        const toAdd = todayGames.filter((g) => !currentIds.has(g.id))
+        nextGames = [...toAdd, ...currentGames]
+      } else {
+        const todayIds = new Set(todayGames.map((g) => g.id))
+        nextGames = currentGames.filter((g) => !todayIds.has(g.id))
+      }
+
+      const nextState = { ...(currentDetails.state || {}), games: nextGames }
+      await fetch(`/api/sessions/${encodeURIComponent(activeSession.code)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: nextState }),
+      })
+
+      setSessionDetails((prev) => ({
+        ...prev,
+        state: nextState,
+      }))
+      setStatusBanner({
+        type: 'success',
+        text: nextVal
+          ? `${todayGames.length} partie${todayGames.length > 1 ? 's' : ''} ajoutée${todayGames.length > 1 ? 's' : ''} à la table en direct.`
+          : 'Parties du jour retirées de la table en direct.',
+      })
+    } catch (err) {
+      setError(err.message || 'Impossible de mettre à jour les parties de la table')
+    }
+  }
+
+  // Clic sur l'onglet "Ouvrir une table" : auto-création si aucune table active
+  const handleSelectCreateTab = () => {
+    setActiveTab('create')
+    const current = getActiveSession()
+    if (!current && !isLoading) {
+      const defaultTitle = `Table du ${new Intl.DateTimeFormat('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+      }).format(new Date())}`
+      setIsLoading(true)
+      createLiveSession(defaultTitle, 'Hôte', [], [])
+        .then((code) => {
+          const newSession = getActiveSession()
+          setActiveSession(newSession)
+          if (onSessionChanged) onSessionChanged(newSession)
+          return fetchLiveSession(code)
+        })
+        .then((data) => {
+          if (data) setSessionDetails(data)
+        })
+        .catch((err) => {
+          setError(err.message || 'Impossible de créer la table en direct')
+        })
+        .finally(() => {
+          setIsLoading(false)
+        })
     }
   }
 
@@ -458,9 +564,44 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
               <Radio size={18} />
             </span>
             <div className="min-w-0 flex-1">
-              <h2 id="live-session-title" className="text-base font-bold font-serif-title leading-snug truncate">
-                {closedSummary ? 'Table terminée' : 'Table en direct'}
-              </h2>
+              <div className="flex items-center gap-1.5">
+                <h2 id="live-session-title" className="text-base font-bold font-serif-title leading-snug truncate">
+                  {closedSummary ? 'Table terminée' : 'Table en direct'}
+                </h2>
+                {!closedSummary && (
+                  <div className="relative inline-flex items-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowGeneralHelp((prev) => !prev)}
+                      className="w-4 h-4 rounded-full border border-stone-300 dark:border-slate-700 text-stone-400 hover:text-[#c83b3b] hover:border-[#c83b3b] dark:hover:text-[#c83b3b] flex items-center justify-center text-[10px] font-bold cursor-pointer transition-colors shrink-0"
+                      title="Comment fonctionne la table en direct ?"
+                      aria-label="Comment fonctionne la table en direct ?"
+                    >
+                      ?
+                    </button>
+                    {showGeneralHelp && (
+                      <div className="absolute top-6 left-0 w-64 sm:w-72 p-3 rounded-xl bg-stone-900/95 dark:bg-slate-800 text-stone-100 text-[11px] leading-relaxed shadow-xl border border-stone-700 z-50 animate-in fade-in zoom-in-95">
+                        <div className="flex items-start justify-between gap-1 mb-1.5">
+                          <span className="font-bold text-amber-300 flex items-center gap-1.5">
+                            <Info size={12} />
+                            Évitez de saisir les scores en double !
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setShowGeneralHelp(false)}
+                            className="text-stone-400 hover:text-white p-0.5"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                        <p>
+                          Une seule personne note les points. Les autres joueurs scannent le QR code : toutes les parties jouées pendant la séance s'enregistrent automatiquement dans leur propre application Ardoise.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
                 {closedSummary ? 'Récapitulatif de clôture' : 'Partage automatique des parties jouées'}
               </p>
@@ -482,7 +623,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
           <div className="px-4 sm:px-5 pt-3 pb-0 flex border-b border-stone-200/60 dark:border-slate-800/60 bg-[#faf9f5]/50 dark:bg-[#151719]/50">
             <button
               type="button"
-              onClick={() => setActiveTab('create')}
+              onClick={handleSelectCreateTab}
               className={`flex-1 pb-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer focus:outline-none ${
                 activeTab === 'create'
                   ? 'border-[#c83b3b] text-[#c83b3b]'
@@ -967,6 +1108,21 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   </div>
                 </div>
 
+                {/* Option pour inclure ou non les parties déjà jouées aujourd'hui (décoché de base) */}
+                {todayGames.length > 0 && (
+                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200/80 dark:border-slate-800 bg-stone-50/70 dark:bg-slate-900/40 hover:bg-stone-100/70 dark:hover:bg-slate-800/60 cursor-pointer select-none transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={includeTodayGames}
+                      onChange={handleToggleIncludeTodayGames}
+                      className="rounded border-stone-300 text-[#c83b3b] focus:ring-[#c83b3b] accent-[#c83b3b] w-4 h-4 cursor-pointer"
+                    />
+                    <span className="text-xs text-stone-700 dark:text-slate-300 font-medium">
+                      Inclure les <strong>{todayGames.length} partie{todayGames.length > 1 ? 's' : ''}</strong> déjà jouée{todayGames.length > 1 ? 's' : ''} aujourd'hui
+                    </span>
+                  </label>
+                )}
+
                 {/* Parties de la session */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between px-1">
@@ -1030,57 +1186,20 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
               </div>
             )
           ) : (
-            /* VUE CRÉATION EXPLICITE : DEMANDE LE NOM ET SI ON INCLUT LES PARTIES DU JOUR */
-            <form onSubmit={handleCreate} className="space-y-3.5">
-              {/* Nom de la table */}
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1">
-                  Nom de la table <span className="font-normal lowercase opacity-75">(optionnel)</span>
-                </label>
-                <input
-                  type="text"
-                  value={sessionName}
-                  onChange={(e) => setSessionName(e.target.value)}
-                  placeholder="Ex : Soirée Belote & Dourak"
-                  className="w-full px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium focus:outline-none focus:border-[#c83b3b]"
-                />
+            /* CHARGEMENT / INITIALISATION AUTOMATIQUE DE LA TABLE */
+            <div className="py-12 px-4 text-center space-y-3 animate-in fade-in duration-200">
+              <div className="w-12 h-12 rounded-2xl bg-[#c83b3b]/10 text-[#c83b3b] flex items-center justify-center mx-auto">
+                <Radio size={24} className="animate-pulse text-[#c83b3b]" />
               </div>
-
-              {/* Option pour inclure ou non les parties déjà jouées aujourd'hui */}
-              {todayGames.length > 0 && (
-                <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-stone-200/80 dark:border-slate-800 bg-stone-50/70 dark:bg-slate-900/40 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={includeTodayGames}
-                    onChange={(e) => setIncludeTodayGames(e.target.checked)}
-                    className="rounded border-stone-300 text-[#c83b3b] focus:ring-[#c83b3b] accent-[#c83b3b] w-4 h-4 cursor-pointer"
-                  />
-                  <span className="text-xs text-stone-700 dark:text-slate-300 font-medium">
-                    Inclure les <strong>{todayGames.length} partie{todayGames.length > 1 ? 's' : ''}</strong> déjà jouée{todayGames.length > 1 ? 's' : ''} aujourd'hui
-                  </span>
-                </label>
-              )}
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
-              >
-                <span>{isLoading ? 'Création de la table…' : 'Générer le QR code de la table'}</span>
-                <ArrowRight size={14} />
-              </button>
-
-              {/* Micro-explication pédagogique */}
-              <div className="p-3 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-800 text-[11px] text-stone-600 dark:text-slate-400 space-y-1">
-                <p className="font-semibold text-stone-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <Info size={13} className="text-[#c83b3b] shrink-0" />
-                  <span>Évitez de saisir les scores en double&nbsp;!</span>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-stone-700 dark:text-slate-300">
+                  Ouverture de la table en direct…
                 </p>
-                <p className="leading-relaxed">
-                  Une seule personne note les points. Les autres joueurs scannent le QR code&nbsp;: toutes les parties jouées pendant la séance s'enregistrent automatiquement dans leur propre application Ardoise.
+                <p className="text-[11px] text-stone-400 dark:text-slate-500">
+                  Génération du QR code et du code de table en cours…
                 </p>
               </div>
-            </form>
+            </div>
           )}
         </div>
 
