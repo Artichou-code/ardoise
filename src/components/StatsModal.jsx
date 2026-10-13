@@ -26,12 +26,14 @@ export function StatsModal({ isOpen, onClose }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [selectedCity, setSelectedCity] = useState(null)
 
   useScrollLock(isOpen)
 
   useEffect(() => {
     if (!isOpen) return
     setError(null)
+    setSelectedCity(null)
     loadStats()
   }, [isOpen])
 
@@ -74,6 +76,11 @@ export function StatsModal({ isOpen, onClose }) {
   // Géographie
   const countries = data?.geo?.countries || []
   const cities = data?.geo?.cities || []
+  const cityEvents = data?.geo?.cityEvents || []
+
+  const selectedCityEvents = selectedCity
+    ? cityEvents.filter(e => (e.city || '').toLowerCase() === selectedCity.toLowerCase())
+    : []
 
   // Jeux les plus populaires
   const gamesPopularity = data?.gamesPopularity || []
@@ -91,6 +98,29 @@ export function StatsModal({ isOpen, onClose }) {
     if (!dateStr) return ''
     const [y, m, d] = dateStr.split('-')
     return y && m && d ? `${d}/${m}/${y}` : dateStr
+  }
+
+  const formatEventTime = (isoString) => {
+    if (!isoString) return ''
+    try {
+      const d = new Date(isoString)
+      if (isNaN(d.getTime())) return isoString
+      return d.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    } catch {
+      return isoString
+    }
+  }
+
+  const getEventLabel = (ev) => {
+    if (ev.type === 'session_join') return 'Rejoint table en direct'
+    if (ev.source === 'shared_game' || ev.type === 'share_game_view') return `Partage ${ev.type || 'partie'}`
+    if (ev.type === 'qr_share_scan') return 'Scan QR installation'
+    return ev.type || 'Activité'
   }
 
   const StatCard = ({ icon: Icon, color, label, value, sub }) => (
@@ -279,25 +309,89 @@ export function StatsModal({ isOpen, onClose }) {
                   </p>
                 )}
 
-                {/* Top Villes — Pastilles flexibles sans troncature */}
+                {/* Top Villes — Pastilles interactives pour inspecter les activités */}
                 {cities.length > 0 && (
                   <div className="pt-2 border-t border-stone-100 dark:border-slate-800/80">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1.5 flex items-center gap-1">
-                      <MapPin size={11} className="text-stone-400" />
-                      Villes actives
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {cities.map((ci, idx) => (
-                        <span
-                          key={`${ci.city}-${idx}`}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-stone-100/90 dark:bg-slate-800 text-stone-800 dark:text-slate-200 text-[11px] font-medium border border-stone-200/60 dark:border-slate-700/60"
-                        >
-                          <span className="text-xs">{ci.flag}</span>
-                          <span>{ci.city}</span>
-                          <span className="font-bold text-[#c83b3b] ml-0.5">({ci.count})</span>
-                        </span>
-                      ))}
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1">
+                        <MapPin size={11} className="text-stone-400" />
+                        Villes actives
+                      </p>
+                      <span className="text-[10px] text-stone-400 dark:text-slate-500 italic">
+                        Cliquez pour inspecter
+                      </span>
                     </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {cities.map((ci, idx) => {
+                        const isSelected = selectedCity === ci.city
+                        return (
+                          <button
+                            key={`${ci.city}-${idx}`}
+                            type="button"
+                            onClick={() => setSelectedCity(isSelected ? null : ci.city)}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all cursor-pointer active:scale-95 ${
+                              isSelected
+                                ? 'bg-[#c83b3b]/15 border-[#c83b3b] text-[#c83b3b] dark:text-rose-400 font-bold shadow-2xs'
+                                : 'bg-stone-100/90 dark:bg-slate-800 text-stone-800 dark:text-slate-200 border-stone-200/60 dark:border-slate-700/60 hover:border-stone-400 dark:hover:border-slate-600'
+                            }`}
+                            title={`Voir les activités enregistrées à ${ci.city}`}
+                          >
+                            <span className="text-xs">{ci.flag}</span>
+                            <span>{ci.city}</span>
+                            <span className={`font-bold ml-0.5 ${isSelected ? 'text-[#c83b3b] dark:text-rose-400' : 'text-[#c83b3b]'}`}>
+                              ({ci.count})
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Fiche détaillée de la ville sélectionnée */}
+                    {selectedCity && (
+                      <div className="mt-2.5 p-2.5 rounded-xl bg-stone-50 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/80 space-y-2 animate-in fade-in duration-150">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[11px] font-bold text-stone-900 dark:text-slate-100 flex items-center gap-1.5">
+                            <MapPin size={12} className="text-[#c83b3b]" />
+                            Activités à {selectedCity} :
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCity(null)}
+                            className="p-1 rounded-md text-stone-400 hover:text-stone-600 dark:hover:text-slate-200 hover:bg-stone-200/50 dark:hover:bg-slate-700/50 cursor-pointer"
+                            aria-label="Fermer"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+
+                        {selectedCityEvents.length > 0 ? (
+                          <div className="space-y-1.5 max-h-40 overflow-y-auto pr-0.5 divide-y divide-stone-150 dark:divide-slate-700/50">
+                            {selectedCityEvents.map((ev, i) => (
+                              <div key={`${ev.code || ev.type}-${i}`} className="pt-1.5 first:pt-0 flex items-center justify-between text-[11px] gap-2">
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5 font-medium text-stone-800 dark:text-slate-200 truncate">
+                                    <span>{getEventLabel(ev)}</span>
+                                    {ev.code && (
+                                      <span className="font-mono text-[10px] px-1 py-0.2 rounded bg-stone-200/70 dark:bg-slate-700 font-bold text-stone-700 dark:text-slate-300 shrink-0">
+                                        {ev.code}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-[10px] text-stone-400 dark:text-slate-500">
+                                    {formatEventTime(ev.createdAt)} {ev.os ? `· ${ev.os}` : ''}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-[10px] text-stone-400 italic">
+                            Aucun détail supplémentaire pour cette ville.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

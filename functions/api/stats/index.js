@@ -185,6 +185,43 @@ export async function onRequest(context) {
       count: row.count,
     }))
 
+    // 6b. Événements récents par ville (pour inspecter le détail en cliquant sur une ville)
+    const cityEventsRaw = await env.DB.prepare(
+      `SELECT 
+         'scan' as source,
+         event_type as type,
+         session_code as code,
+         city,
+         country,
+         device_os as os,
+         created_at
+       FROM scan_events
+       WHERE city IS NOT NULL AND city != ''
+       UNION ALL
+       SELECT 
+         'shared_game' as source,
+         game_type as type,
+         game_id as code,
+         city,
+         country,
+         'Web' as os,
+         created_at
+       FROM shared_games
+       WHERE city IS NOT NULL AND city != ''
+       ORDER BY created_at DESC
+       LIMIT 60`
+    ).all()
+
+    const cityEvents = (cityEventsRaw.results || []).map((r) => ({
+      source: r.source,
+      type: r.type,
+      code: r.code,
+      city: r.city,
+      country: r.country,
+      os: r.os,
+      createdAt: r.created_at ? r.created_at.replace(' ', 'T') + 'Z' : new Date().toISOString(),
+    }))
+
     // 7. Matériel & OS
     const devicesRaw = await env.DB.prepare(
       `SELECT device_os, COUNT(*) as count 
@@ -267,6 +304,7 @@ export async function onRequest(context) {
         geo: {
           countries,
           cities,
+          cityEvents,
         },
         gamesPopularity,
         devices,
