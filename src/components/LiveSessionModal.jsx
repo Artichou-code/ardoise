@@ -635,9 +635,9 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                     {showGeneralHelp && (
                       <div className="absolute top-6 left-1/2 -translate-x-1/2 sm:-translate-x-1/4 w-64 sm:w-72 max-w-[calc(100vw-2.5rem)] p-3 rounded-xl bg-stone-900/95 dark:bg-slate-800 text-stone-100 text-[11px] leading-relaxed shadow-xl border border-stone-700 z-50 animate-in fade-in zoom-in-95">
                         <div className="flex items-start justify-between gap-1 mb-1.5">
-                          <span className="font-bold text-amber-300 flex items-center gap-1.5">
-                            <Info size={12} />
-                            Évitez de saisir les scores en double !
+                          <span className="font-bold text-amber-300 flex items-center gap-1.5 truncate">
+                            <Info size={12} className="shrink-0" />
+                            Partage automatique
                           </span>
                           <button
                             type="button"
