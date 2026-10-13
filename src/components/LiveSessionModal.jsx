@@ -14,7 +14,6 @@ import {
   PowerOff,
   Pencil,
   MapPin,
-  Maximize2,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useGame } from '../context/GameContext'
@@ -1025,18 +1024,15 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
 
                   {/* Layout compact 2 colonnes : QR Code à gauche + Actions et Ville à droite */}
                   <div className="flex items-stretch gap-3">
-                    {/* Colonne gauche : QR Code compact (cliquable pour plein écran) */}
+                    {/* Colonne gauche : QR Code compact (cliquable pour afficher en grand) */}
                     <button
                       type="button"
                       onClick={() => setIsFullscreenQr(true)}
-                      className="relative group shrink-0 p-1.5 bg-white rounded-xl shadow-2xs border border-stone-200/90 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:border-[#c83b3b] hover:shadow-md transition-all active:scale-[0.98]"
-                      title="Agrandir en plein écran (luminosité max)"
-                      aria-label="Afficher le QR code en plein écran"
+                      className="shrink-0 p-1.5 bg-white rounded-xl shadow-2xs border border-stone-200/90 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:border-[#c83b3b] hover:shadow-md transition-all active:scale-[0.98]"
+                      title="Cliquer pour afficher en grand"
+                      aria-label="Afficher le QR code en grand"
                     >
                       <QRCodeSVG value={shareUrl} size={104} level="M" />
-                      <span className="absolute bottom-1 right-1 p-0.5 rounded-md bg-stone-900/60 text-white flex items-center justify-center pointer-events-none group-hover:bg-[#c83b3b] transition-colors shadow-xs" title="Plein écran">
-                        <Maximize2 size={10} />
-                      </span>
                     </button>
 
                     {/* Colonne droite : Boutons copier / inviter sur deux lignes + ligne Ville */}
