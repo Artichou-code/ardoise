@@ -37,7 +37,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const [activeTab, setActiveTab] = useState(initialJoinCode ? 'join' : 'create') // 'create' | 'join'
   const [sessionName, setSessionName] = useState('')
   const [includeTodayGames, setIncludeTodayGames] = useState(true)
-  const [joinCode, setJoinCode] = useState(initialJoinCode || '')
+  const [joinCode, setJoinCode] = useState(initialJoinCode ? initialJoinCode.toUpperCase() : 'TAB-')
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -553,16 +553,34 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 <input
                   type="text"
                   value={joinCode}
+                  onFocus={(e) => {
+                    if (e.target.value === 'TAB-') {
+                      e.target.setSelectionRange(4, 4)
+                    }
+                  }}
                   onChange={(e) => {
                     let val = e.target.value.toUpperCase().replace(/\s+/g, '')
-                    if (/^TAB[A-Z0-9]/i.test(val) && !val.startsWith('TAB-')) {
+                    if (!val || val === 'TAB' || val === 'TA' || val === 'T') {
+                      setJoinCode('TAB-')
+                      return
+                    }
+                    if (val.includes('HTTP') || val.includes('SESSION=') || val.includes('TABLE=')) {
+                      const extracted = extractCodeFromInput(val, 'TAB')
+                      if (extracted) {
+                        setJoinCode(extracted)
+                        return
+                      }
+                    }
+                    if (/^[A-Z0-9]{1,4}$/.test(val) && !val.startsWith('TAB-') && !val.startsWith('ARD-')) {
+                      val = 'TAB-' + val
+                    } else if (/^TAB[A-Z0-9]/.test(val) && !val.startsWith('TAB-')) {
                       val = 'TAB-' + val.slice(3)
-                    } else if (/^ARD[A-Z0-9]/i.test(val) && !val.startsWith('ARD-')) {
+                    } else if (/^ARD[A-Z0-9]/.test(val) && !val.startsWith('ARD-')) {
                       val = 'ARD-' + val.slice(3)
                     }
                     setJoinCode(val)
                   }}
-                  placeholder="Ex : TAB-7B92"
+                  placeholder="TAB-XXXX"
                   required
                   className="w-full font-mono uppercase px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none focus:border-[#c83b3b]"
                 />
@@ -570,7 +588,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
 
               <button
                 type="submit"
-                disabled={isLoading || !joinCode.trim()}
+                disabled={isLoading || !joinCode.trim() || joinCode.trim() === 'TAB-' || joinCode.trim().length < 5}
                 className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
               >
                 <span>{isLoading ? 'Connexion à la table…' : 'Rejoindre et synchroniser les parties'}</span>

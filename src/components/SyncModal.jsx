@@ -36,7 +36,7 @@ import {
 export function SyncModal({ isOpen, onClose, onDataUpdated }) {
   const [activeTab, setActiveTab] = useState('cloud') // 'cloud' | 'file'
   const [currentSyncKey, setCurrentSyncKey] = useState('')
-  const [inputKey, setInputKey] = useState('')
+  const [inputKey, setInputKey] = useState('SYNC-')
   const [lastSynced, setLastSynced] = useState(null)
   const [autoSync, setAutoSync] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
@@ -66,6 +66,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
     setStatusMessage(null)
     setImportPreview(null)
     setCopied(false)
+    setInputKey('SYNC-')
 
     // Initialiser silencieusement le carnet sur Cloudflare D1 dès l'ouverture s'il n'a jamais été synchronisé
     if (key && !getLastSyncedAt()) {
@@ -133,7 +134,7 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
     try {
       const result = await synchronizeNotebook(cleanKey, { requireExisting: true })
       setCurrentSyncKey(cleanKey)
-      setInputKey('')
+      setInputKey('SYNC-')
       setLastSynced(getLastSyncedAt())
 
       const addedGames = result.stats?.gamesAdded || 0
@@ -365,9 +366,27 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                   <input
                     type="text"
                     value={inputKey}
+                    onFocus={(e) => {
+                      if (e.target.value === 'SYNC-') {
+                        e.target.setSelectionRange(5, 5)
+                      }
+                    }}
                     onChange={(e) => {
                       let val = e.target.value.toUpperCase().replace(/\s+/g, '')
-                      if (/^SYNC[A-Z0-9]/i.test(val) && !val.startsWith('SYNC-')) {
+                      if (!val || val === 'SYNC' || val === 'SYN' || val === 'SY' || val === 'S') {
+                        setInputKey('SYNC-')
+                        return
+                      }
+                      if (val.includes('HTTP') || val.includes('SHARE=') || val.includes('SYNC=')) {
+                        const extracted = extractCodeFromInput(val, 'SYNC')
+                        if (extracted) {
+                          setInputKey(extracted)
+                          return
+                        }
+                      }
+                      if (/^[A-Z0-9]{1,4}$/.test(val) && !val.startsWith('SYNC-') && !val.startsWith('ARD-')) {
+                        val = 'SYNC-' + val
+                      } else if (/^SYNC[A-Z0-9]/i.test(val) && !val.startsWith('SYNC-')) {
                         val = 'SYNC-' + val.slice(4)
                       } else if (/^ARD[A-Z0-9]/i.test(val) && !val.startsWith('ARD-')) {
                         val = 'ARD-' + val.slice(3)
@@ -375,12 +394,11 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
                       setInputKey(val)
                     }}
                     placeholder="Ex : SYNC-7B92"
-                    maxLength={12}
                     className="flex-1 font-mono uppercase px-3 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-stone-800 dark:text-slate-200 focus:outline-none focus:border-[#c83b3b]"
                   />
                   <button
                     type="submit"
-                    disabled={isLoading || !inputKey.trim()}
+                    disabled={isLoading || !inputKey.trim() || inputKey.trim() === 'SYNC-' || inputKey.trim().length < 6}
                     className="px-3.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-semibold text-xs text-stone-800 dark:text-slate-200 disabled:opacity-40 cursor-pointer flex items-center gap-1 shrink-0"
                   >
                     <span>Importer</span>
