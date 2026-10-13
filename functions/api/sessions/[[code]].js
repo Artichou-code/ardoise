@@ -38,13 +38,26 @@ export async function onRequest(context) {
         ? body.state.games
         : [];
 
-      const initialState = JSON.stringify(body.state || {
+      const cf = request.cf || {};
+      const detectedCity = cf.city || null;
+      const detectedCountry = cf.country || null;
+      const customCity = body.customCity ? String(body.customCity).trim() : null;
+      const finalCity = customCity || (body.city ? String(body.city).trim() : null) || detectedCity || null;
+
+      const stateObj = body.state || {
         name: body.name || 'Session Ardoise',
         createdAt: new Date().toISOString(),
         host: body.host || 'Hôte',
         participants: body.participants || [],
         games: initialGames,
-      });
+      };
+
+      stateObj.city = finalCity;
+      stateObj.detectedCity = detectedCity;
+      stateObj.customCity = customCity;
+      stateObj.country = detectedCountry;
+
+      const initialState = JSON.stringify(stateObj);
 
       await env.DB.prepare(
         `INSERT INTO live_sessions (session_code, host_name, state_json, created_at, updated_at)
@@ -53,7 +66,32 @@ export async function onRequest(context) {
         .bind(sessionCode, body.host || 'Hôte', initialState)
         .run();
 
-      return Response.json({ success: true, sessionCode }, { headers: corsHeaders });
+      // Enregistrer l'événement de création dans scan_events pour enrichir les stats globales immédiatement
+      try {
+        const ua = request.headers.get('User-Agent') || '';
+        let device_os = 'Autre';
+        if (/iphone|ipad|ipod/i.test(ua)) device_os = 'iOS';
+        else if (/android/i.test(ua)) device_os = 'Android';
+        else if (/macintosh|mac os x/i.test(ua)) device_os = 'macOS';
+        else if (/windows/i.test(ua)) device_os = 'Windows';
+        else if (/linux/i.test(ua)) device_os = 'Linux';
+        const is_pwa = body.is_pwa ? 1 : 0;
+
+        await env.DB.prepare(
+          `INSERT INTO scan_events (event_type, session_code, user_agent, country, city, device_os, is_pwa) 
+           VALUES ('session_create', ?, ?, ?, ?, ?, ?)`
+        )
+          .bind(sessionCode, ua.slice(0, 300), detectedCountry, finalCity, device_os, is_pwa)
+          .run();
+      } catch (_) {}
+
+      return Response.json({
+        success: true,
+        sessionCode,
+        city: finalCity,
+        detectedCity,
+        country: detectedCountry,
+      }, { headers: corsHeaders });
     }
 
     // Extraction du code de session pour GET et UPDATE
@@ -79,6 +117,15 @@ export async function onRequest(context) {
       const isClosed = Boolean(row.closed || parsedState.closed);
       parsedState.closed = isClosed;
 
+      const cf = request.cf || {};
+      const currentDetectedCity = parsedState.detectedCity || cf.city || null;
+      const currentCity = parsedState.customCity || parsedState.city || currentDetectedCity || null;
+      const currentCountry = parsedState.country || cf.country || null;
+
+      if (!parsedState.city && currentCity) parsedState.city = currentCity;
+      if (!parsedState.detectedCity && currentDetectedCity) parsedState.detectedCity = currentDetectedCity;
+      if (!parsedState.country && currentCountry) parsedState.country = currentCountry;
+
       return Response.json(
         {
           success: true,
@@ -86,6 +133,10 @@ export async function onRequest(context) {
           hostName: row.host_name,
           closed: isClosed,
           state: parsedState,
+          city: currentCity,
+          detectedCity: currentDetectedCity,
+          customCity: parsedState.customCity || null,
+          country: currentCountry,
           updatedAt: row.updated_at,
         },
         { headers: corsHeaders }
@@ -124,6 +175,57 @@ export async function onRequest(context) {
           .run();
 
         return Response.json({ success: true, sessionCode, closed: true, state: currentState }, { headers: corsHeaders });
+      }
+
+      // Action atomique : Mettre à jour la ville (nom manuel ou correction de détection)
+      if (body.action === 'update_city') {
+        const rawNewCity = (body.city || '').trim();
+        const newCity = rawNewCity || null;
+        const existing = await env.DB.prepare(
+          'SELECT state_json FROM live_sessions WHERE session_code = ?'
+        )
+          .bind(sessionCode)
+          .first();
+
+        if (!existing) {
+          return Response.json({ error: 'Session introuvable' }, { status: 404, headers: corsHeaders });
+        }
+
+        let currentState = {};
+        try {
+          currentState = JSON.parse(existing.state_json || '{}');
+        } catch {}
+
+        currentState.customCity = newCity;
+        currentState.city = newCity || currentState.detectedCity || null;
+        currentState.updatedAt = new Date().toISOString();
+
+        await env.DB.prepare(
+          `UPDATE live_sessions
+           SET state_json = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE session_code = ?`
+        )
+          .bind(JSON.stringify(currentState), sessionCode)
+          .run();
+
+        // Mettre à jour également scan_events pour que le Top Villes et le détail soient fidèles
+        if (newCity) {
+          try {
+            await env.DB.prepare(
+              `UPDATE scan_events SET city = ? WHERE session_code = ?`
+            )
+              .bind(newCity, sessionCode)
+              .run();
+          } catch (_) {}
+        }
+
+        return Response.json({
+          success: true,
+          sessionCode,
+          city: currentState.city,
+          customCity: currentState.customCity,
+          state: currentState,
+        }, { headers: corsHeaders });
       }
 
       // Action atomique : Pousser une partie sans faire de GET préalable côté client
@@ -210,6 +312,17 @@ export async function onRequest(context) {
       )
         .bind(stateJson, isClosed ? 1 : 0, sessionCode)
         .run();
+
+      const cityToUpdate = (stateObj.customCity || stateObj.city || '').trim();
+      if (cityToUpdate) {
+        try {
+          await env.DB.prepare(
+            `UPDATE scan_events SET city = ? WHERE session_code = ?`
+          )
+            .bind(cityToUpdate, sessionCode)
+            .run();
+        } catch (_) {}
+      }
 
       return Response.json({ success: true, sessionCode, closed: isClosed }, { headers: corsHeaders });
     }

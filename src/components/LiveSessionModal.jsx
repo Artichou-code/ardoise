@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   PowerOff,
   Pencil,
+  MapPin,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useGame } from '../context/GameContext'
@@ -25,6 +26,7 @@ import {
   importSessionGames,
   syncSessionGamesToLocal,
   saveActiveSession,
+  updateLiveSessionCity,
 } from '../store/liveSession'
 import { isValidLiveSessionCodeFormat, extractCodeFromInput } from '../store/syncStorage'
 import { formatDate } from '../utils/gameUtils'
@@ -49,6 +51,10 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const [isEditingName, setIsEditingName] = useState(false)
   const [editingNameValue, setEditingNameValue] = useState('')
 
+  const [isEditingCity, setIsEditingCity] = useState(false)
+  const [editingCityValue, setEditingCityValue] = useState('')
+  const [showCityHelp, setShowCityHelp] = useState(false)
+
   const lastSigRef = useRef('')
 
   useScrollLock(isOpen)
@@ -69,6 +75,8 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
       setClosedSummary(null)
       setJustJoined(false)
       setIsEditingName(false)
+      setIsEditingCity(false)
+      setShowCityHelp(false)
       setIsLoading(false)
       return
     }
@@ -200,6 +208,56 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         body: JSON.stringify({ state: nextState }),
       })
     } catch {}
+  }
+
+  // Ville affichée pour la table (priorité au choix manuel de l'hôte, sinon détection IP)
+  const currentCityDisplay = useMemo(() => {
+    if (activeSession?.customCity) return activeSession.customCity
+    if (sessionDetails?.state?.customCity) return sessionDetails.state.customCity
+    if (sessionDetails?.customCity) return sessionDetails.customCity
+    if (activeSession?.city) return activeSession.city
+    if (sessionDetails?.state?.city) return sessionDetails.state.city
+    if (sessionDetails?.city) return sessionDetails.city
+    if (sessionDetails?.detectedCity) return sessionDetails.detectedCity
+    if (activeSession?.detectedCity) return activeSession.detectedCity
+    return ''
+  }, [activeSession, sessionDetails])
+
+  const isAutoCity = useMemo(() => {
+    const hasCustom = Boolean(activeSession?.customCity || sessionDetails?.state?.customCity || sessionDetails?.customCity)
+    return !hasCustom && Boolean(currentCityDisplay)
+  }, [activeSession, sessionDetails, currentCityDisplay])
+
+  // Corriger ou modifier manuellement la ville de la table
+  const handleSaveCity = async () => {
+    if (!activeSession?.code) return
+    const newCity = (editingCityValue || '').trim()
+    setIsEditingCity(false)
+    try {
+      await updateLiveSessionCity(activeSession.code, newCity)
+      const current = getActiveSession()
+      setActiveSession(current)
+      if (sessionDetails) {
+        setSessionDetails((prev) => ({
+          ...prev,
+          city: newCity || prev?.detectedCity || null,
+          customCity: newCity || null,
+          state: {
+            ...prev?.state,
+            city: newCity || prev?.state?.detectedCity || null,
+            customCity: newCity || null,
+          },
+        }))
+      }
+      setStatusBanner({
+        type: 'success',
+        text: newCity
+          ? `Ville de la table mise à jour : ${newCity}`
+          : 'Ville réinitialisée sur la détection automatique.',
+      })
+    } catch (err) {
+      setError(err.message || 'Impossible de mettre à jour la ville')
+    }
   }
 
   // Création explicite d'une nouvelle table par l'hôte
@@ -818,6 +876,94 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                       <Share2 size={14} />
                       <span>Inviter</span>
                     </button>
+                  </div>
+
+                  {/* Géolocalisation indicative de la table */}
+                  <div className="pt-2.5 border-t border-stone-200/70 dark:border-slate-800/70 flex items-center justify-between text-[11px] text-stone-600 dark:text-slate-400">
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                      <MapPin size={12} className="text-[#c83b3b] shrink-0" />
+                      <span className="shrink-0 text-stone-400 dark:text-slate-500 font-medium">Ville&nbsp;:</span>
+                      {isEditingCity ? (
+                        <div className="flex items-center gap-1 flex-1 min-w-0">
+                          <input
+                            type="text"
+                            value={editingCityValue}
+                            onChange={(e) => setEditingCityValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveCity()
+                              if (e.key === 'Escape') setIsEditingCity(false)
+                            }}
+                            autoFocus
+                            placeholder="Ex : Toulouse"
+                            className="text-[11px] font-bold px-2 py-0.5 rounded border border-[#c83b3b] bg-white dark:bg-slate-900 text-stone-800 dark:text-slate-200 focus:outline-none flex-1 min-w-0"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleSaveCity}
+                            className="px-2 py-0.5 rounded bg-[#c83b3b] text-white text-[10px] font-bold shrink-0 cursor-pointer hover:bg-[#b03030]"
+                          >
+                            OK
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsEditingCity(false)}
+                            className="p-0.5 text-stone-400 hover:text-stone-600 dark:hover:text-slate-200 shrink-0"
+                            title="Annuler"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingCityValue(currentCityDisplay || '')
+                            setIsEditingCity(true)
+                          }}
+                          className="font-semibold text-stone-800 dark:text-slate-200 hover:text-[#c83b3b] dark:hover:text-[#c83b3b] flex items-center gap-1 truncate cursor-pointer group text-left"
+                          title="Cliquer pour corriger la ville"
+                        >
+                          <span className="truncate">{currentCityDisplay || 'Détection en cours…'}</span>
+                          {isAutoCity && (
+                            <span className="text-[9px] font-normal text-stone-400 dark:text-slate-500 shrink-0">(auto)</span>
+                          )}
+                          <Pencil size={10} className="text-stone-400 group-hover:text-[#c83b3b] shrink-0 opacity-70 ml-0.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Infobulle explicative (?) */}
+                    <div className="relative shrink-0 ml-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowCityHelp((prev) => !prev)}
+                        className="w-4 h-4 rounded-full border border-stone-300 dark:border-slate-700 text-stone-400 hover:text-stone-600 dark:hover:text-slate-300 hover:border-stone-400 flex items-center justify-center text-[10px] font-bold cursor-pointer transition-colors"
+                        title="Informations sur la géolocalisation"
+                        aria-label="Informations sur la géolocalisation"
+                      >
+                        ?
+                      </button>
+                      {showCityHelp && (
+                        <div className="absolute bottom-6 right-0 w-64 p-3 rounded-xl bg-stone-900/95 dark:bg-slate-800 text-stone-100 text-[10px] leading-relaxed shadow-xl border border-stone-700 z-50 animate-in fade-in zoom-in-95">
+                          <div className="flex items-start justify-between gap-1 mb-1.5">
+                            <span className="font-bold text-amber-300 flex items-center gap-1">
+                              <MapPin size={11} />
+                              Statistiques globales
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShowCityHelp(false)}
+                              className="text-stone-400 hover:text-white p-0.5"
+                            >
+                              <X size={11} />
+                            </button>
+                          </div>
+                          <p>
+                            Ville purement indicative pour les statistiques générales d'Ardoise (Top Villes). Aucune coordonnée GPS n'est collectée. Information 100% facultative, modifiable ou effaçable à tout moment.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 

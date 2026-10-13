@@ -169,6 +169,8 @@ export async function onRequest(context) {
           rawType,
           gameName,
           players: anonymizedPlayers,
+          customCity: state.customCity || null,
+          city: state.customCity || state.city || null,
         })
       } catch (_) {}
     }
@@ -317,7 +319,7 @@ export async function onRequest(context) {
         type: r.type,
         gameName,
         players,
-        city: r.city,
+        city: sessionInfo?.customCity || sessionInfo?.city || r.city,
         country: r.country,
         os: r.os,
         createdAt: r.created_at ? r.created_at.replace(' ', 'T') + 'Z' : new Date().toISOString(),

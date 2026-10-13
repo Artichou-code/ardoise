@@ -49,12 +49,34 @@ export function syncSessionGamesToLocal(sessionData) {
   }
 }
 
+const PREFERRED_CITY_KEY = 'ardoise_preferred_city'
+
+export function getPreferredCity() {
+  try {
+    return localStorage.getItem(PREFERRED_CITY_KEY) || ''
+  } catch {
+    return ''
+  }
+}
+
+export function setPreferredCity(city) {
+  try {
+    if (city && city.trim()) {
+      localStorage.setItem(PREFERRED_CITY_KEY, city.trim())
+    } else {
+      localStorage.removeItem(PREFERRED_CITY_KEY)
+    }
+  } catch {}
+}
+
 /**
  * Crée une session de journée sur le serveur
  */
-export async function createLiveSession(name, hostName, participants = [], initialGames = []) {
+export async function createLiveSession(name, hostName, participants = [], initialGames = [], customCity = null) {
   const cleanName = (name || '').trim() || 'Table Ardoise'
   const cleanHost = (hostName || '').trim() || 'Hôte'
+  const cityToSend = customCity !== null ? customCity : getPreferredCity()
+  const isPwa = typeof window !== 'undefined' && (window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator?.standalone === true) ? 1 : 0
 
   const res = await fetch(`${API_BASE}/sessions/create`, {
     method: 'POST',
@@ -63,6 +85,8 @@ export async function createLiveSession(name, hostName, participants = [], initi
       name: cleanName,
       host: cleanHost,
       participants,
+      customCity: cityToSend || undefined,
+      is_pwa: isPwa,
       state: {
         name: cleanName,
         createdAt: new Date().toISOString(),
@@ -85,9 +109,50 @@ export async function createLiveSession(name, hostName, participants = [], initi
     name: cleanName,
     host: cleanHost,
     isHost: true,
+    city: data.city || data.detectedCity || null,
+    detectedCity: data.detectedCity || null,
+    customCity: cityToSend || null,
   }
   saveActiveSession(localSession)
   return data.sessionCode
+}
+
+/**
+ * Met à jour la ville de la table en direct (action hôte)
+ */
+export async function updateLiveSessionCity(code, newCity) {
+  const cleanCode = extractCodeFromInput(code, 'TAB')
+  if (!cleanCode) throw new Error('Code de session manquant')
+
+  const cleanCity = (newCity || '').trim()
+
+  const res = await fetch(`${API_BASE}/sessions/${encodeURIComponent(cleanCode)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'update_city', city: cleanCity }),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || 'Impossible de mettre à jour la ville')
+  }
+
+  const data = await res.json()
+
+  if (cleanCity) {
+    setPreferredCity(cleanCity)
+  }
+
+  const active = getActiveSession()
+  if (active && active.code === cleanCode) {
+    saveActiveSession({
+      ...active,
+      city: data.city || cleanCity,
+      customCity: cleanCity || null,
+    })
+  }
+
+  return data
 }
 
 /**
@@ -153,6 +218,7 @@ export async function joinLiveSession(code, playerName = '') {
     name: state.name || 'Table Ardoise',
     host: sessionData.hostName || state.host || 'Hôte',
     isHost: false,
+    city: sessionData.city || state.city || null,
     playerName: cleanPlayer || undefined,
   }
   saveActiveSession(localSession)
