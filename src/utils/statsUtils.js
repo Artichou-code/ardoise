@@ -166,13 +166,14 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       const pName = typeof player === 'string' ? player : player.name
       const pId = typeof player === 'object' && player.id ? player.id : null
 
-      // Clé d'association : ID strict en priorité
-      let key = pId
-      if (!key && pName) {
-        // Fallback pour les parties anciennes sans ID : associer par nom si existant
-        const matched = safeRegisteredPlayers.find(rp => normalizePlayerName(rp.name) === normalizePlayerName(pName))
-        key = matched ? matched.id : `legacy_${normalizePlayerName(pName)}`
-      }
+      // Clé d'association :
+      // Chercher d'abord parmi les joueurs enregistrés par ID strict ou par nom normalisé
+      // (permet d'agréger immédiatement les parties jouées sur une table en direct au profil enregistré)
+      const norm = normalizePlayerName(pName)
+      const matched = safeRegisteredPlayers.find(rp =>
+        (pId && rp.id === pId) || (norm && normalizePlayerName(rp.name) === norm)
+      )
+      const key = matched ? matched.id : (pId || (norm ? `legacy_${norm}` : null))
       if (!key) return
 
       let stat = playerStatsMap.get(key)
@@ -219,7 +220,11 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
           if (!opp) return
           const oppName = typeof opp === 'string' ? opp : opp.name
           const oppId = typeof opp === 'object' && opp.id ? opp.id : null
-          const oppKey = oppId || (oppName ? `legacy_${normalizePlayerName(oppName)}` : null)
+          const oppNorm = normalizePlayerName(oppName)
+          const matchedOpp = safeRegisteredPlayers.find(rp =>
+            (oppId && rp.id === oppId) || (oppNorm && normalizePlayerName(rp.name) === oppNorm)
+          )
+          const oppKey = matchedOpp ? matchedOpp.id : (oppId || (oppNorm ? `legacy_${oppNorm}` : null))
           if (!oppKey || oppKey === key) return
 
           if (!stat.opponents[oppKey]) {

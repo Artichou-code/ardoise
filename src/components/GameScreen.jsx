@@ -102,7 +102,7 @@ function AnimatedRoundIndicator({ roundNumber }) {
 }
 
 export function GameScreen() {
-  const { activeGame, exitGame, undoLastRound, cancelCorrection, canUndo, finishGame, startLiveSessionForGame, removeGame } = useGame()
+  const { activeGame, exitGame, undoLastRound, cancelCorrection, canUndo, finishGame, startLiveSessionForGame, removeGame, setScreen } = useGame()
   const [showHistory, setShowHistory] = useState(false)
   const [showExitConfirm, setShowExitConfirm] = useState(false)
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
@@ -112,6 +112,13 @@ export function GameScreen() {
   const [liveSession, setLiveSession] = useState(() => getActiveSession())
   const [isLiveModalOpen, setIsLiveModalOpen] = useState(false)
   const [isCreatingLive, setIsCreatingLive] = useState(false)
+
+  // Redirection automatique vers l'écran de victoire dès que la partie est clôturée (notamment sur table en direct)
+  useEffect(() => {
+    if (activeGame?.status === 'finished') {
+      setScreen('victory')
+    }
+  }, [activeGame?.status, setScreen])
   const [isScoresCollapsed, setIsScoresCollapsed] = useState(() => {
     try {
       return localStorage.getItem('ardoise_scoreboard_collapsed') === 'true'
@@ -632,42 +639,45 @@ export function GameScreen() {
         )}
       </div>
 
-      {/* Moteur de saisie de manche */}
-      <div
-        ref={engineScrollRef}
-        className="flex-1 overflow-y-auto scrollbar-hide overscroll-none"
-        style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y', overscrollBehaviorY: 'none' }}
-      >
-        <div className="px-4 pt-1 pb-8 pb-safe">
-          <div
-            key={`${activeGame.id}-r-${activeGame.rounds.length}-${activeGame.isCorrection ? 'corr' : 'norm'}`}
-            className="animate-round-slide-in"
-          >
-            <Engine
-              game={activeGame}
-              leaderId={leaderId}
-              onFinish={finishGame}
-            />
-          </div>
+      {/* Zone centrale : moteur de jeu et boutons d'action */}
+      <div className="flex-1 relative min-h-0 flex flex-col overflow-hidden">
+        {/* Moteur de saisie de manche (défilement) */}
+        <div
+          ref={engineScrollRef}
+          className="flex-1 overflow-y-auto scrollbar-hide overscroll-none"
+          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y', overscrollBehaviorY: 'none' }}
+        >
+          <div className="px-4 pt-1 pb-4 flex flex-col">
+            <div
+              key={`${activeGame.id}-r-${activeGame.rounds.length}-${activeGame.isCorrection ? 'corr' : 'norm'}`}
+              className="animate-round-slide-in"
+            >
+              <Engine
+                game={activeGame}
+                leaderId={leaderId}
+                onFinish={finishGame}
+              />
+            </div>
 
-          {/* Actions secondaires sur la même ligne (espacement généreux avec le bas) */}
-          <div className="flex items-center gap-2 pt-3 pb-3 mb-2 w-full max-w-sm mx-auto px-1">
-            <button
-              type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-stone-500 hover:text-[#c83b3b] dark:text-slate-400 dark:hover:text-[#c83b3b] border border-stone-200/90 dark:border-slate-800 hover:border-[#c83b3b]/40 dark:hover:border-[#c83b3b]/40 bg-white/70 dark:bg-slate-900/70 hover:bg-stone-50/60 dark:hover:bg-slate-800/60 transition-all active:scale-[0.98] shadow-2xs cursor-pointer whitespace-nowrap group"
-            >
-              <Trash2 size={12} className="text-stone-400 dark:text-slate-500 group-hover:text-[#c83b3b] shrink-0 transition-colors" />
-              <span>Supprimer</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowFinishConfirm(true)}
-              className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200 border border-stone-200/90 dark:border-slate-800 hover:border-stone-300 dark:hover:border-slate-700 bg-white/70 dark:bg-slate-900/70 hover:bg-stone-50/60 dark:hover:bg-slate-800/60 transition-all active:scale-[0.98] shadow-2xs cursor-pointer whitespace-nowrap"
-            >
-              <Flag size={12} className="text-stone-400 dark:text-slate-500 shrink-0" />
-              <span className="whitespace-nowrap">Finir la partie plus tôt</span>
-            </button>
+            {/* Actions secondaires non-flottantes placées directement APRÈS le bouton de validation */}
+            <div className="pt-2 pb-2 flex items-center justify-center gap-2.5 w-full max-w-sm mx-auto px-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-stone-500 hover:text-[#c83b3b] dark:text-slate-400 dark:hover:text-[#c83b3b] border border-stone-200/90 dark:border-slate-800 hover:border-[#c83b3b]/40 dark:hover:border-[#c83b3b]/40 bg-white/70 dark:bg-slate-900/70 hover:bg-stone-50/60 dark:hover:bg-slate-800/60 transition-all active:scale-[0.98] shadow-2xs cursor-pointer whitespace-nowrap group"
+              >
+                <Trash2 size={12} className="text-stone-400 dark:text-slate-500 group-hover:text-[#c83b3b] shrink-0 transition-colors" />
+                <span>Supprimer</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFinishConfirm(true)}
+                className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-stone-500 hover:text-stone-800 dark:text-slate-400 dark:hover:text-slate-200 border border-stone-200/90 dark:border-slate-800 hover:border-stone-300 dark:hover:border-slate-700 bg-white/70 dark:bg-slate-900/70 hover:bg-stone-50/60 dark:hover:bg-slate-800/60 transition-all active:scale-[0.98] shadow-2xs cursor-pointer whitespace-nowrap"
+              >
+                <Flag size={12} className="text-stone-400 dark:text-slate-500 shrink-0" />
+                <span className="whitespace-nowrap">Finir la partie plus tôt</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

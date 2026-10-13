@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { Shield, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Shield, X, ChevronLeft, ChevronRight, HelpCircle, Target } from 'lucide-react'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { Avatar } from '../ui/Avatar'
 import { Dialog } from '../ui/Dialog'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 import { useGame } from '../../context/GameContext'
 
 export function CaracoleEngine({ game, onFinish }) {
   const { updateScores } = useGame()
   const [open, setOpen] = useState(false)
+  const [showRulesMemo, setShowRulesMemo] = useState(false)
   const [showZeroConfirm, setShowZeroConfirm] = useState(false)
   const [roundPenalties, setRoundPenalties] = useState(() => {
     const initial = {}
@@ -142,13 +144,24 @@ export function CaracoleEngine({ game, onFinish }) {
       )}
 
       <div className="school-card rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-            Pénalités de la manche (cartes en main)
-          </p>
-          <span className="text-[11px] font-semibold text-stone-400 dark:text-slate-500">
-            Seuil : {limit} pts {sursisEnabled ? `(sursis : ${sursisTarget} pts)` : ''}
-          </span>
+        <div className="flex items-center justify-between gap-2 mb-2.5">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-slate-300">
+              Points en main
+            </p>
+            <p className="text-[11px] font-medium text-stone-400 dark:text-slate-500">
+              Seuil : {limit} pts{sursisEnabled ? ` · Sursis à ${sursisTarget}` : ''}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowRulesMemo(true)}
+            className="p-1.5 rounded-xl border border-stone-200 dark:border-slate-700 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 dark:text-slate-400 transition-colors shrink-0 cursor-pointer"
+            title="Mémo règles Caracole"
+            aria-label="Mémo règles Caracole"
+          >
+            <HelpCircle size={15} />
+          </button>
         </div>
         <div className="space-y-2">
           {game.players.map(p => {
@@ -157,6 +170,9 @@ export function CaracoleEngine({ game, onFinish }) {
             const projected = current + pen
             const isReprieve = sursisEnabled && projected === limit
             const isEliminated = projected >= limit && !isReprieve
+            const ptsNeeded = limit - current
+            // Sursis pertinent uniquement en fin de partie (quand le joueur a au moins 70% des points et cible <= 35)
+            const isNearSursis = sursisEnabled && current >= Math.floor(limit * 0.7) && ptsNeeded > 0 && ptsNeeded <= 35
 
             return (
               <div
@@ -180,22 +196,48 @@ export function CaracoleEngine({ game, onFinish }) {
                 >
                   <Avatar player={p} size="xs" />
                   <div className="flex-1 min-w-0">
-                    <span className="font-semibold text-sm truncate block text-stone-900 dark:text-slate-100">
-                      {p.name}
-                    </span>
-                    <span className="text-[11px] font-medium text-stone-500 dark:text-slate-400 block mt-0.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-semibold text-sm truncate text-stone-900 dark:text-slate-100">
+                        {p.name}
+                      </span>
+                      {isNearSursis && !isReprieve && pen === 0 && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25 shrink-0 inline-flex items-center gap-0.5">
+                          <Target size={10} />
+                          +{ptsNeeded} ➔ {sursisTarget}
+                        </span>
+                      )}
+                      {isReprieve && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#c83b3b] text-white shrink-0 animate-pulse">
+                          🎯 Sursis accordé !
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] font-medium text-stone-500 dark:text-slate-400 block mt-0.5">
                       {pen > 0 ? (
                         isReprieve ? (
                           <span className="text-[#c83b3b] font-bold">
-                            Total : {current} ➔ {sursisTarget} pts (sursis !)
+                            Total : {current > 0 ? `${current} ➔ ` : ''}{sursisTarget} pts (sursis !)
+                          </span>
+                        ) : current === 0 ? (
+                          <span>
+                            Total : <strong className="text-[#c83b3b] font-bold">{projected} pts</strong>
                           </span>
                         ) : (
-                          <>Total : {current} <strong className="text-[#c83b3b] font-bold">➔ {projected} pts</strong> (+{pen})</>
+                          <span>
+                            Total : {current} <strong className="text-[#c83b3b] font-bold">➔ {projected} pts</strong>
+                          </span>
                         )
                       ) : (
-                        `Total : ${current} pts`
+                        <span>
+                          Total : {current} pt{current > 1 ? 's' : ''}
+                          {isNearSursis && (
+                            <span className="text-emerald-600 dark:text-emerald-400 font-semibold ml-1.5">
+                              · Viser +{ptsNeeded} (sursis)
+                            </span>
+                          )}
+                        </span>
                       )}
-                    </span>
+                    </div>
                   </div>
                 </button>
 
@@ -226,8 +268,8 @@ export function CaracoleEngine({ game, onFinish }) {
         </div>
       </div>
 
-      {/* Bouton de validation toujours visible (sticky bas d'écran) */}
-      <div className="sticky bottom-0 z-10 pt-2 pb-1 bg-gradient-to-t from-[var(--bg-page)] via-[var(--bg-page)]/95 to-transparent backdrop-blur-[2px]">
+      {/* Bouton de validation toujours visible (flottant bas d'écran) */}
+      <FloatingValidationBar>
         <button
           type="button"
           onClick={handleValidate}
@@ -235,7 +277,7 @@ export function CaracoleEngine({ game, onFinish }) {
         >
           Valider la manche
         </button>
-      </div>
+      </FloatingValidationBar>
 
       {/* Dialog d'avertissement 0 pénalité saisie */}
       <Dialog
@@ -262,86 +304,194 @@ export function CaracoleEngine({ game, onFinish }) {
         </div>
       </Dialog>
 
-      {editingPlayer && (
-        <BottomSheet
-          open={open}
-          onClose={() => setOpen(false)}
-        >
-          <div className="px-4 pt-1 pb-6 space-y-3">
-            {/* Carte du joueur actif & Navigation Joueur précédent / Joueur suivant */}
-            <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Avatar player={editingPlayer} size="sm" />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-sm truncate text-stone-900 dark:text-slate-100">
-                      {editingPlayer.name}
-                    </span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
-                      {currentEditingIndex + 1}/{game.players.length}
-                    </span>
-                    {(game.scores[editingPlayer.id] || 0) >= limit * 0.75 && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 shrink-0">
-                        En danger
+      {editingPlayer && (() => {
+        const curScore = game.scores[editingPlayer.id] || 0
+        const editingPtsNeeded = limit - curScore
+        const editingCanSursis = sursisEnabled && curScore >= Math.floor(limit * 0.7) && editingPtsNeeded > 0 && editingPtsNeeded <= 35
+        const currentPen = roundPenalties[editingPlayer.id] || 0
+
+        const padPresets = [0, 5, 10, 15, 20, 25, 30, 40]
+        if (editingCanSursis && editingPtsNeeded <= limit && !padPresets.includes(editingPtsNeeded)) {
+          padPresets.push(editingPtsNeeded)
+          padPresets.sort((a, b) => a - b)
+        }
+
+        return (
+          <BottomSheet
+            open={open}
+            onClose={() => setOpen(false)}
+          >
+            <div className="px-4 pt-1 pb-6 space-y-3">
+              {/* Carte du joueur actif & Navigation Joueur précédent / Joueur suivant */}
+              <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/80 dark:border-slate-700/60">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Avatar player={editingPlayer} size="sm" />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-sm truncate text-stone-900 dark:text-slate-100">
+                        {editingPlayer.name}
                       </span>
-                    )}
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-stone-200/80 dark:bg-slate-700 text-stone-600 dark:text-slate-300 shrink-0">
+                        {currentEditingIndex + 1}/{game.players.length}
+                      </span>
+                      {curScore >= limit * 0.75 && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#c83b3b]/15 text-[#c83b3b] dark:text-red-300 shrink-0">
+                          En danger
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-stone-500 dark:text-slate-400">
+                      Cumul actuel : {curScore} / {limit} pts
+                    </span>
                   </div>
-                  <span className="text-xs text-stone-500 dark:text-slate-400">
-                    Cumul actuel : {game.scores[editingPlayer.id] || 0} / {limit} pts
-                  </span>
+                </div>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    disabled={!hasPrevPlayer}
+                    onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                    title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
+                    aria-label="Joueur précédent"
+                  >
+                    <ChevronLeft size={17} />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!hasNextPlayer}
+                    onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
+                    className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
+                    title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
+                    aria-label="Joueur suivant"
+                  >
+                    <ChevronRight size={17} />
+                  </button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  disabled={!hasPrevPlayer}
-                  onClick={() => prevPlayer && setEditingPlayer(prevPlayer)}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
-                  title={prevPlayer ? `Précédent : ${prevPlayer.name}` : undefined}
-                  aria-label="Joueur précédent"
-                >
-                  <ChevronLeft size={17} />
-                </button>
-                <button
-                  type="button"
-                  disabled={!hasNextPlayer}
-                  onClick={() => nextPlayer && setEditingPlayer(nextPlayer)}
-                  className="p-1.5 rounded-lg border border-stone-200 dark:border-slate-700 disabled:opacity-25 disabled:pointer-events-none hover:bg-white dark:hover:bg-slate-700 text-stone-600 dark:text-slate-300 transition-all cursor-pointer active:scale-95"
-                  title={nextPlayer ? `Suivant : ${nextPlayer.name}` : undefined}
-                  aria-label="Joueur suivant"
-                >
-                  <ChevronRight size={17} />
-                </button>
+              {/* Bannière d'aide interactive pour viser l'objectif Sursis (uniquement en fin de partie) */}
+              {editingCanSursis && (
+                <div className="p-2.5 rounded-xl bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200/90 dark:border-emerald-800/60 flex items-center justify-between gap-3 shadow-2xs">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                      <Target size={13} className="text-emerald-600 shrink-0" />
+                      <span>Objectif Sursis : +{editingPtsNeeded} points</span>
+                    </div>
+                    <p className="text-[11px] text-emerald-700 dark:text-emerald-300/90 leading-snug mt-0.5">
+                      Si {editingPlayer.name} prend <strong>+{editingPtsNeeded} pts</strong>, il fait pile <strong>{limit} pts</strong> et <strong className="underline decoration-emerald-500">retombe à {sursisTarget} pts</strong> !
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPenalty(editingPlayer.id, editingPtsNeeded)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1 shadow-2xs ${
+                      currentPen === editingPtsNeeded
+                        ? 'bg-emerald-600 text-white ring-2 ring-emerald-400'
+                        : 'bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-slate-700 border border-emerald-300 dark:border-emerald-700 active:scale-95'
+                    }`}
+                    title={`Régler la pénalité sur +${editingPtsNeeded} pts`}
+                  >
+                    <span>+{editingPtsNeeded}</span>
+                    <span className="text-[10px] opacity-80">(Sursis)</span>
+                  </button>
+                </div>
+              )}
+
+              <ScorePad
+                key={editingPlayer.id}
+                value={currentPen}
+                onChange={v => setPenalty(editingPlayer.id, v)}
+                onConfirm={handleConfirmPad}
+                confirmLabel={confirmLabel}
+                min={0}
+                max={limit}
+                step={1}
+                label="Pénalités de la manche"
+                subLabel={
+                  editingCanSursis
+                    ? `Seuil : ${limit} pts · Visez +${editingPtsNeeded} pts (sursis)`
+                    : `Seuil : ${limit} pts`
+                }
+                presets={padPresets}
+                formatDisplay={v => `${v} pts`}
+                formatTotal={(val) => {
+                  const proj = curScore + val
+                  if (sursisEnabled && proj === limit) return `+${val} pts · Sursis : retombe à ${sursisTarget} pts !`
+                  if (limit && proj >= limit) return `+${val} pts · Nouveau cumul : ${proj}/${limit} pts 💥 Éliminé`
+                  if (curScore === 0) return `+${val} pts · Total : ${val} pts`
+                  return `+${val} pts · Total : ${curScore} ➔ ${proj} pts`
+                }}
+                baseScore={curScore}
+                showPlus={false}
+              />
+            </div>
+          </BottomSheet>
+        )
+      })()}
+
+      {/* Micro-fiche de rappel express pour Caracole */}
+      <Dialog
+        open={showRulesMemo}
+        onClose={() => setShowRulesMemo(false)}
+        title="Mémo Caracole"
+      >
+        <div className="space-y-2 text-xs text-stone-700 dark:text-slate-200">
+          {/* Valeurs des cartes */}
+          <div className="p-2.5 rounded-xl bg-stone-100/90 dark:bg-slate-800/70 border border-stone-200/80 dark:border-slate-700/60">
+            <span className="font-bold text-[11px] uppercase tracking-wider text-stone-500 dark:text-slate-400 block mb-1">
+              Valeur des cartes en main
+            </span>
+            <div className="grid grid-cols-2 gap-y-1 gap-x-2 text-[11px] leading-tight">
+              <div><strong className="text-emerald-600 dark:text-emerald-400">Le 8 = 0 pt</strong> (carte clé)</div>
+              <div><strong>As = 1 pt</strong></div>
+              <div><strong>2 à 10 :</strong> valeur faciale</div>
+              <div><strong>V, D, R :</strong> 11, 12, 13 pts</div>
+            </div>
+          </div>
+
+          {/* Combinaisons et Caracole */}
+          <div className="p-2.5 rounded-xl bg-stone-100/90 dark:bg-slate-800/70 border border-stone-200/80 dark:border-slate-700/60 text-[11px] space-y-1.5">
+            <div className="flex justify-between items-baseline">
+              <span className="font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 text-[10px]">
+                Poses
+              </span>
+              <span className="text-stone-600 dark:text-slate-300">Paires, Brelans, Carrés, Suites</span>
+            </div>
+            <div className="pt-1.5 border-t border-stone-200/60 dark:border-slate-700/50">
+              <span className="font-bold text-stone-900 dark:text-slate-100 block">
+                Annonce « Caracole » (&le; 10 pts en main) :
+              </span>
+              <div className="flex items-center justify-between text-[11px] mt-0.5">
+                <span className="text-emerald-700 dark:text-emerald-400 font-semibold">• Réussie (plus bas) ➔ <strong>0 pt</strong></span>
+                <span className="text-[#c83b3b] font-semibold">• Échouée ➔ <strong>+30 pts</strong></span>
               </div>
             </div>
-
-            <ScorePad
-              key={editingPlayer.id}
-              value={roundPenalties[editingPlayer.id] || 0}
-              onChange={v => setPenalty(editingPlayer.id, v)}
-              onConfirm={handleConfirmPad}
-              confirmLabel={confirmLabel}
-              min={0}
-              max={limit}
-              step={1}
-              label="Pénalités de la manche"
-              subLabel={`Seuil : ${limit} pts${sursisEnabled ? ` · Sursis à ${sursisTarget}` : ''}`}
-              presets={[0, 5, 10, 15, 20, 25, 30, 40]}
-              formatDisplay={v => `${v} pts`}
-              formatTotal={(val) => {
-                const curScore = game.scores[editingPlayer.id] || 0
-                const proj = curScore + val
-                if (sursisEnabled && proj === limit) return `+${val} pts · Sursis accordé : retombe à ${sursisTarget} pts !`
-                if (limit && proj >= limit) return `+${val} pts · Nouveau cumul : ${proj}/${limit} pts 💥 Éliminé`
-                return `+${val} pts · Nouveau cumul : ${proj}/${limit} pts`
-              }}
-              baseScore={game.scores[editingPlayer.id] || 0}
-              showPlus={false}
-            />
           </div>
-        </BottomSheet>
-      )}
+
+          {/* Sursis & Fin */}
+          <div className="p-2.5 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/20 text-[11px] flex items-center justify-between gap-2">
+            <div>
+              <strong className="text-emerald-800 dark:text-emerald-300 block">
+                Sursis : pile {limit} pts ➔ retombe à {sursisTarget} pts !
+              </strong>
+              <span className="text-[10px] text-stone-500 dark:text-slate-400">
+                Fin : le premier joueur qui dépasse {limit} pts perd.
+              </span>
+            </div>
+          </div>
+
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => setShowRulesMemo(false)}
+              className="w-full py-2 rounded-xl font-bold text-xs btn-margin-red text-white cursor-pointer shadow-xs active:scale-[0.99] transition-all"
+            >
+              Compris
+            </button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   )
 }

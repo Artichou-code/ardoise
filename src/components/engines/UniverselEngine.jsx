@@ -5,6 +5,7 @@ import { Avatar } from '../ui/Avatar'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 
 export function UniverselEngine({ game, onFinish }) {
   const { updateScores } = useGame()
@@ -267,13 +268,16 @@ export function UniverselEngine({ game, onFinish }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={submitRound}
-        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red"
-      >
-        Valider la manche
-      </button>
+      {/* Bouton de validation toujours visible (flottant bas d'écran) */}
+      <FloatingValidationBar>
+        <button
+          type="button"
+          onClick={submitRound}
+          className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red cursor-pointer shadow-md active:scale-[0.99] transition-all"
+        >
+          Valider la manche
+        </button>
+      </FloatingValidationBar>
 
       {editingPlayer && (
         <BottomSheet

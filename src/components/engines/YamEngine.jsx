@@ -4,6 +4,7 @@ import { useGame } from '../../context/GameContext'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { Dialog } from '../ui/Dialog'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 import { YamCellPopover } from './YamCellPopover'
 
 // Composant SVG d'une face de dé net, moderne et parfaitement lisible
@@ -417,7 +418,7 @@ export function YamEngine({ game, onFinish }) {
   const lowerCategories = YAM_CATEGORIES.filter(c => c.section === 'lower')
 
   return (
-    <div className="space-y-3 pb-8">
+    <div className="space-y-3 pt-1">
       {/* Mode Grille : Grille Croisée classique façon feuille de score papier */}
       {inputMode === 'grid' && (
         <div className="space-y-1.5">
@@ -739,19 +740,19 @@ export function YamEngine({ game, onFinish }) {
         </div>
       )}
 
-      {/* Bouton de validation principale */}
-      <div className="pt-2">
+      {/* Bouton de validation principale (flottant bas d'écran) */}
+      <FloatingValidationBar>
         <button
           type="button"
           onClick={handleValidate}
           disabled={!canValidate}
-          className={`w-full py-3 rounded-xl font-bold text-sm text-white shadow-sm transition-all flex items-center justify-center gap-2 select-none ${
+          className={`w-full py-3.5 rounded-xl font-bold text-base text-white shadow-md transition-all flex items-center justify-center gap-2 select-none ${
             canValidate
               ? 'bg-[#c83b3b] hover:bg-[#b03030] cursor-pointer active:scale-[0.99]'
               : 'bg-stone-300 dark:bg-slate-700 text-stone-500 dark:text-slate-400 cursor-not-allowed opacity-60'
           }`}
         >
-          <Trophy size={16} />
+          <Trophy size={18} />
           <span>
             {inputMode === 'grid'
               ? allPlayersReady
@@ -765,7 +766,7 @@ export function YamEngine({ game, onFinish }) {
             Saisissez au moins un score pour valider la manche
           </p>
         )}
-      </div>
+      </FloatingValidationBar>
 
       {/* Dialog Mémo des combinaisons officielles */}
       <Dialog

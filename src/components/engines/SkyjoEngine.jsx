@@ -7,6 +7,7 @@ import { Avatar } from '../ui/Avatar'
 import { useGame } from '../../context/GameContext'
 import { computeSkyjoRound, checkSkyjoEnd, isSkyjoScoreDoubled } from '../../engines/gameEngines'
 import { Dialog } from '../ui/Dialog'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 
 export function SkyjoEngine({ game, onFinish }) {
   const { updateScores } = useGame()
@@ -186,8 +187,8 @@ export function SkyjoEngine({ game, onFinish }) {
         </div>
       </div>
 
-      {/* Bouton de validation toujours visible (sticky bas d'écran) */}
-      <div className="sticky bottom-0 z-10 pt-2 pb-1 bg-gradient-to-t from-[var(--bg-page)] via-[var(--bg-page)]/95 to-transparent backdrop-blur-[2px]">
+      {/* Bouton de validation toujours visible (flottant bas d'écran) */}
+      <FloatingValidationBar>
         <button
           type="button"
           onClick={handleValidate}
@@ -203,7 +204,7 @@ export function SkyjoEngine({ game, onFinish }) {
             <span>Valider la manche</span>
           )}
         </button>
-      </div>
+      </FloatingValidationBar>
 
       {/* Dialog d'avertissement scores à 0 */}
       <Dialog

@@ -12,6 +12,7 @@ import {
   saveDeletedPlayerIds,
   loadActiveGameId,
   saveActiveGameId,
+  loadPlayerAliases,
 } from './storage'
 
 
@@ -282,11 +283,16 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
     }
   }
 
+  const aliases = loadPlayerAliases()
+
   for (const p of allIncomingPlayers) {
     if (!p || !p.name) continue
     const key = p.name.trim().toLowerCase()
     if (key === 'nous' || key === 'eux') continue
     if (allDeletedPlayerIds.has(p.id) || allDeletedPlayerIds.has(key)) continue
+    // Si ce joueur est un alias fusionné vers un autre profil local, ne pas le recréer
+    if (aliases[p.id] || aliases[key]) continue
+
     if (!playersMap.has(key)) {
       playersMap.set(key, {
         id: p.id || `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -297,15 +303,16 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
       })
       playersAdded++
     } else {
-      // Conserver la couleur et l'avatar du joueur importé
+      // Le joueur existe déjà localement : préserver INTÉGRALEMENT les préférences de l'utilisateur
+      // (son avatar et sa couleur choisis localement dans son propre carnet)
       const existing = playersMap.get(key)
       playersMap.set(key, {
-        ...existing,
         ...p,
+        ...existing,
         id: existing.id,
         name: existing.name,
-        color: p.color || existing.color,
-        avatar: p.avatar !== undefined ? p.avatar : existing.avatar,
+        color: existing.color || p.color || '#c83b3b',
+        avatar: existing.avatar != null ? existing.avatar : (p.avatar != null ? p.avatar : null),
       })
     }
   }
@@ -343,6 +350,41 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
           presetsMap.set(newPreset.id, newPreset)
           presetsAdded++
         }
+      }
+    }
+  }
+
+  // Aligner les avatars et noms des joueurs dans les parties sur les profils locaux et alias
+  for (const g of gamesMap.values()) {
+    if (g && Array.isArray(g.players)) {
+      let gChanged = false
+      const updatedPlayers = g.players.map(gp => {
+        if (!gp || !gp.name) return gp
+        const norm = gp.name.trim().toLowerCase()
+        const aliasTargetId = aliases[gp.id] || aliases[norm]
+        let localP = null
+        if (aliasTargetId) {
+          localP = Array.from(playersMap.values()).find(lp => lp.id === aliasTargetId)
+        }
+        if (!localP) {
+          localP = playersMap.get(norm)
+        }
+        if (localP) {
+          const targetName = aliasTargetId ? localP.name : gp.name
+          if (localP.avatar !== gp.avatar || localP.color !== gp.color || (aliasTargetId && targetName !== gp.name)) {
+            gChanged = true
+            return {
+              ...gp,
+              name: targetName,
+              avatar: localP.avatar,
+              color: localP.color,
+            }
+          }
+        }
+        return gp
+      })
+      if (gChanged) {
+        g.players = updatedPlayers
       }
     }
   }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { Avatar } from '../ui/Avatar'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 import { useGame } from '../../context/GameContext'
 
 /**
@@ -188,18 +189,21 @@ export function DourakEngine({ game, onFinish }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={submitRound}
-        disabled={!loserId}
-        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40"
-      >
-        {loserId
-          ? mode === 'cards'
-            ? `Infliger +${cardsLeft} cartes à ${selectedPlayer?.name}`
-            : `Noter +1 défaite pour ${selectedPlayer?.name}`
-          : 'Sélectionnez le Dourak de la manche'}
-      </button>
+      {/* Bouton de validation toujours visible (flottant bas d'écran) */}
+      <FloatingValidationBar>
+        <button
+          type="button"
+          onClick={submitRound}
+          disabled={!loserId}
+          className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40 cursor-pointer shadow-md active:scale-[0.99] transition-all"
+        >
+          {loserId
+            ? mode === 'cards'
+              ? `Infliger +${cardsLeft} cartes à ${selectedPlayer?.name}`
+              : `Noter +1 défaite pour ${selectedPlayer?.name}`
+            : 'Sélectionnez le Dourak de la manche'}
+        </button>
+      </FloatingValidationBar>
 
       {/* Bottom Sheet pour la variante pénalité aux cartes */}
       {mode === 'cards' && selectedPlayer && (

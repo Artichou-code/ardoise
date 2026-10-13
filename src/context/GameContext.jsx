@@ -4,7 +4,8 @@ import {
   savePlayers, loadPlayers, deletePlayer, untombstonePlayer,
   saveActiveGameId, loadActiveGameId,
   saveCustomPreset, deleteCustomPreset, loadCustomPresets,
-  generateId
+  generateId, loadPlayerAliases, savePlayerAliases,
+  loadDeletedPlayerIds, saveDeletedPlayerIds
 } from '../store/storage'
 import {
   getSyncKey,
@@ -55,30 +56,34 @@ export function GameProvider({ children }) {
   // Synchroniser automatiquement les profils (noms, avatars, couleurs) dans toutes les parties
   useEffect(() => {
     if (!Array.isArray(games) || !Array.isArray(players) || players.length === 0) return
-    const playerMap = new Map(players.map(p => [p.id, p]))
+    const playerMapById = new Map(players.map(p => [p.id, p]))
+    const playerMapByName = new Map(players.map(p => [(p.name || '').trim().toLowerCase(), p]))
+    const aliases = loadPlayerAliases()
 
     let anyGameChanged = false
     const nextGames = games.map(g => {
       if (!g || !Array.isArray(g.players)) return g
       let gameChanged = false
       const nextPlayers = g.players.map(p => {
-        const latest = playerMap.get(p.id)
-        if (latest && (latest.name !== p.name || latest.avatar !== p.avatar || latest.color !== p.color)) {
-          gameChanged = true
-          return { ...p, name: latest.name, avatar: latest.avatar, color: latest.color }
+        if (!p) return p
+        const norm = (p.name || '').trim().toLowerCase()
+        const aliasTargetId = aliases[p.id] || aliases[norm]
+        const latest = (aliasTargetId && playerMapById.get(aliasTargetId))
+          || playerMapById.get(p.id)
+          || playerMapByName.get(norm)
+
+        if (latest) {
+          const targetName = aliasTargetId ? latest.name : p.name
+          if (latest.avatar !== p.avatar || latest.color !== p.color || (aliasTargetId && targetName !== p.name)) {
+            gameChanged = true
+            return { ...p, name: targetName, avatar: latest.avatar, color: latest.color }
+          }
         }
         return p
       })
       if (gameChanged) {
         anyGameChanged = true
-        const updatedGame = { ...g, players: nextPlayers, updatedAt: new Date().toISOString() }
-        if (g.id === activeGameId) {
-          const liveSession = getActiveSession()
-          if (liveSession?.code) {
-            pushGameToLiveSession(liveSession.code, updatedGame).catch(() => {})
-          }
-        }
-        return updatedGame
+        return { ...g, players: nextPlayers, updatedAt: new Date().toISOString() }
       }
       return g
     })
@@ -130,6 +135,13 @@ export function GameProvider({ children }) {
           lastSessionSignatureRef.current = sig
           const stats = syncSessionGamesToLocal(data)
           reloadStorage()
+
+          // Si la partie active vient d'être clôturée à distance sur la table en direct, basculer immédiatement vers l'écran de victoire
+          const currentActiveId = activeGameRef.current?.id || loadActiveGameId()
+          const remoteActiveGame = remoteGames.find(g => g.id === currentActiveId)
+          if (remoteActiveGame?.status === 'finished') {
+            setScreen(prevScreen => prevScreen === 'game' ? 'victory' : prevScreen)
+          }
 
           if (isClosed) {
             clearActiveSession()
@@ -507,6 +519,191 @@ export function GameProvider({ children }) {
     }
   }, [])
 
+  // Fusionner deux profils de joueurs (combine l'historique et les statistiques en un seul joueur)
+  const mergePlayers = useCallback((targetPlayerId, sourcePlayerId) => {
+    if (!targetPlayerId || !sourcePlayerId || targetPlayerId === sourcePlayerId) {
+      return { success: false, error: 'Identifiants invalides' }
+    }
+
+    const currentPlayers = Array.isArray(players) ? [...players] : []
+    const targetPlayer = currentPlayers.find(p => p && p.id === targetPlayerId)
+    const sourcePlayer = currentPlayers.find(p => p && p.id === sourcePlayerId)
+
+    if (!targetPlayer || !sourcePlayer) {
+      return { success: false, error: 'Joueurs introuvables' }
+    }
+
+    const sourceNorm = (sourcePlayer.name || '').trim().toLowerCase()
+    const targetNorm = (targetPlayer.name || '').trim().toLowerCase()
+
+    // 1. Mettre à jour toutes les parties où le joueur source figure
+    const currentGames = Array.isArray(games) ? [...games] : []
+    let modifiedGamesCount = 0
+
+    const updatedGames = currentGames.map(game => {
+      if (!game || !Array.isArray(game.players)) return game
+
+      const hasSource = game.players.some(p => p && (p.id === sourcePlayerId || (p.name || '').trim().toLowerCase() === sourceNorm))
+      if (!hasSource) return game
+
+      modifiedGamesCount++
+      const hasTarget = game.players.some(p => p && (p.id === targetPlayerId || (p.name || '').trim().toLowerCase() === targetNorm))
+
+      let nextPlayers = [...game.players]
+      let nextScores = { ...(game.scores || {}) }
+      let nextRounds = Array.isArray(game.rounds) ? [...game.rounds] : []
+      let nextWinner = game.winner
+
+      const gameSourcePlayer = game.players.find(p => p && (p.id === sourcePlayerId || (p.name || '').trim().toLowerCase() === sourceNorm))
+      const gameSourceId = gameSourcePlayer?.id || sourcePlayerId
+
+      const gameTargetPlayer = game.players.find(p => p && (p.id === targetPlayerId || (p.name || '').trim().toLowerCase() === targetNorm))
+      const gameTargetId = gameTargetPlayer?.id || targetPlayerId
+
+      if (hasTarget && gameSourceId !== gameTargetId) {
+        // Cumuler les scores du joueur source sur le joueur cible
+        nextScores[gameTargetId] = (nextScores[gameTargetId] || 0) + (nextScores[gameSourceId] || 0)
+        delete nextScores[gameSourceId]
+
+        nextRounds = nextRounds.map(r => {
+          if (!r) return r
+          const nextDelta = { ...(r.delta || {}) }
+          if (nextDelta[gameSourceId] !== undefined) {
+            nextDelta[gameTargetId] = (nextDelta[gameTargetId] || 0) + nextDelta[gameSourceId]
+            delete nextDelta[gameSourceId]
+          }
+          const nextReprieves = Array.isArray(r.reprieves)
+            ? r.reprieves.map(rp => rp.playerId === gameSourceId ? { ...rp, playerId: gameTargetId } : rp)
+            : r.reprieves
+
+          const nextRoundScores = r.roundScores ? { ...r.roundScores } : null
+          if (nextRoundScores && nextRoundScores[gameSourceId] !== undefined) {
+            nextRoundScores[gameTargetId] = (nextRoundScores[gameTargetId] || 0) + nextRoundScores[gameSourceId]
+            delete nextRoundScores[gameSourceId]
+          }
+
+          return {
+            ...r,
+            delta: nextDelta,
+            reprieves: nextReprieves,
+            ...(nextRoundScores ? { roundScores: nextRoundScores } : {}),
+          }
+        })
+
+        if (nextWinner === gameSourceId) {
+          nextWinner = gameTargetId
+        }
+
+        nextPlayers = nextPlayers.filter(p => p && p.id !== gameSourceId && (p.name || '').trim().toLowerCase() !== sourceNorm)
+      } else {
+        nextPlayers = nextPlayers.map(p => {
+          if (p && (p.id === gameSourceId || (p.name || '').trim().toLowerCase() === sourceNorm)) {
+            return {
+              id: gameTargetId,
+              name: targetPlayer.name,
+              avatar: targetPlayer.avatar,
+              color: targetPlayer.color,
+            }
+          }
+          return p
+        })
+
+        if (gameSourceId !== gameTargetId) {
+          if (nextScores[gameSourceId] !== undefined) {
+            nextScores[gameTargetId] = nextScores[gameSourceId]
+            delete nextScores[gameSourceId]
+          }
+
+          nextRounds = nextRounds.map(r => {
+            if (!r) return r
+            const nextDelta = { ...(r.delta || {}) }
+            if (nextDelta[gameSourceId] !== undefined) {
+              nextDelta[gameTargetId] = nextDelta[gameSourceId]
+              delete nextDelta[gameSourceId]
+            }
+            const nextReprieves = Array.isArray(r.reprieves)
+              ? r.reprieves.map(rp => rp.playerId === gameSourceId ? { ...rp, playerId: gameTargetId } : rp)
+              : r.reprieves
+
+            const nextRoundScores = r.roundScores ? { ...r.roundScores } : null
+            if (nextRoundScores && nextRoundScores[gameSourceId] !== undefined) {
+              nextRoundScores[gameTargetId] = nextRoundScores[gameSourceId]
+              delete nextRoundScores[gameSourceId]
+            }
+
+            const nextGridByPlayer = r.gridByPlayer ? { ...r.gridByPlayer } : null
+            if (nextGridByPlayer && nextGridByPlayer[gameSourceId]) {
+              nextGridByPlayer[gameTargetId] = nextGridByPlayer[gameSourceId]
+              delete nextGridByPlayer[gameSourceId]
+            }
+
+            const nextPenalties = r.penalties ? { ...r.penalties } : null
+            if (nextPenalties && nextPenalties[gameSourceId] !== undefined) {
+              nextPenalties[gameTargetId] = nextPenalties[gameSourceId]
+              delete nextPenalties[gameSourceId]
+            }
+
+            return {
+              ...r,
+              delta: nextDelta,
+              reprieves: nextReprieves,
+              ...(nextRoundScores ? { roundScores: nextRoundScores } : {}),
+              ...(nextGridByPlayer ? { gridByPlayer: nextGridByPlayer } : {}),
+              ...(nextPenalties ? { penalties: nextPenalties } : {}),
+            }
+          })
+
+          if (nextWinner === gameSourceId) {
+            nextWinner = gameTargetId
+          }
+        }
+      }
+
+      const updatedGame = {
+        ...game,
+        players: nextPlayers,
+        scores: nextScores,
+        rounds: nextRounds,
+        winner: nextWinner,
+        updatedAt: Date.now(),
+      }
+      saveGame(updatedGame)
+      return updatedGame
+    })
+
+    setGames(updatedGames)
+
+    // 2. Retirer le joueur source du carnet de joueurs
+    const updatedPlayers = currentPlayers.filter(p => p.id !== sourcePlayerId)
+    setPlayers(updatedPlayers)
+    savePlayers(updatedPlayers)
+
+    // 3. Enregistrer l'alias persistant
+    const aliases = loadPlayerAliases()
+    aliases[sourcePlayerId] = targetPlayerId
+    if (sourceNorm) aliases[sourceNorm] = targetPlayerId
+    savePlayerAliases(aliases)
+
+    // 4. Marquer le joueur source comme supprimé pour empêcher sa réapparition lors des synchronisations
+    deletePlayer(sourcePlayerId)
+    const deletedList = loadDeletedPlayerIds()
+    if (sourceNorm && !deletedList.includes(sourceNorm)) {
+      saveDeletedPlayerIds([...deletedList, sourceNorm])
+    }
+
+    // 5. Sauvegarde Cloud en tâche de fond si activée
+    if (isAutoSyncEnabled() && getSyncKey()) {
+      pushNotebookToCloud().catch(() => {})
+    }
+
+    return {
+      success: true,
+      modifiedGamesCount,
+      targetName: targetPlayer.name,
+      sourceName: sourcePlayer.name,
+    }
+  }, [players, games])
+
   // Gestion modèles personnalisés
   const savePreset = useCallback((preset) => {
     const updated = saveCustomPreset(preset)
@@ -546,7 +743,7 @@ export function GameProvider({ children }) {
 
   return (
     <GameContext.Provider value={{
-      players, savePlayer, removePlayer, archivePlayer, unarchivePlayer,
+      players, savePlayer, removePlayer, archivePlayer, unarchivePlayer, mergePlayers,
       games, activeGame, activeGameId,
       customPresets, savePreset, deletePreset,
       screen, setScreen,

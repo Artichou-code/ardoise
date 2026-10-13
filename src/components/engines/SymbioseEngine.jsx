@@ -7,6 +7,7 @@ import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { Dialog } from '../ui/Dialog'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 import { formatTeamNames } from '../../utils/gameUtils'
 
 // Métadonnées d'aide pour les 4 colonnes de la Mare de 8 cartes (2x4)
@@ -198,7 +199,7 @@ export function SymbioseEngine({ game }) {
   }
 
   return (
-    <div className="space-y-3 pb-8">
+    <div className="space-y-3 pt-1">
       {/* Barre d'en-tête : Modes de jeu & Bascule Grille / Direct */}
       <div className="flex items-center justify-between gap-2 p-2.5 rounded-2xl school-card border border-stone-200/80 dark:border-slate-800">
         <div className="flex items-center gap-2 min-w-0">
@@ -477,18 +478,19 @@ export function SymbioseEngine({ game }) {
       )}
 
       {/* Bouton de validation principale : grisé et désactivé tant que tous les scores ne sont pas saisis */}
-      <div className="pt-2">
+      {/* Bouton de validation principale (flottant bas d'écran) */}
+      <FloatingValidationBar>
         <button
           type="button"
           disabled={!canValidate}
           onClick={handleValidate}
-          className={`w-full py-3 rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 select-none ${
+          className={`w-full py-3.5 rounded-xl font-bold text-base shadow-md transition-all flex items-center justify-center gap-2 select-none ${
             canValidate
               ? 'bg-[#c83b3b] hover:bg-[#b03030] text-white cursor-pointer active:scale-[0.99]'
               : 'bg-stone-200 dark:bg-slate-800 text-stone-400 dark:text-slate-500 cursor-not-allowed'
           }`}
         >
-          <Trophy size={16} />
+          <Trophy size={18} />
           <span>Valider les scores</span>
           {!canValidate && (
             <span className="text-xs font-normal opacity-75">
@@ -496,7 +498,7 @@ export function SymbioseEngine({ game }) {
             </span>
           )}
         </button>
-      </div>
+      </FloatingValidationBar>
 
       {/* Dialog Mémo des colonnes de la Mare */}
       <Dialog

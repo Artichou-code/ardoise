@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ArrowLeft, Plus, Pencil, Trash2, Users, Award, Search, X, Archive, ArchiveRestore } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trash2, Users, Award, Search, X, Archive, ArchiveRestore, GitMerge } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { Avatar, AvatarPicker } from './ui/Avatar'
 import { BottomSheet } from './ui/BottomSheet'
 import { ConfirmDialog } from './ui/Dialog'
 import { PlayerDetailSheet } from './PlayerDetailSheet'
+import { MergePlayersSheet } from './MergePlayersSheet'
 import { BurgerMenuButton } from './BurgerMenu'
 import { createPlayer, getPlayerAvatarUrl } from '../utils/gameUtils'
 import { computeStats, normalizePlayerName } from '../utils/statsUtils'
@@ -85,6 +86,7 @@ export function PlayersScreen() {
   const [editPlayer, setEditPlayer] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(null)
   const [detailPlayer, setDetailPlayer] = useState(null)
+  const [mergePlayer, setMergePlayer] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [isArchiveView, setIsArchiveView] = useState(false)
   const [archiveSearchQuery, setArchiveSearchQuery] = useState('')
@@ -222,6 +224,17 @@ export function PlayersScreen() {
           <h1 className="flex-1 font-serif-title font-bold text-lg truncate">
             Joueurs
           </h1>
+          {activePlayers.length >= 2 && (
+            <button
+              type="button"
+              onClick={() => setMergePlayer(true)}
+              className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer shrink-0"
+              title="Fusionner deux joueurs (doublons, alias...)"
+              aria-label="Fusionner deux joueurs"
+            >
+              <GitMerge size={17} />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setShowCreate(true)}
@@ -599,6 +612,12 @@ export function PlayersScreen() {
         player={detailPlayer}
         open={Boolean(detailPlayer)}
         onClose={() => setDetailPlayer(null)}
+        onOpenMerge={(p) => setMergePlayer(p)}
+      />
+      <MergePlayersSheet
+        open={Boolean(mergePlayer)}
+        onClose={() => setMergePlayer(null)}
+        initialPlayer={typeof mergePlayer === 'object' ? mergePlayer : null}
       />
     </div>
   )

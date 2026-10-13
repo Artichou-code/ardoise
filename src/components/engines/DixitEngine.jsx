@@ -17,6 +17,7 @@ import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { Dialog } from '../ui/Dialog'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 
 /**
  * Feuille de réglage tactile de l'ordre du tour pour Dixit :
@@ -576,7 +577,7 @@ export function DixitEngine({ game, onFinish }) {
   const activeStoryteller = game.players.find(p => p.id === storytellerId) || game.players[0]
 
   return (
-    <div className="space-y-3 pb-8">
+    <div className="space-y-3 pt-1">
       {/* Sélection du Conteur de la manche avec centrage magnétique & réorganisation de l'ordre */}
       <div className="pt-3 pb-2.5 rounded-2xl school-card border border-stone-200/80 dark:border-slate-800 space-y-2 overflow-hidden">
         <div className="px-3 flex items-center justify-between gap-2">
@@ -742,17 +743,17 @@ export function DixitEngine({ game, onFinish }) {
         })}
       </div>
 
-      {/* Bouton de validation principale */}
-      <div className="pt-2">
+      {/* Bouton de validation principale (flottant bas d'écran) */}
+      <FloatingValidationBar>
         <button
           type="button"
           onClick={handleValidate}
-          className="w-full py-3 rounded-xl font-bold text-sm text-white shadow-sm transition-all flex items-center justify-center gap-2 select-none bg-[#c83b3b] hover:bg-[#b03030] cursor-pointer active:scale-[0.99]"
+          className="w-full py-3.5 rounded-xl font-bold text-base text-white shadow-md transition-all flex items-center justify-center gap-2 select-none bg-[#c83b3b] hover:bg-[#b03030] cursor-pointer active:scale-[0.99]"
         >
-          <Trophy size={16} />
+          <Trophy size={18} />
           <span>Valider la manche</span>
         </button>
-      </div>
+      </FloatingValidationBar>
 
       {/* Dialog Mémo du barème officiel */}
       <Dialog

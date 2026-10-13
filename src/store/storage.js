@@ -3,11 +3,26 @@
 const STORAGE_KEYS = {
   PLAYERS: 'ardoise_players',
   DELETED_PLAYERS: 'ardoise_deleted_players',
+  PLAYER_ALIASES: 'ardoise_player_aliases',
   GAMES: 'ardoise_games',
   DELETED_GAMES: 'ardoise_deleted_games',
   ACTIVE_GAME: 'ardoise_active_game',
   THEME: 'ardoise_theme',
   CUSTOM_PRESETS: 'ardoise_custom_presets',
+}
+
+// --- Alias & Fusions de joueurs ---
+export const loadPlayerAliases = () => {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEYS.PLAYER_ALIASES))
+    return raw && typeof raw === 'object' ? raw : {}
+  } catch { return {} }
+}
+
+export const savePlayerAliases = (aliases) => {
+  try {
+    localStorage.setItem(STORAGE_KEYS.PLAYER_ALIASES, JSON.stringify(aliases || {}))
+  } catch {}
 }
 
 // --- Joueurs ---

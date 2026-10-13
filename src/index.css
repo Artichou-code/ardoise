@@ -312,16 +312,14 @@ div[role="dialog"] .school-surface {
 @keyframes roundSlideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
 .animate-round-slide-in {
-  animation: roundSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: roundSlideIn 0.22s ease-out forwards;
 }
 
 /* ==========================================================================

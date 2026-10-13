@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Award, Swords, X, BarChart3, ArchiveRestore } from 'lucide-react'
+import { Award, Swords, X, BarChart3, ArchiveRestore, GitMerge } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META } from '../constants/games'
 import { Avatar } from './ui/Avatar'
@@ -10,7 +10,7 @@ import { BottomSheet } from './ui/BottomSheet'
  * Fiche détaillée d'un joueur affichée dans un BottomSheet
  * Utilisée à la fois dans StatsScreen et dans PlayersScreen (Carnet des joueurs)
  */
-export function PlayerDetailSheet({ player, open, onClose }) {
+export function PlayerDetailSheet({ player, open, onClose, onOpenMerge }) {
   const { setScreen, unarchivePlayer } = useGame()
   const [selectedBadgeId, setSelectedBadgeId] = useState(null)
   const [showAllBadges, setShowAllBadges] = useState(false)
@@ -169,6 +169,21 @@ export function PlayerDetailSheet({ player, open, onClose }) {
               )}
             </div>
           )}
+
+          {/* Action Fusionner avec un autre profil */}
+          <div className="mt-3 pt-2.5 border-t border-stone-200/60 dark:border-slate-800/60">
+            <button
+              type="button"
+              onClick={() => {
+                onClose()
+                onOpenMerge?.(player)
+              }}
+              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-300 font-bold text-xs transition-colors cursor-pointer"
+            >
+              <GitMerge size={13} />
+              <span>Fusionner ce profil avec un autre joueur</span>
+            </button>
+          </div>
         </div>
 
         {/* Indicateurs clés du joueur */}

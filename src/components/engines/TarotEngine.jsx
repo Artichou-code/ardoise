@@ -7,6 +7,7 @@ import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 
 export function TarotEngine({ game }) {
   const { updateScores } = useGame()
@@ -349,15 +350,17 @@ export function TarotEngine({ game }) {
         </div>
       )}
 
-      {/* 5. Bouton de validation */}
-      <button
-        type="button"
-        onClick={submitRound}
-        disabled={!attackerId}
-        className="w-full py-2.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm shadow-sm transition-all active:scale-[0.99] disabled:opacity-40 cursor-pointer"
-      >
-        {attackerId ? 'Valider la donne' : 'Sélectionnez le preneur'}
-      </button>
+      {/* 5. Bouton de validation (flottant bas d'écran) */}
+      <FloatingValidationBar>
+        <button
+          type="button"
+          onClick={submitRound}
+          disabled={!attackerId}
+          className="w-full py-3.5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-base shadow-md transition-all active:scale-[0.99] disabled:opacity-40 cursor-pointer"
+        >
+          {attackerId ? 'Valider la donne' : 'Sélectionnez le preneur'}
+        </button>
+      </FloatingValidationBar>
 
       {/* BottomSheet saisie précise de points */}
       <BottomSheet open={openPointsSheet} onClose={() => setOpenPointsSheet(false)}>

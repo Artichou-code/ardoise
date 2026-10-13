@@ -7,6 +7,7 @@ import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { ScorePad } from '../ui/ScorePad'
 import { BottomSheet } from '../ui/BottomSheet'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 import { formatTeamNames } from '../../utils/gameUtils'
 
 const TEAMS = ['nous', 'eux']
@@ -499,13 +500,16 @@ export function BeloteEngine({ game, onFinish }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={submitRound}
-        className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red shadow-sm cursor-pointer active:scale-[0.99] transition-transform"
-      >
-        Valider la donne
-      </button>
+      {/* Bouton de validation toujours visible (flottant bas d'écran) */}
+      <FloatingValidationBar>
+        <button
+          type="button"
+          onClick={submitRound}
+          className="w-full py-3.5 rounded-xl font-bold text-base btn-margin-red shadow-md cursor-pointer active:scale-[0.99] transition-transform"
+        >
+          Valider la donne
+        </button>
+      </FloatingValidationBar>
 
       {/* BottomSheet tactile pour les points du preneur */}
       <BottomSheet

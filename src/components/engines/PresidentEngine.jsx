@@ -3,6 +3,7 @@ import { useGame } from '../../context/GameContext'
 import { computePresidentScores, getPresidentRole } from '../../engines/gameEngines'
 import { Avatar } from '../ui/Avatar'
 import { PresidentReorderList } from './PresidentReorderList'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 import { RotateCcw, ArrowLeftRight } from 'lucide-react'
 
 export function PresidentEngine({ game }) {
@@ -209,19 +210,22 @@ export function PresidentEngine({ game }) {
         />
       </div>
 
-      <button
-        type="button"
-        onClick={submitRound}
-        disabled={order.length !== totalPlayers}
-        className="w-full py-3.5 px-3 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40 shadow-sm active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-1.5 text-center"
-      >
-        <span>Valider la manche</span>
-        {presidentPlayer && trouPlayer && (
-          <span className="inline-flex items-baseline gap-1 text-sm font-normal opacity-85 truncate max-w-[200px] sm:max-w-xs">
-            <span>({presidentPlayer.name} ➔ 1er)</span>
-          </span>
-        )}
-      </button>
+      {/* Bouton de validation toujours visible (flottant bas d'écran) */}
+      <FloatingValidationBar>
+        <button
+          type="button"
+          onClick={submitRound}
+          disabled={order.length !== totalPlayers}
+          className="w-full py-3.5 px-3 rounded-xl font-bold text-base btn-margin-red disabled:opacity-40 shadow-md active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-1.5 text-center"
+        >
+          <span>Valider la manche</span>
+          {presidentPlayer && trouPlayer && (
+            <span className="inline-flex items-baseline gap-1 text-sm font-normal opacity-85 truncate max-w-[200px] sm:max-w-xs">
+              <span>({presidentPlayer.name} ➔ 1er)</span>
+            </span>
+          )}
+        </button>
+      </FloatingValidationBar>
     </div>
   )
 }

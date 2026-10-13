@@ -42,6 +42,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const [statusBanner, setStatusBanner] = useState(null)
   const [closedSummary, setClosedSummary] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [justJoined, setJustJoined] = useState(false)
 
   useScrollLock(isOpen)
 
@@ -59,6 +60,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   useEffect(() => {
     if (!isOpen) {
       setClosedSummary(null)
+      setJustJoined(false)
       return
     }
     const current = getActiveSession()
@@ -226,6 +228,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
       const current = getActiveSession()
       setActiveSession(current)
       setSessionDetails(data)
+      setJustJoined(true)
       if (onSessionChanged) onSessionChanged(current)
 
       const syncedCount = data.importStats?.syncedCount || 0
@@ -464,8 +467,70 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
               </div>
             </div>
           ) : activeSession ? (
-            /* VUE SESSION ACTIVE */
-            <div className="space-y-4">
+            justJoined && !isHost ? (
+              /* VUE ÉPURÉE D'ACCUEIL POUR LE PARTICIPANT QUI VIENT DE REJOINDRE */
+              <div className="py-3 px-1 text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                <div className="w-13 h-13 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-xs border border-emerald-200 dark:border-emerald-800/60">
+                  <CheckCircle2 size={30} />
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    Table rejointe avec succès
+                  </span>
+                  <h3 className="font-serif-title font-bold text-lg text-stone-900 dark:text-slate-100">
+                    {activeSession.name}
+                  </h3>
+                  <p className="text-xs text-stone-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
+                    Vous êtes connecté à la table. Toutes les parties de la session s'enregistrent automatiquement dans votre carnet.
+                  </p>
+                </div>
+
+                {/* Badge code de session */}
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 dark:bg-slate-800 border border-stone-200/80 dark:border-slate-700/80 text-xs font-mono font-bold text-stone-700 dark:text-slate-300">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Table {activeSession.code}</span>
+                </div>
+
+                {/* Parties de la session déjà synchronisées */}
+                {sessionGames.length > 0 ? (
+                  <div className="p-3 rounded-xl school-card border border-stone-200 dark:border-slate-800 text-left max-w-xs mx-auto space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
+                      Parties synchronisées ({sessionGames.length})
+                    </span>
+                    <div className="text-xs font-semibold text-stone-800 dark:text-slate-200 flex flex-wrap gap-1.5">
+                      {sessionGames.map((g, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-700">
+                          {getGameDisplayName(g)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl border border-dashed border-stone-200 dark:border-slate-800 text-center max-w-xs mx-auto">
+                    <p className="text-[11px] text-stone-400 dark:text-slate-500">
+                      En attente des parties lancées par la table…
+                    </p>
+                  </div>
+                )}
+
+                {/* Bouton pour aller jouer directement */}
+                <div className="pt-2 max-w-xs mx-auto w-full space-y-2">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="w-full py-3 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-sm transition-all shadow-md active:scale-[0.98] cursor-pointer"
+                  >
+                    C'est parti !
+                  </button>
+                  <p className="text-[10px] text-stone-400 dark:text-slate-500">
+                    Vous pourrez retrouver cette table et ses options à tout moment via le menu ☰
+                  </p>
+                </div>
+              </div>
+            ) : (
+              /* VUE SESSION ACTIVE COMPLÈTE (HÔTE OU RÉOUVERTURE DE TABLE) */
+              <div className="space-y-4">
               <div className="p-4 rounded-2xl school-card border border-stone-200 dark:border-slate-800 space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
@@ -590,7 +655,8 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 )}
               </div>
             </div>
-          ) : (
+          )
+        ) : (
             /* VUE CRÉATION / REJOINDRE */
             <div className="space-y-4">
               <div className="flex border-b border-stone-200/60 dark:border-slate-800/60">
@@ -718,7 +784,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         </div>
 
         {/* Pied */}
-        {!closedSummary && (
+        {!closedSummary && (!justJoined || isHost) && (
           <div className="p-3 sm:p-4 border-t border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 flex items-center justify-between">
             {activeSession ? (
               <button

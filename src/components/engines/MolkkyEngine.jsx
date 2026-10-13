@@ -6,6 +6,7 @@ import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { Dialog } from '../ui/Dialog'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 import { formatTeamNames } from '../../utils/gameUtils'
 
 function getMolkkyTargetInfo(baseScore) {
@@ -404,7 +405,7 @@ export function MolkkyEngine({ game, onFinish }) {
   }
 
   return (
-    <div className="space-y-3 pb-8">
+    <div className="space-y-3 pt-1">
       {/* Barre d'en-tête du jeu */}
       <div className="flex items-center justify-between gap-2 p-2.5 rounded-2xl school-card border border-stone-200/80 dark:border-slate-800">
         <div className="flex items-center gap-2 min-w-0">
@@ -796,8 +797,8 @@ export function MolkkyEngine({ game, onFinish }) {
         </div>
       )}
 
-      {/* Bouton de validation principale toujours visible (sticky bas d'écran) */}
-      <div className="sticky bottom-0 z-10 pt-2 pb-1 bg-gradient-to-t from-[var(--bg-page)] via-[var(--bg-page)]/95 to-transparent backdrop-blur-[2px]">
+      {/* Bouton de validation principale toujours visible (flottant bas d'écran) */}
+      <FloatingValidationBar>
         <button
           type="button"
           disabled={!canValidate}
@@ -826,7 +827,7 @@ export function MolkkyEngine({ game, onFinish }) {
             </span>
           )}
         </button>
-      </div>
+      </FloatingValidationBar>
 
       {/* BottomSheet avec ScorePad pour saisie tactile au pavé numérique */}
       <BottomSheet open={!!editingPlayer} onClose={() => setEditingPlayer(null)}>

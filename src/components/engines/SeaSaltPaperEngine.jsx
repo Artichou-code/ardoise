@@ -6,6 +6,7 @@ import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { BottomSheet } from '../ui/BottomSheet'
 import { ScorePad } from '../ui/ScorePad'
 import { Dialog } from '../ui/Dialog'
+import { FloatingValidationBar } from '../ui/FloatingValidationBar'
 
 export function SeaSaltPaperEngine({ game, onFinish }) {
   const { updateScores } = useGame()
@@ -333,8 +334,8 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
         </div>
       </div>
 
-      {/* Bouton de validation toujours visible (sticky bas d'écran) */}
-      <div className="sticky bottom-0 z-10 pt-2 pb-1 bg-gradient-to-t from-[var(--bg-page)] via-[var(--bg-page)]/95 to-transparent backdrop-blur-[2px]">
+      {/* Bouton de validation toujours visible (flottant bas d'écran) */}
+      <FloatingValidationBar>
         <button
           type="button"
           onClick={handleValidate}
@@ -342,7 +343,7 @@ export function SeaSaltPaperEngine({ game, onFinish }) {
         >
           Valider la manche
         </button>
-      </div>
+      </FloatingValidationBar>
 
       {/* Dialog d'erreur de validation (score impossible ou < 7 pts) */}
       <Dialog
