@@ -14,6 +14,7 @@ import {
   PowerOff,
   Pencil,
   MapPin,
+  Maximize2,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useGame } from '../context/GameContext'
@@ -55,6 +56,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const [editingCityValue, setEditingCityValue] = useState('')
   const [showCityHelp, setShowCityHelp] = useState(false)
   const [showGeneralHelp, setShowGeneralHelp] = useState(false)
+  const [isFullscreenQr, setIsFullscreenQr] = useState(false)
 
   const lastSigRef = useRef('')
   const generalHelpRef = useRef(null)
@@ -74,6 +76,38 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     document.addEventListener('pointerdown', handlePointerDown)
     return () => document.removeEventListener('pointerdown', handlePointerDown)
   }, [showGeneralHelp, showCityHelp])
+
+  // Mode QR code plein écran avec luminosité maximale (fond blanc pur, WakeLock anti-veille, Fullscreen API)
+  useEffect(() => {
+    if (!isFullscreenQr) return
+    let wakeLock = null
+    const requestLock = async () => {
+      try {
+        if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen')
+        }
+      } catch {}
+    }
+    requestLock()
+
+    try {
+      if (typeof document !== 'undefined' && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {})
+      }
+    } catch {}
+
+    return () => {
+      if (wakeLock) {
+        wakeLock.release().catch(() => {})
+        wakeLock = null
+      }
+      try {
+        if (typeof document !== 'undefined' && document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {})
+        }
+      } catch {}
+    }
+  }, [isFullscreenQr])
 
   useScrollLock(isOpen)
 
@@ -96,6 +130,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
       setIsEditingCity(false)
       setShowCityHelp(false)
       setShowGeneralHelp(false)
+      setIsFullscreenQr(false)
       setIsLoading(false)
       return
     }
@@ -556,12 +591,13 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const isHost = Boolean(activeSession?.isHost ?? true)
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-5"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="live-session-title"
-    >
+    <>
+      <div
+        className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-5"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="live-session-title"
+      >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-sm transition-opacity duration-300"
@@ -1008,27 +1044,36 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
 
                   {/* Layout compact 2 colonnes : QR Code à gauche + Actions et Ville à droite */}
                   <div className="flex items-stretch gap-3">
-                    {/* Colonne gauche : QR Code compact */}
-                    <div className="shrink-0 p-1.5 bg-white rounded-xl shadow-2xs border border-stone-200/90 dark:border-slate-700 flex items-center justify-center">
+                    {/* Colonne gauche : QR Code compact (cliquable pour plein écran) */}
+                    <button
+                      type="button"
+                      onClick={() => setIsFullscreenQr(true)}
+                      className="relative group shrink-0 p-1.5 bg-white rounded-xl shadow-2xs border border-stone-200/90 dark:border-slate-700 flex items-center justify-center cursor-pointer hover:border-[#c83b3b] hover:shadow-md transition-all active:scale-[0.98]"
+                      title="Agrandir en plein écran (luminosité max)"
+                      aria-label="Afficher le QR code en plein écran"
+                    >
                       <QRCodeSVG value={shareUrl} size={104} level="M" />
-                    </div>
+                      <span className="absolute bottom-1 right-1 p-0.5 rounded-md bg-stone-900/60 text-white flex items-center justify-center pointer-events-none group-hover:bg-[#c83b3b] transition-colors shadow-xs" title="Plein écran">
+                        <Maximize2 size={10} />
+                      </span>
+                    </button>
 
-                    {/* Colonne droite : Boutons copier / inviter + ligne Ville */}
+                    {/* Colonne droite : Boutons copier / inviter sur deux lignes + ligne Ville */}
                     <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5">
-                      <div className="grid grid-cols-2 gap-1.5">
+                      <div className="flex flex-col gap-1.5">
                         <button
                           type="button"
                           onClick={handleCopyLink}
-                          className="py-2 px-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 font-bold text-[11px] text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                          className="w-full py-1.5 px-2.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 font-bold text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
                           title="Copier le lien"
                         >
                           {copied ? <Check size={13} className="text-emerald-500 shrink-0" /> : <Copy size={13} className="shrink-0" />}
-                          <span className="truncate">{copied ? 'Copié\u00A0!' : 'Copier'}</span>
+                          <span className="truncate">{copied ? 'Lien copié\u00A0!' : 'Copier le lien'}</span>
                         </button>
                         <button
                           type="button"
                           onClick={handleNativeShare}
-                          className="py-2 px-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-bold text-[11px] text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs"
+                          className="w-full py-1.5 px-2.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-bold text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
                           title="Inviter via application"
                         >
                           <Share2 size={13} className="shrink-0" />
@@ -1246,7 +1291,68 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
           </div>
         )}
       </div>
-    </div>,
-    document.body
-  )
+    </div>
+
+    {/* Modale Plein Écran pour le QR Code (Luminosité maximale, fond blanc pur & WakeLock) */}
+    {isFullscreenQr && (
+      <div
+        className="fixed inset-0 z-[2000] bg-white text-stone-900 flex flex-col justify-between p-6 sm:p-10 select-none animate-in fade-in duration-200"
+        onClick={() => setIsFullscreenQr(false)}
+        role="dialog"
+        aria-modal="true"
+        aria-label="QR Code plein écran"
+      >
+        {/* En-tête : Table et bouton fermer */}
+        <div className="w-full max-w-sm mx-auto flex items-center justify-between">
+          <div className="min-w-0 flex-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block">
+              Table en direct
+            </span>
+            <h3 className="font-serif-title font-bold text-base text-stone-900 truncate">
+              {activeSession?.name || 'Table Ardoise'}
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsFullscreenQr(false)
+            }}
+            className="p-2.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors cursor-pointer shrink-0"
+            title="Fermer le plein écran"
+            aria-label="Fermer le plein écran"
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* QR Code géant éclatant pour scan instantané */}
+        <div className="flex flex-col items-center justify-center my-auto space-y-6">
+          <div className="p-4 bg-white rounded-3xl shadow-2xl border-2 border-stone-200 flex items-center justify-center">
+            <QRCodeSVG value={shareUrl} size={270} level="H" />
+          </div>
+
+          <div className="text-center space-y-2">
+            <div className="inline-block px-5 py-2 rounded-2xl bg-stone-100 border border-stone-200 shadow-xs">
+              <span className="font-mono font-bold text-2xl tracking-widest text-stone-900">
+                {activeSession?.code}
+              </span>
+            </div>
+            <p className="text-xs font-semibold text-stone-500">
+              Scannez pour rejoindre la table
+            </p>
+          </div>
+        </div>
+
+        {/* Pied : Consigne tactile */}
+        <div className="w-full max-w-sm mx-auto text-center">
+          <p className="text-xs text-stone-400 font-medium">
+            Toucher n'importe où pour quitter le plein écran
+          </p>
+        </div>
+      </div>
+    )}
+  </>,
+  document.body
+)
 }
