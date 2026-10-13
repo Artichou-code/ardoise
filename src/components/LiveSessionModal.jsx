@@ -81,7 +81,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     return () => document.removeEventListener('pointerdown', handlePointerDown)
   }, [showGeneralHelp, showCityHelp, isEditingCity])
 
-  // Mode QR code plein écran avec luminosité maximale (fond blanc pur, WakeLock anti-veille, Fullscreen API)
+  // Mode QR code grand format (WakeLock anti-veille écran)
   useEffect(() => {
     if (!isFullscreenQr) return
     let wakeLock = null
@@ -94,22 +94,11 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     }
     requestLock()
 
-    try {
-      if (typeof document !== 'undefined' && document.documentElement.requestFullscreen && !document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {})
-      }
-    } catch {}
-
     return () => {
       if (wakeLock) {
         wakeLock.release().catch(() => {})
         wakeLock = null
       }
-      try {
-        if (typeof document !== 'undefined' && document.fullscreenElement && document.exitFullscreen) {
-          document.exitFullscreen().catch(() => {})
-        }
-      } catch {}
     }
   }, [isFullscreenQr])
 
@@ -1279,62 +1268,66 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
       </div>
     </div>
 
-    {/* Modale Plein Écran pour le QR Code (Luminosité maximale, fond blanc pur & WakeLock) */}
+    {/* Modale d'agrandissement pour le QR Code (Fond blanc lumineux, WakeLock anti-veille, taille adaptée PC et Mobile) */}
     {isFullscreenQr && (
       <div
-        className="fixed inset-0 z-[2000] bg-white text-stone-900 flex flex-col justify-between p-6 sm:p-10 select-none animate-in fade-in duration-200"
+        className="fixed inset-0 z-[2000] bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 select-none animate-in fade-in duration-200"
         onClick={() => setIsFullscreenQr(false)}
         role="dialog"
         aria-modal="true"
-        aria-label="QR Code plein écran"
+        aria-label="QR Code agrandi"
       >
-        {/* En-tête : Table et bouton fermer */}
-        <div className="w-full max-w-sm mx-auto flex items-center justify-between">
-          <div className="min-w-0 flex-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block">
-              Table en direct
-            </span>
-            <h3 className="font-serif-title font-bold text-base text-stone-900 truncate">
-              {activeSession?.name || 'Table Ardoise'}
-            </h3>
+        <div
+          className="relative w-full max-w-sm bg-white text-stone-900 rounded-3xl p-6 shadow-2xl flex flex-col items-center justify-between space-y-5 animate-in zoom-in-95 duration-150"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* En-tête : Table et bouton fermer */}
+          <div className="w-full flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
+                Table en direct
+              </span>
+              <h3 className="font-serif-title font-bold text-base text-stone-900 truncate">
+                {activeSession?.name || 'Table Ardoise'}
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsFullscreenQr(false)}
+              className="p-2 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors cursor-pointer shrink-0"
+              title="Fermer"
+              aria-label="Fermer"
+            >
+              <X size={20} />
+            </button>
           </div>
+
+          {/* QR Code géant éclatant pour scan instantané */}
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="p-3.5 bg-white rounded-2xl shadow-md border border-stone-200 flex items-center justify-center">
+              <QRCodeSVG value={shareUrl} size={240} level="H" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <div className="inline-block px-4 py-1.5 rounded-xl bg-stone-100 border border-stone-200/80 shadow-2xs">
+                <span className="font-mono font-bold text-xl tracking-widest text-stone-900">
+                  {activeSession?.code}
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-stone-500">
+                Scannez pour rejoindre la table
+              </p>
+            </div>
+          </div>
+
+          {/* Pied : Bouton fermer */}
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setIsFullscreenQr(false)
-            }}
-            className="p-2.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 transition-colors cursor-pointer shrink-0"
-            title="Fermer le plein écran"
-            aria-label="Fermer le plein écran"
+            onClick={() => setIsFullscreenQr(false)}
+            className="w-full py-2 px-4 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs transition-colors cursor-pointer"
           >
-            <X size={22} />
+            Fermer
           </button>
-        </div>
-
-        {/* QR Code géant éclatant pour scan instantané */}
-        <div className="flex flex-col items-center justify-center my-auto space-y-6">
-          <div className="p-4 bg-white rounded-3xl shadow-2xl border-2 border-stone-200 flex items-center justify-center">
-            <QRCodeSVG value={shareUrl} size={270} level="H" />
-          </div>
-
-          <div className="text-center space-y-2">
-            <div className="inline-block px-5 py-2 rounded-2xl bg-stone-100 border border-stone-200 shadow-xs">
-              <span className="font-mono font-bold text-2xl tracking-widest text-stone-900">
-                {activeSession?.code}
-              </span>
-            </div>
-            <p className="text-xs font-semibold text-stone-500">
-              Scannez pour rejoindre la table
-            </p>
-          </div>
-        </div>
-
-        {/* Pied : Consigne tactile */}
-        <div className="w-full max-w-sm mx-auto text-center">
-          <p className="text-xs text-stone-400 font-medium">
-            Toucher n'importe où pour quitter le plein écran
-          </p>
         </div>
       </div>
     )}
