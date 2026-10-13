@@ -962,8 +962,8 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                       ))}
                     </div>
                   ) : (
-                    <div className="p-3 rounded-xl border border-dashed border-stone-200 dark:border-slate-800 text-left">
-                      <p className="text-[11px] text-stone-400 dark:text-slate-500 leading-relaxed">
+                    <div className="p-3 rounded-xl border border-dashed border-stone-200 dark:border-slate-800 text-center">
+                      <p className="text-[10px] text-stone-500 dark:text-slate-400 leading-tight">
                         En attente des parties enregistrées par l'hôte…
                       </p>
                     </div>
@@ -1198,8 +1198,8 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                       ))}
                     </div>
                   ) : (
-                    <div className="p-3 rounded-xl border border-dashed border-stone-200 dark:border-slate-800 text-left">
-                      <p className="text-[11px] text-stone-400 dark:text-slate-500 leading-relaxed">
+                    <div className="p-3 rounded-xl border border-dashed border-stone-200 dark:border-slate-800 text-center">
+                      <p className="text-[10px] text-stone-500 dark:text-slate-400 leading-tight">
                         Lancez une partie depuis l'accueil&nbsp;: elle s'enregistrera ici automatiquement.
                       </p>
                     </div>
