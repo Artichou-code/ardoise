@@ -38,20 +38,34 @@ export function PlayerDetailSheet({ player, open, onClose, onOpenMerge }) {
       title={player.name}
       subtitle="Statistiques individuelles"
       headerAction={
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedBadgeId(null)
-            setShowAllBadges(false)
-            onClose()
-            setScreen('stats')
-          }}
-          className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-          title="Statistiques"
-          aria-label="Statistiques"
-        >
-          <BarChart3 size={18} className="text-stone-500 dark:text-slate-400" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => {
+              onClose()
+              onOpenMerge?.(player)
+            }}
+            className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-500 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 transition-colors cursor-pointer"
+            title="Fusionner ce profil (profil conservé)"
+            aria-label="Fusionner ce profil"
+          >
+            <GitMerge size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedBadgeId(null)
+              setShowAllBadges(false)
+              onClose()
+              setScreen('stats')
+            }}
+            className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            title="Statistiques"
+            aria-label="Statistiques"
+          >
+            <BarChart3 size={18} className="text-stone-500 dark:text-slate-400" />
+          </button>
+        </div>
       }
     >
       <div className="px-4 py-3 space-y-4">
@@ -169,21 +183,6 @@ export function PlayerDetailSheet({ player, open, onClose, onOpenMerge }) {
               )}
             </div>
           )}
-
-          {/* Action Fusionner avec un autre profil */}
-          <div className="mt-3 pt-2.5 border-t border-stone-200/60 dark:border-slate-800/60">
-            <button
-              type="button"
-              onClick={() => {
-                onClose()
-                onOpenMerge?.(player)
-              }}
-              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-300 font-bold text-xs transition-colors cursor-pointer"
-            >
-              <GitMerge size={13} />
-              <span>Fusionner ce profil avec un autre joueur</span>
-            </button>
-          </div>
         </div>
 
         {/* Indicateurs clés du joueur */}

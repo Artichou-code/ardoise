@@ -224,17 +224,6 @@ export function PlayersScreen() {
           <h1 className="flex-1 font-serif-title font-bold text-lg truncate">
             Joueurs
           </h1>
-          {activePlayers.length >= 2 && (
-            <button
-              type="button"
-              onClick={() => setMergePlayer(true)}
-              className="p-2 rounded-xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-stone-100 dark:hover:bg-slate-800 text-stone-700 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer shrink-0"
-              title="Fusionner deux joueurs (doublons, alias...)"
-              aria-label="Fusionner deux joueurs"
-            >
-              <GitMerge size={17} />
-            </button>
-          )}
           <button
             type="button"
             onClick={() => setShowCreate(true)}
@@ -520,32 +509,46 @@ export function PlayersScreen() {
                     onClick={() => setDetailPlayer(fullPlayerData)}
                     className="flex flex-col items-center p-3 rounded-2xl school-card relative hover:border-stone-300 dark:hover:border-slate-700 transition-all cursor-pointer group active:scale-[0.98]"
                   >
-                    {/* Bouton Modifier en haut à gauche */}
+                    {/* Actions à gauche : Archiver en haut, Fusionner sous l'archive */}
+                    <div className="absolute top-2 left-2 flex flex-col gap-0.5 z-10">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          archivePlayer(p.id)
+                        }}
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
+                        aria-label={`Archiver ${p.name}`}
+                        title={`Archiver ${p.name}`}
+                      >
+                        <Archive size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setMergePlayer(p)
+                        }}
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
+                        aria-label={`Fusionner ${p.name} (profil conservé)`}
+                        title={`Fusionner ${p.name} (profil conservé)`}
+                      >
+                        <GitMerge size={13} />
+                      </button>
+                    </div>
+
+                    {/* Bouton Modifier en haut à droite */}
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation()
                         setEditPlayer(p)
                       }}
-                      className="absolute top-2 left-2 p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                      className="absolute top-2 right-2 p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer z-10"
                       aria-label={`Modifier ${p.name}`}
                       title={`Modifier ${p.name}`}
                     >
                       <Pencil size={13} />
-                    </button>
-
-                    {/* Bouton Archiver en haut à droite */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        archivePlayer(p.id)
-                      }}
-                      className="absolute top-2 right-2 p-1.5 rounded-lg text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors cursor-pointer"
-                      aria-label={`Archiver ${p.name}`}
-                      title={`Archiver ${p.name}`}
-                    >
-                      <Archive size={13} />
                     </button>
 
                     {/* Avatar */}
