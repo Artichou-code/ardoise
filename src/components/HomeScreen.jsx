@@ -22,6 +22,17 @@ import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
 
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
 
+// Bascule d'affichage des visuels illustrés sur la page d'accueil (passer à true pour réactiver)
+const SHOW_GAME_ILLUSTRATIONS = false
+
+const GAME_ILLUSTRATIONS = {
+  [GAMES.DOURAK]: '/visuel_jeux/dourak.webp',
+  [GAMES.SIX_QUI_PREND]: '/visuel_jeux/six_qui_prend.webp',
+  [GAMES.SKYJO]: '/visuel_jeux/skyjo.webp',
+  [GAMES.UNO]: '/visuel_jeux/uno.webp',
+  [GAMES.YAM]: '/visuel_jeux/yam.webp',
+}
+
 export function HomeScreen() {
   const { games, setScreen, resumeGame, customPresets, deletePreset, createGame, reloadStorage, liveSessionNotice, setLiveSessionNotice } = useGame()
   const [setupGame, setSetupGame] = useState(null)
@@ -614,9 +625,27 @@ export function HomeScreen() {
                       </button>
                     </div>
 
-                    <p className="text-xs text-stone-600 dark:text-slate-300 mt-1 leading-relaxed">
-                      {formatTypography(meta.description)}
-                    </p>
+                    {SHOW_GAME_ILLUSTRATIONS && GAME_ILLUSTRATIONS[meta.id] ? (
+                      <div className="mt-1.5 flow-root">
+                        <img
+                          src={GAME_ILLUSTRATIONS[meta.id]}
+                          alt={`${meta.name} illustration craie`}
+                          className="float-right w-[84px] sm:w-[92px] h-auto ml-2.5 mb-0.5 mt-1.5 object-contain pointer-events-none select-none"
+                          style={{
+                            shapeOutside: 'circle(48% at 52% 48%)',
+                            shapeMargin: '4px',
+                          }}
+                          loading="lazy"
+                        />
+                        <p className="text-xs text-stone-600 dark:text-slate-300 leading-[1.45]">
+                          {formatTypography(meta.description)}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-stone-600 dark:text-slate-300 mt-1 leading-relaxed">
+                        {formatTypography(meta.description)}
+                      </p>
+                    )}
                   </div>
 
                   {/* Badges discrets d'écolier */}

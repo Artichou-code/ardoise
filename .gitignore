@@ -34,3 +34,9 @@ Thumbs.db
 # Cloudflare Wrangler
 .wrangler/
 
+# Design work files & archives
+*.psd
+**/archive/
+**/Nouveau dossier/
+* copie.png
+
