@@ -2,11 +2,18 @@
   "name": "Ardoise",
   "short_name": "Ardoise",
   "description": "Carnet de scores et règles pour jeux de cartes et de société",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#151719",
   "theme_color": "#151719",
   "orientation": "portrait",
+  "launch_handler": {
+    "client_mode": ["focus-existing", "auto"]
+  },
+  "handle_links": "preferred",
+  "capture_links": "existing-client-navigate",
   "icons": [
     {
       "src": "/Ardoise_v2-white.svg",

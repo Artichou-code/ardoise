@@ -20,6 +20,7 @@ import { SyncModal } from './components/SyncModal'
 import { ShareAppModal } from './components/ShareAppModal'
 import { ArtCreaUniverseModal } from './components/ArtCreaUniverseModal'
 import { LegalModal } from './components/LegalModal'
+import { AppHandoffBanner } from './components/ui/AppHandoffBanner'
 
 // Modales volumineuses spécifiques : chargement différé (session en direct et import)
 const ImportGamesModal = lazy(() => import('./components/ImportGamesModal').then((m) => ({ default: m.ImportGamesModal })))
@@ -139,6 +140,7 @@ export default function App() {
 
   return (
     <>
+      <AppHandoffBanner />
       <PullToRefreshIndicator disabled={!isStandalone || (screen === 'game' || screen === 'victory')} />
       {screen === 'game' ? (
           <GameScreen />

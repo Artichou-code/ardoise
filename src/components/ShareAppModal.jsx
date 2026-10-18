@@ -121,6 +121,7 @@ export function ShareAppModal({ isOpen, onClose }) {
             <DynamicQrCode
               qrId="Wamz"
               fallbackUrl={APP_SHARE_URL}
+              encodedUrl="https://ardoise.art-crea.fr/qr?src=qr"
               size={190}
             />
           </div>

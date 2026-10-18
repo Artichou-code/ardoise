@@ -27,6 +27,18 @@ export async function onRequest(context) {
       )
         .bind('qr_share_scan', ua.slice(0, 300), country, city, device_os)
         .run()
+
+      // Synchronisation asynchrone des statistiques vers LINK (si disponible)
+      if (context.waitUntil) {
+        context.waitUntil(
+          fetch('https://link.art-crea.fr/go/Wamz?source=ardoise_qr', {
+            headers: {
+              'User-Agent': ua,
+              'X-Forwarded-For': request.headers.get('CF-Connecting-IP') || '',
+            },
+          }).catch(() => {})
+        )
+      }
     } catch {
       // fail silently — on ne bloque pas la redirection
     }

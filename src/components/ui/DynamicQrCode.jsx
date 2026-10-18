@@ -28,6 +28,7 @@ function getCachedData(qrId, fallbackUrl) {
 export function DynamicQrCode({
   qrId = 'Wamz',
   fallbackUrl = 'https://link.art-crea.fr/go/Wamz',
+  encodedUrl = undefined,
   size = 190,
   className = '',
   onTap = undefined,
@@ -81,11 +82,12 @@ export function DynamicQrCode({
   }, [qrId, fallbackUrl])
 
   // Génération de la matrice et du SVG vectoriel mémoïsée
+  const targetUrl = encodedUrl || data.shortUrl
   const svgContent = useMemo(() => {
     const hasLogo = Boolean(data.qrSettings?.logo_data)
-    const matrix = generateQrMatrix(data.shortUrl, data.qrSettings?.ecc || 'M', hasLogo)
+    const matrix = generateQrMatrix(targetUrl, data.qrSettings?.ecc || 'M', hasLogo)
     return renderQrSvg(matrix, data.qrSettings, { size, margin: 2 })
-  }, [data.shortUrl, data.qrSettings, size])
+  }, [targetUrl, data.qrSettings, size])
 
   return (
     <div
