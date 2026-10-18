@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { QRCodeSVG } from 'qrcode.react'
 import { X, Share2, Copy, Check } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { AppLogo } from './ui/AppLogo'
+import { DynamicQrCode } from './ui/DynamicQrCode'
 import { StatsModal } from './StatsModal'
 
-const APP_SHARE_URL = 'https://ardoise.art-crea.fr/qr'
+const APP_SHARE_URL = 'https://link.art-crea.fr/go/Wamz'
 const APP_HOME_URL = 'https://ardoise.art-crea.fr/'
 
 export function ShareAppModal({ isOpen, onClose }) {
@@ -112,17 +112,16 @@ export function ShareAppModal({ isOpen, onClose }) {
 
         {/* Corps */}
         <div className="p-5 flex flex-col items-center text-center space-y-4">
-          {/* QR Code de l'application — 5 taps rapides → dashboard stats */}
+          {/* QR Code dynamique de l'application (LINK) — 5 taps rapides → dashboard stats */}
           <div
             className="p-3.5 bg-white rounded-2xl shadow-md border border-stone-200 inline-block cursor-pointer select-none"
             onClick={handleQrTap}
             title="QR code"
           >
-            <QRCodeSVG
-              value={APP_SHARE_URL}
+            <DynamicQrCode
+              qrId="Wamz"
+              fallbackUrl={APP_SHARE_URL}
               size={190}
-              level="M"
-              marginSize={1}
             />
           </div>
 
