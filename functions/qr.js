@@ -44,6 +44,9 @@ export async function onRequest(context) {
     }
   }
 
-  // Redirection 302 vers l'accueil
-  return Response.redirect('https://ardoise.art-crea.fr/', 302)
+  // Redirection 302 vers l'accueil en conservant les query params (ex: ?src=qr)
+  const incomingUrl = new URL(request.url)
+  const targetRedirect = new URL('https://ardoise.art-crea.fr/')
+  targetRedirect.search = incomingUrl.search || '?src=qr'
+  return Response.redirect(targetRedirect.toString(), 302)
 }
