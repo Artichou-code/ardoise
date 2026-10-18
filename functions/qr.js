@@ -28,6 +28,28 @@ export async function onRequest(context) {
         .bind('qr_share_scan', ua.slice(0, 300), country, city, device_os)
         .run()
 
+      // Notifier LINK de façon asynchrone pour mettre à jour ses statistiques en temps réel
+      // Sans redirection (l'endpoint renvoie du JSON 200, donc zéro risque de boucle récursive)
+      const notifyLink = fetch('https://link.art-crea.fr/api/public/qr/Wamz/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': ua,
+        },
+        body: JSON.stringify({
+          userAgent: ua,
+          country,
+          city,
+          device_os,
+          destination: 'https://ardoise.art-crea.fr/qr',
+        }),
+      }).catch(() => {})
+
+      if (context.waitUntil) {
+        context.waitUntil(notifyLink)
+      } else {
+        await notifyLink
+      }
     } catch {
       // fail silently — on ne bloque pas la redirection
     }
