@@ -34,7 +34,9 @@ export function AppHandoffBanner() {
     if (!mobile) return
 
     const ios = /iphone|ipad|ipod/i.test(ua)
-    setIsIos(ios)
+    // Sur iOS, Apple interdit strictement à Safari de basculer vers un WebClip d'écran d'accueil.
+    // On ne pollue pas l'écran avec un faux bouton "Ouvrir l'app" qui ne peut pas s'exécuter.
+    if (ios) return
 
     // Vérifier si déjà masqué pour cette session
     try {
