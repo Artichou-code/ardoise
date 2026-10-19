@@ -10,14 +10,14 @@ import { formatDate, formatGameStart, getTeamGameData, getRanking } from '../uti
 import { Avatar } from './ui/Avatar'
 import { formatTypography } from '../utils/typography'
 import { getActiveSession } from '../store/liveSession'
-const RulesSheet = lazy(() => import('./RulesSheet').then((m) => ({ default: m.RulesSheet })))
-const GameDetailSheet = lazy(() => import('./GameDetailSheet').then((m) => ({ default: m.GameDetailSheet })))
-const GameSetupSheet = lazy(() => import('./GameSetupSheet').then((m) => ({ default: m.GameSetupSheet })))
-const ShareGamesModal = lazy(() => import('./ShareGamesModal').then((m) => ({ default: m.ShareGamesModal })))
-const ShareGameModal = lazy(() => import('./ShareGameModal').then((m) => ({ default: m.ShareGameModal })))
-const SyncModal = lazy(() => import('./SyncModal').then((m) => ({ default: m.SyncModal })))
-const LegalModal = lazy(() => import('./LegalModal').then((m) => ({ default: m.LegalModal })))
-const ArtCreaUniverseModal = lazy(() => import('./ArtCreaUniverseModal').then((m) => ({ default: m.ArtCreaUniverseModal })))
+import { RulesSheet } from './RulesSheet'
+import { GameDetailSheet } from './GameDetailSheet'
+import { GameSetupSheet } from './GameSetupSheet'
+import { ShareGamesModal } from './ShareGamesModal'
+import { ShareGameModal } from './ShareGameModal'
+import { SyncModal } from './SyncModal'
+import { LegalModal } from './LegalModal'
+import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
 
 // Bascule d'affichage des visuels illustrés sur la page d'accueil (passer à true pour réactiver)

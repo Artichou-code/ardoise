@@ -9,20 +9,22 @@ import { AppHandoffBanner } from './components/ui/AppHandoffBanner'
 
 import { BurgerMenu } from './components/BurgerMenu'
 
-// Écrans secondaires : chargement dynamique à la demande pour alléger le bundle initial
-const GameScreen = lazy(() => import('./components/GameScreen').then((m) => ({ default: m.GameScreen })))
-const VictoryScreen = lazy(() => import('./components/VictoryScreen').then((m) => ({ default: m.VictoryScreen })))
-const HistoryScreen = lazy(() => import('./components/HistoryScreen').then((m) => ({ default: m.HistoryScreen })))
-const StatsScreen = lazy(() => import('./components/StatsScreen').then((m) => ({ default: m.StatsScreen })))
-const PlayersScreen = lazy(() => import('./components/PlayersScreen').then((m) => ({ default: m.PlayersScreen })))
-const TrophiesScreen = lazy(() => import('./components/TrophiesScreen').then((m) => ({ default: m.TrophiesScreen })))
+// Écrans principaux : chargement immédiat pour navigation instantanée (zéro page blanche)
+import { GameScreen } from './components/GameScreen'
+import { VictoryScreen } from './components/VictoryScreen'
+import { HistoryScreen } from './components/HistoryScreen'
+import { StatsScreen } from './components/StatsScreen'
+import { PlayersScreen } from './components/PlayersScreen'
+import { TrophiesScreen } from './components/TrophiesScreen'
 
-// Modales : chargement différé à la demande
-const ShareGamesModal = lazy(() => import('./components/ShareGamesModal').then((m) => ({ default: m.ShareGamesModal })))
-const SyncModal = lazy(() => import('./components/SyncModal').then((m) => ({ default: m.SyncModal })))
-const ShareAppModal = lazy(() => import('./components/ShareAppModal').then((m) => ({ default: m.ShareAppModal })))
-const ArtCreaUniverseModal = lazy(() => import('./components/ArtCreaUniverseModal').then((m) => ({ default: m.ArtCreaUniverseModal })))
-const LegalModal = lazy(() => import('./components/LegalModal').then((m) => ({ default: m.LegalModal })))
+// Modales intégrées : chargement immédiat pour ouverture instantanée au 1er clic (logo, hub légal, partage, sync)
+import { ShareGamesModal } from './components/ShareGamesModal'
+import { SyncModal } from './components/SyncModal'
+import { ShareAppModal } from './components/ShareAppModal'
+import { ArtCreaUniverseModal } from './components/ArtCreaUniverseModal'
+import { LegalModal } from './components/LegalModal'
+
+// Modales volumineuses spécifiques : chargement différé (session en direct et import)
 const ImportGamesModal = lazy(() => import('./components/ImportGamesModal').then((m) => ({ default: m.ImportGamesModal })))
 const LiveSessionModal = lazy(() => import('./components/LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
 
@@ -138,23 +140,21 @@ export default function App() {
     <>
       <AppHandoffBanner />
       <PullToRefreshIndicator disabled={!isStandalone || (screen === 'game' || screen === 'victory')} />
-      <Suspense fallback={<div className="min-h-screen bg-sand-50 dark:bg-charcoal-900" />}>
-        {screen === 'game' ? (
-          <GameScreen />
-        ) : screen === 'victory' ? (
-          <VictoryScreen />
-        ) : screen === 'history' ? (
-          <HistoryScreen />
-        ) : screen === 'stats' ? (
-          <StatsScreen />
-        ) : screen === 'players' ? (
-          <PlayersScreen />
-        ) : screen === 'trophies' ? (
-          <TrophiesScreen />
-        ) : (
-          <HomeScreen />
-        )}
-      </Suspense>
+      {screen === 'game' ? (
+        <GameScreen />
+      ) : screen === 'victory' ? (
+        <VictoryScreen />
+      ) : screen === 'history' ? (
+        <HistoryScreen />
+      ) : screen === 'stats' ? (
+        <StatsScreen />
+      ) : screen === 'players' ? (
+        <PlayersScreen />
+      ) : screen === 'trophies' ? (
+        <TrophiesScreen />
+      ) : (
+        <HomeScreen />
+      )}
 
       {/* Menu Burger global accessible depuis toutes les pages avec transition fluide depuis la droite */}
       <BurgerMenu

@@ -8,7 +8,7 @@ import { ConfirmDialog } from './ui/Dialog'
 import { getRanking, formatTeamNames } from '../utils/gameUtils'
 import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
 
-const RulesSheet = lazy(() => import('./RulesSheet').then(m => ({ default: m.RulesSheet })))
+import { RulesSheet } from './RulesSheet'
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
 
 const ENGINE_MAP = {
