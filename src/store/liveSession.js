@@ -446,7 +446,7 @@ const draftDebounceTimers = new Map()
 /**
  * Pousse en direct le brouillon (sélection/score temporaire) d'un joueur sur le serveur
  */
-export async function pushLiveSessionDraft(code, gameId, playerId, data, roundIndex, debounceMs = 250) {
+export async function pushLiveSessionDraft(code, gameId, playerId, data, roundIndex, debounceMs = 250, game = null) {
   if (!code || !gameId) return
   const cleanCode = extractCodeFromInput(code)
   if (!cleanCode) return
@@ -462,6 +462,7 @@ export async function pushLiveSessionDraft(code, gameId, playerId, data, roundIn
           playerId,
           data,
           roundIndex,
+          game: game || undefined,
         }),
       })
     } catch (err) {
@@ -490,7 +491,7 @@ export async function pushLiveSessionDraft(code, gameId, playerId, data, roundIn
 /**
  * Valide une manche sur la Table Live avec protection optimiste anti-collision (OCC)
  */
-export async function commitLiveSessionRound(code, gameId, roundIndex, roundData, extra = {}) {
+export async function commitLiveSessionRound(code, gameId, roundIndex, roundData, extra = {}, game = null) {
   if (!code || !gameId || !roundData) return null
   const cleanCode = extractCodeFromInput(code)
   if (!cleanCode) return null
@@ -506,6 +507,7 @@ export async function commitLiveSessionRound(code, gameId, roundIndex, roundData
         roundData,
         status: extra.status,
         winner: extra.winner,
+        game: game || undefined,
       }),
     })
 

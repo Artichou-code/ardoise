@@ -268,7 +268,7 @@ export function GameProvider({ children }) {
     if (!liveSession || !liveSession.code) return
 
     const roundIndex = (current.rounds?.length || 0) + 1
-    pushLiveSessionDraft(liveSession.code, current.id, playerId, data, roundIndex)
+    pushLiveSessionDraft(liveSession.code, current.id, playerId, data, roundIndex, 250, current)
   }, [activeGame])
 
   // Valider une manche avec verrouillage optimiste anti-collision (OCC) sur Table Live
@@ -286,7 +286,8 @@ export function GameProvider({ children }) {
           current.id,
           targetRoundIndex,
           roundData,
-          extra
+          extra,
+          current
         )
         if (res && res.game) {
           persistGame(res.game)
@@ -488,7 +489,15 @@ export function GameProvider({ children }) {
     setHistoryTick(t => t + 1)
     setActiveGameId(id)
     setScreen('game')
-  }, [])
+
+    const liveSession = getActiveSession()
+    if (liveSession && liveSession.code) {
+      const g = (games || []).find(item => item.id === id)
+      if (g) {
+        pushGameToLiveSession(liveSession.code, g).catch(() => {})
+      }
+    }
+  }, [games])
 
   // Gestion joueurs
   const savePlayer = useCallback((player) => {

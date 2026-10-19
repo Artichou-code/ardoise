@@ -298,9 +298,28 @@ export async function onRequest(context) {
         }
 
         const games = Array.isArray(currentState.games) ? [...currentState.games] : [];
-        const idx = games.findIndex((g) => g && g.id === body.gameId);
+        let idx = games.findIndex((g) => g && g.id === body.gameId);
         if (idx === -1) {
-          return Response.json({ error: 'Partie introuvable' }, { status: 404, headers: corsHeaders });
+          if (body.game && typeof body.game === 'object') {
+            const newGame = { ...body.game, id: body.gameId };
+            games.unshift(newGame);
+            idx = 0;
+          } else {
+            const stubGame = {
+              id: body.gameId,
+              name: 'Partie en direct',
+              type: 'unknown',
+              players: [],
+              rounds: [],
+              draft: {},
+              scores: {},
+              status: 'active',
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+            };
+            games.unshift(stubGame);
+            idx = 0;
+          }
         }
 
         const game = { ...games[idx] };
@@ -367,9 +386,29 @@ export async function onRequest(context) {
         }
 
         const games = Array.isArray(currentState.games) ? [...currentState.games] : [];
-        const idx = games.findIndex((g) => g && g.id === body.gameId);
+        let idx = games.findIndex((g) => g && g.id === body.gameId);
         if (idx === -1) {
-          return Response.json({ error: 'Partie introuvable' }, { status: 404, headers: corsHeaders });
+          if (body.game && typeof body.game === 'object') {
+            const newGame = { ...body.game, id: body.gameId };
+            games.unshift(newGame);
+            idx = 0;
+          } else {
+            const stubGame = {
+              id: body.gameId,
+              name: 'Partie en direct',
+              type: 'unknown',
+              players: [],
+              rounds: [],
+              draft: null,
+              scores: body.roundData?.scores || {},
+              status: body.status || 'active',
+              winner: body.winner || null,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+            };
+            games.unshift(stubGame);
+            idx = 0;
+          }
         }
 
         const game = { ...games[idx] };
