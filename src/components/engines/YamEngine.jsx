@@ -159,6 +159,168 @@ export const YAM_CATEGORIES = [
   { id: 'chance', name: 'Chance', section: 'lower', desc: 'Somme totale des 5 dés', max: 30, presets: [0, 15, 20, 22, 25, 28] },
 ]
 
+// Dictionnaire pédagogique complet des règles et calculs pour chaque case de la feuille de marque
+export const YAM_RULES_EXPLANATIONS = {
+  ones: {
+    title: 'As (Dé 1)',
+    subtitle: 'Section Supérieure',
+    points: 'Max 5 pts',
+    condition: 'Ne retenir que les dés affichant la face 1.',
+    calc: 'Somme des dés 1 obtenus (les autres dés sont ignorés).',
+    example: 'Trois dés 1 ➔ 1 + 1 + 1 = 3 points (0 pt si aucun 1 ou case barrée).',
+    tip: 'Objectif Bonus : viser au moins 3 dés de 1 (3 pts).',
+  },
+  twos: {
+    title: 'Deux (Dé 2)',
+    subtitle: 'Section Supérieure',
+    points: 'Max 10 pts',
+    condition: 'Ne retenir que les dés affichant la face 2.',
+    calc: 'Somme des dés 2 obtenus (les autres dés sont ignorés).',
+    example: 'Trois dés 2 ➔ 2 + 2 + 2 = 6 points.',
+    tip: 'Objectif Bonus : viser au moins 3 dés de 2 (6 pts).',
+  },
+  threes: {
+    title: 'Trois (Dé 3)',
+    subtitle: 'Section Supérieure',
+    points: 'Max 15 pts',
+    condition: 'Ne retenir que les dés affichant la face 3.',
+    calc: 'Somme des dés 3 obtenus (les autres dés sont ignorés).',
+    example: 'Trois dés 3 ➔ 3 + 3 + 3 = 9 points.',
+    tip: 'Objectif Bonus : viser au moins 3 dés de 3 (9 pts).',
+  },
+  fours: {
+    title: 'Quatre (Dé 4)',
+    subtitle: 'Section Supérieure',
+    points: 'Max 20 pts',
+    condition: 'Ne retenir que les dés affichant la face 4.',
+    calc: 'Somme des dés 4 obtenus (les autres dés sont ignorés).',
+    example: 'Trois dés 4 ➔ 4 + 4 + 4 = 12 points.',
+    tip: 'Objectif Bonus : viser au moins 3 dés de 4 (12 pts).',
+  },
+  fives: {
+    title: 'Cinq (Dé 5)',
+    subtitle: 'Section Supérieure',
+    points: 'Max 25 pts',
+    condition: 'Ne retenir que les dés affichant la face 5.',
+    calc: 'Somme des dés 5 obtenus (les autres dés sont ignorés).',
+    example: 'Trois dés 5 ➔ 5 + 5 + 5 = 15 points.',
+    tip: 'Objectif Bonus : viser au moins 3 dés de 5 (15 pts).',
+  },
+  sixes: {
+    title: 'Six (Dé 6)',
+    subtitle: 'Section Supérieure',
+    points: 'Max 30 pts',
+    condition: 'Ne retenir que les dés affichant la face 6.',
+    calc: 'Somme des dés 6 obtenus (les autres dés sont ignorés).',
+    example: 'Trois dés 6 ➔ 6 + 6 + 6 = 18 points.',
+    tip: 'Objectif Bonus : viser au moins 3 dés de 6 (18 pts). Un 4e Six apporte immédiatement +6 pts d’avance sur le bonus !',
+  },
+  upper_subtotal: {
+    title: 'Sous-Total Supérieur (TOT. /63)',
+    subtitle: 'Palier du Bonus',
+    points: 'Objectif ≥ 63 pts',
+    condition: 'Addition des points obtenus sur les cases As à Six (1 à 6).',
+    calc: 'Si ce total atteint 63 points ou plus, vous débloquez automatiquement les +35 points de Bonus.',
+    example: '3 + 6 + 9 + 12 + 15 + 18 = 63 points pile !',
+    tip: 'Le seuil de 63 correspond exactement à une moyenne de 3 dés réussis par chiffre.',
+  },
+  bonus: {
+    title: 'Bonus (+35 points)',
+    subtitle: 'Comment l\'obtenir ?',
+    points: '+35 pts ou 0 pt',
+    condition: 'Le total des cases 1 à 6 doit atteindre au moins 63 points.',
+    calc: 'Si Total 1 à 6 ≥ 63 pts ➔ +35 points ajoutés au Total 1. Si < 63 pts ➔ 0 pt de bonus.',
+    example: 'Pour l\'obtenir facilement : il suffit d\'obtenir en moyenne 3 dés identiques sur chaque chiffre (3×1 + 3×2 + 3×3 + 3×4 + 3×5 + 3×6 = 63).',
+    tip: 'Tout 4e dé réussi (ex. quatre 5 ou quatre 6) compense un éventuel retard ou une case barrée sur un autre chiffre !',
+  },
+  total1: {
+    title: 'Total 1 (T.1)',
+    subtitle: 'Sous-Total Supérieur avec Bonus',
+    points: 'Sous-total + Bonus',
+    condition: 'Addition du sous-total supérieur (cases 1 à 6) et du bonus de 35 points (si débloqué).',
+    calc: 'Total des cases 1 à 6 + 35 pts (si total ≥ 63).',
+    example: 'Exemple : 65 pts + 35 pts (bonus) = 100 points au Total 1.',
+  },
+  three_kind: {
+    title: 'Brelan',
+    subtitle: 'Section Inférieure',
+    points: 'Max 30 pts',
+    condition: 'Obtenir au moins 3 dés identiques parmi les 5 dés du lancer.',
+    calc: 'SOMME DES 5 DÉS DU LANCER (les 3 dés identiques + les 2 autres dés !).',
+    example: 'Lancer : 4 - 4 - 4 - 2 - 6 ➔ 3 dés de 4 + un 2 + un 6 = 20 points.',
+    tip: 'Règle essentielle : On n\'additionne pas seulement les 3 dés identiques, mais bien la totalité des 5 dés lancés !',
+  },
+  four_kind: {
+    title: 'Carré',
+    subtitle: 'Section Inférieure',
+    points: 'Max 30 pts',
+    condition: 'Obtenir au moins 4 dés identiques parmi les 5 dés du lancer.',
+    calc: 'SOMME DES 5 DÉS DU LANCER (les 4 dés identiques + le 5e dé !).',
+    example: 'Lancer : 5 - 5 - 5 - 5 - 3 ➔ 4 dés de 5 + le dé 3 = 23 points.',
+    tip: 'Règle essentielle : Tout comme le Brelan, on additionne la totalité des 5 dés lancés !',
+  },
+  full: {
+    title: 'Full (25 points fixes)',
+    subtitle: 'Section Inférieure',
+    points: '25 pts fixes',
+    condition: 'Obtenir 3 dés d\'une même valeur et 2 dés d\'une autre valeur (un Brelan + une Paire).',
+    calc: '25 points fixes, quelle que soit la valeur faciale des dés.',
+    example: 'Valide : 3 - 3 - 3 - 6 - 6 OU 2 - 2 - 5 - 5 - 5 ➔ 25 points.',
+    tip: 'Un Yam\'s (5 dés identiques) peut également être comptabilisé comme un Full si votre case Yam\'s est déjà prise.',
+  },
+  small_straight: {
+    title: 'Petite Suite (30 points fixes)',
+    subtitle: 'Section Inférieure',
+    points: '30 pts fixes',
+    condition: 'Obtenir 4 dés consécutifs qui se suivent (1-2-3-4, 2-3-4-5 ou 3-4-5-6).',
+    calc: '30 points fixes. Le 5e dé peut avoir n\'importe quelle valeur.',
+    example: 'Lancer : 1 - 2 - 3 - 4 - 6 ➔ les dés 1, 2, 3, 4 se suivent ➔ 30 points.',
+    tip: 'Une Grande Suite valide également d\'office une Petite Suite si votre case Grande Suite est déjà remplie.',
+  },
+  large_straight: {
+    title: 'Grande Suite (40 points fixes)',
+    subtitle: 'Section Inférieure',
+    points: '40 pts fixes',
+    condition: 'Obtenir 5 dés consécutifs qui se suivent (1-2-3-4-5 ou 2-3-4-5-6).',
+    calc: '40 points fixes. Aucun doublon n\'est permis.',
+    example: 'Deux combinaisons possibles : 1-2-3-4-5 OU 2-3-4-5-6 ➔ 40 points.',
+    tip: 'Combinaison majeure à haute valeur. Ne la sacrifiez pas dans une Petite Suite si vous pouvez encore relancer !',
+  },
+  yam: {
+    title: 'Yam\'s (50 points fixes)',
+    subtitle: 'La combinaison suprême',
+    points: '50 pts fixes',
+    condition: 'Obtenir les 5 dés strictement identiques !',
+    calc: '50 points fixes, quel que soit le chiffre (cinq 1 ou cinq 6 valent 50 points).',
+    example: 'Lancer : 6 - 6 - 6 - 6 - 6 ➔ 50 points !',
+    tip: 'Le coup légendaire du jeu qui fait très souvent la différence pour la victoire finale.',
+  },
+  chance: {
+    title: 'Chance',
+    subtitle: 'Section Inférieure (Joker)',
+    points: 'Max 30 pts',
+    condition: 'Aucune combinaison exigée : n\'importe quel lancer de 5 dés est accepté.',
+    calc: 'Somme totale des 5 dés obtenus.',
+    example: 'Lancer : 6 - 6 - 5 - 5 - 4 ➔ 6 + 6 + 5 + 5 + 4 = 26 points.',
+    tip: 'Case de secours idéale pour sauver un lancer raté à forte valeur (dés 5 et 6).',
+  },
+  total2: {
+    title: 'Total 2 (T.2)',
+    subtitle: 'Sous-Total Inférieur',
+    points: 'Somme des 7 contrats',
+    condition: 'Addition des 7 combinaisons de la section inférieure.',
+    calc: 'Brelan + Carré + Full + Petite Suite + Grande Suite + Yam\'s + Chance.',
+  },
+  grand_total: {
+    title: 'Score Général (TOTAL)',
+    subtitle: 'Score final de la partie',
+    points: 'Total 1 + Total 2',
+    condition: 'Total 1 (avec Bonus éventuel de +35) + Total 2.',
+    calc: 'Le total cumulé de l\'ensemble de la grille en 13 cases.',
+    tip: 'Le joueur qui cumule le total le plus élevé remporte la partie de Yam\'s !',
+  },
+}
+
 export function YamEngine({ game, onFinish }) {
   const { updateScores } = useGame()
 
@@ -197,6 +359,9 @@ export function YamEngine({ game, onFinish }) {
 
   // Popover rectangulaire centré au milieu de l'écran : { playerId, catId }
   const [activePopover, setActivePopover] = useState(null)
+
+  // Modale d'explication de règle pour une case (clic sur la colonne de gauche)
+  const [selectedCategoryRule, setSelectedCategoryRule] = useState(null)
 
   const handleCellClick = (playerId, catId) => {
     const status = getCellStatus(playerId, catId)
@@ -487,20 +652,15 @@ export function YamEngine({ game, onFinish }) {
               </thead>
 
               <tbody className="divide-y divide-stone-100 dark:divide-slate-800/60">
-                {/* 1. Section Supérieure (As à Six) : Juste les icônes de dés nettes, sans titres textuels */}
+                {/* 1. Section Supérieure (As à Six) : Clic sur le dé affiche la règle exacte */}
                 {upperCategories.map((cat, idx) => (
                   <tr key={cat.id} className="hover:bg-stone-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td
-                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-100/60 dark:hover:bg-slate-800/60 transition-colors"
-                      title={`${cat.name} · ${cat.desc} (Cliquer pour ouvrir le choix)`}
-                      onClick={() => {
-                        const targetPlayer = game.players.find(p => previousGrid[p.id]?.[cat.id] == null) || game.players[0]
-                        if (targetPlayer) {
-                          handleCellClick(targetPlayer.id, cat.id)
-                        }
-                      }}
+                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-100 dark:hover:bg-slate-800 active:scale-95 transition-all group"
+                      title={`${cat.name} · ${cat.desc} (Cliquer pour voir la règle)`}
+                      onClick={() => setSelectedCategoryRule(cat.id)}
                     >
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-center group-hover:scale-105 transition-transform">
                         <DiceFace value={idx + 1} size={24} />
                       </div>
                     </td>
@@ -528,9 +688,13 @@ export function YamEngine({ game, onFinish }) {
                   </tr>
                 ))}
 
-                {/* 2. Ligne SOUS-TOTAL Supérieur */}
+                {/* 2. Ligne SOUS-TOTAL Supérieur : Clic affiche l'explication du palier 63 */}
                 <tr className="bg-stone-100/75 dark:bg-slate-800/60 font-semibold border-t-2 border-stone-200 dark:border-slate-700">
-                  <td className="sticky left-0 z-10 bg-stone-100 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
+                  <td
+                    className="sticky left-0 z-10 bg-stone-100 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-200/80 dark:hover:bg-slate-700/80 active:scale-95 transition-all"
+                    title="Sous-Total Supérieur (Cliquer pour voir la règle)"
+                    onClick={() => setSelectedCategoryRule('upper_subtotal')}
+                  >
                     <div className="flex flex-col items-center justify-center gap-0.5 py-0.5">
                       <span className="text-[8.5px] font-black text-stone-700 dark:text-slate-300 leading-none">TOT.</span>
                       <span className="text-[7.5px] font-semibold text-stone-400 dark:text-slate-500 leading-none">/63</span>
@@ -548,9 +712,13 @@ export function YamEngine({ game, onFinish }) {
                   })}
                 </tr>
 
-                {/* 3. Ligne BONUS (+35 si >= 63) */}
+                {/* 3. Ligne BONUS (+35 si >= 63) : Clic affiche la règle exacte pour obtenir le Bonus */}
                 <tr className="bg-stone-50/60 dark:bg-slate-800/40">
-                  <td className="sticky left-0 z-10 bg-stone-50 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
+                  <td
+                    className="sticky left-0 z-10 bg-stone-50 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-950/40 active:scale-95 transition-all"
+                    title="Bonus +35 points (Cliquer pour voir comment l'obtenir)"
+                    onClick={() => setSelectedCategoryRule('bonus')}
+                  >
                     <div className="flex flex-col items-center justify-center gap-0.5 py-0.5">
                       <span className="text-[8px] font-black text-stone-600 dark:text-slate-400 leading-none">BONUS</span>
                       <span className="text-[7.5px] font-bold text-emerald-600 dark:text-emerald-400 leading-none">+35</span>
@@ -574,9 +742,13 @@ export function YamEngine({ game, onFinish }) {
                   })}
                 </tr>
 
-                {/* 4. Ligne TOTAL 1 */}
+                {/* 4. Ligne TOTAL 1 : Clic affiche l'explication */}
                 <tr className="bg-stone-200/60 dark:bg-slate-800/80 font-bold border-b border-stone-200 dark:border-slate-700">
-                  <td className="sticky left-0 z-10 bg-stone-200/90 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
+                  <td
+                    className="sticky left-0 z-10 bg-stone-200/90 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-300/80 dark:hover:bg-slate-700/80 active:scale-95 transition-all"
+                    title="Total 1 (Cliquer pour voir la règle)"
+                    onClick={() => setSelectedCategoryRule('total1')}
+                  >
                     <span className="text-[8.5px] font-black text-stone-900 dark:text-slate-100 uppercase tracking-tight">
                       T.1
                     </span>
@@ -593,21 +765,16 @@ export function YamEngine({ game, onFinish }) {
                   })}
                 </tr>
 
-                {/* 5. Section Inférieure (Brelan à Chance) */}
+                {/* 5. Section Inférieure (Brelan à Chance) : Clic affiche la règle exacte */}
                 {lowerCategories.map((cat) => (
                   <tr key={cat.id} className="hover:bg-stone-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td
-                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-100/60 dark:hover:bg-slate-800/60 transition-colors"
-                      title={`${cat.name} · ${cat.desc} (Cliquer pour ouvrir le choix)`}
-                      onClick={() => {
-                        const targetPlayer = game.players.find(p => previousGrid[p.id]?.[cat.id] == null) || game.players[0]
-                        if (targetPlayer) {
-                          handleCellClick(targetPlayer.id, cat.id)
-                        }
-                      }}
+                      className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-100 dark:hover:bg-slate-800 active:scale-95 transition-all group"
+                      title={`${cat.name} · ${cat.desc} (Cliquer pour voir la règle)`}
+                      onClick={() => setSelectedCategoryRule(cat.id)}
                     >
                       <div className="flex flex-col items-center justify-center gap-0.5 py-0.5">
-                        <span className="font-bold text-stone-800 dark:text-slate-200 text-[9px] sm:text-[9.5px] truncate max-w-[42px] sm:max-w-[48px] tracking-tight leading-none">
+                        <span className="font-bold text-stone-800 dark:text-slate-200 text-[9px] sm:text-[9.5px] truncate max-w-[42px] sm:max-w-[48px] tracking-tight leading-none group-hover:text-[#c83b3b] transition-colors">
                           {cat.id === 'small_straight'
                             ? 'P.Suite'
                             : cat.id === 'large_straight'
@@ -646,9 +813,13 @@ export function YamEngine({ game, onFinish }) {
                   </tr>
                 ))}
 
-                {/* 6. Ligne TOTAL 2 */}
+                {/* 6. Ligne TOTAL 2 : Clic affiche l'explication */}
                 <tr className="bg-stone-200/60 dark:bg-slate-800/80 font-bold border-t-2 border-stone-200 dark:border-slate-700">
-                  <td className="sticky left-0 z-10 bg-stone-200/90 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
+                  <td
+                    className="sticky left-0 z-10 bg-stone-200/90 dark:bg-slate-800 px-0.5 py-1 border-r border-stone-200 dark:border-slate-800 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-stone-300/80 dark:hover:bg-slate-700/80 active:scale-95 transition-all"
+                    title="Total 2 (Cliquer pour voir la règle)"
+                    onClick={() => setSelectedCategoryRule('total2')}
+                  >
                     <span className="text-[8.5px] font-black text-stone-900 dark:text-slate-100 uppercase tracking-tight">
                       T.2
                     </span>
@@ -665,9 +836,13 @@ export function YamEngine({ game, onFinish }) {
                   })}
                 </tr>
 
-                {/* 7. Ligne SCORE FINAL */}
+                {/* 7. Ligne SCORE FINAL : Clic affiche l'explication du score total */}
                 <tr className="bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 font-black border-t-2 border-[#c83b3b]/40">
-                  <td className="sticky left-0 z-10 bg-stone-100 dark:bg-slate-900 px-0.5 py-1 border-r border-[#c83b3b]/30 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center">
+                  <td
+                    className="sticky left-0 z-10 bg-stone-100 dark:bg-slate-900 px-0.5 py-1 border-r border-[#c83b3b]/30 shadow-[2px_0_4px_-1px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_4px_-1px_rgba(0,0,0,0.3)] text-center cursor-pointer hover:bg-[#c83b3b]/20 active:scale-95 transition-all"
+                    title="Score Final (Cliquer pour voir la règle)"
+                    onClick={() => setSelectedCategoryRule('grand_total')}
+                  >
                     <div className="flex flex-col items-center justify-center gap-0.5 text-[#c83b3b] dark:text-red-400">
                       <Trophy size={12} className="shrink-0" />
                       <span className="text-[8px] font-black uppercase tracking-tight">
@@ -774,29 +949,153 @@ export function YamEngine({ game, onFinish }) {
         onClose={() => setShowRulesMemo(false)}
         title="Combinaisons"
       >
-        <div className="space-y-2 text-xs text-stone-600 dark:text-slate-300">
-          <p className="leading-relaxed font-semibold">
+        <div className="space-y-3 text-xs text-stone-600 dark:text-slate-300">
+          <p className="leading-relaxed font-semibold text-stone-900 dark:text-slate-100">
             Grille officielle en 13 cases :
           </p>
-          <ul className="space-y-1 pl-3 list-disc text-[11px]">
-            <li><strong>Cases 1 à 6 :</strong> Somme des dés du chiffre choisi. Si total &ge; 63 pts ➔ +35 pts de Bonus !</li>
-            <li><strong>Brelan / Carré :</strong> 3 ou 4 dés identiques ➔ Somme des 5 dés.</li>
-            <li><strong>Full :</strong> 3 dés + 2 dés ➔ 25 points fixes.</li>
-            <li><strong>Petite Suite :</strong> 4 dés consécutifs ➔ 30 points fixes.</li>
-            <li><strong>Grande Suite :</strong> 5 dés consécutifs ➔ 40 points fixes.</li>
-            <li><strong>Yam's :</strong> 5 dés identiques ➔ 50 points fixes.</li>
-            <li><strong>Chance :</strong> Somme des 5 dés.</li>
+
+          {/* Encart dédié au Bonus +35 pts bien visible et détaillé */}
+          <div className="p-2.5 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/25 space-y-1">
+            <div className="flex items-center justify-between">
+              <strong className="text-emerald-800 dark:text-emerald-300 font-bold text-[11px] uppercase tracking-wide">
+                Comment obtenir le Bonus (+35 pts) ?
+              </strong>
+              <span className="px-1.5 py-0.5 rounded-md bg-emerald-600 text-white font-extrabold text-[10px]">
+                +35 pts
+              </span>
+            </div>
+            <p className="text-[11px] text-emerald-900 dark:text-emerald-200 leading-snug">
+              Le bonus est accordé dès que le total des <strong>cases 1 à 6</strong> atteint <strong>au moins 63 points</strong>.
+            </p>
+            <p className="text-[10px] text-emerald-800/80 dark:text-emerald-300/80 leading-tight">
+              Astuce : Il suffit d'obtenir en moyenne <strong>3 dés identiques par chiffre</strong> (3&times;1 + 3&times;2 + 3&times;3 + 3&times;4 + 3&times;5 + 3&times;6 = 63 pts pile). Tout dé supplémentaire compense un dé manquant ailleurs !
+            </p>
+          </div>
+
+          <ul className="space-y-1.5 pl-3 list-disc text-[11px] leading-relaxed">
+            <li>
+              <strong>Cases 1 à 6 :</strong> Somme des dés du chiffre choisi (les autres dés sont ignorés).
+            </li>
+            <li>
+              <strong>Brelan :</strong> Au moins 3 dés identiques ➔ <strong>Somme des 5 dés du lancer</strong> (ex. 4-4-4-2-6 = 20 pts).
+            </li>
+            <li>
+              <strong>Carré :</strong> Au moins 4 dés identiques ➔ <strong>Somme des 5 dés du lancer</strong> (ex. 5-5-5-5-3 = 23 pts).
+            </li>
+            <li>
+              <strong>Full :</strong> 3 dés d'une valeur + 2 dés d'une autre valeur ➔ <strong>25 points fixes</strong>.
+            </li>
+            <li>
+              <strong>Petite Suite :</strong> 4 dés consécutifs (1-2-3-4, 2-3-4-5 ou 3-4-5-6) ➔ <strong>30 points fixes</strong>.
+            </li>
+            <li>
+              <strong>Grande Suite :</strong> 5 dés consécutifs (1-2-3-4-5 ou 2-3-4-5-6) ➔ <strong>40 points fixes</strong>.
+            </li>
+            <li>
+              <strong>Yam's :</strong> 5 dés identiques ➔ <strong>50 points fixes</strong>.
+            </li>
+            <li>
+              <strong>Chance :</strong> Somme de n'importe quel lancer ➔ <strong>Somme des 5 dés</strong>.
+            </li>
           </ul>
-          <div className="pt-2">
+
+          <p className="text-[10px] text-stone-400 dark:text-slate-500 italic">
+            Astuce : Vous pouvez aussi toucher n'importe quelle case de la colonne de gauche sur la feuille de score pour consulter sa règle détaillée.
+          </p>
+
+          <div className="pt-1">
             <button
               type="button"
               onClick={() => setShowRulesMemo(false)}
-              className="w-full py-2 rounded-xl font-bold text-xs btn-margin-red text-white cursor-pointer"
+              className="w-full py-2.5 rounded-xl font-bold text-xs btn-margin-red text-white cursor-pointer"
             >
               Compris
             </button>
           </div>
         </div>
+      </Dialog>
+
+      {/* Dialog d'explication détaillée d'une case (clic sur la colonne de gauche) */}
+      <Dialog
+        open={Boolean(selectedCategoryRule)}
+        onClose={() => setSelectedCategoryRule(null)}
+        title={selectedCategoryRule ? YAM_RULES_EXPLANATIONS[selectedCategoryRule]?.title || 'Règle' : 'Règle'}
+      >
+        {selectedCategoryRule && (() => {
+          const rule = YAM_RULES_EXPLANATIONS[selectedCategoryRule]
+          if (!rule) return null
+          return (
+            <div className="space-y-2.5 text-xs text-stone-700 dark:text-slate-200">
+              {/* Badge d'en-tête */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-stone-100 dark:bg-slate-800 text-stone-600 dark:text-slate-300 border border-stone-200/80 dark:border-slate-700/60">
+                  {rule.subtitle}
+                </span>
+                {rule.points && (
+                  <span className="font-extrabold text-[11px] text-[#c83b3b] dark:text-red-400">
+                    {rule.points}
+                  </span>
+                )}
+              </div>
+
+              {/* Condition requise */}
+              {rule.condition && (
+                <div className="p-2.5 rounded-xl bg-stone-100/90 dark:bg-slate-800/70 border border-stone-200/80 dark:border-slate-700/60 space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 block">
+                    Condition requise
+                  </span>
+                  <p className="font-bold text-stone-900 dark:text-slate-100 text-[12px] leading-snug">
+                    {rule.condition}
+                  </p>
+                </div>
+              )}
+
+              {/* Calcul des points */}
+              {rule.calc && (
+                <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-slate-800/40 border border-stone-200/60 dark:border-slate-700/50 space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500 block">
+                    Calcul des points
+                  </span>
+                  <p className="text-[11.5px] leading-relaxed text-stone-800 dark:text-slate-200">
+                    {rule.calc}
+                  </p>
+                </div>
+              )}
+
+              {/* Exemple concret */}
+              {rule.example && (
+                <div className="p-2.5 rounded-xl bg-stone-100/70 dark:bg-slate-900/60 border border-stone-200/60 dark:border-slate-800 text-[11px] space-y-0.5">
+                  <span className="font-semibold text-stone-400 dark:text-slate-500 block text-[10px] uppercase tracking-wider">
+                    Exemple
+                  </span>
+                  <p className="font-medium text-stone-800 dark:text-slate-200 leading-snug">
+                    {rule.example}
+                  </p>
+                </div>
+              )}
+
+              {/* Remarque ou astuce à retenir */}
+              {rule.tip && (
+                <div className="p-2.5 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 text-[11px] text-amber-900 dark:text-amber-200 font-medium leading-snug">
+                  <strong className="block text-[10px] uppercase tracking-wider text-amber-800 dark:text-amber-300 font-bold mb-0.5">
+                    À retenir
+                  </strong>
+                  {rule.tip}
+                </div>
+              )}
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategoryRule(null)}
+                  className="w-full py-2.5 rounded-xl font-bold text-xs btn-margin-red text-white cursor-pointer"
+                >
+                  Compris
+                </button>
+              </div>
+            </div>
+          )
+        })()}
       </Dialog>
 
       {/* Popover rectangulaire centré au milieu de l'écran pour la case sélectionnée */}

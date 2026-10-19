@@ -131,8 +131,7 @@ export const GAME_META = {
             "À son tour, un joueur effectue deux actions obligatoires dans l'ordre :",
           items: [
             '1. Poser : Le joueur pose sur la pile visible (la défausse) soit une carte isolée, soit une combinaison valide de son choix.',
-            "2. Piocher : Le joueur reprend une carte : soit la première carte de la pioche face cachée, soit la dernière carte visible de la défausse.",
-            "Précision défausse : Si le joueur précédent a posé une combinaison de plusieurs cartes, le joueur actuel a le droit de choisir l'une des cartes situées aux extrémités de cette combinaison.",
+            "2. Piocher : Le joueur reprend une carte : soit la première carte de la pioche face cachée, soit n'importe quelle carte posée par l'adversaire précédent (si celui-ci a posé une combinaison, le joueur peut choisir librement n'importe laquelle de ses cartes).",
             'Remarque (pioche vide) : Si la pioche est épuisée, mélanger toutes les cartes de la défausse sauf la dernière posée pour former une nouvelle pioche face cachée.',
           ],
         },

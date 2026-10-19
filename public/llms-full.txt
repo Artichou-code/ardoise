@@ -25,7 +25,7 @@ Tarif : 100 % Gratuit, sans publicité, sans abonnement, synchronisation cloud e
 - **Matériel & Distribution** : 52 cartes standard (sans jokers). 7 cartes par joueur (2 à 4 joueurs) ou 5 cartes par joueur (5 à 6 joueurs). Le reste forme la pioche face cachée, première carte retournée pour la défausse.
 - **Déroulement d'un tour** :
   - **1. Poser** : Poser sur la défausse une carte isolée ou une combinaison valide (Paire, Triple, Carré, ou Suite de 3+ cartes de même enseigne, l'As pouvant valoir 1 ou suivre le Roi).
-  - **2. Piocher** : Prendre soit la première carte de la pioche face cachée, soit la dernière carte visible de la défausse (ou une des extrémités si combinaison posée).
+  - **2. Piocher** : Prendre soit la première carte de la pioche face cachée, soit n'importe quelle carte posée par l'adversaire précédent (si combinaison, choix libre parmi ses cartes).
 - **Valeur des cartes** :
   - **As = 1 point**.
   - **Cartes 2 à 10 = valeur faciale**.
