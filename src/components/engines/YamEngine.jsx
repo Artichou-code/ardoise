@@ -731,13 +731,13 @@ export function YamEngine({ game, onFinish }) {
                               </span>
                             )}
                             {p.id === myPlayerId && (
-                              <span className="absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded-full text-[6.5px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-2xs ring-1 ring-white dark:ring-slate-900 pointer-events-none select-none z-10">
+                              <span className="absolute bottom-0 -right-0.5 px-1.5 py-0.2 rounded-full text-[6.5px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-2xs ring-1 ring-white dark:ring-slate-900 pointer-events-none select-none z-10">
                                 Moi
                               </span>
                             )}
                           </div>
                           <span
-                            className={`font-serif-title font-bold text-[10.5px] sm:text-xs truncate block leading-tight max-w-[56px] sm:max-w-[72px] ${
+                            className={`relative z-20 font-serif-title font-bold text-[10.5px] sm:text-xs truncate block leading-tight max-w-[56px] sm:max-w-[72px] mt-0.5 ${
                               isReady ? 'text-emerald-700 dark:text-emerald-300' : 'text-stone-900 dark:text-slate-100'
                             }`}
                           >
