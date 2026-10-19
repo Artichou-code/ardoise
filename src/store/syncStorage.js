@@ -268,13 +268,14 @@ export function mergeNotebooks(localNotebook, incomingNotebook) {
       const existingUpdated = Math.max(toTimestamp(existing.updatedAt), toTimestamp(existing.finishedAt), toTimestamp(existing.startedAt))
       const newUpdated = Math.max(toTimestamp(g.updatedAt), toTimestamp(g.finishedAt), toTimestamp(g.startedAt))
 
-      // Mettre à jour si la version entrante est plus récente, a plus de manches, est terminée ou a des scores modifiés
+      // Mettre à jour si la version entrante est plus récente, a plus de manches, est terminée, a des scores modifiés ou un brouillon (draft) mis à jour
       const isNewer = newUpdated > existingUpdated
       const hasMoreRounds = newRounds > existingRounds
       const isNewlyFinished = g.status === 'finished' && existing.status !== 'finished'
       const isContentChanged = newRounds === existingRounds && JSON.stringify(g.scores) !== JSON.stringify(existing.scores)
+      const isDraftChanged = JSON.stringify(g.draft || null) !== JSON.stringify(existing.draft || null)
 
-      if (isNewer || hasMoreRounds || isNewlyFinished || isContentChanged) {
+      if (isNewer || hasMoreRounds || isNewlyFinished || isContentChanged || isDraftChanged) {
         gamesMap.set(g.id, { ...existing, ...g })
       }
     }

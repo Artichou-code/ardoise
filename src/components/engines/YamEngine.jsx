@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Trophy, Dices, Check, HelpCircle } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
+import { getActiveSession, getMyPlayerIdForSession } from '../../store/liveSession'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { Dialog } from '../ui/Dialog'
@@ -322,7 +323,20 @@ export const YAM_RULES_EXPLANATIONS = {
 }
 
 export function YamEngine({ game, onFinish }) {
-  const { updateScores } = useGame()
+  const { updateScores, commitRound, updateLiveDraft } = useGame()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [myPlayerId, setMyPlayerId] = useState(() => {
+    const session = getActiveSession()
+    return session?.code ? getMyPlayerIdForSession(session.code) : null
+  })
+
+  useEffect(() => {
+    const handleMyPlayerChanged = (e) => {
+      setMyPlayerId(e.detail?.playerId || null)
+    }
+    window.addEventListener('ardoise-live-my-player-changed', handleMyPlayerChanged)
+    return () => window.removeEventListener('ardoise-live-my-player-changed', handleMyPlayerChanged)
+  }, [])
 
   // Mode de saisie : 'grid' (grille croisée officielle) ou 'direct' (score direct par manche)
   const [inputMode, setInputMode] = useState('grid')
@@ -341,6 +355,10 @@ export function YamEngine({ game, onFinish }) {
           if (round?.gridByPlayer?.[p.id]) {
             Object.assign(accum, round.gridByPlayer[p.id])
           }
+        }
+        // Prendre en compte un éventuel brouillon existant sur la table
+        if (game.draft?.byPlayer?.[p.id]?.catId != null) {
+          accum[game.draft.byPlayer[p.id].catId] = game.draft.byPlayer[p.id].value
         }
         init[p.id] = accum
       }
@@ -434,6 +452,43 @@ export function YamEngine({ game, onFinish }) {
     return accum
   }, [game.rounds, game.players])
 
+  // Synchroniser le brouillon (draft) provenant des autres appareils en Table Live
+  useEffect(() => {
+    if (!game?.draft?.byPlayer) return
+    setGridByPlayer(prev => {
+      let changed = false
+      const next = { ...prev }
+      for (const p of game.players) {
+        const remotePlayerDraft = game.draft.byPlayer[p.id]
+        const currentPGrid = next[p.id] ? { ...next[p.id] } : {}
+        const prevPGrid = previousGrid[p.id] || {}
+
+        if (remotePlayerDraft && remotePlayerDraft.catId != null) {
+          const { catId, value } = remotePlayerDraft
+          for (const c of YAM_CATEGORIES) {
+            if (c.id !== catId && prevPGrid[c.id] == null && currentPGrid[c.id] != null) {
+              delete currentPGrid[c.id]
+              changed = true
+            }
+          }
+          if (currentPGrid[catId] !== value) {
+            currentPGrid[catId] = value
+            changed = true
+          }
+          next[p.id] = currentPGrid
+        } else if (remotePlayerDraft === null && currentPGrid) {
+          for (const c of YAM_CATEGORIES) {
+            if (prevPGrid[c.id] == null && currentPGrid[c.id] != null) {
+              delete currentPGrid[c.id]
+              changed = true
+            }
+          }
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [game?.draft, game.players, previousGrid])
+
   // Nombre de cases nouvellement saisies ou modifiées dans cette manche
   const newlyFilledCount = useMemo(() => {
     let count = 0
@@ -502,9 +557,10 @@ export function YamEngine({ game, onFinish }) {
   
 
   const handleCategoryValueChange = (playerId, catId, value) => {
+    const cleanVal = (value === null || value === undefined) ? null : Math.max(0, Number(value) || 0)
     setGridByPlayer(prev => {
       const current = prev[playerId] ? { ...prev[playerId] } : {}
-      if (value === null || value === undefined) {
+      if (cleanVal === null) {
         delete current[catId]
       } else {
         const prevPGrid = previousGrid[playerId] || {}
@@ -517,10 +573,19 @@ export function YamEngine({ game, onFinish }) {
             }
           }
         }
-        current[catId] = Math.max(0, Number(value) || 0)
+        current[catId] = cleanVal
       }
       return { ...prev, [playerId]: current }
     })
+
+    // Pousser immédiatement le changement vers la Table Live (visible en direct sur tous les écrans connectés)
+    if (updateLiveDraft) {
+      if (cleanVal === null) {
+        updateLiveDraft(playerId, null)
+      } else {
+        updateLiveDraft(playerId, { catId, value: cleanVal })
+      }
+    }
   }
 
   const handleClearCategory = (playerId, catId) => {
@@ -529,10 +594,14 @@ export function YamEngine({ game, onFinish }) {
       delete current[catId]
       return { ...prev, [playerId]: current }
     })
+    if (updateLiveDraft) {
+      updateLiveDraft(playerId, null)
+    }
   }
 
-  const handleValidate = () => {
-    if (!canValidate) return
+  const handleValidate = async () => {
+    if (!canValidate || isSubmitting) return
+    setIsSubmitting(true)
     const newScores = {}
     const delta = {}
     let allFinished = true
@@ -563,18 +632,31 @@ export function YamEngine({ game, onFinish }) {
       }
     }
 
-    updateScores({
-      scores: newScores,
-      delta,
-      gridByPlayer,
-      inputMode,
-      type: 'yam',
-    })
+    try {
+      const commitFn = commitRound || updateScores
+      await commitFn(
+        {
+          scores: newScores,
+          delta,
+          gridByPlayer,
+          inputMode,
+          type: 'yam',
+        },
+        {
+          status: allFinished ? 'finished' : 'active',
+          winner: allFinished ? winnerId : null,
+        }
+      )
 
-    if (allFinished && winnerId) {
-      setTimeout(() => {
-        onFinish?.(winnerId)
-      }, 150)
+      if (allFinished && winnerId) {
+        setTimeout(() => {
+          onFinish?.(winnerId)
+        }, 150)
+      }
+    } catch (err) {
+      console.error('Erreur validation manche Yam:', err)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -620,7 +702,7 @@ export function YamEngine({ game, onFinish }) {
                         scope="col"
                         className={`px-0.5 sm:px-1 py-1.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60 transition-colors ${
                           isReady ? 'bg-emerald-50/50 dark:bg-emerald-950/20' : ''
-                        }`}
+                        } ${p.id === myPlayerId ? 'bg-amber-500/5 dark:bg-amber-400/5' : ''}`}
                       >
                         <div className="flex flex-col items-center justify-center gap-0.5">
                           <div className="relative inline-block">
@@ -634,13 +716,20 @@ export function YamEngine({ game, onFinish }) {
                               </span>
                             )}
                           </div>
-                          <span
-                            className={`font-serif-title font-bold text-[10.5px] sm:text-xs truncate max-w-[54px] sm:max-w-[68px] block leading-tight ${
-                              isReady ? 'text-emerald-700 dark:text-emerald-300' : 'text-stone-900 dark:text-slate-100'
-                            }`}
-                          >
-                            {p.name}
-                          </span>
+                          <div className="flex items-center justify-center gap-0.5 max-w-[56px] sm:max-w-[70px]">
+                            <span
+                              className={`font-serif-title font-bold text-[10.5px] sm:text-xs truncate block leading-tight ${
+                                isReady ? 'text-emerald-700 dark:text-emerald-300' : 'text-stone-900 dark:text-slate-100'
+                              }`}
+                            >
+                              {p.name}
+                            </span>
+                            {p.id === myPlayerId && (
+                              <span className="shrink-0 text-[7px] font-black uppercase tracking-wider px-1 py-0.2 rounded-full bg-emerald-500/15 dark:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 dark:border-emerald-500/40 leading-none">
+                                Moi
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[8px] sm:text-[8.5px] font-semibold text-stone-400 dark:text-slate-500 tabular-nums">
                             {stats.filledTotal}/13
                           </span>
@@ -920,16 +1009,20 @@ export function YamEngine({ game, onFinish }) {
         <button
           type="button"
           onClick={handleValidate}
-          disabled={!canValidate}
+          disabled={!canValidate || isSubmitting}
           className={`w-full py-3.5 rounded-xl font-bold text-base text-white shadow-md transition-all flex items-center justify-center gap-2 select-none ${
-            canValidate
+            isSubmitting
+              ? 'bg-[#c83b3b]/70 dark:bg-[#c83b3b]/60 cursor-wait opacity-80'
+              : canValidate
               ? 'bg-[#c83b3b] hover:bg-[#b03030] cursor-pointer active:scale-[0.99]'
               : 'bg-stone-300 dark:bg-slate-700 text-stone-500 dark:text-slate-400 cursor-not-allowed opacity-60'
           }`}
         >
           <Trophy size={18} />
           <span>
-            {inputMode === 'grid'
+            {isSubmitting
+              ? 'Validation en cours...'
+              : inputMode === 'grid'
               ? allPlayersReady
                 ? `Valider le tour ${currentRoundNumber} (${readyPlayersCount}/${game.players.length})`
                 : `En attente des joueurs (${readyPlayersCount}/${game.players.length} prêt${readyPlayersCount > 1 ? 's' : ''})`

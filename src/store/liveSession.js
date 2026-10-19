@@ -114,6 +114,17 @@ export async function createLiveSession(name, hostName, participants = [], initi
     customCity: cityToSend || null,
   }
   saveActiveSession(localSession)
+
+  if (cleanHost && Array.isArray(initialGames)) {
+    for (const g of initialGames) {
+      const match = g?.players?.find(p => p.name?.trim().toLowerCase() === cleanHost.toLowerCase())
+      if (match) {
+        setMyPlayerIdForSession(data.sessionCode, match.id)
+        break
+      }
+    }
+  }
+
   return data.sessionCode
 }
 
@@ -222,6 +233,16 @@ export async function joinLiveSession(code, playerName = '') {
     playerName: cleanPlayer || undefined,
   }
   saveActiveSession(localSession)
+
+  if (cleanPlayer && Array.isArray(state.games)) {
+    for (const g of state.games) {
+      const match = g?.players?.find(p => p.name?.trim().toLowerCase() === cleanPlayer.toLowerCase())
+      if (match) {
+        setMyPlayerIdForSession(sessionData.sessionCode, match.id)
+        break
+      }
+    }
+  }
 
   // Tracking silencieux — compte chaque join de table live
   const isPwa = typeof window !== 'undefined' && (window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator?.standalone === true) ? 1 : 0
@@ -360,5 +381,118 @@ export async function createLiveSessionFromGame(game, hostName = '') {
 
   const sessionCode = await createLiveSession(sessionName, cleanHost, participants, [game])
   return sessionCode
+}
+
+/**
+ * Clé pour stocker le joueur associé à cet appareil pour une table en direct donnée
+ */
+function getMyPlayerKey(sessionCode) {
+  return `ardoise_live_my_player_${(sessionCode || '').toUpperCase()}`
+}
+
+export function getMyPlayerIdForSession(sessionCode) {
+  if (!sessionCode) return null
+  try {
+    return localStorage.getItem(getMyPlayerKey(sessionCode)) || null
+  } catch {
+    return null
+  }
+}
+
+export function setMyPlayerIdForSession(sessionCode, playerId) {
+  if (!sessionCode) return
+  try {
+    if (playerId) {
+      localStorage.setItem(getMyPlayerKey(sessionCode), playerId)
+    } else {
+      localStorage.removeItem(getMyPlayerKey(sessionCode))
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ardoise-live-my-player-changed', {
+        detail: { sessionCode, playerId: playerId || null },
+      }))
+    }
+  } catch {}
+}
+
+// Timer pour debouncer les envois rapides de draft
+const draftDebounceTimers = new Map()
+
+/**
+ * Pousse en direct le brouillon (sélection/score temporaire) d'un joueur sur le serveur
+ */
+export async function pushLiveSessionDraft(code, gameId, playerId, data, roundIndex, debounceMs = 250) {
+  if (!code || !gameId) return
+  const cleanCode = extractCodeFromInput(code)
+  if (!cleanCode) return
+
+  const send = async () => {
+    try {
+      await fetch(`${API_BASE}/sessions/${encodeURIComponent(cleanCode)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_draft',
+          gameId,
+          playerId,
+          data,
+          roundIndex,
+        }),
+      })
+    } catch (err) {
+      console.warn('Erreur pushLiveSessionDraft:', err)
+    }
+  }
+
+  const key = `${cleanCode}_${gameId}_${playerId}`
+  if (draftDebounceTimers.has(key)) {
+    clearTimeout(draftDebounceTimers.get(key))
+  }
+
+  if (debounceMs <= 0) {
+    await send()
+  } else {
+    draftDebounceTimers.set(
+      key,
+      setTimeout(() => {
+        draftDebounceTimers.delete(key)
+        send()
+      }, debounceMs)
+    )
+  }
+}
+
+/**
+ * Valide une manche sur la Table Live avec protection optimiste anti-collision (OCC)
+ */
+export async function commitLiveSessionRound(code, gameId, roundIndex, roundData, extra = {}) {
+  if (!code || !gameId || !roundData) return null
+  const cleanCode = extractCodeFromInput(code)
+  if (!cleanCode) return null
+
+  try {
+    const res = await fetch(`${API_BASE}/sessions/${encodeURIComponent(cleanCode)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'commit_round',
+        gameId,
+        roundIndex,
+        roundData,
+        status: extra.status,
+        winner: extra.winner,
+      }),
+    })
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || 'Erreur lors de la validation')
+    }
+
+    return await res.json()
+  } catch (err) {
+    console.error('Erreur commitLiveSessionRound:', err)
+    throw err
+  }
 }
 

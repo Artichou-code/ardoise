@@ -273,6 +273,163 @@ export async function onRequest(context) {
         return Response.json({ success: true, sessionCode, state: currentState }, { headers: corsHeaders });
       }
 
+      // Action atomique : Mettre à jour le brouillon (draft) d'un joueur en direct (collaboratif)
+      if (body.action === 'update_draft' && body.gameId) {
+        const existing = await env.DB.prepare(
+          'SELECT state_json, closed FROM live_sessions WHERE session_code = ?'
+        )
+          .bind(sessionCode)
+          .first();
+
+        if (!existing) {
+          return Response.json({ error: 'Session introuvable' }, { status: 404, headers: corsHeaders });
+        }
+        if (existing.closed) {
+          return Response.json({ error: 'Session clôturée', closed: true }, { status: 400, headers: corsHeaders });
+        }
+
+        let currentState = {};
+        try {
+          currentState = JSON.parse(existing.state_json || '{}');
+        } catch {}
+
+        if (currentState.closed) {
+          return Response.json({ error: 'Session clôturée', closed: true }, { status: 400, headers: corsHeaders });
+        }
+
+        const games = Array.isArray(currentState.games) ? [...currentState.games] : [];
+        const idx = games.findIndex((g) => g && g.id === body.gameId);
+        if (idx === -1) {
+          return Response.json({ error: 'Partie introuvable' }, { status: 404, headers: corsHeaders });
+        }
+
+        const game = { ...games[idx] };
+        const currentDraft = game.draft && typeof game.draft === 'object' ? { ...game.draft } : {};
+        const byPlayer = currentDraft.byPlayer ? { ...currentDraft.byPlayer } : {};
+
+        if (body.playerId) {
+          if (body.data === null || body.data === undefined) {
+            delete byPlayer[body.playerId];
+          } else {
+            byPlayer[body.playerId] = {
+              ...(byPlayer[body.playerId] || {}),
+              ...body.data,
+              updatedAt: Date.now(),
+            };
+          }
+        } else if (body.byPlayer && typeof body.byPlayer === 'object') {
+          Object.assign(byPlayer, body.byPlayer);
+        }
+
+        game.draft = {
+          roundIndex: body.roundIndex != null ? body.roundIndex : (game.rounds?.length || 0) + 1,
+          updatedAt: Date.now(),
+          byPlayer,
+        };
+
+        games[idx] = game;
+        currentState.games = games;
+        currentState.updatedAt = new Date().toISOString();
+
+        await env.DB.prepare(
+          `UPDATE live_sessions
+           SET state_json = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE session_code = ?`
+        )
+          .bind(JSON.stringify(currentState), sessionCode)
+          .run();
+
+        return Response.json({ success: true, sessionCode, draft: game.draft }, { headers: corsHeaders });
+      }
+
+      // Action atomique : Valider une manche avec verrouillage optimiste anti-collision (OCC)
+      if (body.action === 'commit_round' && body.gameId && body.roundData) {
+        const existing = await env.DB.prepare(
+          'SELECT state_json, closed FROM live_sessions WHERE session_code = ?'
+        )
+          .bind(sessionCode)
+          .first();
+
+        if (!existing) {
+          return Response.json({ error: 'Session introuvable' }, { status: 404, headers: corsHeaders });
+        }
+        if (existing.closed) {
+          return Response.json({ error: 'Session clôturée', closed: true }, { status: 400, headers: corsHeaders });
+        }
+
+        let currentState = {};
+        try {
+          currentState = JSON.parse(existing.state_json || '{}');
+        } catch {}
+
+        if (currentState.closed) {
+          return Response.json({ error: 'Session clôturée', closed: true }, { status: 400, headers: corsHeaders });
+        }
+
+        const games = Array.isArray(currentState.games) ? [...currentState.games] : [];
+        const idx = games.findIndex((g) => g && g.id === body.gameId);
+        if (idx === -1) {
+          return Response.json({ error: 'Partie introuvable' }, { status: 404, headers: corsHeaders });
+        }
+
+        const game = { ...games[idx] };
+        const rounds = Array.isArray(game.rounds) ? [...game.rounds] : [];
+        const targetRoundIndex = Number(body.roundIndex) || (rounds.length + 1);
+
+        // Anti-collision : Si la manche a déjà été validée par un autre joueur à l'instant (rounds.length >= targetRoundIndex)
+        if (rounds.length >= targetRoundIndex) {
+          return Response.json({
+            success: true,
+            sessionCode,
+            alreadyCommitted: true,
+            roundIndex: targetRoundIndex,
+            currentRoundsCount: rounds.length,
+            game,
+          }, { headers: corsHeaders });
+        }
+
+        // Première validation reçue : insertion de la manche
+        const newRound = {
+          ...body.roundData,
+          savedAt: Date.now(),
+        };
+        rounds.push(newRound);
+        game.rounds = rounds;
+        if (body.roundData.scores) {
+          game.scores = body.roundData.scores;
+        }
+        if (body.status) {
+          game.status = body.status;
+        }
+        if (body.winner) {
+          game.winner = body.winner;
+        }
+        // Vider le brouillon de la manche terminée
+        game.draft = null;
+        game.updatedAt = Date.now();
+
+        games[idx] = game;
+        currentState.games = games;
+        currentState.updatedAt = new Date().toISOString();
+
+        await env.DB.prepare(
+          `UPDATE live_sessions
+           SET state_json = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE session_code = ?`
+        )
+          .bind(JSON.stringify(currentState), sessionCode)
+          .run();
+
+        return Response.json({
+          success: true,
+          sessionCode,
+          alreadyCommitted: false,
+          roundIndex: targetRoundIndex,
+          game,
+          state: currentState,
+        }, { headers: corsHeaders });
+      }
+
       // Action atomique : Retirer une partie
       if (body.action === 'remove_game' && body.gameId) {
         const existing = await env.DB.prepare(

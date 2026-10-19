@@ -20,7 +20,9 @@ import {
   clearActiveSession,
   pushGameToLiveSession,
   removeGameFromLiveSession,
-  createLiveSessionFromGame
+  createLiveSessionFromGame,
+  pushLiveSessionDraft,
+  commitLiveSessionRound,
 } from '../store/liveSession'
 import { GAME_META } from '../constants/games'
 
@@ -130,7 +132,7 @@ export function GameProvider({ children }) {
           .filter(g => g && g.id && !deletedIds.has(g.id))
         const isClosed = Boolean(data?.closed || data?.state?.closed)
 
-        const sig = `${isClosed}-${remoteGames.map(g => `${g.id}:${g.rounds?.length || 0}:${g.status}:${g.updatedAt || 0}:${JSON.stringify(g.scores || {})}`).join('|')}`
+        const sig = `${isClosed}-${remoteGames.map(g => `${g.id}:${g.rounds?.length || 0}:${g.status}:${g.updatedAt || 0}:${JSON.stringify(g.scores || {})}:${JSON.stringify(g.draft || null)}`).join('|')}`
         if (sig !== lastSessionSignatureRef.current) {
           lastSessionSignatureRef.current = sig
           const stats = syncSessionGamesToLocal(data)
@@ -257,6 +259,46 @@ export function GameProvider({ children }) {
     }
     return updated
   }, [activeGame, persistGame])
+
+  // Mettre à jour en direct le brouillon (sélection/score temporaire) pour un joueur sur la Table Live
+  const updateLiveDraft = useCallback((playerId, data) => {
+    const current = activeGameRef.current || activeGame
+    if (!current) return
+    const liveSession = getActiveSession()
+    if (!liveSession || !liveSession.code) return
+
+    const roundIndex = (current.rounds?.length || 0) + 1
+    pushLiveSessionDraft(liveSession.code, current.id, playerId, data, roundIndex)
+  }, [activeGame])
+
+  // Valider une manche avec verrouillage optimiste anti-collision (OCC) sur Table Live
+  const commitRound = useCallback(async (roundData, extra = {}) => {
+    const current = activeGameRef.current || activeGame
+    if (!current) return null
+
+    const liveSession = getActiveSession()
+    const targetRoundIndex = (current.rounds?.length || 0) + 1
+
+    if (liveSession && liveSession.code) {
+      try {
+        const res = await commitLiveSessionRound(
+          liveSession.code,
+          current.id,
+          targetRoundIndex,
+          roundData,
+          extra
+        )
+        if (res && res.game) {
+          persistGame(res.game)
+          return res.game
+        }
+      } catch (err) {
+        console.warn('commitLiveSessionRound a échoué, fallback sur updateScores local:', err)
+      }
+    }
+
+    return updateScores(roundData)
+  }, [activeGame, persistGame, updateScores])
 
   // Réorganiser l'ordre des joueurs d'une partie (ex: ordre du tour Dixit)
   const reorderGamePlayers = useCallback((newPlayers) => {
@@ -759,7 +801,7 @@ export function GameProvider({ children }) {
       games, activeGame, activeGameId,
       customPresets, savePreset, deletePreset,
       screen, setScreen,
-      createGame, updateScores, undoLastRound, cancelCorrection, canUndo,
+      createGame, updateScores, commitRound, updateLiveDraft, undoLastRound, cancelCorrection, canUndo,
       reorderGamePlayers,
       finishGame, rematch, exitGame, removeGame, resumeGame,
       reloadStorage,

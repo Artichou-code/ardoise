@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import confetti from 'canvas-confetti'
 import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen, Radio, Trash2, Crown } from 'lucide-react'
 import { useGame } from '../context/GameContext'
-import { getActiveSession } from '../store/liveSession'
+import { getActiveSession, getMyPlayerIdForSession, setMyPlayerIdForSession } from '../store/liveSession'
 import { BurgerMenuButton } from './BurgerMenu'
 import { Avatar } from './ui/Avatar'
 import { ConfirmDialog } from './ui/Dialog'
@@ -215,10 +215,29 @@ export function GameScreen() {
     prevRoundsLengthRef.current = currentLength
   }, [activeGame?.id, activeGame?.rounds?.length])
 
+  const [myPlayerId, setMyPlayerId] = useState(() => {
+    const session = getActiveSession()
+    return session?.code ? getMyPlayerIdForSession(session.code) : null
+  })
+
   useEffect(() => {
-    const handleSessionChanged = (e) => setLiveSession(e.detail)
+    const handleSessionChanged = (e) => {
+      setLiveSession(e.detail)
+      if (e.detail?.code) {
+        setMyPlayerId(getMyPlayerIdForSession(e.detail.code))
+      } else {
+        setMyPlayerId(null)
+      }
+    }
+    const handleMyPlayerChanged = (e) => {
+      setMyPlayerId(e.detail?.playerId || null)
+    }
     window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
-    return () => window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
+    window.addEventListener('ardoise-live-my-player-changed', handleMyPlayerChanged)
+    return () => {
+      window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
+      window.removeEventListener('ardoise-live-my-player-changed', handleMyPlayerChanged)
+    }
   }, [])
 
   const handleGoLive = async () => {
@@ -567,17 +586,43 @@ export function GameScreen() {
                   // Cartes larges (50% de largeur) : 2 joueurs, 4 joueurs (grille 2x2) ou 2e ligne de 5 joueurs
                   const isCardWide = count <= 2 || count === 4 || (count === 5 && idx >= 3)
 
+                  const isMyPlayer = Boolean(liveSession?.code && myPlayerId === id)
+
+                  const handleCardClick = () => {
+                    if (!liveSession?.code) return
+                    const nextId = isMyPlayer ? null : id
+                    setMyPlayerIdForSession(liveSession.code, nextId)
+                    setMyPlayerId(nextId)
+                  }
+
                   return (
                     <div
                       key={id}
+                      onClick={handleCardClick}
+                      title={
+                        liveSession?.code
+                          ? isMyPlayer
+                            ? "Vous êtes associé à ce joueur sur cette table (Cliquer pour dissocier)"
+                            : "Cliquer pour vous associer à ce joueur sur votre téléphone"
+                          : undefined
+                      }
                       className={`relative flex items-center justify-between rounded-xl ${
                         isCardWide ? (count <= 2 ? 'px-3 py-2' : 'px-3 py-1.5') : 'px-2 py-1.5'
                       } transition-all min-h-[46px] ${colSpan} ${
-                        isLeader
+                        isMyPlayer
+                          ? 'school-card border-emerald-500 ring-2 ring-emerald-500/40 dark:border-emerald-400 dark:ring-emerald-400/40 bg-emerald-50/25 dark:bg-emerald-950/25'
+                          : isLeader
                           ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
                           : 'school-card'
-                      }`}
+                      } ${liveSession?.code ? 'cursor-pointer hover:border-emerald-500/50 dark:hover:border-emerald-400/50 active:scale-[0.98]' : ''}`}
                     >
+                      {/* Badge Moi si associé à ce joueur sur cette table */}
+                      {isMyPlayer && (
+                        <span className="absolute -top-1.5 -right-1 px-1.5 py-0.2 rounded-full text-[7.5px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-2xs ring-1 ring-white dark:ring-slate-900 z-10 pointer-events-none select-none">
+                          Moi
+                        </span>
+                      )}
+
                       {/* Zone gauche : Avatar centré par rapport au nom */}
                       <div className="flex-1 flex flex-col items-center justify-center min-w-0 pr-1">
                         <div className="relative inline-flex items-center justify-center">
