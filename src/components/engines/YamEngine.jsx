@@ -954,27 +954,12 @@ export function YamEngine({ game, onFinish }) {
             Grille officielle en 13 cases :
           </p>
 
-          {/* Encart dédié au Bonus +35 pts bien visible et détaillé */}
-          <div className="p-2.5 rounded-xl bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/25 space-y-1">
-            <div className="flex items-center justify-between">
-              <strong className="text-emerald-800 dark:text-emerald-300 font-bold text-[11px] uppercase tracking-wide">
-                Comment obtenir le Bonus (+35 pts) ?
-              </strong>
-              <span className="px-1.5 py-0.5 rounded-md bg-emerald-600 text-white font-extrabold text-[10px]">
-                +35 pts
-              </span>
-            </div>
-            <p className="text-[11px] text-emerald-900 dark:text-emerald-200 leading-snug">
-              Le bonus est accordé dès que le total des <strong>cases 1 à 6</strong> atteint <strong>au moins 63 points</strong>.
-            </p>
-            <p className="text-[10px] text-emerald-800/80 dark:text-emerald-300/80 leading-tight">
-              Astuce : Il suffit d'obtenir en moyenne <strong>3 dés identiques par chiffre</strong> (3&times;1 + 3&times;2 + 3&times;3 + 3&times;4 + 3&times;5 + 3&times;6 = 63 pts pile). Tout dé supplémentaire compense un dé manquant ailleurs !
-            </p>
-          </div>
-
           <ul className="space-y-1.5 pl-3 list-disc text-[11px] leading-relaxed">
             <li>
               <strong>Cases 1 à 6 :</strong> Somme des dés du chiffre choisi (les autres dés sont ignorés).
+            </li>
+            <li>
+              <strong>Bonus +35 pts :</strong> Accordé si le total des cases 1 à 6 atteint <strong>au moins 63 pts</strong> (soit en moyenne 3 dés de chaque chiffre).
             </li>
             <li>
               <strong>Brelan :</strong> Au moins 3 dés identiques ➔ <strong>Somme des 5 dés du lancer</strong> (ex. 4-4-4-2-6 = 20 pts).
