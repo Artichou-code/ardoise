@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { Award, Swords, X, BarChart3, ArchiveRestore, GitMerge } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Award, Swords, X, BarChart3, ArchiveRestore, GitMerge, UserCheck, Check } from 'lucide-react'
 import { useGame } from '../context/GameContext'
+import { getDefaultMyProfile, setDefaultMyProfile } from '../store/storage'
 import { GAME_META } from '../constants/games'
 import { Avatar } from './ui/Avatar'
 import { TrophyIcon } from './ui/TrophyIcon'
@@ -14,7 +15,22 @@ export function PlayerDetailSheet({ player, open, onClose, onOpenMerge }) {
   const { setScreen, unarchivePlayer } = useGame()
   const [selectedBadgeId, setSelectedBadgeId] = useState(null)
   const [showAllBadges, setShowAllBadges] = useState(false)
+  const [defaultProfile, setDefaultProfile] = useState(() => getDefaultMyProfile())
+
+  useEffect(() => {
+    const handleProfileChanged = (e) => setDefaultProfile(e.detail)
+    window.addEventListener('ardoise-default-my-profile-changed', handleProfileChanged)
+    return () => window.removeEventListener('ardoise-default-my-profile-changed', handleProfileChanged)
+  }, [])
+
   if (!player) return null
+
+  const isMyProfile = Boolean(
+    player && (
+      (defaultProfile?.id && defaultProfile.id === player.id) ||
+      (defaultProfile?.name && defaultProfile.name.trim().toLowerCase() === player.name.trim().toLowerCase())
+    )
+  )
 
   const badges = player.badges || []
   const MAX_VISIBLE_BADGES = 4
@@ -96,6 +112,26 @@ export function PlayerDetailSheet({ player, open, onClose, onOpenMerge }) {
               </p>
             </div>
           </div>
+
+          {/* Bouton pour définir ou retirer le profil par défaut (Moi) */}
+          <button
+            type="button"
+            onClick={() => {
+              if (isMyProfile) {
+                setDefaultMyProfile(null)
+              } else {
+                setDefaultMyProfile({ id: player.id, name: player.name })
+              }
+            }}
+            className={`mt-3 w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+              isMyProfile
+                ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-2xs'
+                : 'bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'
+            }`}
+          >
+            <UserCheck size={14} />
+            <span>{isMyProfile ? 'Mon profil sur cet appareil (Moi) ✓' : 'Définir comme mon profil sur ce téléphone'}</span>
+          </button>
 
           {player.archived && (
             <button

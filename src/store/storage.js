@@ -209,3 +209,31 @@ export const loadTheme = () =>
 // --- Utilitaires ---
 export const generateId = () =>
   `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+
+// --- Profil par défaut ("Moi") sur cet appareil ---
+export const getDefaultMyProfile = () => {
+  try {
+    const raw = localStorage.getItem('ardoise_default_my_profile')
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+export const setDefaultMyProfile = (profile) => {
+  try {
+    if (profile && typeof profile === 'object' && (profile.id || profile.name)) {
+      localStorage.setItem('ardoise_default_my_profile', JSON.stringify({
+        id: profile.id || null,
+        name: (profile.name || '').trim(),
+      }))
+    } else {
+      localStorage.removeItem('ardoise_default_my_profile')
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ardoise-default-my-profile-changed', {
+        detail: profile || null,
+      }))
+    }
+  } catch {}
+}

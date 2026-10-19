@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Trophy, Dices, Check, HelpCircle } from 'lucide-react'
 import { useGame } from '../../context/GameContext'
-import { getActiveSession, getMyPlayerIdForSession } from '../../store/liveSession'
+import { getActiveSession, getMyPlayerIdForSession, setMyPlayerIdForSession } from '../../store/liveSession'
 import { Avatar } from '../ui/Avatar'
 import { QuickScoreBadge } from '../ui/QuickScoreBadge'
 import { Dialog } from '../ui/Dialog'
@@ -327,16 +327,24 @@ export function YamEngine({ game, onFinish }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [myPlayerId, setMyPlayerId] = useState(() => {
     const session = getActiveSession()
-    return session?.code ? getMyPlayerIdForSession(session.code) : null
+    return getMyPlayerIdForSession(session?.code, game)
   })
 
   useEffect(() => {
+    const update = () => {
+      const session = getActiveSession()
+      setMyPlayerId(getMyPlayerIdForSession(session?.code, game))
+    }
     const handleMyPlayerChanged = (e) => {
       setMyPlayerId(e.detail?.playerId || null)
     }
     window.addEventListener('ardoise-live-my-player-changed', handleMyPlayerChanged)
-    return () => window.removeEventListener('ardoise-live-my-player-changed', handleMyPlayerChanged)
-  }, [])
+    window.addEventListener('ardoise-default-my-profile-changed', update)
+    return () => {
+      window.removeEventListener('ardoise-live-my-player-changed', handleMyPlayerChanged)
+      window.removeEventListener('ardoise-default-my-profile-changed', update)
+    }
+  }, [game])
 
   // Mode de saisie : 'grid' (grille croisée officielle) ou 'direct' (score direct par manche)
   const [inputMode, setInputMode] = useState('grid')
@@ -700,11 +708,18 @@ export function YamEngine({ game, onFinish }) {
                       <th
                         key={p.id}
                         scope="col"
-                        className={`px-0.5 sm:px-1 py-1.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60 transition-colors ${
+                        onClick={() => {
+                          const session = getActiveSession()
+                          const nextId = myPlayerId === p.id ? null : p.id
+                          setMyPlayerIdForSession(session?.code || null, nextId, p.name)
+                          setMyPlayerId(nextId)
+                        }}
+                        title={p.id === myPlayerId ? "Vous êtes associé à ce joueur (Cliquer pour dissocier)" : `Cliquer pour vous associer à ${p.name}`}
+                        className={`px-0.5 sm:px-1 py-1.5 text-center min-w-[60px] sm:min-w-[70px] border-r last:border-r-0 border-stone-100 dark:border-slate-800/60 transition-colors cursor-pointer select-none active:scale-[0.98] group/colheader ${
                           isReady ? 'bg-emerald-50/50 dark:bg-emerald-950/20' : ''
-                        } ${p.id === myPlayerId ? 'bg-amber-500/5 dark:bg-amber-400/5' : ''}`}
+                        } ${p.id === myPlayerId ? 'bg-amber-500/5 dark:bg-amber-400/5 ring-1 ring-inset ring-emerald-500/30' : ''}`}
                       >
-                        <div className="flex flex-col items-center justify-center gap-0.5">
+                        <div className="flex flex-col items-center justify-center gap-0.5 group-hover/colheader:scale-102 transition-transform">
                           <div className="relative inline-block">
                             <Avatar player={p} size={game.players.length >= 4 ? 'xs' : 'sm-compact'} />
                             {isReady && (

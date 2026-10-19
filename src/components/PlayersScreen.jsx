@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ArrowLeft, Plus, Pencil, Trash2, Users, Award, Search, X, Archive, ArchiveRestore, GitMerge } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trash2, Users, Award, Search, X, Archive, ArchiveRestore, GitMerge, UserCheck } from 'lucide-react'
 import { useGame } from '../context/GameContext'
+import { getDefaultMyProfile, setDefaultMyProfile } from '../store/storage'
 import { Avatar, AvatarPicker } from './ui/Avatar'
 import { BottomSheet } from './ui/BottomSheet'
 import { ConfirmDialog } from './ui/Dialog'
@@ -90,6 +91,13 @@ export function PlayersScreen() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isArchiveView, setIsArchiveView] = useState(false)
   const [archiveSearchQuery, setArchiveSearchQuery] = useState('')
+  const [defaultProfile, setDefaultProfile] = useState(() => getDefaultMyProfile())
+
+  useEffect(() => {
+    const handleProfileChanged = (e) => setDefaultProfile(e.detail)
+    window.addEventListener('ardoise-default-my-profile-changed', handleProfileChanged)
+    return () => window.removeEventListener('ardoise-default-my-profile-changed', handleProfileChanged)
+  }, [])
 
   const activePlayers = useMemo(() => {
     return (players || []).filter(p => !p.archived)
@@ -502,12 +510,20 @@ export function PlayersScreen() {
               {filteredPlayers.map(p => {
                 const fullPlayerData = getFullPlayerData(p)
                 const pStat = playerStatsMap.get(p.id) || playerStatsMap.get(normalizePlayerName(p.name))
+                const isMyProfile = Boolean(
+                  (defaultProfile?.id && defaultProfile.id === p.id) ||
+                  (defaultProfile?.name && defaultProfile.name.trim().toLowerCase() === p.name.trim().toLowerCase())
+                )
 
                 return (
                   <div
                     key={p.id}
                     onClick={() => setDetailPlayer(fullPlayerData)}
-                    className="flex flex-col items-center p-3 rounded-2xl school-card relative hover:border-stone-300 dark:hover:border-slate-700 transition-all cursor-pointer group active:scale-[0.98]"
+                    className={`flex flex-col items-center p-3 rounded-2xl school-card relative hover:border-stone-300 dark:hover:border-slate-700 transition-all cursor-pointer group active:scale-[0.98] ${
+                      isMyProfile
+                        ? 'border-emerald-500/70 dark:border-emerald-500/60 ring-2 ring-emerald-500/25 bg-emerald-50/15 dark:bg-emerald-950/20'
+                        : ''
+                    }`}
                   >
                     {/* Actions à gauche : Archiver en haut, Fusionner sous l'archive */}
                     <div className="absolute top-2 left-2 flex flex-col gap-0.5 z-10">
@@ -537,23 +553,50 @@ export function PlayersScreen() {
                       </button>
                     </div>
 
-                    {/* Bouton Modifier en haut à droite */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setEditPlayer(p)
-                      }}
-                      className="absolute top-2 right-2 p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer z-10"
-                      aria-label={`Modifier ${p.name}`}
-                      title={`Modifier ${p.name}`}
-                    >
-                      <Pencil size={13} />
-                    </button>
+                    {/* Boutons en haut à droite : Mon profil (Moi) + Modifier */}
+                    <div className="absolute top-2 right-2 flex items-center gap-0.5 z-10">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (isMyProfile) {
+                            setDefaultMyProfile(null)
+                          } else {
+                            setDefaultMyProfile({ id: p.id, name: p.name })
+                          }
+                        }}
+                        className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                          isMyProfile
+                            ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 ring-1 ring-emerald-500/40 shadow-2xs'
+                            : 'text-stone-300 dark:text-slate-600 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20'
+                        }`}
+                        aria-label={isMyProfile ? "C'est votre profil actuel sur cet appareil (cliquer pour retirer)" : `Définir ${p.name} comme votre profil sur cet appareil`}
+                        title={isMyProfile ? "Votre profil sur cet appareil (Moi)" : `Définir ${p.name} comme mon profil sur ce téléphone`}
+                      >
+                        <UserCheck size={13} className={isMyProfile ? 'stroke-[2.5]' : ''} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditPlayer(p)
+                        }}
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                        aria-label={`Modifier ${p.name}`}
+                        title={`Modifier ${p.name}`}
+                      >
+                        <Pencil size={13} />
+                      </button>
+                    </div>
 
-                    {/* Avatar */}
-                    <div className="mt-1 mb-1.5">
+                    {/* Avatar avec badge Moi */}
+                    <div className="mt-1 mb-1.5 relative">
                       <Avatar player={p} size="md" />
+                      {isMyProfile && (
+                        <span className="absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded-full text-[7.5px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-2xs ring-1 ring-white dark:ring-slate-900 pointer-events-none select-none">
+                          Moi
+                        </span>
+                      )}
                     </div>
 
                     {/* Nom du joueur */}

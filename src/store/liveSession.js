@@ -1,5 +1,5 @@
 import { applyNotebook, extractCodeFromInput } from './syncStorage'
-import { loadDeletedGameIds } from './storage'
+import { loadDeletedGameIds, getDefaultMyProfile, setDefaultMyProfile } from './storage'
 
 const SESSION_KEY = 'ardoise_active_live_session'
 const API_BASE = '/api'
@@ -390,23 +390,48 @@ function getMyPlayerKey(sessionCode) {
   return `ardoise_live_my_player_${(sessionCode || '').toUpperCase()}`
 }
 
-export function getMyPlayerIdForSession(sessionCode) {
-  if (!sessionCode) return null
+export function getMyPlayerIdForSession(sessionCode, game = null) {
   try {
-    return localStorage.getItem(getMyPlayerKey(sessionCode)) || null
+    if (sessionCode) {
+      const specific = localStorage.getItem(getMyPlayerKey(sessionCode))
+      if (specific) return specific
+    }
+
+    // Fallback automatique sur le profil global de l'appareil ("Moi")
+    const def = getDefaultMyProfile()
+    if (!def) return null
+
+    // Si on a un objet partie passé en argument, chercher la correspondance par id ou par nom
+    const playersList = game?.players || []
+    if (Array.isArray(playersList) && playersList.length > 0) {
+      const match = playersList.find(p =>
+        (def.id && p.id === def.id) ||
+        (def.name && p.name?.trim().toLowerCase() === def.name.trim().toLowerCase())
+      )
+      if (match) return match.id
+    }
+
+    return def.id || null
   } catch {
     return null
   }
 }
 
-export function setMyPlayerIdForSession(sessionCode, playerId) {
-  if (!sessionCode) return
+export function setMyPlayerIdForSession(sessionCode, playerId, playerName = null) {
   try {
-    if (playerId) {
-      localStorage.setItem(getMyPlayerKey(sessionCode), playerId)
-    } else {
-      localStorage.removeItem(getMyPlayerKey(sessionCode))
+    if (sessionCode) {
+      if (playerId) {
+        localStorage.setItem(getMyPlayerKey(sessionCode), playerId)
+      } else {
+        localStorage.removeItem(getMyPlayerKey(sessionCode))
+      }
     }
+
+    // Mémoriser également au niveau global sur cet appareil
+    if (playerId) {
+      setDefaultMyProfile({ id: playerId, name: playerName || '' })
+    }
+
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('ardoise-live-my-player-changed', {
         detail: { sessionCode, playerId: playerId || null },

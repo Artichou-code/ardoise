@@ -216,29 +216,29 @@ export function GameScreen() {
   }, [activeGame?.id, activeGame?.rounds?.length])
 
   const [myPlayerId, setMyPlayerId] = useState(() => {
-    const session = getActiveSession()
-    return session?.code ? getMyPlayerIdForSession(session.code) : null
+    return getMyPlayerIdForSession(liveSession?.code, activeGame)
   })
 
   useEffect(() => {
+    const update = () => {
+      setMyPlayerId(getMyPlayerIdForSession(liveSession?.code, activeGame))
+    }
     const handleSessionChanged = (e) => {
       setLiveSession(e.detail)
-      if (e.detail?.code) {
-        setMyPlayerId(getMyPlayerIdForSession(e.detail.code))
-      } else {
-        setMyPlayerId(null)
-      }
+      setMyPlayerId(getMyPlayerIdForSession(e.detail?.code, activeGame))
     }
     const handleMyPlayerChanged = (e) => {
       setMyPlayerId(e.detail?.playerId || null)
     }
     window.addEventListener('ardoise-live-session-changed', handleSessionChanged)
     window.addEventListener('ardoise-live-my-player-changed', handleMyPlayerChanged)
+    window.addEventListener('ardoise-default-my-profile-changed', update)
     return () => {
       window.removeEventListener('ardoise-live-session-changed', handleSessionChanged)
       window.removeEventListener('ardoise-live-my-player-changed', handleMyPlayerChanged)
+      window.removeEventListener('ardoise-default-my-profile-changed', update)
     }
-  }, [])
+  }, [liveSession?.code, activeGame])
 
   const handleGoLive = async () => {
     if (isCreatingLive || !activeGame) return
@@ -499,17 +499,35 @@ export function GameScreen() {
                   <div className="flex items-center justify-between w-full">
                     <div className="shrink-0 relative inline-flex items-center">
                       <div className="flex items-center -space-x-2.5">
-                        {t.players.map((p, pIdx) => (
-                          <div key={p.id} className="relative rounded-full">
-                            <Avatar
-                              player={p}
-                              size="sm-compact"
-                              leader={t.isLeader}
-                              crown={hasStarted && pIdx === 0 && (t.isLeader || t.rank === 1)}
-                              crownClassName="absolute -top-2.5 left-0.5 -rotate-14 origin-bottom text-amber-500 fill-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] z-20 pointer-events-none"
-                            />
-                          </div>
-                        ))}
+                        {t.players.map((p, pIdx) => {
+                          const isPMyPlayer = myPlayerId === p.id
+                          return (
+                            <div
+                              key={p.id}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                const nextId = isPMyPlayer ? null : p.id
+                                setMyPlayerIdForSession(liveSession?.code || null, nextId, p.name)
+                                setMyPlayerId(nextId)
+                              }}
+                              className="relative rounded-full cursor-pointer active:scale-95 transition-transform"
+                              title={isPMyPlayer ? "Vous êtes associé à ce joueur (Cliquer pour dissocier)" : `Cliquer pour vous associer à ${p.name}`}
+                            >
+                              <Avatar
+                                player={p}
+                                size="sm-compact"
+                                leader={t.isLeader}
+                                crown={hasStarted && pIdx === 0 && (t.isLeader || t.rank === 1)}
+                                crownClassName="absolute -top-2.5 left-0.5 -rotate-14 origin-bottom text-amber-500 fill-amber-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] z-20 pointer-events-none"
+                              />
+                              {isPMyPlayer && (
+                                <span className="absolute -bottom-1 -right-1 px-1 py-0.2 rounded-full text-[6.5px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-2xs ring-1 ring-white dark:ring-slate-900 z-30 pointer-events-none select-none">
+                                  Moi
+                                </span>
+                              )}
+                            </div>
+                          )
+                        })}
                       </div>
 
                       {/* Pastille 2e si non-leader, positionnée sur le 1er avatar */}
@@ -586,26 +604,17 @@ export function GameScreen() {
                   // Cartes larges (50% de largeur) : 2 joueurs, 4 joueurs (grille 2x2) ou 2e ligne de 5 joueurs
                   const isCardWide = count <= 2 || count === 4 || (count === 5 && idx >= 3)
 
-                  const isMyPlayer = Boolean(liveSession?.code && myPlayerId === id)
+                  const isMyPlayer = Boolean(myPlayerId === id)
 
-                  const handleCardClick = () => {
-                    if (!liveSession?.code) return
-                    const nextId = isMyPlayer ? null : id
-                    setMyPlayerIdForSession(liveSession.code, nextId)
+                  const handleAvatarClick = (targetPlayer) => {
+                    const nextId = isMyPlayer ? null : targetPlayer.id
+                    setMyPlayerIdForSession(liveSession?.code || null, nextId, targetPlayer.name)
                     setMyPlayerId(nextId)
                   }
 
                   return (
                     <div
                       key={id}
-                      onClick={handleCardClick}
-                      title={
-                        liveSession?.code
-                          ? isMyPlayer
-                            ? "Vous êtes associé à ce joueur sur cette table (Cliquer pour dissocier)"
-                            : "Cliquer pour vous associer à ce joueur sur votre téléphone"
-                          : undefined
-                      }
                       className={`relative flex items-center justify-between rounded-xl ${
                         isCardWide ? (count <= 2 ? 'px-3 py-2' : 'px-3 py-1.5') : 'px-2 py-1.5'
                       } transition-all min-h-[46px] ${colSpan} ${
@@ -614,7 +623,7 @@ export function GameScreen() {
                           : isLeader
                           ? 'school-card border-[#c83b3b] ring-1 ring-[#c83b3b]/40'
                           : 'school-card'
-                      } ${liveSession?.code ? 'cursor-pointer hover:border-emerald-500/50 dark:hover:border-emerald-400/50 active:scale-[0.98]' : ''}`}
+                      }`}
                     >
                       {/* Badge Moi si associé à ce joueur sur cette table */}
                       {isMyPlayer && (
@@ -623,8 +632,19 @@ export function GameScreen() {
                         </span>
                       )}
 
-                      {/* Zone gauche : Avatar centré par rapport au nom */}
-                      <div className="flex-1 flex flex-col items-center justify-center min-w-0 pr-1">
+                      {/* Zone gauche : Avatar + Nom (clic = association Moi sans replier le tableau) */}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleAvatarClick(player)
+                        }}
+                        className="flex-1 flex flex-col items-center justify-center min-w-0 pr-1 cursor-pointer active:scale-95 transition-transform group/avatar py-0.5"
+                        title={
+                          isMyPlayer
+                            ? "Vous êtes associé à ce joueur (Cliquer pour dissocier)"
+                            : "Cliquer sur l'avatar pour vous associer à ce profil"
+                        }
+                      >
                         <div className="relative inline-flex items-center justify-center">
                           <Avatar
                             player={player}
@@ -641,13 +661,16 @@ export function GameScreen() {
                           )}
                         </div>
 
-                        <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center leading-tight mt-0.5 text-stone-900 dark:text-slate-100 block">
+                        <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full text-center leading-tight mt-0.5 text-stone-900 dark:text-slate-100 block group-hover/avatar:text-emerald-600 dark:group-hover/avatar:text-emerald-400 transition-colors">
                           {player.name}
                         </span>
                       </div>
 
-                      {/* Zone droite : Score centré verticalement et horizontalement */}
-                      <div className={`${isCardWide ? 'flex-1' : 'w-8 sm:w-9 shrink-0'} min-w-0 flex items-center justify-center`}>
+                      {/* Zone droite : Score centré verticalement et horizontalement (clic = repli de la section) */}
+                      <div
+                        className={`${isCardWide ? 'flex-1' : 'w-8 sm:w-9 shrink-0'} min-w-0 flex items-center justify-center cursor-pointer`}
+                        title="Cliquer pour masquer les scores"
+                      >
                         <span className={`font-black tabular-nums leading-none ${
                           count <= 2 ? 'text-2xl sm:text-3xl' : (isCardWide ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl')
                         } ${
