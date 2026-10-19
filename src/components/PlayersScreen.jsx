@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ArrowLeft, Plus, Pencil, Trash2, Users, Award, Search, X, Archive, ArchiveRestore, GitMerge, UserCheck } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trash2, Users, Award, Search, X, Archive, ArchiveRestore, GitMerge, UserCheck, Check } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { getDefaultMyProfile, setDefaultMyProfile } from '../store/storage'
 import { Avatar, AvatarPicker } from './ui/Avatar'
@@ -18,6 +18,7 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
   const [avatar, setAvatar] = useState(
     initial ? getPlayerAvatarUrl(initial) : PRESET_AVATARS[0]
   )
+  const [isMe, setIsMe] = useState(false)
 
   useEffect(() => {
     setName(initial?.name || '')
@@ -27,15 +28,40 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
         ? getPlayerAvatarUrl(initial)
         : PRESET_AVATARS[Math.floor(Math.random() * PRESET_AVATARS.length)]
     )
+    const currentDefault = getDefaultMyProfile()
+    const isCurrentMe = Boolean(
+      initial && currentDefault && (
+        (currentDefault.id && currentDefault.id === initial.id) ||
+        (currentDefault.name && currentDefault.name.trim().toLowerCase() === (initial.name || '').trim().toLowerCase())
+      )
+    )
+    setIsMe(isCurrentMe)
   }, [initial, open])
 
   const handleSave = () => {
     if (!name.trim()) return
-    onSave(
-      initial
-        ? { ...initial, name: name.trim(), color, avatar }
-        : createPlayer(name, color, avatar)
-    )
+    const trimmedName = name.trim()
+    const savedPlayer = initial
+      ? { ...initial, name: trimmedName, color, avatar }
+      : createPlayer(trimmedName, color, avatar)
+
+    onSave(savedPlayer)
+
+    if (isMe) {
+      setDefaultMyProfile({ id: savedPlayer.id, name: trimmedName })
+    } else {
+      const currentDefault = getDefaultMyProfile()
+      const wasMe = Boolean(
+        initial && currentDefault && (
+          (currentDefault.id && currentDefault.id === initial.id) ||
+          (currentDefault.name && currentDefault.name.trim().toLowerCase() === (initial.name || '').trim().toLowerCase())
+        )
+      )
+      if (wasMe) {
+        setDefaultMyProfile(null)
+      }
+    }
+
     onClose()
   }
 
@@ -68,11 +94,48 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
           onSelectColor={setColor}
         />
 
+        {/* Option Profil par défaut (Moi sur cet appareil) */}
+        <button
+          type="button"
+          onClick={() => setIsMe(prev => !prev)}
+          className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+            isMe
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500/50 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-500/30'
+              : 'bg-stone-50 dark:bg-slate-800/50 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-stone-300 dark:hover:border-slate-600'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+              isMe
+                ? 'bg-emerald-500 text-white shadow-2xs'
+                : 'bg-stone-200 dark:bg-slate-700 text-stone-500 dark:text-slate-400'
+            }`}>
+              <UserCheck size={14} className={isMe ? 'stroke-[2.5]' : ''} />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-xs text-stone-900 dark:text-slate-100">
+                Mon profil sur cet appareil
+              </p>
+              <p className="text-[10px] text-stone-500 dark:text-slate-400">
+                {isMe ? 'Reconnaissance automatique en partie (badge Moi)' : 'Activez pour être reconnu automatiquement en partie'}
+              </p>
+            </div>
+          </div>
+
+          <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all shrink-0 ${
+            isMe
+              ? 'bg-emerald-500 border-emerald-500 text-white shadow-2xs'
+              : 'border-stone-300 dark:border-slate-600 bg-white dark:bg-slate-900'
+          }`}>
+            {isMe && <Check size={13} className="stroke-[3]" />}
+          </div>
+        </button>
+
         <button
           type="button"
           onClick={handleSave}
           disabled={!name.trim()}
-          className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-40 btn-margin-red"
+          className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-40 btn-margin-red cursor-pointer"
         >
           {initial ? 'Enregistrer' : 'Ajouter'}
         </button>
@@ -125,12 +188,22 @@ export function PlayersScreen() {
     return map
   }, [games, players])
 
-  // Tri alphabétique strict A-Z (insensible à la casse et aux accents)
+  // Tri des joueurs actifs : Mon profil ("Moi") toujours en premier, puis tri alphabétique A-Z
   const sortedActivePlayers = useMemo(() => {
-    return [...activePlayers].sort((a, b) =>
-      (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })
+    const isMe = (p) => Boolean(
+      defaultProfile && (
+        (defaultProfile.id && defaultProfile.id === p.id) ||
+        (defaultProfile.name && defaultProfile.name.trim().toLowerCase() === (p.name || '').trim().toLowerCase())
+      )
     )
-  }, [activePlayers])
+    return [...activePlayers].sort((a, b) => {
+      const aIsMe = isMe(a)
+      const bIsMe = isMe(b)
+      if (aIsMe && !bIsMe) return -1
+      if (!aIsMe && bIsMe) return 1
+      return (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' })
+    })
+  }, [activePlayers, defaultProfile])
 
   const sortedArchivedPlayers = useMemo(() => {
     return [...archivedPlayers].sort((a, b) =>
@@ -553,8 +626,20 @@ export function PlayersScreen() {
                       </button>
                     </div>
 
-                    {/* Boutons en haut à droite : Mon profil (Moi) + Modifier */}
-                    <div className="absolute top-2 right-2 flex items-center gap-0.5 z-10">
+                    {/* Actions à droite : Modifier en haut, Mon profil (Moi) en dessous (aligné verticalement avec la colonne gauche) */}
+                    <div className="absolute top-2 right-2 flex flex-col gap-0.5 z-10">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditPlayer(p)
+                        }}
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                        aria-label={`Modifier ${p.name}`}
+                        title={`Modifier ${p.name}`}
+                      >
+                        <Pencil size={13} />
+                      </button>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -574,18 +659,6 @@ export function PlayersScreen() {
                         title={isMyProfile ? "Votre profil sur cet appareil (Moi)" : `Définir ${p.name} comme mon profil sur ce téléphone`}
                       >
                         <UserCheck size={13} className={isMyProfile ? 'stroke-[2.5]' : ''} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setEditPlayer(p)
-                        }}
-                        className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                        aria-label={`Modifier ${p.name}`}
-                        title={`Modifier ${p.name}`}
-                      >
-                        <Pencil size={13} />
                       </button>
                     </div>
 
