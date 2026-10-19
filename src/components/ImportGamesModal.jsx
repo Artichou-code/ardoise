@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import confetti from 'canvas-confetti'
 import {
   X,
   Trophy,
@@ -98,13 +97,16 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
         mergedCount: Object.values(resolutions).filter((v) => v === 'merge').length,
       })
 
-      try {
-        confetti({
-          particleCount: 55,
-          spread: 65,
-          origin: { y: 0.6 },
+      import('canvas-confetti')
+        .then((module) => {
+          const confetti = module.default || module
+          confetti({
+            particleCount: 55,
+            spread: 65,
+            origin: { y: 0.6 },
+          })
         })
-      } catch {}
+        .catch(() => {})
 
       if (onImported) onImported()
     } catch (err) {

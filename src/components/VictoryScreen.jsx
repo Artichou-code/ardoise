@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import confetti from 'canvas-confetti'
 import { RotateCcw, Home, Award, AlertCircle, QrCode } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
@@ -17,12 +16,17 @@ export function VictoryScreen() {
     fired.current = true
 
     const colors = ['#c83b3b', '#b47b18', '#1f5c43']
-    confetti({
-      particleCount: 65,
-      spread: 80,
-      origin: { x: 0.5, y: 0.35 },
-      colors,
-    })
+    import('canvas-confetti')
+      .then((module) => {
+        const confetti = module.default || module
+        confetti({
+          particleCount: 65,
+          spread: 80,
+          origin: { x: 0.5, y: 0.35 },
+          colors,
+        })
+      })
+      .catch(() => {})
   }, [activeGame])
 
   if (!activeGame) return null

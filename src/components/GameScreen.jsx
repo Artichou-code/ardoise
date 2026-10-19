@@ -1,58 +1,37 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
-import confetti from 'canvas-confetti'
 import { ArrowLeft, RotateCcw, RotateCw, ChevronDown, ChevronUp, Flag, BookOpen, Radio, Trash2, Crown } from 'lucide-react'
 import { useGame } from '../context/GameContext'
 import { getActiveSession, getMyPlayerIdForSession, setMyPlayerIdForSession } from '../store/liveSession'
 import { BurgerMenuButton } from './BurgerMenu'
 import { Avatar } from './ui/Avatar'
 import { ConfirmDialog } from './ui/Dialog'
-import { RulesSheet } from './RulesSheet'
 import { getRanking, formatTeamNames } from '../utils/gameUtils'
 import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
-import { DourakEngine } from './engines/DourakEngine'
-import { CaracoleEngine } from './engines/CaracoleEngine'
-import { SkyjoEngine } from './engines/SkyjoEngine'
-import { PresidentEngine } from './engines/PresidentEngine'
-import { BeloteEngine } from './engines/BeloteEngine'
-import { TarotEngine } from './engines/TarotEngine'
-import { SixQuiPrendEngine } from './engines/SixQuiPrendEngine'
-import { DameDePiqueEngine } from './engines/DameDePiqueEngine'
-import { Flip7Engine } from './engines/Flip7Engine'
-import { SeaSaltPaperEngine } from './engines/SeaSaltPaperEngine'
-import { AscenseurEngine } from './engines/AscenseurEngine'
-import { RamiEngine } from './engines/RamiEngine'
-import { YanivEngine } from './engines/YanivEngine'
-import { BarbuEngine } from './engines/BarbuEngine'
-import { UniverselEngine } from './engines/UniverselEngine'
-import { UnoEngine } from './engines/UnoEngine'
-import { SymbioseEngine } from './engines/SymbioseEngine'
-import { MolkkyEngine } from './engines/MolkkyEngine'
-import { YamEngine } from './engines/YamEngine'
-import { DixitEngine } from './engines/DixitEngine'
 
+const RulesSheet = lazy(() => import('./RulesSheet').then(m => ({ default: m.RulesSheet })))
 const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
 
 const ENGINE_MAP = {
-  [GAMES.DOURAK]: DourakEngine,
-  [GAMES.CARACOLE]: CaracoleEngine,
-  [GAMES.SKYJO]: SkyjoEngine,
-  [GAMES.PRESIDENT]: PresidentEngine,
-  [GAMES.BELOTE]: BeloteEngine,
-  [GAMES.TAROT]: TarotEngine,
-  [GAMES.SIX_QUI_PREND]: SixQuiPrendEngine,
-  [GAMES.DAME_DE_PIQUE]: DameDePiqueEngine,
-  [GAMES.FLIP_7]: Flip7Engine,
-  [GAMES.SEA_SALT_PAPER]: SeaSaltPaperEngine,
-  [GAMES.ASCENSEUR]: AscenseurEngine,
-  [GAMES.RAMI]: RamiEngine,
-  [GAMES.YANIV]: YanivEngine,
-  [GAMES.BARBU]: BarbuEngine,
-  [GAMES.UNIVERSEL]: UniverselEngine,
-  [GAMES.UNO]: UnoEngine,
-  [GAMES.SYMBIOSE]: SymbioseEngine,
-  [GAMES.MOLKKY]: MolkkyEngine,
-  [GAMES.YAM]: YamEngine,
-  [GAMES.DIXIT]: DixitEngine,
+  [GAMES.DOURAK]: lazy(() => import('./engines/DourakEngine').then(m => ({ default: m.DourakEngine }))),
+  [GAMES.CARACOLE]: lazy(() => import('./engines/CaracoleEngine').then(m => ({ default: m.CaracoleEngine }))),
+  [GAMES.SKYJO]: lazy(() => import('./engines/SkyjoEngine').then(m => ({ default: m.SkyjoEngine }))),
+  [GAMES.PRESIDENT]: lazy(() => import('./engines/PresidentEngine').then(m => ({ default: m.PresidentEngine }))),
+  [GAMES.BELOTE]: lazy(() => import('./engines/BeloteEngine').then(m => ({ default: m.BeloteEngine }))),
+  [GAMES.TAROT]: lazy(() => import('./engines/TarotEngine').then(m => ({ default: m.TarotEngine }))),
+  [GAMES.SIX_QUI_PREND]: lazy(() => import('./engines/SixQuiPrendEngine').then(m => ({ default: m.SixQuiPrendEngine }))),
+  [GAMES.DAME_DE_PIQUE]: lazy(() => import('./engines/DameDePiqueEngine').then(m => ({ default: m.DameDePiqueEngine }))),
+  [GAMES.FLIP_7]: lazy(() => import('./engines/Flip7Engine').then(m => ({ default: m.Flip7Engine }))),
+  [GAMES.SEA_SALT_PAPER]: lazy(() => import('./engines/SeaSaltPaperEngine').then(m => ({ default: m.SeaSaltPaperEngine }))),
+  [GAMES.ASCENSEUR]: lazy(() => import('./engines/AscenseurEngine').then(m => ({ default: m.AscenseurEngine }))),
+  [GAMES.RAMI]: lazy(() => import('./engines/RamiEngine').then(m => ({ default: m.RamiEngine }))),
+  [GAMES.YANIV]: lazy(() => import('./engines/YanivEngine').then(m => ({ default: m.YanivEngine }))),
+  [GAMES.BARBU]: lazy(() => import('./engines/BarbuEngine').then(m => ({ default: m.BarbuEngine }))),
+  [GAMES.UNIVERSEL]: lazy(() => import('./engines/UniverselEngine').then(m => ({ default: m.UniverselEngine }))),
+  [GAMES.UNO]: lazy(() => import('./engines/UnoEngine').then(m => ({ default: m.UnoEngine }))),
+  [GAMES.SYMBIOSE]: lazy(() => import('./engines/SymbioseEngine').then(m => ({ default: m.SymbioseEngine }))),
+  [GAMES.MOLKKY]: lazy(() => import('./engines/MolkkyEngine').then(m => ({ default: m.MolkkyEngine }))),
+  [GAMES.YAM]: lazy(() => import('./engines/YamEngine').then(m => ({ default: m.YamEngine }))),
+  [GAMES.DIXIT]: lazy(() => import('./engines/DixitEngine').then(m => ({ default: m.DixitEngine }))),
 }
 
 function AnimatedRoundIndicator({ roundNumber }) {
@@ -186,16 +165,19 @@ export function GameScreen() {
 
       // 2. Mini célébration visuelle festive (confettis discrets à chaque manche)
       try {
-        confetti({
-          particleCount: 22,
-          spread: 55,
-          startVelocity: 26,
-          origin: { x: 0.5, y: 0.65 },
-          colors: ['#c83b3b', '#059669', '#d97706', '#2563eb'],
-          scalar: 0.75,
-          ticks: 75,
-          disableForReducedMotion: true,
-        })
+        import('canvas-confetti').then((m) => {
+          const confetti = m.default || m
+          confetti({
+            particleCount: 22,
+            spread: 55,
+            startVelocity: 26,
+            origin: { x: 0.5, y: 0.65 },
+            colors: ['#c83b3b', '#059669', '#d97706', '#2563eb'],
+            scalar: 0.75,
+            ticks: 75,
+            disableForReducedMotion: true,
+          })
+        }).catch(() => {})
       } catch {}
 
       // 3. Remontée automatique au sommet de la page pour la nouvelle manche
@@ -720,11 +702,20 @@ export function GameScreen() {
               key={`${activeGame.id}-r-${activeGame.rounds.length}-${activeGame.isCorrection ? 'corr' : 'norm'}`}
               className="animate-round-slide-in"
             >
-              <Engine
-                game={activeGame}
-                leaderId={leaderId}
-                onFinish={finishGame}
-              />
+              <Suspense
+                fallback={
+                  <div className="py-12 flex items-center justify-center text-stone-400 text-xs">
+                    <span className="inline-block w-4 h-4 border-2 border-stone-300 border-t-[#c83b3b] rounded-full animate-spin mr-2" />
+                    Chargement de la feuille de match...
+                  </div>
+                }
+              >
+                <Engine
+                  game={activeGame}
+                  leaderId={leaderId}
+                  onFinish={finishGame}
+                />
+              </Suspense>
             </div>
 
             {/* Actions secondaires non-flottantes placées directement APRÈS le bouton de validation */}
@@ -844,12 +835,16 @@ export function GameScreen() {
       )}
 
       {/* Règles officielles */}
-      <RulesSheet
-        gameType={showRules ? activeGame.type : null}
-        variant={activeGame.config?.variant}
-        title={activeGame.type === GAMES.BELOTE ? (activeGame.config?.variant === 'coinche' ? 'Règles — Coinche' : 'Règles — Belote') : undefined}
-        onClose={() => setShowRules(false)}
-      />
+      {showRules && (
+        <Suspense fallback={null}>
+          <RulesSheet
+            gameType={activeGame.type}
+            variant={activeGame.config?.variant}
+            title={activeGame.type === GAMES.BELOTE ? (activeGame.config?.variant === 'coinche' ? 'Règles — Coinche' : 'Règles — Belote') : undefined}
+            onClose={() => setShowRules(false)}
+          />
+        </Suspense>
+      )}
 
       {/* Confirmation sortie */}
       <ConfirmDialog
