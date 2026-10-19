@@ -481,7 +481,7 @@ export function HomeScreen() {
                     setTimeout(() => searchInputRef.current?.focus(), 50)
                   }}
                   className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-stone-100 dark:bg-slate-800/90 hover:bg-stone-200/70 dark:hover:bg-slate-700/70 text-[11px] font-medium text-stone-700 dark:text-slate-200 border border-stone-200/90 dark:border-slate-700 transition-all cursor-pointer shadow-2xs group shrink-0"
-                  aria-label="Rechercher un jeu"
+                  aria-label={`Rechercher parmi les ${totalAvailableCount} jeux disponibles`}
                   title="Cliquer pour rechercher un jeu"
                 >
                   <Search size={11} className="text-[#c83b3b] transition-colors shrink-0" />
