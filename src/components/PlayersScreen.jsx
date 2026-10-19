@@ -73,7 +73,7 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
       title={initial ? 'Modifier le joueur' : 'Nouveau joueur'}
     >
       <div className="px-4 py-3 space-y-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Avatar player={{ name: name || 'A', color, avatar }} size="md" />
           <input
             type="text"
@@ -81,10 +81,25 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
             value={name}
             onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSave()}
-            className="flex-1 px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-stone-900 dark:text-slate-100 placeholder-stone-400 focus:outline-none focus:border-[#c83b3b]"
+            className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold text-stone-900 dark:text-slate-100 placeholder-stone-400 focus:outline-none focus:border-[#c83b3b]"
             autoFocus
             maxLength={20}
           />
+          {/* Petit bouton discret à droite du prénom pour définir "Moi" */}
+          <button
+            type="button"
+            onClick={() => setIsMe(prev => !prev)}
+            className={`h-[42px] px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 select-none shrink-0 border ${
+              isMe
+                ? 'bg-emerald-500 text-white border-emerald-500 shadow-2xs'
+                : 'bg-stone-50 dark:bg-slate-800/60 border-stone-200 dark:border-slate-700 text-stone-400 dark:text-slate-500 hover:text-stone-700 dark:hover:text-slate-300 hover:border-stone-300'
+            }`}
+            title={isMe ? "C'est votre profil sur cet appareil (cliquer pour retirer)" : "Définir comme votre profil sur cet appareil (Moi)"}
+            aria-label={isMe ? "C'est votre profil sur cet appareil" : "Définir comme votre profil sur cet appareil"}
+          >
+            <UserCheck size={14} className={isMe ? 'stroke-[2.5]' : ''} />
+            <span>Moi</span>
+          </button>
         </div>
 
         <AvatarPicker
@@ -93,43 +108,6 @@ function PlayerSheet({ open, onClose, initial, onSave }) {
           selectedColor={color}
           onSelectColor={setColor}
         />
-
-        {/* Option Profil par défaut (Moi sur cet appareil) */}
-        <button
-          type="button"
-          onClick={() => setIsMe(prev => !prev)}
-          className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-            isMe
-              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500/50 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-500/30'
-              : 'bg-stone-50 dark:bg-slate-800/50 border-stone-200 dark:border-slate-700 text-stone-600 dark:text-slate-400 hover:border-stone-300 dark:hover:border-slate-600'
-          }`}
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-              isMe
-                ? 'bg-emerald-500 text-white shadow-2xs'
-                : 'bg-stone-200 dark:bg-slate-700 text-stone-500 dark:text-slate-400'
-            }`}>
-              <UserCheck size={14} className={isMe ? 'stroke-[2.5]' : ''} />
-            </div>
-            <div className="text-left">
-              <p className="font-bold text-xs text-stone-900 dark:text-slate-100">
-                Mon profil sur cet appareil
-              </p>
-              <p className="text-[10px] text-stone-500 dark:text-slate-400">
-                {isMe ? 'Reconnaissance automatique en partie (badge Moi)' : 'Activez pour être reconnu automatiquement en partie'}
-              </p>
-            </div>
-          </div>
-
-          <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all shrink-0 ${
-            isMe
-              ? 'bg-emerald-500 border-emerald-500 text-white shadow-2xs'
-              : 'border-stone-300 dark:border-slate-600 bg-white dark:bg-slate-900'
-          }`}>
-            {isMe && <Check size={13} className="stroke-[3]" />}
-          </div>
-        </button>
 
         <button
           type="button"
@@ -592,11 +570,7 @@ export function PlayersScreen() {
                   <div
                     key={p.id}
                     onClick={() => setDetailPlayer(fullPlayerData)}
-                    className={`flex flex-col items-center p-3 rounded-2xl school-card relative hover:border-stone-300 dark:hover:border-slate-700 transition-all cursor-pointer group active:scale-[0.98] ${
-                      isMyProfile
-                        ? 'border-emerald-500/70 dark:border-emerald-500/60 ring-2 ring-emerald-500/25 bg-emerald-50/15 dark:bg-emerald-950/20'
-                        : ''
-                    }`}
+                    className="flex flex-col items-center p-3 rounded-2xl school-card relative hover:border-stone-300 dark:hover:border-slate-700 transition-all cursor-pointer group active:scale-[0.98]"
                   >
                     {/* Actions à gauche : Archiver en haut, Fusionner sous l'archive */}
                     <div className="absolute top-2 left-2 flex flex-col gap-0.5 z-10">
@@ -650,10 +624,10 @@ export function PlayersScreen() {
                             setDefaultMyProfile({ id: p.id, name: p.name })
                           }
                         }}
-                        className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                        className={`p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer ${
                           isMyProfile
-                            ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 ring-1 ring-emerald-500/40 shadow-2xs'
-                            : 'text-stone-300 dark:text-slate-600 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20'
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-stone-300 dark:text-slate-600 hover:text-emerald-600 dark:hover:text-emerald-400'
                         }`}
                         aria-label={isMyProfile ? "C'est votre profil actuel sur cet appareil (cliquer pour retirer)" : `Définir ${p.name} comme votre profil sur cet appareil`}
                         title={isMyProfile ? "Votre profil sur cet appareil (Moi)" : `Définir ${p.name} comme mon profil sur ce téléphone`}
