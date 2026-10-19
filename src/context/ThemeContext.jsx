@@ -11,20 +11,23 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     const root = document.documentElement
-    if (theme === 'dark') {
+    const isDark = theme === 'dark'
+    if (isDark && !root.classList.contains('dark')) {
       root.classList.add('dark')
       root.setAttribute('data-theme', 'dark')
-    } else {
+    } else if (!isDark && root.classList.contains('dark')) {
       root.classList.remove('dark')
       root.setAttribute('data-theme', 'light')
     }
     const metaTheme = document.querySelector('meta[name="theme-color"]')
-    if (metaTheme) {
-      metaTheme.setAttribute('content', theme === 'dark' ? '#151719' : '#faf9f5')
+    const expectedColor = isDark ? '#151719' : '#faf9f5'
+    if (metaTheme && metaTheme.getAttribute('content') !== expectedColor) {
+      metaTheme.setAttribute('content', expectedColor)
     }
     const svgFavicon = document.querySelector('link[rel="icon"][type="image/svg+xml"]')
-    if (svgFavicon) {
-      svgFavicon.setAttribute('href', theme === 'dark' ? '/Ardoise_v2-dark.svg' : '/Ardoise_v2-white.svg')
+    const expectedFavicon = isDark ? '/Ardoise_v2-dark.svg' : '/Ardoise_v2-white.svg'
+    if (svgFavicon && svgFavicon.getAttribute('href') !== expectedFavicon) {
+      svgFavicon.setAttribute('href', expectedFavicon)
     }
     saveTheme(theme)
   }, [theme])

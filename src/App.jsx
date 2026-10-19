@@ -6,10 +6,9 @@ import { fetchSharedGame } from './store/syncStorage'
 import { getActiveSession } from './store/liveSession'
 
 import { AppHandoffBanner } from './components/ui/AppHandoffBanner'
-
 import { BurgerMenu } from './components/BurgerMenu'
 
-// Écrans principaux : chargement immédiat pour navigation instantanée (zéro page blanche)
+// Écrans principaux : chargement immédiat pour navigation instantanée (zéro latence, zéro page blanche)
 import { GameScreen } from './components/GameScreen'
 import { VictoryScreen } from './components/VictoryScreen'
 import { HistoryScreen } from './components/HistoryScreen'
