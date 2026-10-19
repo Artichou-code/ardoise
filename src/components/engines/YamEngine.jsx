@@ -724,27 +724,25 @@ export function YamEngine({ game, onFinish }) {
                             <Avatar player={p} size={game.players.length >= 4 ? 'xs' : 'sm-compact'} />
                             {isReady && (
                               <span
-                                className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 text-white flex items-center justify-center text-[8px] font-black shadow-2xs"
+                                className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 text-white flex items-center justify-center text-[8px] font-black shadow-2xs z-20 pointer-events-none"
                                 title="Case choisie pour ce tour"
                               >
                                 ✓
                               </span>
                             )}
-                          </div>
-                          <div className="flex items-center justify-center gap-0.5 max-w-[56px] sm:max-w-[70px]">
-                            <span
-                              className={`font-serif-title font-bold text-[10.5px] sm:text-xs truncate block leading-tight ${
-                                isReady ? 'text-emerald-700 dark:text-emerald-300' : 'text-stone-900 dark:text-slate-100'
-                              }`}
-                            >
-                              {p.name}
-                            </span>
                             {p.id === myPlayerId && (
-                              <span className="shrink-0 text-[7px] font-black uppercase tracking-wider px-1 py-0.2 rounded-full bg-emerald-500/15 dark:bg-emerald-500/25 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 dark:border-emerald-500/40 leading-none">
+                              <span className="absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded-full text-[6.5px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-2xs ring-1 ring-white dark:ring-slate-900 pointer-events-none select-none z-10">
                                 Moi
                               </span>
                             )}
                           </div>
+                          <span
+                            className={`font-serif-title font-bold text-[10.5px] sm:text-xs truncate block leading-tight max-w-[56px] sm:max-w-[72px] ${
+                              isReady ? 'text-emerald-700 dark:text-emerald-300' : 'text-stone-900 dark:text-slate-100'
+                            }`}
+                          >
+                            {p.name}
+                          </span>
                           <span className="text-[8px] sm:text-[8.5px] font-semibold text-stone-400 dark:text-slate-500 tabular-nums">
                             {stats.filledTotal}/13
                           </span>
