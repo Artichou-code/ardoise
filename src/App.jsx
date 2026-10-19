@@ -2,11 +2,13 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { useGame } from './context/GameContext'
 import { HomeScreen } from './components/HomeScreen'
 import { PullToRefreshIndicator } from './components/ui/PullToRefresh'
-import { BurgerMenu } from './components/BurgerMenu'
 import { fetchSharedGame } from './store/syncStorage'
 import { getActiveSession } from './store/liveSession'
 
 import { AppHandoffBanner } from './components/ui/AppHandoffBanner'
+
+// Menu Burger : chargement différé à l'ouverture
+const BurgerMenu = lazy(() => import('./components/BurgerMenu').then((m) => ({ default: m.BurgerMenu })))
 
 // Écrans secondaires : chargement dynamique à la demande pour alléger le bundle initial
 const GameScreen = lazy(() => import('./components/GameScreen').then((m) => ({ default: m.GameScreen })))
@@ -92,25 +94,21 @@ export default function App() {
 
   // Gestion dynamique du rechargement de page (pull-down) :
   // Autorisé nativement sur l'accueil ('home') pour rafraîchir le carnet,
-  // mais strictement bloqué pendant les parties ou autres écrans pour éviter les recharges accidentelles.
+  // mais bloqué pendant les parties ou autres écrans via les classes CSS (zéro layout thrashing).
   useEffect(() => {
     const isHome = screen === 'home' || !screen
-    document.body.dataset.screen = isHome ? 'home' : screen
-
     if (isHome) {
-      document.documentElement.classList.remove('prevent-overscroll')
-      document.body.classList.remove('prevent-overscroll')
-      document.documentElement.style.overscrollBehaviorY = 'auto'
-      document.body.style.overscrollBehaviorY = 'auto'
-      const root = document.getElementById('root')
-      if (root) root.style.overscrollBehaviorY = 'auto'
+      if (document.body.dataset.screen) delete document.body.dataset.screen
+      if (document.documentElement.classList.contains('prevent-overscroll')) {
+        document.documentElement.classList.remove('prevent-overscroll')
+        document.body.classList.remove('prevent-overscroll')
+      }
     } else {
-      document.documentElement.classList.add('prevent-overscroll')
-      document.body.classList.add('prevent-overscroll')
-      document.documentElement.style.overscrollBehaviorY = 'none'
-      document.body.style.overscrollBehaviorY = 'none'
-      const root = document.getElementById('root')
-      if (root) root.style.overscrollBehaviorY = 'none'
+      document.body.dataset.screen = screen
+      if (!document.documentElement.classList.contains('prevent-overscroll')) {
+        document.documentElement.classList.add('prevent-overscroll')
+        document.body.classList.add('prevent-overscroll')
+      }
     }
   }, [screen])
 
@@ -159,19 +157,23 @@ export default function App() {
         )}
       </Suspense>
 
-      {/* Menu Burger global accessible depuis toutes les pages */}
-      <BurgerMenu
-        isOpen={isBurgerMenuOpen}
-        onClose={() => setIsBurgerMenuOpen(false)}
-        onNavigate={(nextScreen) => setScreen(nextScreen)}
-        onOpenLiveSession={() => setIsLiveModalOpen(true)}
-        onOpenShareGames={() => setIsShareGamesModalOpen(true)}
-        onOpenSync={() => setIsSyncModalOpen(true)}
-        onOpenLegal={(tab) => setLegalTab(tab || 'mentions')}
-        onOpenArtCrea={() => setIsArtCreaModalOpen(true)}
-        onOpenShareApp={() => setIsShareAppModalOpen(true)}
-        liveSession={liveSession}
-      />
+      {/* Menu Burger global accessible depuis toutes les pages, chargé à la demande */}
+      {isBurgerMenuOpen && (
+        <Suspense fallback={null}>
+          <BurgerMenu
+            isOpen={isBurgerMenuOpen}
+            onClose={() => setIsBurgerMenuOpen(false)}
+            onNavigate={(nextScreen) => setScreen(nextScreen)}
+            onOpenLiveSession={() => setIsLiveModalOpen(true)}
+            onOpenShareGames={() => setIsShareGamesModalOpen(true)}
+            onOpenSync={() => setIsSyncModalOpen(true)}
+            onOpenLegal={(tab) => setLegalTab(tab || 'mentions')}
+            onOpenArtCrea={() => setIsArtCreaModalOpen(true)}
+            onOpenShareApp={() => setIsShareAppModalOpen(true)}
+            liveSession={liveSession}
+          />
+        </Suspense>
+      )}
 
       <Suspense fallback={null}>
         {/* Modale Session Journée & Table en direct */}

@@ -343,16 +343,16 @@ function generateSeoFiles() {
     }
   }
 
-  // Action 2 : <link rel="modulepreload"> sur le chunk JS principal pour que le navigateur
-  // le télécharge en parallèle du HTML (élimine la chaîne critique HTML → JS de ~240 ms).
-  // Action 3 : fetchpriority="high" sur la balise <script> principale pour signaler sa priorité.
+  // Action 2 : <link rel="modulepreload"> sur le chunk JS principal placé tout en haut du <head>
+  // pour que le navigateur lance son téléchargement dès le tout premier paquet TCP (élimine la latence de chaîne critique).
+  // Action 3 : fetchpriority="high" sur la balise <script> principale pour signaler sa priorité maximale.
   const jsMatch = baseHtml.match(/<script type="module" crossorigin src="(\/assets\/index-[^"]+\.js)"><\/script>/)
   if (jsMatch) {
     const jsPath = jsMatch[1]
-    // Inject modulepreload juste avant </head>
+    // Injecte modulepreload au tout début du <head> (immédiatement après viewport)
     baseHtml = baseHtml.replace(
-      '</head>',
-      `  <link rel="modulepreload" href="${jsPath}" />\n  </head>`
+      /(<meta name="viewport"[^>]*>)/i,
+      `$1\n    <link rel="modulepreload" href="${jsPath}" fetchpriority="high" />`
     )
     // Ajouter fetchpriority="high" sur la balise script
     baseHtml = baseHtml.replace(
