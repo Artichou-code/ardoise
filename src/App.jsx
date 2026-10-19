@@ -7,8 +7,7 @@ import { getActiveSession } from './store/liveSession'
 
 import { AppHandoffBanner } from './components/ui/AppHandoffBanner'
 
-// Menu Burger : chargement différé à l'ouverture
-const BurgerMenu = lazy(() => import('./components/BurgerMenu').then((m) => ({ default: m.BurgerMenu })))
+import { BurgerMenu } from './components/BurgerMenu'
 
 // Écrans secondaires : chargement dynamique à la demande pour alléger le bundle initial
 const GameScreen = lazy(() => import('./components/GameScreen').then((m) => ({ default: m.GameScreen })))
@@ -157,23 +156,19 @@ export default function App() {
         )}
       </Suspense>
 
-      {/* Menu Burger global accessible depuis toutes les pages, chargé à la demande */}
-      {isBurgerMenuOpen && (
-        <Suspense fallback={null}>
-          <BurgerMenu
-            isOpen={isBurgerMenuOpen}
-            onClose={() => setIsBurgerMenuOpen(false)}
-            onNavigate={(nextScreen) => setScreen(nextScreen)}
-            onOpenLiveSession={() => setIsLiveModalOpen(true)}
-            onOpenShareGames={() => setIsShareGamesModalOpen(true)}
-            onOpenSync={() => setIsSyncModalOpen(true)}
-            onOpenLegal={(tab) => setLegalTab(tab || 'mentions')}
-            onOpenArtCrea={() => setIsArtCreaModalOpen(true)}
-            onOpenShareApp={() => setIsShareAppModalOpen(true)}
-            liveSession={liveSession}
-          />
-        </Suspense>
-      )}
+      {/* Menu Burger global accessible depuis toutes les pages avec transition fluide depuis la droite */}
+      <BurgerMenu
+        isOpen={isBurgerMenuOpen}
+        onClose={() => setIsBurgerMenuOpen(false)}
+        onNavigate={(nextScreen) => setScreen(nextScreen)}
+        onOpenLiveSession={() => setIsLiveModalOpen(true)}
+        onOpenShareGames={() => setIsShareGamesModalOpen(true)}
+        onOpenSync={() => setIsSyncModalOpen(true)}
+        onOpenLegal={(tab) => setLegalTab(tab || 'mentions')}
+        onOpenArtCrea={() => setIsArtCreaModalOpen(true)}
+        onOpenShareApp={() => setIsShareAppModalOpen(true)}
+        liveSession={liveSession}
+      />
 
       <Suspense fallback={null}>
         {/* Modale Session Journée & Table en direct */}
