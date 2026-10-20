@@ -17,7 +17,7 @@ export const DEFAULT_ARTCREA_CARDS = [
     id: 'link',
     badge: "QR CODES DYNAMIQUES",
     title: "LINK by ART-créa",
-    desc: "Créez et gérez vos QR codes dynamiques modifiables à tout moment. Liens courts intelligents, statistiques en direct et personnalisation avancée !",
+    desc: "Créez des QR codes dynamiques modifiables : redirection selon l'heure ou le jour, intégration embed sur vos sites et écrans, et statistiques en direct !",
     url: "https://link.art-crea.fr/",
     logoType: 'image',
     logoSrc: "/images/link-192px.png",
