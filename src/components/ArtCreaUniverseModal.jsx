@@ -17,7 +17,7 @@ export const DEFAULT_ARTCREA_CARDS = [
     id: 'link',
     badge: "QR CODES DYNAMIQUES",
     title: "LINK by ART-créa",
-    desc: "QR codes dynamiques avec redirection selon l'heure ou le jour, intégration embed sur vos écrans et suivi des scans.",
+    desc: "Créez des QR codes dynamiques modifiables : redirection selon l'heure ou le jour, intégration embed sur vos sites et écrans, et suivi des scans en direct !",
     url: "https://link.art-crea.fr/",
     logoType: 'image',
     logoSrc: "/images/link-192px.png",
@@ -37,7 +37,7 @@ export const DEFAULT_ARTCREA_CARDS = [
     id: 'photo',
     badge: "+15 ANS D'EXPERTISE",
     title: "PHOTO.ART-CREA.FR",
-    desc: "Reportages d'artisans, portraits de caractère et mise en valeur de votre savoir-faire authentique, sans banque d'images.",
+    desc: "Reportages d'artisans, portraits de caractère et mise en valeur de votre savoir-faire. Photographies authentiques créées sur-mesure, sans banques d'images.",
     url: "https://photo.art-crea.fr/",
     logoType: 'image',
     logoSrc: "/images/artem-portrait.jpg",
@@ -325,7 +325,7 @@ export function ArtCreaUniverseModal({
           <div
             ref={cardsContainerRef}
             onScroll={handleCardsScroll}
-            className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 overscroll-x-contain cursor-grab active:cursor-grabbing select-none"
+            className="flex items-stretch gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide py-1 -mx-4 px-4 sm:-mx-5 sm:px-5 overscroll-x-contain cursor-grab active:cursor-grabbing select-none"
           >
             {cards.map((card) => (
               <a
@@ -384,8 +384,8 @@ export function ArtCreaUniverseModal({
                     </div>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-[11px] leading-relaxed text-stone-600 dark:text-slate-400 mb-3 line-clamp-3">
+                  {/* Description complète sans coupure */}
+                  <p className="text-[11px] leading-relaxed text-stone-600 dark:text-slate-400 mb-3">
                     {card.desc}
                   </p>
                 </div>
