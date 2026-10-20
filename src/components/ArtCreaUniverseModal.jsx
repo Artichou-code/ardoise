@@ -14,6 +14,16 @@ export const DEFAULT_ARTCREA_CARDS = [
     ctaText: "Découvrir ARENA.photo",
   },
   {
+    id: 'link',
+    badge: "QR CODES DYNAMIQUES",
+    title: "LINK by ART-créa",
+    desc: "Créez et gérez vos QR codes dynamiques modifiables à tout moment. Liens courts intelligents, statistiques en direct et personnalisation avancée !",
+    url: "https://link.art-crea.fr/",
+    logoType: 'image',
+    logoSrc: "/images/link-192px.png",
+    ctaText: "Découvrir LINK",
+  },
+  {
     id: 'webdesign',
     badge: "1\u00A0000€ HT • SITE CLÉ EN MAIN",
     title: "ART-créa Web-Design",
