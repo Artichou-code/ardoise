@@ -276,8 +276,8 @@ export function BurgerMenu({
               Synchronisation & Table live
             </span>
             <div className="grid grid-cols-3 gap-1.5 items-stretch">
-              {/* Ensemble Table live réunissant élégamment Créer et Rejoindre */}
-              <div className="col-span-2 p-1 rounded-2xl bg-stone-100/70 dark:bg-slate-800/50 border border-stone-200/70 dark:border-slate-700/60 flex flex-col justify-between">
+              {/* Ensemble Table live réunissant élégamment Créer et Rejoindre (sans fond/bordure) */}
+              <div className="col-span-2 p-1 flex flex-col justify-between">
                 {/* En-tête centré de l'ensemble Table live */}
                 <div className="flex items-center justify-center gap-1.5 px-2 pt-1 pb-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5">
@@ -296,7 +296,7 @@ export function BurgerMenu({
                   <button
                     type="button"
                     onClick={() => handleAction(() => onOpenLiveSession?.('create'))}
-                    className="py-1.5 px-1 rounded-xl hover:bg-white dark:hover:bg-slate-800 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                    className="py-1.5 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
                   >
                     <span className={`p-2 rounded-lg shrink-0 group-hover:scale-105 transition-all border ${
                       liveSession
@@ -313,7 +313,7 @@ export function BurgerMenu({
                   <button
                     type="button"
                     onClick={() => handleAction(() => onOpenLiveSession?.('join'))}
-                    className="py-1.5 px-1 rounded-xl hover:bg-white dark:hover:bg-slate-800 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                    className="py-1.5 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
                   >
                     <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/25 dark:border-[#c83b3b]/35 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
                       <QrCode size={16} />
@@ -325,8 +325,8 @@ export function BurgerMenu({
                 </div>
               </div>
 
-              {/* Ensemble Profil réunissant Synchro avec le même cadre et en-tête équilibré */}
-              <div className="col-span-1 p-1 rounded-2xl bg-stone-100/70 dark:bg-slate-800/50 border border-stone-200/70 dark:border-slate-700/60 flex flex-col justify-between">
+              {/* Ensemble Profil réunissant Synchro (sans fond/bordure, alignement parfait) */}
+              <div className="col-span-1 p-1 flex flex-col justify-between">
                 {/* En-tête centré Profil */}
                 <div className="flex items-center justify-center gap-1 px-1 pt-1 pb-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate text-center">
@@ -338,7 +338,7 @@ export function BurgerMenu({
                 <button
                   type="button"
                   onClick={() => handleAction(onOpenSync)}
-                  className="py-1.5 px-1 rounded-xl hover:bg-white dark:hover:bg-slate-800 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                  className="py-1.5 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
                 >
                   <span className="p-2 rounded-lg bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/25 dark:border-sky-500/35 text-sky-600 dark:text-sky-400 shrink-0 group-hover:scale-105 transition-all">
                     <Cloud size={16} />
