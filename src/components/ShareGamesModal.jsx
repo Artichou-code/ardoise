@@ -15,7 +15,9 @@ import {
   Download,
   Trophy,
   Calendar,
+  Camera,
 } from 'lucide-react'
+import { QrScannerModal } from './QrScannerModal'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useGame } from '../context/GameContext'
 import { shareGamesBatch, fetchSharedGame, extractCodeFromInput } from '../store/syncStorage'
@@ -39,6 +41,7 @@ export function ShareGamesModal({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [isScannerOpen, setIsScannerOpen] = useState(false)
 
   useScrollLock(isOpen)
 
@@ -142,9 +145,10 @@ export function ShareGamesModal({
     }
   }
 
-  const handleFetchByCode = async (e) => {
-    e.preventDefault()
-    const clean = extractCodeFromInput(receiveCode)
+  const handleFetchByCode = async (e, codeOverride = null) => {
+    if (e?.preventDefault) e.preventDefault()
+    const target = codeOverride || receiveCode
+    const clean = extractCodeFromInput(target, 'ARD')
     if (!clean || isLoading) return
 
     setIsLoading(true)
@@ -166,6 +170,19 @@ export function ShareGamesModal({
     }
   }
 
+  // Récupération automatique suite au scan d'un QR code
+  const handleQrScan = (decodedText) => {
+    setIsScannerOpen(false)
+    const clean = (decodedText || '').trim()
+    const extracted = extractCodeFromInput(clean, 'ARD')
+    if (extracted) {
+      setReceiveCode(extracted)
+      handleFetchByCode(null, extracted)
+    } else {
+      setError(`QR code non reconnu comme un partage de parties : ${clean.slice(0, 40)}`)
+    }
+  }
+
   const shareUrl = shareResult?.gameCode
     ? `${window.location.origin}/?share=${encodeURIComponent(shareResult.gameCode)}`
     : ''
@@ -182,6 +199,8 @@ export function ShareGamesModal({
     if (navigator.share) {
       try {
         await navigator.share({
+          title: `${shareResult?.count || 1} partie(s) partagée(s) - Ardoise`,
+          text: `Récupère mes parties sur ton carnet Ardoise (code ${shareResult?.gameCode || ''}) !`,
           url: shareUrl,
         })
       } catch {}
@@ -327,9 +346,10 @@ export function ShareGamesModal({
                     type="button"
                     onClick={handleNativeShare}
                     className="py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                    title="Partager à un proche via AirDrop, Quick Share ou message"
                   >
                     <Share2 size={14} />
-                    <span>Envoyer</span>
+                    <span>AirDrop / Proximité</span>
                   </button>
                 </div>
 
@@ -470,6 +490,24 @@ export function ShareGamesModal({
           ) : (
             /* ONGLET RECEVOIR UN CODE OU LIEN */
             <form onSubmit={handleFetchByCode} className="space-y-3.5">
+              {/* Bouton de scan QR caméra in-app */}
+              <button
+                type="button"
+                onClick={() => setIsScannerOpen(true)}
+                className="w-full py-3 px-4 rounded-2xl bg-[#c83b3b]/10 hover:bg-[#c83b3b]/15 text-[#c83b3b] font-bold text-xs flex items-center justify-center gap-2 border border-[#c83b3b]/30 hover:border-[#c83b3b]/50 transition-all cursor-pointer shadow-2xs group"
+              >
+                <Camera size={17} className="group-hover:scale-110 transition-transform" />
+                <span>Scanner le QR code de partage</span>
+              </button>
+
+              <div className="flex items-center gap-2 my-1">
+                <div className="h-px bg-stone-200 dark:bg-slate-800 flex-1" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
+                  ou saisir au clavier
+                </span>
+                <div className="h-px bg-stone-200 dark:bg-slate-800 flex-1" />
+              </div>
+
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1">
                   Code ou lien de partage reçu
@@ -520,6 +558,15 @@ export function ShareGamesModal({
           </button>
         </div>
       </div>
+
+      {/* Scanner QR Code In-App */}
+      <QrScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScan={handleQrScan}
+        title="Scanner des parties partagées"
+        subtitle="Visez le QR code affiché sur l'autre smartphone"
+      />
     </div>,
     document.body
   )

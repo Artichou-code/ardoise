@@ -15,7 +15,9 @@ import {
   Pencil,
   MapPin,
   Loader2,
+  Camera,
 } from 'lucide-react'
+import { QrScannerModal } from './QrScannerModal'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useGame } from '../context/GameContext'
 import {
@@ -57,6 +59,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   const [showCityHelp, setShowCityHelp] = useState(false)
   const [showGeneralHelp, setShowGeneralHelp] = useState(false)
   const [isFullscreenQr, setIsFullscreenQr] = useState(false)
+  const [isScannerOpen, setIsScannerOpen] = useState(false)
 
   const lastSigRef = useRef('')
   const generalHelpRef = useRef(null)
@@ -252,6 +255,8 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     if (navigator.share) {
       try {
         await navigator.share({
+          title: `${activeSession?.name || 'Table en direct'} - Ardoise`,
+          text: `Rejoins notre table de jeu en direct sur Ardoise (code ${activeSession?.code || ''}) !`,
           url: shareUrl,
         })
       } catch {}
@@ -403,10 +408,10 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     }
   }
 
-  // Rejoindre une table avec un code
-  const handleJoin = async (e) => {
+  // Rejoindre une table avec un code (ou suite à un scan QR)
+  const handleJoin = async (e, codeOverride = null) => {
     if (e?.preventDefault) e.preventDefault()
-    const raw = (joinCode || '').trim().toUpperCase()
+    const raw = (codeOverride || joinCode || '').trim().toUpperCase()
     if (!raw) return
 
     // Détection croisée protectrice si code de Sauvegarde carnet
@@ -461,6 +466,21 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
       setError(err.message || 'Impossible de rejoindre cette table')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // Connexion automatique suite au scan d'un QR code
+  const handleQrScan = (decodedText) => {
+    setIsScannerOpen(false)
+    const clean = (decodedText || '').trim()
+    const extracted = extractCodeFromInput(clean, 'TAB')
+    if (extracted && isValidLiveSessionCodeFormat(extracted)) {
+      setJoinCode(extracted)
+      setTimeout(() => {
+        handleJoin(null, extracted)
+      }, 50)
+    } else {
+      setError(`QR code non reconnu comme une table Ardoise : ${clean.slice(0, 40)}`)
     }
   }
 
@@ -763,6 +783,24 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
           ) : activeTab === 'join' ? (
             /* VUE REJOINDRE AVEC UN CODE */
             <form id="live-join-form" onSubmit={handleJoin} className="space-y-3.5">
+              {/* Bouton de scan QR caméra in-app */}
+              <button
+                type="button"
+                onClick={() => setIsScannerOpen(true)}
+                className="w-full py-3 px-4 rounded-2xl bg-[#c83b3b]/10 hover:bg-[#c83b3b]/15 text-[#c83b3b] font-bold text-xs flex items-center justify-center gap-2 border border-[#c83b3b]/30 hover:border-[#c83b3b]/50 transition-all cursor-pointer shadow-2xs group"
+              >
+                <Camera size={17} className="group-hover:scale-110 transition-transform" />
+                <span>Scanner le QR code de la table</span>
+              </button>
+
+              <div className="flex items-center gap-2 my-1">
+                <div className="h-px bg-stone-200 dark:bg-slate-800 flex-1" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
+                  ou saisir au clavier
+                </span>
+                <div className="h-px bg-stone-200 dark:bg-slate-800 flex-1" />
+              </div>
+
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1">
                   Code de la table
@@ -1027,10 +1065,10 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                           type="button"
                           onClick={handleNativeShare}
                           className="w-full py-1.5 px-2.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-bold text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
-                          title="Inviter via application"
+                          title="Partager à un proche via AirDrop, Quick Share ou message"
                         >
                           <Share2 size={13} className="shrink-0" />
-                          <span className="truncate">Inviter</span>
+                          <span className="truncate">AirDrop / Proximité</span>
                         </button>
                       </div>
 
@@ -1350,6 +1388,15 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         </div>
       </div>
     )}
+
+    {/* Scanner QR Code In-App */}
+    <QrScannerModal
+      isOpen={isScannerOpen}
+      onClose={() => setIsScannerOpen(false)}
+      onScan={handleQrScan}
+      title="Scanner une table en direct"
+      subtitle="Visez le QR code affiché sur l'écran de l'hôte"
+    />
   </>,
   document.body
 )
