@@ -14,6 +14,7 @@ import {
   PowerOff,
   Pencil,
   MapPin,
+  Loader2,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useGame } from '../context/GameContext'
@@ -428,7 +429,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
 
   // Rejoindre une table avec un code
   const handleJoin = async (e) => {
-    e.preventDefault()
+    if (e?.preventDefault) e.preventDefault()
     const raw = (joinCode || '').trim().toUpperCase()
     if (!raw) return
 
@@ -777,7 +778,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
             </div>
           ) : activeTab === 'join' ? (
             /* VUE REJOINDRE AVEC UN CODE */
-            <form onSubmit={handleJoin} className="space-y-3.5">
+            <form id="live-join-form" onSubmit={handleJoin} className="space-y-3.5">
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 mb-1">
                   Code de la table
@@ -817,15 +818,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   className="w-full font-mono uppercase px-3 py-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold focus:outline-none focus:border-[#c83b3b]"
                 />
               </div>
-
-              <button
-                type="submit"
-                disabled={isLoading || !joinCode.trim() || joinCode.trim() === 'TAB-' || joinCode.trim().length < 5}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
-              >
-                <span>{isLoading ? 'Connexion à la table…' : 'Rejoindre et synchroniser les parties'}</span>
-                <ArrowRight size={14} />
-              </button>
 
               <div className="p-3 rounded-xl bg-stone-100/80 dark:bg-slate-800/60 border border-stone-200/70 dark:border-slate-800 text-[11px] text-stone-600 dark:text-slate-400 space-y-1">
                 <p className="font-semibold text-stone-800 dark:text-slate-200 flex items-center gap-1.5">
@@ -1239,26 +1231,50 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
 
         {/* Pied de la modale */}
         {!closedSummary && (!justJoined || isHost) && (
-          <div className="p-3 sm:p-4 border-t border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 flex items-center justify-between">
-            {activeSession && isHost && activeTab === 'create' ? (
+          <div className="p-3 sm:p-4 border-t border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 flex items-center justify-between gap-3">
+            {activeTab === 'join' ? (
               <button
-                type="button"
-                onClick={handleCancelLiveSession}
-                disabled={isLoading}
-                className="px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/40 text-xs font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
+                type="submit"
+                form="live-join-form"
+                onClick={handleJoin}
+                disabled={isLoading || !joinCode.trim() || joinCode.trim() === 'TAB-' || joinCode.trim().length < 5}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 shadow-2xs"
               >
-                Annuler la table
+                {isLoading ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    <span>Connexion à la table…</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Rejoindre et synchroniser les parties</span>
+                    <ArrowRight size={14} />
+                  </>
+                )}
               </button>
             ) : (
-              <div />
+              <>
+                {activeSession && isHost && activeTab === 'create' ? (
+                  <button
+                    type="button"
+                    onClick={handleCancelLiveSession}
+                    disabled={isLoading}
+                    className="px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/40 text-xs font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
+                  >
+                    Annuler la table
+                  </button>
+                ) : (
+                  <div />
+                )}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 rounded-xl border border-stone-200 dark:border-slate-700 text-xs font-semibold text-stone-700 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Fermer
+                </button>
+              </>
             )}
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-stone-200 dark:border-slate-700 text-xs font-semibold text-stone-700 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            >
-              Fermer
-            </button>
           </div>
         )}
       </div>
