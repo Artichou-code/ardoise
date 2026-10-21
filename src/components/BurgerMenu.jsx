@@ -270,7 +270,7 @@ export function BurgerMenu({
             </div>
           </div>
 
-          {/* Section 2 : Table live & Sauvegarde */}
+          {/* Section 2 : Table live & Synchro Profil */}
           <div>
             <span className="px-2 pb-1.5 block text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
               Synchronisation & Table live
@@ -291,19 +291,19 @@ export function BurgerMenu({
                   )}
                 </div>
 
-                {/* Deux actions réunies : Créer & Rejoindre (titres seuls) */}
+                {/* Deux actions réunies : Créer & Rejoindre (même taille d'icônes et alignement parfait) */}
                 <div className="grid grid-cols-2 gap-1">
                   <button
                     type="button"
                     onClick={() => handleAction(() => onOpenLiveSession?.('create'))}
-                    className="py-1.5 px-1 rounded-xl hover:bg-white dark:hover:bg-slate-800 flex flex-col items-center justify-center text-center gap-1 transition-all group cursor-pointer"
+                    className="py-1.5 px-1 rounded-xl hover:bg-white dark:hover:bg-slate-800 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
                   >
-                    <span className={`p-1.5 rounded-lg shrink-0 group-hover:scale-105 transition-all border ${
+                    <span className={`p-2 rounded-lg shrink-0 group-hover:scale-105 transition-all border ${
                       liveSession
                         ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
                         : 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/25 dark:border-emerald-500/35 text-emerald-600 dark:text-emerald-400'
                     }`}>
-                      <Radio size={15} className={liveSession ? 'animate-pulse' : ''} />
+                      <Radio size={16} className={liveSession ? 'animate-pulse' : ''} />
                     </span>
                     <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
                       Créer
@@ -313,10 +313,10 @@ export function BurgerMenu({
                   <button
                     type="button"
                     onClick={() => handleAction(() => onOpenLiveSession?.('join'))}
-                    className="py-1.5 px-1 rounded-xl hover:bg-white dark:hover:bg-slate-800 flex flex-col items-center justify-center text-center gap-1 transition-all group cursor-pointer"
+                    className="py-1.5 px-1 rounded-xl hover:bg-white dark:hover:bg-slate-800 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
                   >
-                    <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/25 dark:border-[#c83b3b]/35 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
-                      <QrCode size={15} />
+                    <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/25 dark:border-[#c83b3b]/35 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
+                      <QrCode size={16} />
                     </span>
                     <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
                       Rejoindre
@@ -325,24 +325,29 @@ export function BurgerMenu({
                 </div>
               </div>
 
-              {/* Action Sauvegarde (1 colonne, bouton standard pour équilibrer avec son sous-titre) */}
-              <button
-                type="button"
-                onClick={() => handleAction(onOpenSync)}
-                className="py-2 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer"
-              >
-                <span className="p-2 rounded-lg bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/25 dark:border-sky-500/35 text-sky-600 dark:text-sky-400 shrink-0 group-hover:scale-105 transition-all">
-                  <Cloud size={16} />
-                </span>
-                <div className="min-w-0 w-full">
-                  <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
-                    Sauvegarde
-                  </p>
-                  <p className="text-[10px] text-stone-500 dark:text-slate-400 whitespace-nowrap mt-0.5">
-                    Cloud & Sync
-                  </p>
+              {/* Ensemble Synchro réunissant Profil avec le même cadre et en-tête équilibré */}
+              <div className="col-span-1 p-1 rounded-2xl bg-stone-100/70 dark:bg-slate-800/50 border border-stone-200/70 dark:border-slate-700/60 flex flex-col justify-between">
+                {/* En-tête centré Synchro */}
+                <div className="flex items-center justify-center gap-1 px-1 pt-1 pb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate text-center" title="Synchronisation">
+                    Synchro
+                  </span>
                 </div>
-              </button>
+
+                {/* Action Profil (titre seul, aligné au pixel près sur Créer & Rejoindre) */}
+                <button
+                  type="button"
+                  onClick={() => handleAction(onOpenSync)}
+                  className="py-1.5 px-1 rounded-xl hover:bg-white dark:hover:bg-slate-800 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                >
+                  <span className="p-2 rounded-lg bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/25 dark:border-sky-500/35 text-sky-600 dark:text-sky-400 shrink-0 group-hover:scale-105 transition-all">
+                    <Cloud size={16} />
+                  </span>
+                  <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
+                    Profil
+                  </p>
+                </button>
+              </div>
             </div>
           </div>
 
