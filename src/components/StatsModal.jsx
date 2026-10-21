@@ -16,6 +16,7 @@ import {
   Info,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
+import { useGame } from '../context/GameContext'
 
 /**
  * StatsModal — Dashboard d'administration caché.
@@ -29,6 +30,9 @@ export function StatsModal({ isOpen, onClose }) {
   const [error, setError] = useState(null)
   const [selectedCity, setSelectedCity] = useState(null)
   const [activeHelp, setActiveHelp] = useState(null)
+
+  const { players: localPlayers = [] } = useGame() || {}
+  const localPlayersCount = (Array.isArray(localPlayers) ? localPlayers : []).filter(p => !p.archived).length
 
   useScrollLock(isOpen)
 
@@ -327,9 +331,50 @@ export function StatsModal({ isOpen, onClose }) {
                     Acquisition & Partages
                   </p>
                   {uniquePlayersCount > 0 && (
-                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                      👥 {uniquePlayersCount} profils rencontrés
-                    </span>
+                    <div data-stat-help className="relative inline-flex items-center">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setActiveHelp(activeHelp === 'unique_players' ? null : 'unique_players')
+                        }}
+                        className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
+                        title="Détail du nombre total de profils"
+                      >
+                        <Users size={12} className="shrink-0" />
+                        <span>{uniquePlayersCount} profils créés au total</span>
+                        <span className="w-3.5 h-3.5 rounded-full border border-emerald-300 dark:border-emerald-700/60 text-[9px] font-bold flex items-center justify-center">
+                          ?
+                        </span>
+                      </button>
+                      {activeHelp === 'unique_players' && (
+                        <div
+                          className="absolute right-0 top-6 z-50 w-64 p-3 rounded-xl bg-stone-900/95 dark:bg-slate-800 text-stone-100 text-[10px] leading-relaxed shadow-xl border border-stone-700 animate-in fade-in zoom-in-95"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex items-start justify-between gap-1 mb-1.5">
+                            <span className="font-bold text-emerald-400 flex items-center gap-1 truncate">
+                              <Users size={12} className="shrink-0" />
+                              Profils créés au total
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setActiveHelp(null)}
+                              className="text-stone-400 hover:text-white p-0.5 cursor-pointer shrink-0"
+                            >
+                              <X size={11} />
+                            </button>
+                          </div>
+                          <p className="text-stone-200 dark:text-slate-200 mb-2">
+                            Il s'agit du <strong>total global</strong> de profils de joueurs uniques recensés sur toute l'application Ardoise (tous carnets cloud, tables live et partages confondus).
+                          </p>
+                          <div className="pt-1.5 border-t border-stone-700/70 flex items-center justify-between text-stone-400 text-[10px]">
+                            <span>Dans votre carnet personnel :</span>
+                            <strong className="text-stone-100 font-bold">{localPlayersCount} joueur{localPlayersCount > 1 ? 's' : ''}</strong>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-2">

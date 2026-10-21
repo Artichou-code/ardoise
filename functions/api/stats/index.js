@@ -107,6 +107,12 @@ export async function onRequest(context) {
     let totalGamesRecordedCount = 0
     const seenGameIds = new Set()
 
+    function isGenericName(name) {
+      if (!name || typeof name !== 'string') return true
+      const lower = name.trim().toLowerCase()
+      return !lower || lower === 'hôte' || lower === 'hote' || lower === 'joueur' || lower === 'player'
+    }
+
     function registerGame(g, fallbackType) {
       if (!g && !fallbackType) return
       const gId = g?.id || null
@@ -119,7 +125,9 @@ export async function onRequest(context) {
 
       if (g?.players && Array.isArray(g.players)) {
         for (const p of g.players) {
-          if (p?.name) uniquePlayersSet.add(p.name.trim().toLowerCase())
+          if (p?.name && !isGenericName(p.name)) {
+            uniquePlayersSet.add(p.name.trim().toLowerCase())
+          }
         }
       }
     }
@@ -135,11 +143,13 @@ export async function onRequest(context) {
         if (pList.length > maxParticipantsLive) {
           maxParticipantsLive = pList.length
         }
-        if (row.host_name) {
+        if (row.host_name && !isGenericName(row.host_name)) {
           uniquePlayersSet.add(row.host_name.trim().toLowerCase())
         }
         for (const p of pList) {
-          if (p.name) uniquePlayersSet.add(p.name.trim().toLowerCase())
+          if (p.name && !isGenericName(p.name)) {
+            uniquePlayersSet.add(p.name.trim().toLowerCase())
+          }
         }
 
         const games = Array.isArray(state.games) ? state.games : []
@@ -190,7 +200,7 @@ export async function onRequest(context) {
         }
         const players = Array.isArray(payload.players) ? payload.players : []
         for (const p of players) {
-          if (p?.name) uniquePlayersSet.add(p.name.trim().toLowerCase())
+          if (p?.name && !isGenericName(p.name)) uniquePlayersSet.add(p.name.trim().toLowerCase())
         }
       } catch (_) {}
     }
@@ -205,7 +215,7 @@ export async function onRequest(context) {
         const payload = JSON.parse(row.payload_json || '{}')
         const players = Array.isArray(payload.players) ? payload.players : []
         for (const p of players) {
-          if (p.name) uniquePlayersSet.add(p.name.trim().toLowerCase())
+          if (p?.name && !isGenericName(p.name)) uniquePlayersSet.add(p.name.trim().toLowerCase())
         }
 
         const games = Array.isArray(payload.games) ? payload.games : payload.game ? [payload.game] : []
