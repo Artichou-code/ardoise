@@ -370,33 +370,9 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     }
   }
 
-  // Clic sur l'onglet "Ouvrir une table" : auto-création si aucune table active
+  // Clic sur l'onglet "Ma table en direct"
   const handleSelectCreateTab = () => {
     setActiveTab('create')
-    const current = getActiveSession()
-    if (!current && !isLoading) {
-      const defaultTitle = `Table du ${new Intl.DateTimeFormat('fr-FR', {
-        day: 'numeric',
-        month: 'short',
-      }).format(new Date())}`
-      setIsLoading(true)
-      createLiveSession(defaultTitle, 'Hôte', [], [])
-        .then((code) => {
-          const newSession = getActiveSession()
-          setActiveSession(newSession)
-          if (onSessionChanged) onSessionChanged(newSession)
-          return fetchLiveSession(code)
-        })
-        .then((data) => {
-          if (data) setSessionDetails(data)
-        })
-        .catch((err) => {
-          setError(err.message || 'Impossible de créer la table en direct')
-        })
-        .finally(() => {
-          setIsLoading(false)
-        })
-    }
   }
 
   // Création explicite d'une nouvelle table par l'hôte
@@ -569,7 +545,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   if (!isOpen || typeof document === 'undefined') return null
 
   const sessionGames = sessionDetails?.state?.games || []
-  const isHost = Boolean(activeSession?.isHost ?? true)
+  const isHost = Boolean(activeSession ? (activeSession.isHost ?? true) : false)
 
   return createPortal(
     <>
@@ -600,7 +576,11 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <h2 id="live-session-title" className="text-base font-bold font-serif-title leading-snug truncate">
-                  {closedSummary ? 'Table terminée' : 'Table en direct'}
+                  {closedSummary
+                    ? 'Table terminée'
+                    : initialJoinCode
+                    ? 'Rejoindre la table en direct'
+                    : 'Table en direct'}
                 </h2>
                 {!closedSummary && (
                   <div ref={generalHelpRef} className="relative inline-flex items-center">
@@ -637,7 +617,11 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 )}
               </div>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                {closedSummary ? 'Récapitulatif de clôture' : 'Partage en direct des parties'}
+                {closedSummary
+                  ? 'Récapitulatif de clôture'
+                  : initialJoinCode
+                  ? 'Partage et synchronisation en direct'
+                  : 'Partage en direct des parties'}
               </p>
             </div>
           </div>
@@ -652,8 +636,8 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
           </button>
         </div>
 
-        {/* Onglets Ouvrir / Rejoindre (visibles sauf en récapitulatif ou vue d'accueil invité immédiate) */}
-        {!closedSummary && (!justJoined || isHost) && (
+        {/* Onglets Ma table / Rejoindre (masqués lors d'une invitation à rejoindre, en récapitulatif ou vue participant) */}
+        {!closedSummary && !initialJoinCode && isHost && !justJoined && (
           <div className="px-4 sm:px-5 pt-3 pb-0 flex border-b border-stone-200/60 dark:border-slate-800/60 bg-[#faf9f5]/50 dark:bg-[#151719]/50">
             <button
               type="button"
@@ -664,7 +648,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-slate-300'
               }`}
             >
-              {activeSession ? (isHost ? 'Ma table en direct' : 'Table active') : 'Ouvrir une table'}
+              Ma table en direct
             </button>
             <button
               type="button"
@@ -1211,6 +1195,29 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 </div>
               </div>
             )
+          ) : !isLoading ? (
+            /* AUCUNE TABLE ACTIVE ET NON EN CHARGEMENT */
+            <div className="py-8 px-4 text-center space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#c83b3b]/10 text-[#c83b3b] flex items-center justify-center mx-auto">
+                <Radio size={24} className="text-[#c83b3b]" />
+              </div>
+              <div className="space-y-1 max-w-xs mx-auto">
+                <h3 className="font-serif-title font-bold text-base text-stone-900 dark:text-slate-100">
+                  Aucune table active
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-slate-400 leading-relaxed">
+                  Vous pouvez ouvrir une nouvelle table pour partager vos parties en direct ou en rejoindre une existante.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCreate}
+                className="py-2.5 px-5 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-xs transition-colors cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+              >
+                <Radio size={14} />
+                <span>Ouvrir une table</span>
+              </button>
+            </div>
           ) : (
             /* CHARGEMENT / INITIALISATION AUTOMATIQUE DE LA TABLE */
             <div className="py-12 px-4 text-center space-y-3 animate-in fade-in duration-200">
@@ -1230,7 +1237,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         </div>
 
         {/* Pied de la modale */}
-        {!closedSummary && (!justJoined || isHost) && (
+        {!closedSummary && (activeTab === 'join' || !justJoined || isHost) && (
           <div className="p-3 sm:p-4 border-t border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 flex items-center justify-between gap-3">
             {activeTab === 'join' ? (
               <button
