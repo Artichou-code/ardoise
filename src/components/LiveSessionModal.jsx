@@ -1019,20 +1019,20 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                         <button
                           type="button"
                           onClick={handleCopyLink}
-                          className="w-full py-1.5 px-2.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 font-bold text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                          className="w-full py-1.5 px-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 font-bold text-[11px] sm:text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs whitespace-nowrap"
                           title="Copier le lien"
                         >
                           {copied ? <Check size={13} className="text-emerald-500 shrink-0" /> : <Copy size={13} className="shrink-0" />}
-                          <span className="truncate">{copied ? 'Lien copié\u00A0!' : 'Copier le lien'}</span>
+                          <span>{copied ? 'Lien copié\u00A0!' : 'Copier le lien'}</span>
                         </button>
                         <button
                           type="button"
                           onClick={handleNativeShare}
-                          className="w-full py-1.5 px-2.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-bold text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+                          className="w-full py-1.5 px-2 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-[#c83b3b] hover:text-[#c83b3b] font-bold text-[11px] sm:text-xs text-stone-800 dark:text-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs whitespace-nowrap"
                           title="Partager à un proche via AirDrop, Quick Share ou message"
                         >
                           <Share2 size={13} className="shrink-0" />
-                          <span className="truncate">AirDrop / Proximité</span>
+                          <span>AirDrop / Proximité</span>
                         </button>
                       </div>
 
