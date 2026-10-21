@@ -273,16 +273,26 @@ export function BurgerMenu({
           {/* Section 2 : Table live & Synchro Profil */}
           <div>
             <span className="px-2 pb-1.5 block text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
-              Synchronisation & Table live
+              Table live & Synchronisation
             </span>
-            <div className="grid grid-cols-3 gap-1.5 items-stretch">
+            <div
+              className={`grid items-stretch transition-all ${
+                liveSession
+                  ? 'grid-cols-2 max-w-[204px] mx-auto gap-2'
+                  : 'grid-cols-3 gap-1.5'
+              }`}
+            >
               {/* Ensemble Table live réunissant élégamment Créer et Rejoindre (sans fond/bordure) */}
-              <div className="col-span-2 p-1 flex flex-col justify-between">
+              <div
+                className={`${
+                  liveSession ? 'col-span-1' : 'col-span-2'
+                } p-1 flex flex-col justify-between`}
+              >
                 {/* En-tête centré de l'ensemble Table live (point vert pulsant si active, sans texte superflu pour rester centré) */}
-                <div className="flex items-center justify-center gap-1.5 px-2 pt-1 pb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5">
+                <div className="flex items-center justify-center gap-1.5 px-1 pt-1 pb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5 whitespace-nowrap">
                     <span>Table live</span>
-                    {liveSession && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+                    {liveSession && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />}
                   </span>
                 </div>
 
@@ -337,7 +347,7 @@ export function BurgerMenu({
               <div className="col-span-1 p-1 flex flex-col justify-between">
                 {/* En-tête centré Profil */}
                 <div className="flex items-center justify-center gap-1 px-1 pt-1 pb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate text-center">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate text-center whitespace-nowrap">
                     Profil
                   </span>
                 </div>
