@@ -16,6 +16,7 @@ import {
   MapPin,
   Loader2,
   Camera,
+  QrCode,
 } from 'lucide-react'
 import { QrScannerModal } from './QrScannerModal'
 import { useScrollLock } from '../hooks/useScrollLock'
