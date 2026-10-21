@@ -325,16 +325,16 @@ export function BurgerMenu({
                 </div>
               </div>
 
-              {/* Ensemble Synchro réunissant Profil avec le même cadre et en-tête équilibré */}
+              {/* Ensemble Profil réunissant Synchro avec le même cadre et en-tête équilibré */}
               <div className="col-span-1 p-1 rounded-2xl bg-stone-100/70 dark:bg-slate-800/50 border border-stone-200/70 dark:border-slate-700/60 flex flex-col justify-between">
-                {/* En-tête centré Synchro */}
+                {/* En-tête centré Profil */}
                 <div className="flex items-center justify-center gap-1 px-1 pt-1 pb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate text-center" title="Synchronisation">
-                    Synchro
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 truncate text-center">
+                    Profil
                   </span>
                 </div>
 
-                {/* Action Profil (titre seul, aligné au pixel près sur Créer & Rejoindre) */}
+                {/* Action Synchro (titre seul, aligné au pixel près sur Créer & Rejoindre) */}
                 <button
                   type="button"
                   onClick={() => handleAction(onOpenSync)}
@@ -344,7 +344,7 @@ export function BurgerMenu({
                     <Cloud size={16} />
                   </span>
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
-                    Profil
+                    Synchro
                   </p>
                 </button>
               </div>
