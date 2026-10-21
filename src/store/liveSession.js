@@ -259,6 +259,25 @@ export async function joinLiveSession(code, playerName = '') {
 }
 
 /**
+ * Annule et supprime la session sur le serveur (action hôte) sans laisser de trace
+ */
+export async function cancelLiveSession(code) {
+  const cleanCode = (code || '').trim().toUpperCase()
+  if (cleanCode) {
+    try {
+      await fetch(`${API_BASE}/sessions/${encodeURIComponent(cleanCode)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cancel' }),
+      })
+    } catch (err) {
+      console.error('Erreur cancelLiveSession:', err)
+    }
+  }
+  clearActiveSession()
+}
+
+/**
  * Clôture la session sur le serveur (action hôte) et sauvegarde localement toutes les parties
  */
 export async function closeLiveSession(code) {

@@ -143,9 +143,16 @@ export async function onRequest(context) {
       );
     }
 
-    // 3. POST : Mettre à jour ou clôturer la session
+    // 3. POST : Mettre à jour, annuler ou clôturer la session
     if (request.method === 'POST') {
       const body = await request.json();
+
+      // Action explicite : Annuler la table (suppression complète pour ne pas fausser les stats)
+      if (body.action === 'cancel') {
+        await env.DB.prepare('DELETE FROM scan_events WHERE session_code = ?').bind(sessionCode).run();
+        await env.DB.prepare('DELETE FROM live_sessions WHERE session_code = ?').bind(sessionCode).run();
+        return Response.json({ success: true, sessionCode, canceled: true }, { headers: corsHeaders });
+      }
 
       if (body.action === 'close') {
         const existing = await env.DB.prepare(
@@ -163,6 +170,15 @@ export async function onRequest(context) {
         if (body.state && typeof body.state === 'object') {
           currentState = { ...currentState, ...body.state };
         }
+
+        const currentGames = Array.isArray(currentState.games) ? currentState.games : [];
+        // Si la session est fermée sans aucune partie jouée : table annulée/avortée -> purge automatique pour ne pas fausser les stats
+        if (currentGames.length === 0) {
+          await env.DB.prepare('DELETE FROM scan_events WHERE session_code = ?').bind(sessionCode).run();
+          await env.DB.prepare('DELETE FROM live_sessions WHERE session_code = ?').bind(sessionCode).run();
+          return Response.json({ success: true, sessionCode, closed: true, deleted: true }, { headers: corsHeaders });
+        }
+
         currentState.closed = true;
         currentState.closedAt = new Date().toISOString();
 
@@ -521,6 +537,13 @@ export async function onRequest(context) {
       }
 
       return Response.json({ success: true, sessionCode, closed: isClosed }, { headers: corsHeaders });
+    }
+
+    // 4. DELETE : Annuler et supprimer définitivement la session
+    if (request.method === 'DELETE') {
+      await env.DB.prepare('DELETE FROM scan_events WHERE session_code = ?').bind(sessionCode).run();
+      await env.DB.prepare('DELETE FROM live_sessions WHERE session_code = ?').bind(sessionCode).run();
+      return Response.json({ success: true, sessionCode, deleted: true }, { headers: corsHeaders });
     }
 
     return Response.json({ error: 'Méthode non autorisée' }, { status: 405, headers: corsHeaders });

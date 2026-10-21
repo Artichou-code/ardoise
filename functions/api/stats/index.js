@@ -68,23 +68,28 @@ export async function onRequest(context) {
   }
 
   try {
-    // 1. Totaux globaux scan_events
+    // Sous-requête SQL stricte : n'admet que les tables en direct ayant eu au moins une partie jouée
+    // Élimine 100% des tables ouvertes par test puis annulées ou avortées sans jeu
+    const VALID_SESSIONS_FILTER = `(json_extract(state_json, '$.games') IS NOT NULL AND json_array_length(json_extract(state_json, '$.games')) > 0)`
+    const VALID_SCAN_FILTER = `(session_code IS NULL OR session_code IN (SELECT session_code FROM live_sessions WHERE ${VALID_SESSIONS_FILTER}))`
+
+    // 1. Totaux globaux scan_events (sans les événements des tables avortées)
     const totals = await env.DB.prepare(
-      `SELECT event_type, COUNT(*) as count FROM scan_events GROUP BY event_type`
+      `SELECT event_type, COUNT(*) as count FROM scan_events WHERE ${VALID_SCAN_FILTER} GROUP BY event_type`
     ).all()
 
-    // 2. Sessions créées & closes
+    // 2. Sessions créées & closes réelles
     const sessionsTotal = await env.DB.prepare(
-      `SELECT COUNT(*) as count FROM live_sessions`
+      `SELECT COUNT(*) as count FROM live_sessions WHERE ${VALID_SESSIONS_FILTER}`
     ).first()
 
     const sessionsClosed = await env.DB.prepare(
-      `SELECT COUNT(*) as count FROM live_sessions WHERE closed = 1`
+      `SELECT COUNT(*) as count FROM live_sessions WHERE closed = 1 AND ${VALID_SESSIONS_FILTER}`
     ).first()
 
-    // 3. Calculs avancés sur les sessions en direct (participants cumulés, record max et joueurs uniques)
+    // 3. Calculs avancés sur les sessions en direct réelles
     const sessionsRaw = await env.DB.prepare(
-      `SELECT session_code, state_json, host_name FROM live_sessions`
+      `SELECT session_code, state_json, host_name FROM live_sessions WHERE ${VALID_SESSIONS_FILTER}`
     ).all()
 
     const notebooksRaw = await env.DB.prepare(
@@ -232,7 +237,7 @@ export async function onRequest(context) {
     const countriesRaw = await env.DB.prepare(
       `SELECT country, COUNT(*) as count 
        FROM (
-         SELECT country FROM scan_events WHERE country IS NOT NULL AND country != ''
+         SELECT country FROM scan_events WHERE country IS NOT NULL AND country != '' AND ${VALID_SCAN_FILTER}
          UNION ALL
          SELECT country FROM shared_games WHERE country IS NOT NULL AND country != ''
        )
@@ -259,7 +264,7 @@ export async function onRequest(context) {
     const citiesRaw = await env.DB.prepare(
       `SELECT city, country, COUNT(*) as count 
        FROM (
-         SELECT city, country FROM scan_events WHERE city IS NOT NULL AND city != ''
+         SELECT city, country FROM scan_events WHERE city IS NOT NULL AND city != '' AND ${VALID_SCAN_FILTER}
          UNION ALL
          SELECT city, country FROM shared_games WHERE city IS NOT NULL AND city != ''
        )
@@ -286,7 +291,7 @@ export async function onRequest(context) {
          device_os as os,
          created_at
        FROM scan_events
-       WHERE city IS NOT NULL AND city != ''
+       WHERE city IS NOT NULL AND city != '' AND ${VALID_SCAN_FILTER}
        ORDER BY created_at DESC
        LIMIT 40`
     ).all()
@@ -361,7 +366,7 @@ export async function onRequest(context) {
     const devicesRaw = await env.DB.prepare(
       `SELECT device_os, COUNT(*) as count 
        FROM scan_events 
-       WHERE device_os IS NOT NULL 
+       WHERE device_os IS NOT NULL AND ${VALID_SCAN_FILTER}
        GROUP BY device_os 
        ORDER BY count DESC`
     ).all()
@@ -375,7 +380,7 @@ export async function onRequest(context) {
 
     // 8. Taux PWA (installée vs web)
     const pwaRaw = await env.DB.prepare(
-      `SELECT is_pwa, COUNT(*) as count FROM scan_events GROUP BY is_pwa`
+      `SELECT is_pwa, COUNT(*) as count FROM scan_events WHERE ${VALID_SCAN_FILTER} GROUP BY is_pwa`
     ).all()
 
     let pwaInstalled = 0
@@ -391,6 +396,7 @@ export async function onRequest(context) {
     const dowRaw = await env.DB.prepare(
       `SELECT strftime('%w', created_at) as dow, COUNT(*) as count 
        FROM scan_events 
+       WHERE ${VALID_SCAN_FILTER}
        GROUP BY dow`
     ).all()
 
@@ -403,11 +409,11 @@ export async function onRequest(context) {
       }
     }).sort((a, b) => b.count - a.count)
 
-    // 10. Historiques chronologiques 30j
+    // 10. Historiques chronologiques 30j (n'admet que les vraies tables avec parties)
     const history = await env.DB.prepare(
       `SELECT date(created_at) as day, event_type, COUNT(*) as count
        FROM scan_events
-       WHERE created_at >= date('now', '-30 days')
+       WHERE created_at >= date('now', '-30 days') AND ${VALID_SCAN_FILTER}
        GROUP BY day, event_type
        ORDER BY day DESC`
     ).all()
@@ -415,7 +421,7 @@ export async function onRequest(context) {
     const sessionsHistory = await env.DB.prepare(
       `SELECT date(created_at) as day, COUNT(*) as count
        FROM live_sessions
-       WHERE created_at >= date('now', '-30 days')
+       WHERE created_at >= date('now', '-30 days') AND ${VALID_SESSIONS_FILTER}
        GROUP BY day
        ORDER BY day DESC`
     ).all()

@@ -27,6 +27,7 @@ import {
   joinLiveSession,
   fetchLiveSession,
   closeLiveSession,
+  cancelLiveSession,
   importSessionGames,
   syncSessionGamesToLocal,
   saveActiveSession,
@@ -538,13 +539,13 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     }
   }
 
-  // Action Hôte : Annuler la table en direct (ferme la session et quitte la modale)
+  // Action Hôte : Annuler la table en direct (annule la session et la purge pour ne pas fausser les stats)
   const handleCancelLiveSession = async () => {
     if (!activeSession?.code || isLoading) return
     setIsLoading(true)
     setError(null)
     try {
-      await closeLiveSession(activeSession.code)
+      await cancelLiveSession(activeSession.code)
       reloadStorage()
       setActiveSession(null)
       setSessionDetails(null)
