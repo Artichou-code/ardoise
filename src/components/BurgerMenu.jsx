@@ -278,17 +278,12 @@ export function BurgerMenu({
             <div className="grid grid-cols-3 gap-1.5 items-stretch">
               {/* Ensemble Table live réunissant élégamment Créer et Rejoindre (sans fond/bordure) */}
               <div className="col-span-2 p-1 flex flex-col justify-between">
-                {/* En-tête centré de l'ensemble Table live */}
+                {/* En-tête centré de l'ensemble Table live (point vert pulsant si active, sans texte superflu pour rester centré) */}
                 <div className="flex items-center justify-center gap-1.5 px-2 pt-1 pb-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5">
                     <span>Table live</span>
                     {liveSession && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
                   </span>
-                  {liveSession && (
-                    <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-1.5 py-0.2 rounded-full leading-none">
-                      Active
-                    </span>
-                  )}
                 </div>
 
                 {/* Actions Table live : bouton unique en pulsation quand la table est active, sinon Créer & Rejoindre */}
