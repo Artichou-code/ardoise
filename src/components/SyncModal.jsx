@@ -9,7 +9,6 @@ import {
   Check,
   RefreshCw,
   Smartphone,
-  ShieldCheck,
   FolderDown,
   ArrowRight,
   CheckCircle2,
@@ -307,13 +306,12 @@ export function SyncModal({ isOpen, onClose, onDataUpdated }) {
             <div className="space-y-3.5">
               {/* Carte Code Unique */}
               <div className="p-3.5 rounded-xl school-card border border-stone-200 dark:border-slate-800 space-y-2.5">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="font-bold text-stone-700 dark:text-slate-300 uppercase tracking-wider text-[11px]">
-                    Votre code de carnet (cet appareil)
+                    Votre code de carnet
                   </span>
-                  <span className="text-[10px] text-stone-400 dark:text-slate-500 flex items-center gap-1">
-                    <ShieldCheck size={12} className="text-emerald-500" />
-                    Sans inscription
+                  <span className="text-[10px] font-medium text-stone-400 dark:text-slate-500 tracking-normal normal-case">
+                    (cet appareil)
                   </span>
                 </div>
 
