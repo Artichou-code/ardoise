@@ -275,11 +275,11 @@ export function BurgerMenu({
             <span className="px-2 pb-1.5 block text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
               Synchronisation & Table live
             </span>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 items-stretch">
               {/* Ensemble Table live réunissant élégamment Créer et Rejoindre */}
               <div className="col-span-2 p-1 rounded-2xl bg-stone-100/70 dark:bg-slate-800/50 border border-stone-200/70 dark:border-slate-700/60 flex flex-col justify-between">
-                {/* En-tête subtil de l'ensemble Table live */}
-                <div className="flex items-center justify-between px-2 pt-0.5 pb-0.5">
+                {/* En-tête centré de l'ensemble Table live */}
+                <div className="flex items-center justify-center gap-1.5 px-2 pt-1 pb-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5">
                     <span>Table live</span>
                     {liveSession && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
@@ -291,7 +291,7 @@ export function BurgerMenu({
                   )}
                 </div>
 
-                {/* Deux actions réunies : Créer & Rejoindre */}
+                {/* Deux actions réunies : Créer & Rejoindre (titres seuls) */}
                 <div className="grid grid-cols-2 gap-1">
                   <button
                     type="button"
@@ -305,14 +305,9 @@ export function BurgerMenu({
                     }`}>
                       <Radio size={15} className={liveSession ? 'animate-pulse' : ''} />
                     </span>
-                    <div className="min-w-0 w-full">
-                      <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
-                        Créer
-                      </p>
-                      <p className="text-[9px] text-stone-400 dark:text-slate-500 whitespace-nowrap mt-0.5">
-                        {liveSession ? 'Ma table' : 'Hôte'}
-                      </p>
-                    </div>
+                    <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
+                      Créer
+                    </p>
                   </button>
 
                   <button
@@ -323,32 +318,27 @@ export function BurgerMenu({
                     <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/25 dark:border-[#c83b3b]/35 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
                       <QrCode size={15} />
                     </span>
-                    <div className="min-w-0 w-full">
-                      <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
-                        Rejoindre
-                      </p>
-                      <p className="text-[9px] text-stone-400 dark:text-slate-500 whitespace-nowrap mt-0.5">
-                        Code ou QR
-                      </p>
-                    </div>
+                    <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
+                      Rejoindre
+                    </p>
                   </button>
                 </div>
               </div>
 
-              {/* Action Sauvegarde (1 colonne) */}
+              {/* Action Sauvegarde (1 colonne, bouton standard pour équilibrer avec son sous-titre) */}
               <button
                 type="button"
                 onClick={() => handleAction(onOpenSync)}
-                className="p-1 rounded-2xl bg-stone-100/70 dark:bg-slate-800/50 border border-stone-200/70 dark:border-slate-700/60 hover:bg-stone-100 dark:hover:bg-slate-800/80 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                className="py-2 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer"
               >
-                <span className="p-2 rounded-xl bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/25 dark:border-sky-500/35 text-sky-600 dark:text-sky-400 shrink-0 group-hover:scale-105 transition-all">
+                <span className="p-2 rounded-lg bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/25 dark:border-sky-500/35 text-sky-600 dark:text-sky-400 shrink-0 group-hover:scale-105 transition-all">
                   <Cloud size={16} />
                 </span>
                 <div className="min-w-0 w-full">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
                     Sauvegarde
                   </p>
-                  <p className="text-[9px] text-stone-400 dark:text-slate-500 whitespace-nowrap mt-0.5">
+                  <p className="text-[10px] text-stone-500 dark:text-slate-400 whitespace-nowrap mt-0.5">
                     Cloud & Sync
                   </p>
                 </div>
