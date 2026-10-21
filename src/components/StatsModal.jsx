@@ -338,11 +338,11 @@ export function StatsModal({ isOpen, onClose }) {
                           e.stopPropagation()
                           setActiveHelp(activeHelp === 'unique_players' ? null : 'unique_players')
                         }}
-                        className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1 cursor-pointer transition-colors"
+                        className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
                         title="Détail du nombre total de profils"
                       >
                         <Users size={12} className="shrink-0" />
-                        <span>{uniquePlayersCount} profils créés au total</span>
+                        <span>{uniquePlayersCount} profils créés</span>
                         <span className="w-3.5 h-3.5 rounded-full border border-emerald-300 dark:border-emerald-700/60 text-[9px] font-bold flex items-center justify-center">
                           ?
                         </span>
@@ -355,7 +355,7 @@ export function StatsModal({ isOpen, onClose }) {
                           <div className="flex items-start justify-between gap-1 mb-1.5">
                             <span className="font-bold text-emerald-400 flex items-center gap-1 truncate">
                               <Users size={12} className="shrink-0" />
-                              Profils créés au total
+                              Profils créés
                             </span>
                             <button
                               type="button"
@@ -366,7 +366,7 @@ export function StatsModal({ isOpen, onClose }) {
                             </button>
                           </div>
                           <p className="text-stone-200 dark:text-slate-200 mb-2">
-                            Il s'agit du <strong>total global</strong> de profils de joueurs uniques recensés sur toute l'application Ardoise (tous carnets cloud, tables live et partages confondus).
+                            Il s'agit du <strong>total global</strong> de profils de joueurs uniques recensés sur toute l'application Ardoise (tous appareils confondus : Android, iOS, Windows... — carnets cloud, tables live et partages).
                           </p>
                           <div className="pt-1.5 border-t border-stone-700/70 flex items-center justify-between text-stone-400 text-[10px]">
                             <span>Dans votre carnet personnel :</span>
