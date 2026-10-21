@@ -618,7 +618,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                         <div className="flex items-start justify-between gap-1 mb-1.5">
                           <span className="font-bold text-amber-300 flex items-center gap-1.5 truncate">
                             <Info size={12} className="shrink-0" />
-                            Partage automatique
+                            Partage & scores en direct
                           </span>
                           <button
                             type="button"
@@ -629,7 +629,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                           </button>
                         </div>
                         <p>
-                          Une seule personne note les points. Les autres joueurs scannent le QR code : toutes les parties de la séance s'enregistrent automatiquement dans leur carnet.
+                          Chacun peut saisir ses scores sur son smartphone ou laisser une personne gérer la table. Rejoignez par QR code ou code TAB : toutes les parties de la séance s'enregistrent automatiquement dans le carnet de chaque joueur.
                         </p>
                       </div>
                     )}
