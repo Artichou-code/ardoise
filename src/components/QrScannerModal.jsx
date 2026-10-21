@@ -191,6 +191,46 @@ export function QrScannerModal({
     [isOpen, handleSuccess]
   )
 
+  // Relier de manière fiable le flux vidéo à l'élément <video>
+  const attachStreamToVideo = useCallback(
+    (stream) => {
+      const video = videoRef.current
+      if (!video || !stream) return
+
+      try {
+        if (video.srcObject !== stream) {
+          video.srcObject = stream
+        }
+        video.setAttribute('playsinline', 'true')
+        video.setAttribute('muted', 'true')
+        video.muted = true
+
+        const handleReady = () => {
+          setIsScanning(true)
+          startScanLoop(video)
+        }
+
+        video.onloadedmetadata = () => {
+          video.play().catch(() => {})
+          handleReady()
+        }
+
+        // Tenter de démarrer immédiatement si déjà chargé
+        video.play().then(handleReady).catch(() => {})
+      } catch (err) {
+        console.warn('attachStreamToVideo error:', err)
+      }
+    },
+    [startScanLoop]
+  )
+
+  // Surveillance active pour s'assurer que la balise vidéo reçoit le flux dès son montage
+  useEffect(() => {
+    if (isOpen && streamRef.current && videoRef.current && !videoRef.current.srcObject) {
+      attachStreamToVideo(streamRef.current)
+    }
+  })
+
   // Initialisation et démarrage de la caméra
   useEffect(() => {
     if (!isOpen) {
@@ -231,7 +271,17 @@ export function QrScannerModal({
           audio: false,
         }
 
-        const stream = await navigator.mediaDevices.getUserMedia(constraints)
+        let stream = null
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints)
+        } catch {
+          // Fallback universel si la résolution idéale est rejetée
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: facingMode } },
+            audio: false,
+          })
+        }
+
         streamRef.current = stream
 
         const track = stream.getVideoTracks()[0]
@@ -245,18 +295,8 @@ export function QrScannerModal({
           }
         }
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          videoRef.current.setAttribute('playsinline', 'true')
-          videoRef.current.play().catch(() => {})
-
-          videoRef.current.onloadedmetadata = () => {
-            setIsScanning(true)
-            startScanLoop(videoRef.current)
-          }
-        }
-
         setHasPermission(true)
+        attachStreamToVideo(stream)
       } catch (err) {
         console.warn('Camera access error:', err)
         setHasPermission(false)
@@ -275,13 +315,13 @@ export function QrScannerModal({
     return () => {
       stopCamera()
     }
-  }, [isOpen, facingMode, stopCamera, startScanLoop])
+  }, [isOpen, facingMode, stopCamera, attachStreamToVideo])
 
   if (!isOpen || typeof document === 'undefined') return null
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[1200] flex flex-col justify-between bg-black/95 text-white animate-in fade-in duration-200 select-none overflow-hidden"
+      className="fixed inset-0 z-[1200] flex flex-col justify-between bg-black text-white animate-in fade-in duration-200 select-none overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="qr-scanner-title"
@@ -349,16 +389,16 @@ export function QrScannerModal({
 
       {/* Zone centrale du viseur caméra */}
       <div className="relative flex-1 flex items-center justify-center overflow-hidden">
-        {/* Flux vidéo plein format centré */}
-        {hasPermission && (
-          <video
-            ref={videoRef}
-            playsInline
-            muted
-            autoPlay
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        )}
+        {/* Flux vidéo plein format centré : toujours présent dans le DOM pour garantir la liaison du ref */}
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          autoPlay
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+            hasPermission ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        />
 
         {/* Masque assombri et réticule de ciblage */}
         {hasPermission && (
