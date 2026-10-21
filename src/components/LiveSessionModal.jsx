@@ -888,9 +888,15 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                         {activeSession.name}
                       </span>
                     </div>
-                    <span className="font-mono font-bold text-xs tracking-wider px-2.5 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shrink-0">
-                      {activeSession.code}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsFullscreenQr(true)}
+                      className="font-mono font-bold text-xs tracking-wider px-2.5 py-0.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 shrink-0 cursor-pointer transition-colors flex items-center gap-1.5"
+                      title="Afficher le QR code pour inviter d'autres joueurs"
+                    >
+                      <QrCode size={12} className="shrink-0" />
+                      <span>{activeSession.code}</span>
+                    </button>
                   </div>
 
                   <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2.5 text-xs">
@@ -1272,6 +1278,16 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                   >
                     Annuler la table
                   </button>
+                ) : activeSession && !isHost ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsFullscreenQr(true)}
+                    className="px-3.5 py-2 rounded-xl border border-emerald-500/35 dark:border-emerald-500/40 bg-emerald-500/10 dark:bg-emerald-500/20 hover:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-xs font-bold text-emerald-700 dark:text-emerald-300 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                    title="Afficher le QR code et inviter d'autres joueurs à cette table"
+                  >
+                    <QrCode size={14} className="shrink-0" />
+                    <span>Inviter / QR code</span>
+                  </button>
                 ) : (
                   <div />
                 )}
@@ -1339,6 +1355,26 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 Scannez pour rejoindre la table
               </p>
             </div>
+          </div>
+
+          {/* Actions rapides de partage */}
+          <div className="w-full flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="flex-1 py-2 px-3 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-800 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+            >
+              {copied ? <Check size={14} className="text-emerald-600 shrink-0" /> : <Copy size={14} className="shrink-0 text-stone-500" />}
+              <span>{copied ? 'Lien copié\u00A0!' : 'Copier'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleNativeShare}
+              className="flex-1 py-2 px-3 rounded-xl border border-stone-200 bg-stone-50 hover:border-[#c83b3b] hover:text-[#c83b3b] text-stone-800 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+            >
+              <Share2 size={14} className="shrink-0 text-stone-500" />
+              <span>Partager</span>
+            </button>
           </div>
 
           {/* Pied : Bouton fermer */}
