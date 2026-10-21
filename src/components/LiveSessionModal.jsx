@@ -377,11 +377,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     }
   }
 
-  // Clic sur l'onglet "Ma table en direct"
-  const handleSelectCreateTab = () => {
-    setActiveTab('create')
-  }
-
   // Création explicite d'une nouvelle table par l'hôte
   const handleCreate = async (e) => {
     if (e) e.preventDefault()
@@ -592,16 +587,20 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
         {/* En-tête responsive */}
         <div className="relative z-10 p-3.5 sm:p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <span className="p-1.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
-              <Radio size={18} />
+            <span className={`p-1.5 rounded-lg shrink-0 ${
+              activeTab === 'join'
+                ? 'bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b]'
+                : 'bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+            }`}>
+              {activeTab === 'join' ? <QrCode size={18} /> : <Radio size={18} />}
             </span>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <h2 id="live-session-title" className="text-base font-bold font-serif-title leading-snug truncate">
                   {closedSummary
                     ? 'Table terminée'
-                    : initialJoinCode
-                    ? 'Rejoindre la table en direct'
+                    : activeTab === 'join' || initialJoinCode
+                    ? 'Rejoindre une table'
                     : 'Table en direct'}
                 </h2>
                 {!closedSummary && (
@@ -641,8 +640,8 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
                 {closedSummary
                   ? 'Récapitulatif de clôture'
-                  : initialJoinCode
-                  ? 'Partage et synchronisation en direct'
+                  : activeTab === 'join' || initialJoinCode
+                  ? 'Rejoignez par QR code ou code de table'
                   : 'Partage en direct des parties'}
               </p>
             </div>
@@ -657,34 +656,6 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
             <X size={18} />
           </button>
         </div>
-
-        {/* Onglets Ma table / Rejoindre (masqués lors d'une invitation à rejoindre, en récapitulatif ou vue participant) */}
-        {!closedSummary && !initialJoinCode && isHost && !justJoined && (
-          <div className="px-4 sm:px-5 pt-3 pb-0 flex border-b border-stone-200/60 dark:border-slate-800/60 bg-[#faf9f5]/50 dark:bg-[#151719]/50">
-            <button
-              type="button"
-              onClick={handleSelectCreateTab}
-              className={`flex-1 pb-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer focus:outline-none ${
-                activeTab === 'create'
-                  ? 'border-[#c83b3b] text-[#c83b3b]'
-                  : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-slate-300'
-              }`}
-            >
-              Ma table en direct
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('join')}
-              className={`flex-1 pb-2.5 text-xs font-bold border-b-2 transition-colors cursor-pointer focus:outline-none ${
-                activeTab === 'join'
-                  ? 'border-[#c83b3b] text-[#c83b3b]'
-                  : 'border-transparent text-stone-500 hover:text-stone-700 dark:hover:text-slate-300'
-              }`}
-            >
-              Rejoindre avec un code
-            </button>
-          </div>
-        )}
 
         {/* Bannière d'erreur */}
         {error && !closedSummary && (
