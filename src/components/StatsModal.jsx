@@ -478,7 +478,7 @@ export function StatsModal({ isOpen, onClose }) {
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1">
                       {cities.map((ci, idx) => {
                         const isSelected = selectedCity === ci.city
                         return (
@@ -486,16 +486,16 @@ export function StatsModal({ isOpen, onClose }) {
                             key={`${ci.city}-${idx}`}
                             type="button"
                             onClick={() => setSelectedCity(isSelected ? null : ci.city)}
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all cursor-pointer active:scale-95 ${
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium border transition-all cursor-pointer active:scale-95 ${
                               isSelected
                                 ? 'bg-[#c83b3b]/15 border-[#c83b3b] text-[#c83b3b] dark:text-rose-400 font-bold shadow-2xs'
                                 : 'bg-stone-100/90 dark:bg-slate-800 text-stone-800 dark:text-slate-200 border-stone-200/60 dark:border-slate-700/60 hover:border-stone-400 dark:hover:border-slate-600'
                             }`}
                             title={`Voir les activités enregistrées à ${ci.city}`}
                           >
-                            <span className="text-xs">{ci.flag}</span>
-                            <span>{ci.city}</span>
-                            <span className={`text-[9px] font-bold ml-0.5 ${isSelected ? 'text-[#c83b3b] dark:text-rose-400' : 'text-[#c83b3b]'}`}>
+                            <span className="text-[9px] opacity-75 shrink-0 leading-none">{ci.flag}</span>
+                            <span className="leading-tight">{ci.city}</span>
+                            <span className={`text-[9px] font-bold ml-0.5 leading-none ${isSelected ? 'text-[#c83b3b] dark:text-rose-400' : 'text-[#c83b3b]'}`}>
                               ({ci.count})
                             </span>
                           </button>
