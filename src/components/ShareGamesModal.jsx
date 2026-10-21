@@ -29,9 +29,10 @@ export function ShareGamesModal({
   onOpenImportGames,
   initialSelectedIds = null,
   autoGenerate = false,
+  initialTab = 'send',
 }) {
   const { games } = useGame()
-  const [activeTab, setActiveTab] = useState('send') // 'send' | 'receive'
+  const [activeTab, setActiveTab] = useState(initialTab) // 'send' | 'receive'
   const [selectedIds, setSelectedIds] = useState([])
   const [shareResult, setShareResult] = useState(null) // { gameCode, count }
   const [receiveCode, setReceiveCode] = useState('')
@@ -70,7 +71,7 @@ export function ShareGamesModal({
     setCopied(false)
     setShareResult(null)
     setReceiveCode('')
-    setActiveTab('send')
+    setActiveTab(initialTab || 'send')
 
     let startIds = []
     if (Array.isArray(initialSelectedIds) && initialSelectedIds.length > 0) {
@@ -210,18 +211,20 @@ export function ShareGamesModal({
         {/* Liseré supérieur rouge signature */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c83b3b] to-transparent z-10" />
 
-        {/* En-tête */}
+        {/* En-tête dynamique selon l'onglet actif */}
         <div className="relative z-10 p-3.5 sm:p-4 pb-3 border-b border-stone-200/70 dark:border-slate-800/70 bg-[#faf9f5]/85 dark:bg-[#151719]/85 backdrop-blur-md flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 text-[#c83b3b] shrink-0">
-              <Share2 size={18} />
+              {activeTab === 'send' ? <Share2 size={18} /> : <Download size={18} />}
             </span>
             <div className="min-w-0 flex-1">
               <h2 id="share-games-modal-title" className="text-base font-bold font-serif-title leading-snug truncate">
-                Partager des parties
+                {activeTab === 'send' ? 'Partager des parties' : 'Récupérer des parties'}
               </h2>
               <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">
-                Par QR code, lien ou code de partage
+                {activeTab === 'send'
+                  ? 'Par QR code, lien ou code de partage'
+                  : 'Par code ou lien de partage reçu'}
               </p>
             </div>
           </div>
