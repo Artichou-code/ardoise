@@ -1347,3 +1347,5 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
   document.body
 )
 }
+
+export default LiveSessionModal

@@ -9,8 +9,7 @@ import { ErrorBoundary } from './components/ui/ErrorBoundary.jsx'
 // Ardoise v2.4.8 - Production build
 window.__ARDOISE_VERSION__ = '2.4.8'
 // Gestion transparente des rechargements lors de nouveaux déploiements (chunks obsolètes)
-window.addEventListener('vite:preloadError', (event) => {
-  event?.preventDefault?.()
+window.addEventListener('vite:preloadError', () => {
   const hasReloaded = sessionStorage.getItem('chunk_reload_lock')
   if (!hasReloaded) {
     sessionStorage.setItem('chunk_reload_lock', 'true')

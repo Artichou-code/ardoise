@@ -9,29 +9,29 @@ import { getRanking, formatTeamNames } from '../utils/gameUtils'
 import { GAME_META, GAMES, getGameDisplayName } from '../constants/games'
 
 import { RulesSheet } from './RulesSheet'
-const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
+import { LiveSessionModal } from './LiveSessionModal'
 
 const ENGINE_MAP = {
-  [GAMES.DOURAK]: lazy(() => import('./engines/DourakEngine').then(m => ({ default: m.DourakEngine }))),
-  [GAMES.CARACOLE]: lazy(() => import('./engines/CaracoleEngine').then(m => ({ default: m.CaracoleEngine }))),
-  [GAMES.SKYJO]: lazy(() => import('./engines/SkyjoEngine').then(m => ({ default: m.SkyjoEngine }))),
-  [GAMES.PRESIDENT]: lazy(() => import('./engines/PresidentEngine').then(m => ({ default: m.PresidentEngine }))),
-  [GAMES.BELOTE]: lazy(() => import('./engines/BeloteEngine').then(m => ({ default: m.BeloteEngine }))),
-  [GAMES.TAROT]: lazy(() => import('./engines/TarotEngine').then(m => ({ default: m.TarotEngine }))),
-  [GAMES.SIX_QUI_PREND]: lazy(() => import('./engines/SixQuiPrendEngine').then(m => ({ default: m.SixQuiPrendEngine }))),
-  [GAMES.DAME_DE_PIQUE]: lazy(() => import('./engines/DameDePiqueEngine').then(m => ({ default: m.DameDePiqueEngine }))),
-  [GAMES.FLIP_7]: lazy(() => import('./engines/Flip7Engine').then(m => ({ default: m.Flip7Engine }))),
-  [GAMES.SEA_SALT_PAPER]: lazy(() => import('./engines/SeaSaltPaperEngine').then(m => ({ default: m.SeaSaltPaperEngine }))),
-  [GAMES.ASCENSEUR]: lazy(() => import('./engines/AscenseurEngine').then(m => ({ default: m.AscenseurEngine }))),
-  [GAMES.RAMI]: lazy(() => import('./engines/RamiEngine').then(m => ({ default: m.RamiEngine }))),
-  [GAMES.YANIV]: lazy(() => import('./engines/YanivEngine').then(m => ({ default: m.YanivEngine }))),
-  [GAMES.BARBU]: lazy(() => import('./engines/BarbuEngine').then(m => ({ default: m.BarbuEngine }))),
-  [GAMES.UNIVERSEL]: lazy(() => import('./engines/UniverselEngine').then(m => ({ default: m.UniverselEngine }))),
-  [GAMES.UNO]: lazy(() => import('./engines/UnoEngine').then(m => ({ default: m.UnoEngine }))),
-  [GAMES.SYMBIOSE]: lazy(() => import('./engines/SymbioseEngine').then(m => ({ default: m.SymbioseEngine }))),
-  [GAMES.MOLKKY]: lazy(() => import('./engines/MolkkyEngine').then(m => ({ default: m.MolkkyEngine }))),
-  [GAMES.YAM]: lazy(() => import('./engines/YamEngine').then(m => ({ default: m.YamEngine }))),
-  [GAMES.DIXIT]: lazy(() => import('./engines/DixitEngine').then(m => ({ default: m.DixitEngine }))),
+  [GAMES.DOURAK]: lazy(() => import('./engines/DourakEngine').then(m => ({ default: m?.DourakEngine || m?.default || m }))),
+  [GAMES.CARACOLE]: lazy(() => import('./engines/CaracoleEngine').then(m => ({ default: m?.CaracoleEngine || m?.default || m }))),
+  [GAMES.SKYJO]: lazy(() => import('./engines/SkyjoEngine').then(m => ({ default: m?.SkyjoEngine || m?.default || m }))),
+  [GAMES.PRESIDENT]: lazy(() => import('./engines/PresidentEngine').then(m => ({ default: m?.PresidentEngine || m?.default || m }))),
+  [GAMES.BELOTE]: lazy(() => import('./engines/BeloteEngine').then(m => ({ default: m?.BeloteEngine || m?.default || m }))),
+  [GAMES.TAROT]: lazy(() => import('./engines/TarotEngine').then(m => ({ default: m?.TarotEngine || m?.default || m }))),
+  [GAMES.SIX_QUI_PREND]: lazy(() => import('./engines/SixQuiPrendEngine').then(m => ({ default: m?.SixQuiPrendEngine || m?.default || m }))),
+  [GAMES.DAME_DE_PIQUE]: lazy(() => import('./engines/DameDePiqueEngine').then(m => ({ default: m?.DameDePiqueEngine || m?.default || m }))),
+  [GAMES.FLIP_7]: lazy(() => import('./engines/Flip7Engine').then(m => ({ default: m?.Flip7Engine || m?.default || m }))),
+  [GAMES.SEA_SALT_PAPER]: lazy(() => import('./engines/SeaSaltPaperEngine').then(m => ({ default: m?.SeaSaltPaperEngine || m?.default || m }))),
+  [GAMES.ASCENSEUR]: lazy(() => import('./engines/AscenseurEngine').then(m => ({ default: m?.AscenseurEngine || m?.default || m }))),
+  [GAMES.RAMI]: lazy(() => import('./engines/RamiEngine').then(m => ({ default: m?.RamiEngine || m?.default || m }))),
+  [GAMES.YANIV]: lazy(() => import('./engines/YanivEngine').then(m => ({ default: m?.YanivEngine || m?.default || m }))),
+  [GAMES.BARBU]: lazy(() => import('./engines/BarbuEngine').then(m => ({ default: m?.BarbuEngine || m?.default || m }))),
+  [GAMES.UNIVERSEL]: lazy(() => import('./engines/UniverselEngine').then(m => ({ default: m?.UniverselEngine || m?.default || m }))),
+  [GAMES.UNO]: lazy(() => import('./engines/UnoEngine').then(m => ({ default: m?.UnoEngine || m?.default || m }))),
+  [GAMES.SYMBIOSE]: lazy(() => import('./engines/SymbioseEngine').then(m => ({ default: m?.SymbioseEngine || m?.default || m }))),
+  [GAMES.MOLKKY]: lazy(() => import('./engines/MolkkyEngine').then(m => ({ default: m?.MolkkyEngine || m?.default || m }))),
+  [GAMES.YAM]: lazy(() => import('./engines/YamEngine').then(m => ({ default: m?.YamEngine || m?.default || m }))),
+  [GAMES.DIXIT]: lazy(() => import('./engines/DixitEngine').then(m => ({ default: m?.DixitEngine || m?.default || m }))),
 }
 
 function AnimatedRoundIndicator({ roundNumber }) {

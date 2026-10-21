@@ -481,3 +481,5 @@ export function ImportGamesModal({ isOpen, onClose, games: rawGames, game: singl
     document.body
   )
 }
+
+export default ImportGamesModal

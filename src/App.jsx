@@ -16,16 +16,14 @@ import { StatsScreen } from './components/StatsScreen'
 import { PlayersScreen } from './components/PlayersScreen'
 import { TrophiesScreen } from './components/TrophiesScreen'
 
-// Modales intégrées : chargement immédiat pour ouverture instantanée au 1er clic (logo, hub légal, partage, sync)
+// Modales intégrées : chargement immédiat pour ouverture instantanée au 1er clic (logo, hub légal, partage, sync, table en direct, import)
 import { ShareGamesModal } from './components/ShareGamesModal'
 import { SyncModal } from './components/SyncModal'
 import { ShareAppModal } from './components/ShareAppModal'
 import { ArtCreaUniverseModal } from './components/ArtCreaUniverseModal'
 import { LegalModal } from './components/LegalModal'
-
-// Modales volumineuses spécifiques : chargement différé (session en direct et import)
-const ImportGamesModal = lazy(() => import('./components/ImportGamesModal').then((m) => ({ default: m.ImportGamesModal })))
-const LiveSessionModal = lazy(() => import('./components/LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
+import { LiveSessionModal } from './components/LiveSessionModal'
+import { ImportGamesModal } from './components/ImportGamesModal'
 
 export default function App() {
   const { screen, setScreen, reloadStorage } = useGame()

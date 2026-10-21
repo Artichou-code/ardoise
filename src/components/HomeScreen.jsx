@@ -18,7 +18,7 @@ import { ShareGameModal } from './ShareGameModal'
 import { SyncModal } from './SyncModal'
 import { LegalModal } from './LegalModal'
 import { ArtCreaUniverseModal } from './ArtCreaUniverseModal'
-const LiveSessionModal = lazy(() => import('./LiveSessionModal').then((m) => ({ default: m.LiveSessionModal })))
+import { LiveSessionModal } from './LiveSessionModal'
 
 // Bascule d'affichage des visuels illustrés sur la page d'accueil (passer à true pour réactiver)
 const SHOW_GAME_ILLUSTRATIONS = false
