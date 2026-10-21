@@ -291,12 +291,12 @@ export function BurgerMenu({
                   )}
                 </div>
 
-                {/* Deux actions réunies : Créer & Rejoindre (même taille d'icônes et alignement parfait) */}
+                {/* Deux actions réunies : Créer & Rejoindre (même taille d'icônes et alignement parfait, sans fond au survol) */}
                 <div className="grid grid-cols-2 gap-1">
                   <button
                     type="button"
                     onClick={() => handleAction(() => onOpenLiveSession?.('create'))}
-                    className="py-1.5 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                    className="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
                   >
                     <span className={`p-2 rounded-lg shrink-0 group-hover:scale-105 transition-all border ${
                       liveSession
@@ -313,7 +313,7 @@ export function BurgerMenu({
                   <button
                     type="button"
                     onClick={() => handleAction(() => onOpenLiveSession?.('join'))}
-                    className="py-1.5 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                    className="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
                   >
                     <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/25 dark:border-[#c83b3b]/35 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
                       <QrCode size={16} />
@@ -325,7 +325,7 @@ export function BurgerMenu({
                 </div>
               </div>
 
-              {/* Ensemble Profil réunissant Synchro (sans fond/bordure, alignement parfait) */}
+              {/* Ensemble Profil réunissant Synchro (sans fond/bordure ni fond au survol, alignement parfait) */}
               <div className="col-span-1 p-1 flex flex-col justify-between">
                 {/* En-tête centré Profil */}
                 <div className="flex items-center justify-center gap-1 px-1 pt-1 pb-1">
@@ -338,7 +338,7 @@ export function BurgerMenu({
                 <button
                   type="button"
                   onClick={() => handleAction(onOpenSync)}
-                  className="py-1.5 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                  className="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
                 >
                   <span className="p-2 rounded-lg bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/25 dark:border-sky-500/35 text-sky-600 dark:text-sky-400 shrink-0 group-hover:scale-105 transition-all">
                     <Cloud size={16} />
