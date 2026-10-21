@@ -291,38 +291,51 @@ export function BurgerMenu({
                   )}
                 </div>
 
-                {/* Deux actions réunies : Créer & Rejoindre (même taille d'icônes et alignement parfait, sans fond au survol) */}
-                <div className="grid grid-cols-2 gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleAction(() => onOpenLiveSession?.('create'))}
-                    className="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
-                  >
-                    <span className={`p-2 rounded-lg shrink-0 group-hover:scale-105 transition-all border ${
-                      liveSession
-                        ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
-                        : 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/25 dark:border-emerald-500/35 text-emerald-600 dark:text-emerald-400'
-                    }`}>
-                      <Radio size={16} className={liveSession ? 'animate-pulse' : ''} />
-                    </span>
-                    <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
-                      Créer
-                    </p>
-                  </button>
+                {/* Actions Table live : bouton unique en pulsation quand la table est active, sinon Créer & Rejoindre */}
+                {liveSession ? (
+                  <div className="flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => handleAction(() => onOpenLiveSession?.())}
+                      className="py-1.5 px-2 rounded-xl flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer w-full"
+                    >
+                      <span className="p-2 rounded-full border border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-all shadow-xs">
+                        <Radio size={16} className="animate-pulse" />
+                      </span>
+                      <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
+                        Ma table
+                      </p>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleAction(() => onOpenLiveSession?.('create'))}
+                      className="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                    >
+                      <span className="p-2 rounded-lg shrink-0 group-hover:scale-105 transition-all border bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/25 dark:border-emerald-500/35 text-emerald-600 dark:text-emerald-400">
+                        <Radio size={16} />
+                      </span>
+                      <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
+                        Créer
+                      </p>
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => handleAction(() => onOpenLiveSession?.('join'))}
-                    className="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
-                  >
-                    <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/25 dark:border-[#c83b3b]/35 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
-                      <QrCode size={16} />
-                    </span>
-                    <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
-                      Rejoindre
-                    </p>
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => handleAction(() => onOpenLiveSession?.('join'))}
+                      className="py-1.5 px-1 rounded-xl flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
+                    >
+                      <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/25 dark:border-[#c83b3b]/35 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
+                        <QrCode size={16} />
+                      </span>
+                      <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
+                        Rejoindre
+                      </p>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Ensemble Profil réunissant Synchro (sans fond/bordure ni fond au survol, alignement parfait) */}

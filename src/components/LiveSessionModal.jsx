@@ -873,7 +873,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                     C'est parti !
                   </button>
                   <p className="text-[10px] text-stone-400 dark:text-slate-500">
-                    Vous pourrez retrouver cette table et ses options à tout moment via le menu ☰
+                    Vous pourrez retrouver cette table et ses options à tout moment dans l'en-tête de l'application ou via le menu ☰
                   </p>
                 </div>
               </div>
