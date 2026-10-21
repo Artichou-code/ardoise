@@ -564,8 +564,8 @@ export function ShareGamesModal({
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScan={handleQrScan}
-        title="Scanner des parties partagées"
-        subtitle="Visez le QR code affiché sur l'autre smartphone"
+        title="Scanner des parties"
+        subtitle="Visez le QR code sur l'autre appareil"
       />
     </div>,
     document.body

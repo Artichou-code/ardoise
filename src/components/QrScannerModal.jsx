@@ -291,15 +291,15 @@ export function QrScannerModal({
 
       {/* Barre supérieure : Titre et contrôles rapides */}
       <div className="relative z-20 px-4 pt-4 sm:pt-6 pb-3 flex items-center justify-between gap-3 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <span className="p-2 rounded-xl bg-white/10 text-white shrink-0">
             <Camera size={18} />
           </span>
-          <div className="min-w-0">
-            <h2 id="qr-scanner-title" className="text-sm sm:text-base font-bold font-serif-title truncate">
+          <div className="min-w-0 flex-1">
+            <h2 id="qr-scanner-title" className="text-sm sm:text-base font-bold font-serif-title leading-snug">
               {title}
             </h2>
-            <p className="text-[11px] text-white/70 truncate">{subtitle}</p>
+            <p className="text-[11px] text-white/70 leading-snug mt-0.5">{subtitle}</p>
           </div>
         </div>
 

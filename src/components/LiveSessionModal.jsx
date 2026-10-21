@@ -1368,8 +1368,8 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
       isOpen={isScannerOpen}
       onClose={() => setIsScannerOpen(false)}
       onScan={handleQrScan}
-      title="Scanner une table en direct"
-      subtitle="Visez le QR code affiché sur l'écran de l'hôte"
+      title="Scanner une table"
+      subtitle="Visez le QR code de l'hôte"
     />
   </>,
   document.body
