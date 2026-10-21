@@ -1,5 +1,6 @@
 import { GAME_META, GAMES } from '../constants/games'
 import { getRanking, computePlayDuration } from './gameUtils'
+import { getDefaultMyProfile } from '../store/storage'
 
 /**
  * Normalise un nom de joueur pour regrouper les statistiques de façon fiable
@@ -114,6 +115,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
     activeGames: 0,
     wins: 0,
     podiums: 0,
+    dourakPlayed: 0,
     dourakLosses: 0,
     phoenixWins: 0,
     closeCallWins: 0,
@@ -202,7 +204,8 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
 
         const isWinner = (pId && winnerId === pId) || player.id === winnerId || pName === winnerId || rank === 1
         const isPodium = rank <= 3 && ranking.length >= 2
-        const isDourakLoser = gType === GAMES.DOURAK && rankEntry && rankEntry.id === lastRankEntry?.id
+        const isDourakGame = gType === GAMES.DOURAK
+        const isDourakLoser = isDourakGame && rankEntry && rankEntry.id === lastRankEntry?.id
 
         if (isWinner) {
           stat.wins += 1
@@ -210,6 +213,9 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         }
         if (isPodium) {
           stat.podiums += 1
+        }
+        if (isDourakGame) {
+          stat.dourakPlayed += 1
         }
         if (isDourakLoser) {
           stat.dourakLosses += 1
@@ -488,6 +494,7 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
     .map(p => {
       const winRate = p.finishedGames > 0 ? Math.round((p.wins / p.finishedGames) * 100) : 0
       const podiumRate = p.finishedGames > 0 ? Math.round((p.podiums / p.finishedGames) * 100) : 0
+      const dourakLossRate = p.dourakPlayed > 0 ? Math.round((p.dourakLosses / p.dourakPlayed) * 100) : 0
 
       // Tri de l'historique récent par date décroissante
       const sortedHistory = [...p.recentHistory].sort((a, b) => (b.date || 0) - (a.date || 0))
@@ -499,10 +506,22 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         ...p,
         winRate,
         podiumRate,
+        dourakLossRate,
         recentHistory: sortedHistory,
         topOpponent,
       }
     })
+
+  // Profil "Moi" sur cet appareil (pour exclure le propriétaire des trophées d'invités/partenaires)
+  const myProfile = getDefaultMyProfile()
+  const isSelfPlayer = (p) => {
+    if (!myProfile || !p) return false
+    const pId = p.id
+    const pName = (p.name || '').trim().toLowerCase()
+    if (myProfile.id && pId && myProfile.id === pId) return true
+    if (myProfile.name && pName && myProfile.name.trim().toLowerCase() === pName) return true
+    return false
+  }
 
   // 3. Calcul des Titres et Distinctions
   let bestStrategist = null
@@ -510,8 +529,10 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
   let mostActive = null
   let maxTotalGames = 0
   let grandDourak = null
+  let maxDourakLossRate = -1
   let maxDourakLosses = 0
   let podiumKing = null
+  let maxPodiumRate = -1
   let maxPodiums = 0
 
   // Seuil pour le titre de meilleur stratège (au moins 2 parties terminées, ou 1 si aucune n'a >= 2)
@@ -526,22 +547,28 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       }
     }
 
-    // Le plus actif
-    if (p.totalGames > maxTotalGames) {
+    // Le plus actif : réservé aux partenaires / invités (exclut 'Moi')
+    if (!isSelfPlayer(p) && p.totalGames > maxTotalGames) {
       maxTotalGames = p.totalGames
       mostActive = p
     }
 
-    // Grand Dourak (au moins 1 défaite)
-    if (p.dourakLosses > maxDourakLosses) {
-      maxDourakLosses = p.dourakLosses
-      grandDourak = p
+    // Grand Dourak : pire taux de défaite (%) sur au moins 2 parties de Dourak (et min 1 revers)
+    if (p.dourakPlayed >= 2 && p.dourakLosses >= 1) {
+      if (p.dourakLossRate > maxDourakLossRate || (p.dourakLossRate === maxDourakLossRate && p.dourakLosses > maxDourakLosses)) {
+        maxDourakLossRate = p.dourakLossRate
+        maxDourakLosses = p.dourakLosses
+        grandDourak = p
+      }
     }
 
-    // Roi du podium
-    if (p.podiums > maxPodiums) {
-      maxPodiums = p.podiums
-      podiumKing = p
+    // Roi du podium : Meilleur taux de Top 3 (%) sur au moins 3 parties terminées
+    if (p.finishedGames >= 3) {
+      if (p.podiumRate > maxPodiumRate || (p.podiumRate === maxPodiumRate && p.podiums > maxPodiums)) {
+        maxPodiumRate = p.podiumRate
+        maxPodiums = p.podiums
+        podiumKing = p
+      }
     }
   })
 
@@ -724,7 +751,6 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
   let chameleonLeader = null; let maxDistinctGames = 0
   let closeCallLeader = null; let maxCloseCall = 0
   let nightOwlLeader = null; let maxNightOwl = 0
-  let marathonLeader = null; let maxMarathonRounds = 0
 
   let symbioseDuoLeader = null; let maxSymbioseDuo = 0
   let symbiosePondLeader = null; let maxSymbiosePond = 0
@@ -765,12 +791,6 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
     if (p.nightOwlGames > maxNightOwl) {
       maxNightOwl = p.nightOwlGames
       nightOwlLeader = p
-    }
-
-    // Le Marathonien (minimum 8 manches)
-    if (p.maxGameRounds >= 8 && p.maxGameRounds > maxMarathonRounds) {
-      maxMarathonRounds = p.maxGameRounds
-      marathonLeader = p
     }
 
     // Symbiose Duo Fusionnel (victoires en 2v2)
@@ -879,12 +899,12 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
       })
     }
 
-    if (grandDourak && (p.id ? p.id === grandDourak.id : p.name === grandDourak.name) && maxDourakLosses > 0) {
+    if (grandDourak && (p.id ? p.id === grandDourak.id : p.name === grandDourak.name) && maxDourakLossRate > 0) {
       p.badges.push({
         id: 'dourak',
         title: 'Grand Dourak',
-        desc: `${p.dourakLosses} revers`,
-        explanation: "Attribué au joueur ayant terminé le plus souvent dans le rôle de l'idiot (le dernier joueur conservant des cartes en main).",
+        desc: `${p.dourakLossRate}% de revers`,
+        explanation: "Attribué au joueur ayant le pire taux de défaite au Dourak (minimum 2 parties disputées).",
         type: 'red',
         iconName: 'Frown',
       })
@@ -895,18 +915,18 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         id: 'active',
         title: 'Fidèle au poste',
         desc: `${p.totalGames} parties jouées`,
-        explanation: 'Attribué au joueur le plus assidu ayant disputé le plus grand nombre de parties sur l’ardoise.',
+        explanation: 'Attribué au joueur invité le plus assidu ayant disputé le plus grand nombre de parties à vos côtés.',
         type: 'blue',
         iconName: 'Flame',
       })
     }
 
-    if (podiumKing && (p.id ? p.id === podiumKing.id : p.name === podiumKing.name) && maxPodiums >= 2 && (p.id ? p.id !== bestStrategist?.id : p.name !== bestStrategist?.name)) {
+    if (podiumKing && (p.id ? p.id === podiumKing.id : p.name === podiumKing.name) && maxPodiumRate > 0 && (p.id ? p.id !== bestStrategist?.id : p.name !== bestStrategist?.name)) {
       p.badges.push({
         id: 'podium',
         title: 'Roi du podium',
-        desc: `${p.podiums} podiums`,
-        explanation: 'Attribué au joueur ayant fini le plus de fois dans le Top 3.',
+        desc: `${p.podiumRate}% de Top 3`,
+        explanation: 'Attribué au joueur possédant le plus haut pourcentage de présence dans le Top 3 (minimum 3 parties terminées).',
         type: 'emerald',
         iconName: 'Medal',
       })
@@ -968,17 +988,6 @@ export function computeStats(games = [], selectedGameType = 'all', registeredPla
         explanation: 'Attribué au joueur ayant disputé le plus de parties au cœur de la nuit (entre 0h00 et 5h00 du matin).',
         type: 'purple',
         iconName: 'Moon',
-      })
-    }
-
-    if (marathonLeader && (p.id ? p.id === marathonLeader.id : p.name === marathonLeader.name) && maxMarathonRounds >= 8) {
-      p.badges.push({
-        id: 'general_marathon',
-        title: 'Le Marathonien',
-        desc: `Partie en ${p.maxGameRounds} manches`,
-        explanation: 'Attribué au joueur ayant disputé la plus longue confrontation enregistrée (au moins 8 manches).',
-        type: 'gold',
-        iconName: 'Timer',
       })
     }
 
@@ -1232,8 +1241,8 @@ export const TROPHIES_CATALOG = [
     id: 'active',
     title: 'Fidèle au poste',
     category: 'Général',
-    condition: 'Avoir disputé le plus grand nombre total de parties (minimum 3 parties).',
-    description: 'Attribué au joueur le plus présent et infatigable autour de la table.',
+    condition: 'Avoir disputé le plus de parties aux côtés de l’hôte (minimum 3 parties, réservé aux invités).',
+    description: 'Attribué au partenaire de jeu le plus fidèle et infatigable autour de votre table.',
     color: 'blue',
     iconName: 'Flame',
   },
@@ -1241,7 +1250,7 @@ export const TROPHIES_CATALOG = [
     id: 'dourak',
     title: 'Grand Dourak',
     category: 'Dourak',
-    condition: 'Avoir subi le plus grand nombre de défaites au Dourak (au moins 1 revers).',
+    condition: 'Avoir le plus fort taux de défaites au Dourak (minimum 2 parties disputées et 1 revers).',
     description: "Le titre craint de tous : le joueur qui a le plus souvent conservé les cartes en main.",
     color: 'rose',
     iconName: 'Frown',
@@ -1250,7 +1259,7 @@ export const TROPHIES_CATALOG = [
     id: 'podium',
     title: 'Roi du podium',
     category: 'Général',
-    condition: 'Avoir terminé le plus grand nombre de fois dans le Top 3 (minimum 2 podiums).',
+    condition: 'Avoir le plus haut taux de présence dans le Top 3 (minimum 3 parties terminées).',
     description: 'Récompense la constance aux avant-postes sur les parties disputées.',
     color: 'emerald',
     iconName: 'Medal',
@@ -1499,15 +1508,6 @@ export const TROPHIES_CATALOG = [
     description: 'Clin d’œil complice aux couche-tard et aux fins de soirées mémorables autour de la table.',
     color: 'purple',
     iconName: 'Moon',
-  },
-  {
-    id: 'general_marathon',
-    title: 'Le Marathonien',
-    category: 'Général',
-    condition: 'Avoir disputé la plus longue partie enregistrée de la table (minimum 8 manches).',
-    description: 'L’hommage à l’endurance et aux batailles acharnées qui s’étirent manche après manche.',
-    color: 'gold',
-    iconName: 'Timer',
   },
   {
     id: 'symbiose_duo',

@@ -150,7 +150,7 @@ export function StatsScreen() {
         subStyle: 'text-[#c83b3b]/85 dark:text-rose-400/85 font-semibold',
       })
     }
-    if (titles.mostActive && titles.mostActive.totalGames >= 2) {
+    if (titles.mostActive && titles.mostActive.totalGames >= 3) {
       list.push({
         id: 'active',
         player: titles.mostActive,
@@ -161,23 +161,23 @@ export function StatsScreen() {
         subStyle: 'text-blue-800/80 dark:text-blue-400/80',
       })
     }
-    if (titles.grandDourak && titles.grandDourak.dourakLosses > 0) {
+    if (titles.grandDourak && titles.grandDourak.dourakLossRate > 0) {
       list.push({
         id: 'dourak',
         player: titles.grandDourak,
         label: 'Grand Dourak',
-        sub: `${titles.grandDourak.dourakLosses} revers`,
+        sub: `${titles.grandDourak.dourakLossRate}% de revers`,
         cardStyle: 'border-rose-200/90 dark:border-rose-900/40 bg-rose-50/70 dark:bg-rose-950/20',
         labelStyle: 'text-rose-700 dark:text-rose-300',
         subStyle: 'text-rose-800/80 dark:text-rose-400/80',
       })
     }
-    if (titles.podiumKing && titles.podiumKing.podiums >= 2 && titles.podiumKing.name !== titles.bestStrategist?.name) {
+    if (titles.podiumKing && titles.podiumKing.podiumRate > 0 && titles.podiumKing.name !== titles.bestStrategist?.name) {
       list.push({
         id: 'podium',
         player: titles.podiumKing,
         label: 'Roi du podium',
-        sub: `${titles.podiumKing.podiums} Top 3`,
+        sub: `${titles.podiumKing.podiumRate}% de Top 3`,
         cardStyle: 'border-emerald-200/90 dark:border-emerald-900/40 bg-emerald-50/70 dark:bg-emerald-950/20',
         labelStyle: 'text-emerald-700 dark:text-emerald-300',
         subStyle: 'text-emerald-800/80 dark:text-emerald-400/80',
