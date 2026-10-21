@@ -880,7 +880,9 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
             ) : !isHost ? (
               /* VUE PARTICIPANT QUI RÉOUVRE LA TABLE : SANS QR CODE, SANS BOUTONS SUPERFLUS */
               <div className="space-y-4">
-                <div className="p-4 rounded-2xl school-card border border-stone-200 dark:border-slate-800 space-y-3">
+                <div className={`rounded-2xl school-card border border-stone-200 dark:border-slate-800 ${
+                  sessionGames.length === 0 ? 'p-4 space-y-3' : 'p-3'
+                }`}>
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
@@ -899,15 +901,18 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                     </button>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2.5 text-xs">
-                    <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                    <div className="text-stone-700 dark:text-slate-200 text-[11px] leading-relaxed">
-                      <strong className="font-bold text-emerald-800 dark:text-emerald-300 block">
-                        Connecté à la table de l'hôte
-                      </strong>
-                      Toutes les parties jouées pendant cette séance s'enregistrent automatiquement dans votre carnet personnel.
+                  {/* Affiché uniquement tant qu'aucune partie n'est encore inscrite sur la table pour libérer l'espace dès le jeu commencé */}
+                  {sessionGames.length === 0 && (
+                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2.5 text-xs">
+                      <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                      <div className="text-stone-700 dark:text-slate-200 text-[11px] leading-relaxed">
+                        <strong className="font-bold text-emerald-800 dark:text-emerald-300 block">
+                          Connecté à la table de l'hôte
+                        </strong>
+                        Toutes les parties jouées pendant cette séance s'enregistrent automatiquement dans votre carnet personnel.
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Parties de la session */}
