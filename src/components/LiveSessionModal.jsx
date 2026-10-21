@@ -35,11 +35,11 @@ import { isValidLiveSessionCodeFormat, extractCodeFromInput } from '../store/syn
 import { formatDate } from '../utils/gameUtils'
 import { getGameDisplayName } from '../constants/games'
 
-export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoinCode }) {
+export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoinCode, initialTab = null }) {
   const { games, reloadStorage } = useGame()
   const [activeSession, setActiveSession] = useState(null)
   const [sessionDetails, setSessionDetails] = useState(null)
-  const [activeTab, setActiveTab] = useState(initialJoinCode ? 'join' : 'create') // 'create' | 'join'
+  const [activeTab, setActiveTab] = useState(initialTab || (initialJoinCode ? 'join' : 'create')) // 'create' | 'join'
   const [sessionName, setSessionName] = useState('')
   const [includeTodayGames, setIncludeTodayGames] = useState(false)
   const [joinCode, setJoinCode] = useState(initialJoinCode ? initialJoinCode.toUpperCase() : 'TAB-')
@@ -139,9 +139,11 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
     setIsLoading(false)
     lastSigRef.current = ''
 
-    if (initialJoinCode) {
+    if (initialTab === 'join' || initialJoinCode) {
       setActiveTab('join')
-      setJoinCode(initialJoinCode.toUpperCase())
+      if (initialJoinCode) {
+        setJoinCode(initialJoinCode.toUpperCase())
+      }
       return
     }
 
@@ -180,7 +182,7 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
           setIsLoading(false)
         })
     }
-  }, [isOpen, initialJoinCode])
+  }, [isOpen, initialJoinCode, initialTab])
 
   // Écouter les changements externes de session
   useEffect(() => {

@@ -13,6 +13,7 @@ import {
   Moon,
   Share2,
   Trophy,
+  QrCode,
 } from 'lucide-react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { useTheme } from '../context/ThemeContext'
@@ -269,73 +270,86 @@ export function BurgerMenu({
             </div>
           </div>
 
-          {/* Section 2 : Partage & Sauvegarde (3 actions sur la même ligne) */}
+          {/* Section 2 : Table live & Sauvegarde */}
           <div>
             <span className="px-2 pb-1.5 block text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-slate-500">
-              Partage & Sauvegarde
+              Synchronisation & Table live
             </span>
-            <div className="grid grid-cols-3 gap-1">
-              <button
-                type="button"
-                onClick={() => handleAction(onOpenLiveSession)}
-                className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer relative ${
-                  liveSession
-                    ? 'bg-emerald-500/10 hover:bg-emerald-500/15'
-                    : 'hover:bg-stone-100 dark:hover:bg-slate-800/70'
-                }`}
-              >
-                {liveSession && (
-                  <span className="absolute top-1.5 right-2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                )}
-                <span className={`p-2 rounded-lg shrink-0 group-hover:scale-105 transition-all border ${
-                  liveSession
-                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
-                    : 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/25 dark:border-emerald-500/35 text-emerald-600 dark:text-emerald-400'
-                }`}>
-                  <Radio size={16} className={liveSession ? 'animate-pulse' : ''} />
-                </span>
-                <div className="min-w-0 w-full">
-                  <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
-                    En direct
-                  </p>
-                  <p className="text-[10px] text-stone-500 dark:text-slate-400 whitespace-nowrap mt-0.5">
-                    {liveSession ? 'Actif' : 'Table live'}
-                  </p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {/* Ensemble Table live réunissant élégamment Créer et Rejoindre */}
+              <div className="col-span-2 p-1 rounded-2xl bg-stone-100/70 dark:bg-slate-800/50 border border-stone-200/70 dark:border-slate-700/60 flex flex-col justify-between">
+                {/* En-tête subtil de l'ensemble Table live */}
+                <div className="flex items-center justify-between px-2 pt-0.5 pb-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 flex items-center gap-1.5">
+                    <span>Table live</span>
+                    {liveSession && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+                  </span>
+                  {liveSession && (
+                    <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-1.5 py-0.2 rounded-full leading-none">
+                      Active
+                    </span>
+                  )}
                 </div>
-              </button>
 
-              <button
-                type="button"
-                onClick={() => handleAction(onOpenShareGames)}
-                className="py-2 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer"
-              >
-                <span className="p-2 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/25 dark:border-[#c83b3b]/35 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
-                  <Share2 size={16} />
-                </span>
-                <div className="min-w-0 w-full">
-                  <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
-                    Partager
-                  </p>
-                  <p className="text-[10px] text-stone-500 dark:text-slate-400 whitespace-nowrap mt-0.5">
-                    QR & code
-                  </p>
+                {/* Deux actions réunies : Créer & Rejoindre */}
+                <div className="grid grid-cols-2 gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleAction(() => onOpenLiveSession?.('create'))}
+                    className="py-1.5 px-1 rounded-xl hover:bg-white dark:hover:bg-slate-800 flex flex-col items-center justify-center text-center gap-1 transition-all group cursor-pointer"
+                  >
+                    <span className={`p-1.5 rounded-lg shrink-0 group-hover:scale-105 transition-all border ${
+                      liveSession
+                        ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500/25 dark:border-emerald-500/35 text-emerald-600 dark:text-emerald-400'
+                    }`}>
+                      <Radio size={15} className={liveSession ? 'animate-pulse' : ''} />
+                    </span>
+                    <div className="min-w-0 w-full">
+                      <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
+                        Créer
+                      </p>
+                      <p className="text-[9px] text-stone-400 dark:text-slate-500 whitespace-nowrap mt-0.5">
+                        {liveSession ? 'Ma table' : 'Hôte'}
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleAction(() => onOpenLiveSession?.('join'))}
+                    className="py-1.5 px-1 rounded-xl hover:bg-white dark:hover:bg-slate-800 flex flex-col items-center justify-center text-center gap-1 transition-all group cursor-pointer"
+                  >
+                    <span className="p-1.5 rounded-lg bg-[#c83b3b]/10 dark:bg-[#c83b3b]/20 border border-[#c83b3b]/25 dark:border-[#c83b3b]/35 text-[#c83b3b] shrink-0 group-hover:scale-105 transition-all">
+                      <QrCode size={15} />
+                    </span>
+                    <div className="min-w-0 w-full">
+                      <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
+                        Rejoindre
+                      </p>
+                      <p className="text-[9px] text-stone-400 dark:text-slate-500 whitespace-nowrap mt-0.5">
+                        Code ou QR
+                      </p>
+                    </div>
+                  </button>
                 </div>
-              </button>
+              </div>
 
+              {/* Action Sauvegarde (1 colonne) */}
               <button
                 type="button"
                 onClick={() => handleAction(onOpenSync)}
-                className="py-2 px-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800/70 flex flex-col items-center justify-center text-center gap-1.5 transition-colors group cursor-pointer"
+                className="p-1 rounded-2xl bg-stone-100/70 dark:bg-slate-800/50 border border-stone-200/70 dark:border-slate-700/60 hover:bg-stone-100 dark:hover:bg-slate-800/80 flex flex-col items-center justify-center text-center gap-1.5 transition-all group cursor-pointer"
               >
-                <span className="p-2 rounded-lg bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/25 dark:border-sky-500/35 text-sky-600 dark:text-sky-400 shrink-0 group-hover:scale-105 transition-all">
+                <span className="p-2 rounded-xl bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/25 dark:border-sky-500/35 text-sky-600 dark:text-sky-400 shrink-0 group-hover:scale-105 transition-all">
                   <Cloud size={16} />
                 </span>
                 <div className="min-w-0 w-full">
                   <p className="font-bold text-stone-800 dark:text-slate-200 text-[11px] leading-tight whitespace-nowrap">
                     Sauvegarde
                   </p>
-                  <p className="text-[10px] text-stone-500 dark:text-slate-400 whitespace-nowrap mt-0.5">
-                    Cloud & fichier
+                  <p className="text-[9px] text-stone-400 dark:text-slate-500 whitespace-nowrap mt-0.5">
+                    Cloud & Sync
                   </p>
                 </div>
               </button>

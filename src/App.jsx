@@ -29,6 +29,7 @@ export default function App() {
   const { screen, setScreen, reloadStorage } = useGame()
   const [sharedGames, setSharedGames] = useState(null)
   const [incomingSessionCode, setIncomingSessionCode] = useState(null)
+  const [liveModalTab, setLiveModalTab] = useState(null)
 
   // États globaux du menu burger et de ses modales (accessibles depuis toutes les pages)
   const [isBurgerMenuOpen, setIsBurgerMenuOpen] = useState(false)
@@ -125,8 +126,14 @@ export default function App() {
     window.history.replaceState({}, '', window.location.pathname)
   }
 
+  const handleOpenLiveSession = (tab = 'create') => {
+    setLiveModalTab(tab)
+    setIsLiveModalOpen(true)
+  }
+
   const handleCloseSessionModal = () => {
     setIsLiveModalOpen(false)
+    setLiveModalTab(null)
     if (incomingSessionCode) {
       setIncomingSessionCode(null)
       window.history.replaceState({}, '', window.location.pathname)
@@ -158,7 +165,7 @@ export default function App() {
         isOpen={isBurgerMenuOpen}
         onClose={() => setIsBurgerMenuOpen(false)}
         onNavigate={(nextScreen) => setScreen(nextScreen)}
-        onOpenLiveSession={() => setIsLiveModalOpen(true)}
+        onOpenLiveSession={handleOpenLiveSession}
         onOpenShareGames={() => setIsShareGamesModalOpen(true)}
         onOpenSync={() => setIsSyncModalOpen(true)}
         onOpenLegal={(tab) => setLegalTab(tab || 'mentions')}
@@ -173,6 +180,7 @@ export default function App() {
           <LiveSessionModal
             isOpen={isLiveModalOpen}
             initialJoinCode={incomingSessionCode}
+            initialTab={liveModalTab}
             onClose={handleCloseSessionModal}
             onSessionChanged={(s) => setLiveSession(s)}
           />
