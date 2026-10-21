@@ -734,23 +734,13 @@ export function LiveSessionModal({ isOpen, onClose, onSessionChanged, initialJoi
                 </div>
               )}
 
-              <div className="pt-2 flex flex-col gap-2 max-w-xs mx-auto">
+              <div className="pt-2 max-w-xs mx-auto w-full">
                 <button
                   type="button"
                   onClick={onClose}
                   className="w-full py-2.5 px-4 rounded-xl bg-[#c83b3b] hover:bg-[#b03030] text-white font-bold text-xs transition-colors cursor-pointer shadow-xs"
                 >
                   Fermer
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setClosedSummary(null)
-                    setActiveTab('create')
-                  }}
-                  className="text-[11px] text-stone-400 hover:text-stone-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors py-1 cursor-pointer"
-                >
-                  Ouvrir ou rejoindre une autre table
                 </button>
               </div>
             </div>
